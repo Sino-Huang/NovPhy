@@ -854,6 +854,38 @@ def strip_rows(table):
     return {k: v for k, v in table.items() if k != "_rows"}
 
 
+def invalidate(obj):
+    """Every ``token`` below ``obj`` -> STOP_TOKEN."""
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if key == "token":
+                obj[key] = STOP_TOKEN
+            else:
+                invalidate(value)
+    elif isinstance(obj, list):
+        for value in obj:
+            invalidate(value)
+
+
+def apply_guards(compute):
+    """The frozen guard rule on the assembled publication: a failed guard turns every token into STOP_TOKEN, and
+    a cost below the mixed-cell guard every token of that cost (its primary row, contrasts, inventory tables and
+    wrong-anchor control; the #113 arm under the control). The disposition then reads the gated primary rows.
+    Estimates are unchanged; idempotent; with every guard passing nothing changes (phase-B/C review)."""
+    guards_pass = all(g["pass"] for g in compute["guards"].values())
+    compute["guards_pass"] = guards_pass
+    for cost in COSTS:
+        guard = compute["mixed_cell_guard"][cost]["pass"]
+        compute["primary"][cost]["guard_pass"] = guard
+        if not (guards_pass and guard):
+            invalidate([compute["primary"][cost], compute["contrasts"][cost], compute["inventories"][cost],
+                        compute["wrong_anchor"][cost], *([compute["arm_113"]] if cost == CONTROL else [])])
+    compute["disposition"] = {
+        **disposition(compute["primary"], guards_pass), "rule_text": DISPOSITION_RULES["absolute"],
+        "sensitivity": {rule: disposition(compute["primary"], guards_pass, rule) for rule in ("relative", "combined")}}
+    return compute
+
+
 def compute_tables(output, plan):
     output = Path(output)
     records = load_records(output)
@@ -867,7 +899,6 @@ def compute_tables(output, plan):
     if {i: sorted(cells["a"][i]) for i in INVENTORIES} != {i: sorted(cells_a[i]) for i in INVENTORIES}:
         raise ValueError("cost (a) cells differ from the Gate-B cells")
     guards = guards_table(output, plan, records, evaluation, fit, cells_a)
-    guards_pass = all(g["pass"] for g in guards.values())
     alignment = alignment_table(evaluation)
     fit_alignment = alignment_table(fit)
     tables, wrong = {}, {}
@@ -878,23 +909,14 @@ def compute_tables(output, plan):
     mixed_eval = {c: {i: len(cells[c][i]) for i in INVENTORIES} for c in COSTS}
     per_cost = {}
     for cost in COSTS:
-        guard_pass = mixed_eval[cost][PRIMARY] >= MIN_MIXED_GRID
         block = tables[cost][PRIMARY]["macro_minus_continuous"]["gateb"]["delta_mean"]
-        token = block["token"] if (guards_pass and guard_pass) else STOP_TOKEN
         presence = alignment["costs"][cost]["pooled"]["present_total"]
         settle = alignment["costs"][cost]["alignment"]
         combined = None if settle is None else max(settle, abs(presence["mean"]) if presence else 0.0)
-        per_cost[cost] = {"guard_pass": guard_pass, "mixed_grid_cells": mixed_eval[cost][PRIMARY],
-                          "alignment": settle, "alignment_combined": combined, "estimate": block["estimate"],
-                          "token": token}
-    decision = {**disposition(per_cost, guards_pass), "rule_text": DISPOSITION_RULES["absolute"],
-                "sensitivity": {rule: disposition(per_cost, guards_pass, rule) for rule in ("relative", "combined")}}
-
-    def gated(token, cost):
-        return token if guards_pass and per_cost[cost]["guard_pass"] else STOP_TOKEN
-
-    contrasts = {cost: {i: {p: {k: {**b, "token": gated(b["token"], cost)}
-                                for k, b in tables[cost][i]["macro_minus_continuous"][p].items()}
+        per_cost[cost] = {"guard_pass": mixed_eval[cost][PRIMARY] >= MIN_MIXED_GRID,
+                          "mixed_grid_cells": mixed_eval[cost][PRIMARY], "alignment": settle,
+                          "alignment_combined": combined, "estimate": block["estimate"], "token": block["token"]}
+    contrasts = {cost: {i: {p: {k: {**b} for k, b in tables[cost][i]["macro_minus_continuous"][p].items()}
                             for p in PREDICTORS} for i in INVENTORIES} for cost in COSTS}
     arm113 = contrasts[CONTROL][PRIMARY]["ma-ref"]["delta_mean"]
     phases = ledger_phases(output)
@@ -905,7 +927,7 @@ def compute_tables(output, plan):
                                             "cpu_process_seconds": evaluation["cpu_process_seconds"]}}
     score_wall = sum(b["wall_seconds"] for k, b in phases.items() if k.startswith("score-"))
     compute_phases["score"] = {"wall_seconds": score_wall, "gpu_seconds": score_wall, "records": len(records)}
-    return {
+    compute = {
         "schema": SCHEMA_COMPUTE, "identity": IDENTITY, "frozen_at": plan["frozen_at"],
         "definitions": cv.DEFINITIONS,
         "thresholds": {"blocks_destroyed_min": cv.BLOCKS_DESTROYED_MIN, "displacement_min": cv.DISPLACEMENT_MIN,
@@ -917,16 +939,15 @@ def compute_tables(output, plan):
                 "alignment": {c: {"prevalence": fit_alignment["costs"][c]["prevalence"],
                                   "alignment": fit_alignment["costs"][c]["alignment"]} for c in COSTS}},
         "alignment": alignment,
-        "guards": guards, "guards_pass": guards_pass,
+        "guards": guards, "guards_pass": None,
         "mixed_cell_guard": {c: {"mixed_grid_cells": per_cost[c]["mixed_grid_cells"], "minimum": MIN_MIXED_GRID,
                                  "pass": per_cost[c]["guard_pass"]} for c in COSTS},
-        "primary": {c: {k: v for k, v in per_cost[c].items()} for c in COSTS},
-        "disposition": decision,
-        "arm_113": {"predictor": "ma-ref", "cost": CONTROL, "contrast": arm113,
-                    "token": gated(arm113["token"], CONTROL)},
+        "primary": per_cost,
+        "disposition": None,
+        "arm_113": {"predictor": "ma-ref", "cost": CONTROL, "contrast": arm113, "token": arm113["token"]},
         "contrasts": contrasts,
         "inventories": {c: {i: strip_rows(tables[c][i]) for i in INVENTORIES} for c in COSTS},
-        "wrong_anchor": {c: {**wrong[c], "token": gated(wrong[c]["token"], c)} for c in COSTS},
+        "wrong_anchor": {c: {**wrong[c]} for c in COSTS},
         "typed_failures": {task_name(*k): r["typed_failure"] for k, r in records.items() if r["typed_failure"]},
         "compute": {"phases": compute_phases,
                     "gpu_seconds": sum(b["gpu_seconds"] for b in compute_phases.values()),
@@ -934,6 +955,7 @@ def compute_tables(output, plan):
                     "cpu_process_seconds": sum(b.get("cpu_process_seconds", 0.0) for b in compute_phases.values()),
                     "engine_seconds": 0, "hardware": "4 x RTX 5090 (one scoring process per GPU); 44 CPU scan workers"},
     }
+    return apply_guards(compute)
 
 
 # ---------------------------------------------------------------------------
@@ -1438,17 +1460,22 @@ def derive(output):
     if (output / "records").exists():
         raise ValueError("records exist before the evaluation verdicts; refusing")
     payload = derive_branches(output, "evaluation")
+    record = verdicts_record(output, payload)
+    write_json(output / "verdicts.json", record)
+    log(f"evaluation verdicts derived: mixed cells {record['mixed_cells']}")
+    return 0
+
+
+def verdicts_record(output, payload):
+    """verdicts.json from the evaluation branch file (hashed in records-manifest.json); --validate regenerates it."""
     verdicts = verdict_table(payload)
     counts = mixed_counts(evaluation_items(), verdicts)
-    write_json(output / "verdicts.json", {
-        "schema": SCHEMA_VERDICTS, "identity": IDENTITY, "derived_at": payload["derived_at"],
-        "branches": len(verdicts), "sha256": sha256_of(branches_path(output, "evaluation")),
-        "prevalence": {c: sum(v[c] for v in verdicts.values()) / len(verdicts) for c in COSTS},
-        "mixed_cells": counts,
-        "mixed_cell_guard": {c: counts[c][PRIMARY] >= MIN_MIXED_GRID for c in COSTS},
-        "wall_seconds": payload["wall_seconds"], "cpu_process_seconds": payload["cpu_process_seconds"]})
-    log(f"evaluation verdicts derived: mixed cells {counts}")
-    return 0
+    return {"schema": SCHEMA_VERDICTS, "identity": IDENTITY, "derived_at": payload["derived_at"],
+            "branches": len(verdicts), "sha256": sha256_of(branches_path(output, "evaluation")),
+            "prevalence": {c: sum(v[c] for v in verdicts.values()) / len(verdicts) for c in COSTS},
+            "mixed_cells": counts,
+            "mixed_cell_guard": {c: counts[c][PRIMARY] >= MIN_MIXED_GRID for c in COSTS},
+            "wall_seconds": payload["wall_seconds"], "cpu_process_seconds": payload["cpu_process_seconds"]}
 
 
 # ---------------------------------------------------------------------------
@@ -1496,10 +1523,14 @@ def validate(output):
     for name, text in rendered(output, plan, compute).items():
         if (output / name).read_bytes() != text.encode():
             raise ValueError(f"published {name} differs from the recomputation")
+    if (output / "verdicts.json").read_bytes() != json_text(
+            verdicts_record(output, load_branches(output, "evaluation"))).encode():
+        raise ValueError("verdicts.json differs from its re-derivation from the evaluation branch file")
     spot = spot_checks(output, load_records(output))
     if not spot["pass"]:
         raise ValueError(f"spot checks failed: {spot}")
-    log(f"validation passed ({time.monotonic() - began:.0f}s): tables re-derived and byte-compared; {spot}")
+    log(f"validation passed ({time.monotonic() - began:.0f}s): tables and verdicts.json re-derived and byte-compared; "
+        f"{spot}")
     return 0
 
 

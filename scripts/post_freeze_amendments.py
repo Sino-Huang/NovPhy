@@ -77,6 +77,12 @@ AMENDMENTS = {
         "sha256": "sha256:def0276923fa014543686f9aeeb6ddec9a1c313e701e6aa2c81bd67784bbaedc",
         "change": ("compute_tables re-verifies the per-shot sha256 values and shot order embedded in windows-225.pt "
                    "against the #101 pool shots and refuses on any difference; publication unchanged")},
+    "scripts/run_cost_alignment.py": {
+        "issue": 120, "replaces": ("sha256:ac8613a8b4d7c450e4c1d431d07b805d103ca91aef1bdad1f54f8f5750a5a520",),
+        "sha256": "sha256:396704c7567bfc495d1f43d8b22f26d7e3996afb16d981bd135f3ca56e20a70d",
+        "change": ("apply_guards gates every token of the assembled publication, the inventories view included (global "
+                   "guards and each cost's mixed-cell guard); --validate regenerates verdicts.json from the evaluation "
+                   "branch file; publication unchanged")},
 }
 
 

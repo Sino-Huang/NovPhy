@@ -253,3 +253,65 @@ def test_disposition_sensitivity_rules_compare_with_the_control():
     assert relative["token"] == STOP and relative["least_aligned"] is None
     combined = ca.disposition(base, True, "combined")
     assert combined["least_aligned"] == "c" and combined["token"] == SUP
+
+
+# --- guard propagation on the published compute.json (phase-B/C review) -------------------------------------
+
+TOKENS = {"supported", "not_supported_by_this_experiment", "readiness_or_precision_insufficient", "unsupported"}
+
+
+def token_values(obj):
+    if isinstance(obj, dict):
+        return [t for v in obj.values() for t in token_values(v)]
+    if isinstance(obj, list):
+        return [t for v in obj for t in token_values(v)]
+    return [obj] if isinstance(obj, str) and obj in TOKENS else []
+
+
+def published():
+    if not (ca.OUTPUT / "compute.json").is_file():
+        pytest.skip("issue-120 publication not present")
+    return json.loads((ca.OUTPUT / "compute.json").read_text())
+
+
+def cost_views(compute, cost):
+    return [compute["primary"][cost], compute["contrasts"][cost], compute["inventories"][cost],
+            compute["wrong_anchor"][cost]] + ([compute["arm_113"]] if cost == ca.CONTROL else [])
+
+
+def test_apply_guards_reproduces_the_publication():
+    import copy
+    compute = published()
+    assert ca.apply_guards(copy.deepcopy(compute)) == compute
+    assert "supported" in token_values(compute["inventories"])
+
+
+def test_a_failed_global_guard_stops_every_token_incl_the_inventory_views():
+    import copy
+    compute = published()
+    plan = json.loads((ca.OUTPUT / "plan.json").read_text())
+    for guard in compute["guards"]:
+        failed = copy.deepcopy(compute)
+        failed["guards"][guard]["pass"] = False
+        ca.apply_guards(failed)
+        assert failed["guards_pass"] is False
+        tokens = token_values(failed) + token_values(ca.summary(plan, failed))
+        assert tokens and set(tokens) == {ca.STOP_TOKEN}, guard
+        assert failed["primary"]["a"]["estimate"] == compute["primary"]["a"]["estimate"]
+
+
+def test_a_cost_below_the_mixed_cell_guard_stops_every_token_of_that_cost():
+    import copy
+    compute = published()
+    for cost in ca.COSTS:
+        failed = copy.deepcopy(compute)
+        failed["mixed_cell_guard"][cost]["pass"] = False
+        ca.apply_guards(failed)
+        assert set(token_values(cost_views(failed, cost))) == {ca.STOP_TOKEN}, cost
+        for other in ca.COSTS:
+            if other != cost:
+                assert token_values(cost_views(failed, other)) == token_values(cost_views(compute, other))
+        assert failed["disposition"] == {**ca.disposition(failed["primary"], True),
+                                         "rule_text": ca.DISPOSITION_RULES["absolute"],
+                                         "sensitivity": {r: ca.disposition(failed["primary"], True, r)
+                                                         for r in ("relative", "combined")}}
