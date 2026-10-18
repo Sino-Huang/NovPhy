@@ -1,0 +1,185 @@
+{
+  "claim_boundary": "decision-only rollouts of the frozen ICLR #77 N1 checkpoints and controllers from the #105 F77 anchors of the sealed #109 evaluation levels to endpoint 225 on the Gate-B mixed cells; inventories never pooled; every interval DESCRIPTIVE; zero engine seconds; no training",
+  "compute": {
+    "elapsed_wall_seconds": 1344.0,
+    "engine_seconds": 0,
+    "process_wall_seconds": 3969.6776358149946,
+    "run_gpu_seconds": 3801.7045359690674
+  },
+  "costs": {
+    "count": {
+      "failed_guards": [
+        "G4",
+        "G6"
+      ],
+      "g6_per_inventory": {
+        "angle": {
+          "half_width": 0.03624384874384874,
+          "levels_for_threshold_by_sqrt_scaling": 257,
+          "mixed_levels": 78,
+          "pass": false,
+          "pass_96_literal": true,
+          "pass_design_delta": true
+        },
+        "grid": {
+          "half_width": 0.021133949673941624,
+          "levels_for_threshold_by_sqrt_scaling": 348,
+          "mixed_levels": 311,
+          "pass": false,
+          "pass_96_literal": true,
+          "pass_design_delta": false
+        },
+        "offset": {
+          "half_width": 0.039839181286549695,
+          "levels_for_threshold_by_sqrt_scaling": 302,
+          "mixed_levels": 76,
+          "pass": false,
+          "pass_96_literal": true,
+          "pass_design_delta": true
+        },
+        "power": {
+          "half_width": 0.05032758647505288,
+          "levels_for_threshold_by_sqrt_scaling": 298,
+          "mixed_levels": 47,
+          "pass": false,
+          "pass_96_literal": false,
+          "pass_design_delta": false
+        }
+      },
+      "guards_pass": false,
+      "max_half_width_per_inventory": {
+        "angle": 0.03624384874384874,
+        "grid": 0.021133949673941624,
+        "offset": 0.039839181286549695,
+        "power": 0.05101704097714736
+      },
+      "primary": {
+        "F_star": "F-5-macro",
+        "estimate": {
+          "clusters": 311,
+          "half_width": 0.021133949673941624,
+          "interval": [
+            0.0684743790953598,
+            0.11074227844324305
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0893010258765886,
+          "units": 933
+        },
+        "reading_at_96_literal_bound": "readiness_or_precision_insufficient",
+        "token": "readiness_or_precision_insufficient"
+      },
+      "replication": "0/3",
+      "role": "secondary",
+      "secondary_readings_by_96_secondary_rule": {
+        "J-M": "readiness_or_precision_insufficient",
+        "J-OL": "readiness_or_precision_insufficient"
+      },
+      "secondary_tokens": {
+        "J-M": "readiness_or_precision_insufficient",
+        "J-OL": "readiness_or_precision_insufficient"
+      }
+    },
+    "tie_free": {
+      "failed_guards": [
+        "G6"
+      ],
+      "g6_per_inventory": {
+        "angle": {
+          "half_width": 0.04658888565138564,
+          "levels_for_threshold_by_sqrt_scaling": 424,
+          "mixed_levels": 78,
+          "pass": false,
+          "pass_96_literal": true,
+          "pass_design_delta": true
+        },
+        "grid": {
+          "half_width": 0.029724644103663385,
+          "levels_for_threshold_by_sqrt_scaling": 687,
+          "mixed_levels": 311,
+          "pass": false,
+          "pass_96_literal": true,
+          "pass_design_delta": false
+        },
+        "offset": {
+          "half_width": 0.06315972222222219,
+          "levels_for_threshold_by_sqrt_scaling": 758,
+          "mixed_levels": 76,
+          "pass": false,
+          "pass_96_literal": false,
+          "pass_design_delta": false
+        },
+        "power": {
+          "half_width": 0.07197661337149017,
+          "levels_for_threshold_by_sqrt_scaling": 609,
+          "mixed_levels": 47,
+          "pass": false,
+          "pass_96_literal": false,
+          "pass_design_delta": false
+        }
+      },
+      "guards_pass": false,
+      "max_half_width_per_inventory": {
+        "angle": 0.04658888565138564,
+        "grid": 0.03050183739090491,
+        "offset": 0.06315972222222219,
+        "power": 0.07197661337149017
+      },
+      "primary": {
+        "F_star": "F-5-macro",
+        "estimate": {
+          "clusters": 311,
+          "half_width": 0.029724644103663385,
+          "interval": [
+            -0.01634833280331673,
+            0.043100955404010044
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.013437491411767945,
+          "units": 933
+        },
+        "reading_at_96_literal_bound": "readiness_or_precision_insufficient",
+        "token": "readiness_or_precision_insufficient"
+      },
+      "replication": "0/3",
+      "role": "primary",
+      "secondary_readings_by_96_secondary_rule": {
+        "J-M": "readiness_or_precision_insufficient",
+        "J-OL": "supported"
+      },
+      "secondary_tokens": {
+        "J-M": "readiness_or_precision_insufficient",
+        "J-OL": "readiness_or_precision_insufficient"
+      }
+    }
+  },
+  "disposition": "readiness_or_precision_insufficient",
+  "frozen_at": "2026-10-18T07:28:19Z",
+  "identity": "issue-104-heldout-contrasts-v1",
+  "issue": 104,
+  "primary_cost": "tie_free",
+  "schema": "issue_104_heldout_contrasts_report_v1",
+  "secondary_101_g6": {
+    "angle": {
+      "contrast": "J-F*",
+      "half_width": 0.02575433825433824,
+      "pass": false
+    },
+    "grid": {
+      "contrast": "J-F*",
+      "half_width": 0.008529886066059695,
+      "pass": true
+    },
+    "offset": {
+      "contrast": "J-F*",
+      "half_width": 0.035307017543859634,
+      "pass": false
+    },
+    "power": {
+      "contrast": "J-F*",
+      "half_width": 0.0071388577827547605,
+      "pass": true
+    }
+  },
+  "validation_command": "python -u -m scripts.run_heldout_96_contrasts --validate"
+}

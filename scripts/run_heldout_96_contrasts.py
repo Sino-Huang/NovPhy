@@ -906,6 +906,9 @@ def cost_guards(per_inventory, shared):
 
 
 def cost_tokens(per_inventory, guards):
+    """Tokens of one cost. Frozen guards.failure rule: any failed guard turns every token of the cost into the stop
+    token. The #96 secondary rule (guards except G6, plus the contrast's own half-width) and the #96 plan's literal
+    G6 bound are kept as DESCRIPTIVE readings beside the tokens, never as tokens."""
     grid = per_inventory[PRIMARY]
     primary = grid["contrasts"]["J-F*"]["estimate"]
     guards_ok = all(g["pass"] for g in guards.values())
@@ -916,10 +919,11 @@ def cost_tokens(per_inventory, guards):
         block = grid["contrasts"][name]["estimate"]
         own = block is not None and block["half_width"] <= G6_HALF_WIDTH
         own_literal = block is not None and block["half_width"] <= HALF_WIDTH_96_LITERAL
-        secondary[name] = {"token": t96.token(block, base_ok and own),
+        secondary[name] = {"token": t96.token(block, guards_ok and own),
                            "own_half_width": None if block is None else block["half_width"],
                            "own_half_width_pass": own,
-                           "token_at_96_literal_bound": t96.token(block, base_ok and own_literal)}
+                           "reading_by_96_secondary_rule": t96.token(block, base_ok and own),
+                           "reading_at_96_literal_bound": t96.token(block, base_ok and own_literal)}
     replication = {}
     for inventory in INVENTORIES:
         if inventory == PRIMARY:
@@ -933,7 +937,7 @@ def cost_tokens(per_inventory, guards):
         "failed_guards": [name for name, g in guards.items() if not g["pass"]],
         "primary": {"estimand": "theta_grid = AUC_J - AUC_F* over mixed grid cells", "F_star": grid["F_star"],
                     "estimate": primary, "delta": DELTA, "token": t96.token(primary, guards_ok),
-                    "token_at_96_literal_bound": t96.token(primary, literal_ok)},
+                    "reading_at_96_literal_bound": t96.token(primary, literal_ok)},
         "secondary_tokens": secondary,
         "replication": {"inventories": replication, "count": sum(r["meets_rule"] for r in replication.values()),
                         "of": len(replication), "interpretable": guards_ok},
@@ -1084,11 +1088,13 @@ def cost_section(compute, cost, lines):
     lines += [f"## {cost} cost ({c['role']})", "",
               f"- primary theta_grid = AUC_J - AUC_F* (F* = {p['F_star']}): **{fmt_interval(p['estimate'])}**, "
               f"half-width {hw(p['estimate'])} -> **{p['token']}** (delta {DELTA}; G6 half-width <= {G6_HALF_WIDTH}; "
-              f"with the #96 plan's literal G6 bound {HALF_WIDTH_96_LITERAL}: {p['token_at_96_literal_bound']})"]
+              f"DESCRIPTIVE reading with the #96 plan's literal G6 bound {HALF_WIDTH_96_LITERAL}: "
+              f"{p['reading_at_96_literal_bound']})"]
     for name, s in c["secondary_tokens"].items():
         lines.append(f"- secondary {name} (grid): {fmt_interval(c['inventories'][PRIMARY]['contrasts'][name]['estimate'])}, "
-                     f"own half-width {fmt(s['own_half_width'])} -> **{s['token']}** "
-                     f"(at the literal bound: {s['token_at_96_literal_bound']})")
+                     f"own half-width {fmt(s['own_half_width'])} -> **{s['token']}** (DESCRIPTIVE readings, not "
+                     f"tokens: by the #96 secondary rule, which skips the primary's G6, "
+                     f"{s['reading_by_96_secondary_rule']}; at the literal bound {s['reading_at_96_literal_bound']})")
     r = c["replication"]
     lines.append(f"- replication of J - F* on offset/angle/power (mean >= delta AND lower > 0, DESCRIPTIVE): "
                  f"{r['count']}/{r['of']}" + ("" if r["interpretable"] else " (not interpretable: a guard failed)"))
@@ -1148,7 +1154,12 @@ def findings_md(plan, compute):
              f"- #96 reference (development, count cost): theta_grid "
              f"{fmt_interval(compute['issue_96_reference']['primary']['estimate'])} over "
              f"{compute['issue_96_reference']['mixed_cells']['grid']} cells, "
-             f"half-width {fmt(compute['issue_96_reference']['primary']['estimate']['half_width'])}", ""]
+             f"half-width {fmt(compute['issue_96_reference']['primary']['estimate']['half_width'])}",
+             "- post-freeze amendment A1 (reporting / guard propagation, after scoring; registered in "
+             "`scripts/post_freeze_amendments.py`): the frozen plan's guard_failure rule ('any failed guard turns "
+             "every token of that cost into the stop token') is applied to the grid secondaries J - M and J - OL too; "
+             "the frozen #96 secondary rule (own half-width in place of G6) and the #96 literal G6 bound are kept as "
+             "DESCRIPTIVE readings beside the tokens; no record, estimate or interval changed", ""]
     for cost in (PRIMARY_COST, SECONDARY_COST):
         cost_section(compute, cost, lines)
     s = compute["secondary_101"]
@@ -1216,8 +1227,10 @@ def summary(plan, compute):
         return {"role": c["role"], "guards_pass": c["guards_pass"], "failed_guards": c["failed_guards"],
                 "primary": {"F_star": c["primary"]["F_star"], "estimate": c["primary"]["estimate"],
                             "token": c["primary"]["token"],
-                            "token_at_96_literal_bound": c["primary"]["token_at_96_literal_bound"]},
+                            "reading_at_96_literal_bound": c["primary"]["reading_at_96_literal_bound"]},
                 "secondary_tokens": {n: s["token"] for n, s in c["secondary_tokens"].items()},
+                "secondary_readings_by_96_secondary_rule": {n: s["reading_by_96_secondary_rule"]
+                                                            for n, s in c["secondary_tokens"].items()},
                 "replication": f"{c['replication']['count']}/{c['replication']['of']}",
                 "g6_per_inventory": {i: {k: c["inventories"][i]["g6"].get(k) for k in
                                          ("half_width", "pass", "pass_96_literal", "pass_design_delta", "mixed_levels",

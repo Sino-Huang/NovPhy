@@ -220,3 +220,160 @@ python -u -m scripts.run_power_cohort_campaign --status
 python -u -m scripts.publish_power_cohort_campaign --publish   # after complete.json / stop.json
 python -u -m scripts.publish_power_cohort_campaign --validate
 ```
+
+## 7. Work item 3: the #96 contrast set on the held-out split (scored once)
+
+| Item | Location |
+| --- | --- |
+| Runner | `scripts/run_heldout_96_contrasts.py` (post-freeze amendment A1, registered in `scripts/post_freeze_amendments.py`) |
+| Artifacts | `.local-artifacts/issue-104-heldout-contrasts-v1/` (`plan.json`, `smoke.json`, `findings.md`, `summary.json`, `compute.json`, `comparisons.csv`, `frequencies.json`, `records-manifest.json`, `ledger/`; the 54 raw records stay local in `records/`, 128 MB, bound by the manifest) |
+| Freeze | Plan frozen 2026-10-18T07:28:19Z (commit 901de655), after a passed smoke and before any evaluation-split score |
+| Validation | `python -u -m scripts.run_heldout_96_contrasts --validate` exits 0. It re-derives the cells, re-scores J seed 20260908 on all 512 cells bit for bit, and regenerates every published file and the record manifest byte for byte. `pytest tests/test_issue_104_heldout_contrasts.py` passes (8 tests). |
+
+### Protocol (frozen; decisions posted on #104 before scoring)
+
+- **Primary reading: the faithful #96 rerun.**
+  - Stack: the ICLR #77 N1 checkpoints (hybrid and continuous; seeds 20260908, 20260909 and 20260910) with their #77 controllers.
+  - Arms: all 18 #96 arms (F × 9, J, M, T, D, OL, C-F-1/5/15, C-J), with the #96 selector and arm specs.
+  - F\* (cross-fit r†), F_hindsight and C-F\* follow the #96 rules.
+  - Rollout to endpoint 225 through `request_policy.rollout_endpoints`, which runs t96's operations in the same order.
+- **Cells.**
+  - The Gate-B cells: the mixed-verdict #109 evaluation levels of this campaign (grid 311, offset 76, angle 78, power 47).
+  - Each cell is scored for every seed (1 536 cells, 419 364 candidate rollouts). Inventories are never pooled.
+- **Anchors.** The #105 F77 store, hash-pinned: the #71 repaired-adapter parse of each level's decision frame, using the Gate-B frame rule.
+- **Outcome-free coordinates.** α_T, Δ_D and the OL weights come from this run's J traces, by the #96 rule. They are pooled per seed over the scheduled cells, which here are the mixed cells only. The values match #96's pattern:
+  - seed 20260908: (continuous, 5);
+  - the other two seeds: (macro, 1).
+- **Cost.** The #111 tie-free cost is primary (pre-declared). The #96 count cost is secondary. Both come from the same endpoints.
+- **Statistics.**
+  - #96 cell AUC (ties count 0.5).
+  - #96 paired contrasts, clustered by level (10 000 draws, PCG64 7201, DESCRIPTIVE).
+  - #96 guards G1–G5 and caps, plus G7 (scoring policy).
+- **G6, as #104 reads it.** The primary (grid J − F\*) half-width must be ≤ δ = 0.02. Also reported:
+  - the #96 plan's literal G6 bound, 0.05;
+  - the #104 design δ (grid 0.02; offset, angle and power 0.05);
+  - for every contrast and inventory, its half-width and m·(half-width/0.02)², the number of levels that 1/√m scaling would need.
+- **Tokens.** Tokens use the #96 rules, and a failed guard turns every token of that cost into `readiness_or_precision_insufficient`.
+
+### Smoke (pre-freeze)
+
+- **Replication on the original #96 cells.** All 3 186 #96 records were re-scored with the faithful path under `deterministic_scoring()`. #96 was scored on the RTX 3090 workstation, and this server is RTX 5090 (`SERVER_SETUP.md` step 4).
+
+  | Agreement with the #96 record | Records (of 3 186) |
+  | --- | --- |
+  | Chosen ordinal | 3 168 |
+  | Full ranking order | 3 066 |
+  | Controller schedules | 3 038 |
+  | Every count cost within 1e-3 | 2 272 |
+  | Bit-exact in every field | 1 048 |
+
+  - Bit-exact reproduction of the count cost happens mainly where the clamped cost saturates.
+  - 16 records reproduce bit-exactly with at least two distinct costs. S1 names `decision--angle--issue-77-n1-001--seed20260910--D`, and the list includes J and M records.
+  - The #96 G1 criterion (chosen ordinal equal, cost within 1e-3) holds on the #96 G1 J and F-15-continuous cells.
+- **Other smoke checks.**
+  - The Gate-B cell counts are reproduced.
+  - The anchor store's scoring policy and frame rule are confirmed, and 8 levels re-parse bit-identically.
+  - In-process re-scoring is bit-identical.
+  - Checkpoint identities match.
+- **Disclosure: the smoke ran twice.** The first run named an all-tied record for S1, so S1 was tightened to require ≥ 2 distinct costs. Both runs happened before the freeze, and both are kept (`smoke-run1-superseded.json`).
+
+### Result (primary, tie-free cost): `readiness_or_precision_insufficient`; G6 fails
+
+**θ_grid = AUC_J − AUC_F\* (F\* = F-5-macro): +0.0134 [−0.0163, +0.0431], half-width 0.0297** over 933 cells and 311 levels. G1–G5, G7 and caps pass, and the tie share is 0. G6 fails (0.0297 > 0.02), so every token of this cost is `readiness_or_precision_insufficient`. With the #96 plan's literal bound (0.05), G6 would pass, but the token would be the same: the interval contains both 0 and δ.
+
+Achieved half-width of J − F\* against the G6 bound:
+
+| inventory | mixed levels (cells) | J − F\* [F\*] | half-width | ≤ 0.02 (G6) | ≤ design δ | levels for 0.02 by 1/√m |
+| --- | --- | --- | --- | --- | --- | --- |
+| grid | 311 (933) | +0.0134 [−0.0163, +0.0431] [F-5-macro] | **0.0297** | no | no (0.02) | ≈ 687 |
+| offset | 76 (228) | +0.0111 [−0.0520, +0.0743] [F-5-continuous] | **0.0632** | no | no (0.05) | ≈ 758 |
+| angle | 78 (234) | −0.1596 [−0.2061, −0.1130] [F-5-macro] | **0.0466** | no | yes (0.05) | ≈ 424 |
+| power | 47 (141) | −0.2617 [−0.3360, −0.1921] [F-5-macro] | **0.0720** | no | no (0.05) | ≈ 609 |
+
+**Achieved-half-width statement.** G6 fails on every inventory. On grid, 311 mixed levels give a half-width of 0.030. That is 2.5 times narrower than #96 (0.075 over 14 members), but 1.5 times wider than δ. The #104 design (293 levels for δ 0.02) assumed the development variance; the held-out between-level variance is larger.
+
+Power (47 < 53 levels) misses even its design δ of 0.05, as the yield table predicted. Offset also misses it (0.063). Angle meets it (0.047).
+
+Every contrast (tie-free; estimate, half-width; the full table with the #104 design counts is in `findings.md`):
+
+| contrast | grid | offset | angle | power |
+| --- | --- | --- | --- | --- |
+| J − F\* | +0.013 [−0.016, +0.043], 0.030 | +0.011 [−0.052, +0.074], 0.063 | −0.160 [−0.206, −0.113], 0.047 | −0.262 [−0.336, −0.192], 0.072 |
+| J − F_hindsight | −0.084 [−0.115, −0.054], 0.031 (F-15-cont) | −0.161 [−0.207, −0.113], 0.047 | −0.160 [−0.206, −0.113], 0.047 | −0.310 [−0.368, −0.255], 0.057 |
+| J − F(1, macro) | +0.034 [+0.012, +0.056], 0.022 | +0.106 [+0.064, +0.150], 0.043 | +0.105 [+0.071, +0.142], 0.036 | +0.130 [+0.067, +0.194], 0.064 |
+| J − F(1, continuous) | +0.027 [+0.008, +0.046], 0.019 | −0.040 [−0.078, −0.001], 0.038 | −0.039 [−0.073, −0.003], 0.035 | −0.103 [−0.174, −0.033], 0.070 |
+| J − M | +0.008 [−0.004, +0.020], 0.012 | −0.061 [−0.093, −0.030], 0.031 | −0.049 [−0.079, −0.019], 0.030 | −0.025 [−0.070, +0.019], 0.044 |
+| J − OL | +0.040 [+0.025, +0.056], 0.016 | +0.004 [−0.033, +0.044], 0.039 | −0.009 [−0.046, +0.031], 0.039 | +0.010 [−0.040, +0.059], 0.049 |
+| J − T | −0.001 [−0.015, +0.013], 0.014 | −0.061 [−0.102, −0.018], 0.042 | −0.060 [−0.094, −0.024], 0.035 | −0.070 [−0.122, −0.023], 0.050 |
+| J − D | +0.058 [+0.037, +0.079], 0.021 | +0.010 [−0.035, +0.056], 0.045 | +0.013 [−0.028, +0.056], 0.042 | +0.063 [+0.012, +0.115], 0.051 |
+| C-J − C-F\* (C-F-5) | −0.049 [−0.060, −0.039], 0.011 | −0.065 [−0.080, −0.048], 0.016 | −0.060 [−0.075, −0.044], 0.016 | −0.172 [−0.195, −0.150], 0.023 |
+
+- **Grid secondaries.**
+  - J − M: +0.008 [−0.004, +0.020].
+  - J − OL: +0.040 [+0.025, +0.056], own half-width 0.016.
+  - Both tokens are `readiness_or_precision_insufficient` because G6 fails.
+  - Under the #96 secondary rule, which applies only the contrast's own half-width, J − OL would read `supported`. This is a DESCRIPTIVE reading, not a token (amendment A1 below).
+- **Replication** of J − F\* on offset, angle and power (mean ≥ δ and lower bound > 0): 0 / 3 (DESCRIPTIVE).
+- **Reading.**
+  - On held-out grid levels the ICLR J ranks near chance: AUC 0.555 [0.539, 0.571]. F\* scores 0.542 and the best fixed request in hindsight (F-15-continuous) 0.639.
+  - J − F\* does not establish a ≥ δ advantage, and J trails F_hindsight by 0.084.
+  - On power, every fixed request at Δ ≥ 5 ranks well (0.72–0.77) and J does not (0.459).
+  - Within-checkpoint adaptivity therefore stays unresolved on this checkpoint. The interval excludes neither 0 nor δ.
+
+### Secondary cost (count, the #96 cost)
+
+θ_grid = +0.0893 [+0.0685, +0.1107], half-width 0.0211. G4 fails, with 395 / 933 grid cells fully tied (share 0.42; #96 had 0.405). G6 fails narrowly (0.0211 > 0.02). Every count-cost token is therefore `readiness_or_precision_insufficient`.
+
+J − F\* half-widths by inventory: grid 0.021, offset 0.040, angle 0.036, power 0.050.
+
+### Secondary reading: the #112 Gate-B predictor's #96-style contrasts (#101, re-tabulated, not re-scored)
+
+Source: #101 `compute.json`. Unit: LC hybrid, E99 Gate-B anchors, tie-free cost. J = `J-pe-1e-04`; J_dec = `J-dec-1e-01`. All #101 guards pass. #101 has no J − F(1, ·), J − T, J − D or C-J − C-F\*.
+
+| contrast | grid | offset | angle | power |
+| --- | --- | --- | --- | --- |
+| J − F\* (F-5-micro) | −0.039 [−0.048, −0.031], 0.0085 | −0.090 [−0.126, −0.055], 0.0353 | −0.079 [−0.106, −0.054], 0.0258 | −0.006 [−0.014, +0.001], 0.0071 |
+| J − F_hindsight | −0.057 [−0.068, −0.046], 0.0110 | as J − F\* | as J − F\* | as J − F\* |
+| J − M | −0.001 [−0.003, +0.002], 0.0025 | +0.039 [+0.015, +0.063], 0.0240 | −0.002 [−0.018, +0.015], 0.0164 | +0.032 [+0.015, +0.050], 0.0178 |
+| J − OL | +0.013 [+0.010, +0.016], 0.0029 | +0.080 [+0.061, +0.098], 0.0186 | +0.050 [+0.034, +0.065], 0.0158 | +0.011 [+0.003, +0.019], 0.0082 |
+| J_dec − F\* | +0.001 [−0.005, +0.008], 0.0065 | −0.152 [−0.176, −0.128], 0.0243 | −0.157 [−0.180, −0.135], 0.0227 | −0.019 [−0.035, −0.006], 0.0145 |
+| J_dec − F_hindsight | −0.016 [−0.020, −0.012], 0.0041 | as J_dec − F\* | as J_dec − F\* | as J_dec − F\* |
+| J_dec − M_dec | +0.001 [−0.001, +0.002], 0.0012 | +0.001 [−0.004, +0.006], 0.0047 | +0.003 [−0.002, +0.009], 0.0055 | +0.000 [−0.001, +0.002], 0.0011 |
+| J_dec − OL_dec | −0.003 [−0.006, +0.000], 0.0033 | −0.023 [−0.032, −0.014], 0.0090 | −0.023 [−0.032, −0.013], 0.0091 | −0.012 [−0.025, −0.003], 0.0110 |
+
+**G6 reading (J − F\*, ≤ 0.02):** grid passes (0.0085), power passes (0.0071), offset fails (0.0353) and angle fails (0.0258). Offset and angle meet their design δ of 0.05. The tokens are #101's own. On this predictor, J − F\* on grid is resolved: J trails F\* (upper bound −0.031 < δ, `not_supported_by_this_experiment`).
+
+### Compute
+
+| Phase | Time |
+| --- | --- |
+| Scoring (phase 1: 45 records on 4 GPUs; phase 2: 9 records) | 3 802 GPU s, 3 970 s process wall, 1 344 s elapsed |
+| Validation | 92 s |
+| Smoke runs | 2 × about 310 s |
+
+- Caps: 6 GPU-h and 6 h.
+- Engine time: 0 s. No training.
+- Hardware: RTX 5090 instead of the #85 RTX 3090.
+- Worker PIDs are in `logs/score-pids.txt` (the first four lines there are launcher PIDs; the correction follows) and in `ledger/`.
+- **Deviation: a co-scheduled job.** The H-JEPA job of #123 (`eval.py` on GPUs 0–2 from 07:37:36Z; `hjepa_train_ckpt.py` on GPU 3 from 07:40:02Z) shared the GPUs with the last 3 minutes of phase-1 worker 0 and with all of phase 2. The owner agent asked first, and the request was granted. This inflates the GPU-second accounting of T, D and OL. Numerics are unaffected: scoring runs under `deterministic_scoring()`, and the `--validate` re-score (run while the job was active) is bit-identical.
+
+### Post-freeze runner amendment (disclosure)
+
+**A1 (reporting and guard propagation, after scoring).**
+- **What the frozen code did.** It gated the grid secondaries J − M and J − OL by the #96 secondary rule: guards other than G6, plus the contrast's own half-width. That published J − OL (tie-free) as `supported` even though G6 had failed. The frozen plan's own guard_failure rule ("any failed guard turns every token of that cost into the stop token") and the round-2 convention say otherwise.
+- **What A1 changes.** A1 applies the guard_failure rule to the secondaries too. The #96 secondary rule and the #96 literal-G6 reading stay as DESCRIPTIVE readings.
+- **What did not change.** No record, estimate or interval changed. The amendment is registered in `scripts/post_freeze_amendments.py` (sha256 7c9a8d28… → 8cf796f0…), and `load_plan` accepts only the frozen or the registered bytes.
+
+### Reproduction (work item 3)
+
+```bash
+python -u -m scripts.run_heldout_96_contrasts --dry-run
+python -u -m scripts.run_heldout_96_contrasts --smoke          # pre-freeze; refuses after plan.json
+python -u -m scripts.run_heldout_96_contrasts --prepare
+CUDA_VISIBLE_DEVICES=k python -u -m scripts.run_heldout_96_contrasts --run --phase 1 --workers 4 --worker k   # k = 0..3, once
+python -u -m scripts.run_heldout_96_contrasts --frequencies
+CUDA_VISIBLE_DEVICES=k python -u -m scripts.run_heldout_96_contrasts --run --phase 2 --workers 4 --worker k   # once
+python -u -m scripts.run_heldout_96_contrasts --publish
+python -u -m scripts.run_heldout_96_contrasts --validate
+python -m pytest -q tests/test_issue_104_heldout_contrasts.py
+```

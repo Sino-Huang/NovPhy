@@ -91,6 +91,14 @@ AMENDMENTS = {
                    "A2 (reporting, phase-B/C review): the second disposition carries its demonstrated claim (trained "
                    "fused vs trained additive parameterization) and the qualification that interaction-specific "
                    "decision value is unidentified; frozen claim, rule, token and numbers unchanged")},
+    "scripts/run_heldout_96_contrasts.py": {
+        "issue": 104, "replaces": ("sha256:7c9a8d2843b9af6232c6f2e6beea71b731436558f8fde8c90ea543542f8d996e",),
+        "sha256": "sha256:8cf796f01cc98f7c61b10e5757181828454ad8990ff7579fa66e745ff775a3a8",
+        "change": ("A1 (reporting / guard propagation, after scoring): the frozen guard_failure rule ('any failed guard "
+                   "turns every token of that cost into the stop token') also gates the grid secondaries J - M and "
+                   "J - OL, which the frozen code had gated by the #96 secondary rule (own half-width in place of G6); "
+                   "that rule and the #96 literal G6 bound stay as DESCRIPTIVE readings; records, estimates and "
+                   "intervals unchanged")},
 }
 
 

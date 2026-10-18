@@ -1,0 +1,101 @@
+{
+  "coordinates": {
+    "20260908": {
+      "alpha_T": "continuous",
+      "alpha_T_index": 0,
+      "alpha_marginal_steps": [
+        393367,
+        6352,
+        111575
+      ],
+      "delta_D": 5,
+      "delta_D_index": 1,
+      "delta_marginal_steps": [
+        211815,
+        295665,
+        3814
+      ]
+    },
+    "20260909": {
+      "alpha_T": "macro",
+      "alpha_T_index": 2,
+      "alpha_marginal_steps": [
+        5293,
+        14950,
+        1471025
+      ],
+      "delta_D": 1,
+      "delta_D_index": 0,
+      "delta_marginal_steps": [
+        1459580,
+        18755,
+        12933
+      ]
+    },
+    "20260910": {
+      "alpha_T": "macro",
+      "alpha_T_index": 2,
+      "alpha_marginal_steps": [
+        34464,
+        296708,
+        1067738
+      ],
+      "delta_D": 1,
+      "delta_D_index": 0,
+      "delta_marginal_steps": [
+        1312240,
+        86494,
+        176
+      ]
+    }
+  },
+  "counts": {
+    "20260908": [
+      203721,
+      6352,
+      1742,
+      189646,
+      0,
+      106019,
+      0,
+      0,
+      3814
+    ],
+    "20260909": [
+      3671,
+      6756,
+      1449153,
+      1475,
+      6863,
+      10417,
+      147,
+      1331,
+      11455
+    ],
+    "20260910": [
+      26708,
+      217869,
+      1067663,
+      7580,
+      78839,
+      75,
+      176,
+      0,
+      0
+    ]
+  },
+  "identity": "issue-104-heldout-contrasts-v1",
+  "pairs": [
+    "1-continuous",
+    "1-micro",
+    "1-macro",
+    "5-continuous",
+    "5-micro",
+    "5-macro",
+    "15-continuous",
+    "15-micro",
+    "15-macro"
+  ],
+  "rule": "J step-pair counts pooled per seed over every scheduled (mixed) cell of all four inventories and every candidate (outcome-free); alpha_T / Delta_D = modal marginal, ties to the lower index",
+  "schema": "issue_104_heldout_contrasts_frequencies_v1"
+}

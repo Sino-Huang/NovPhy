@@ -130,9 +130,40 @@ def test_failed_guard_turns_every_token_into_the_stop_token(synthetic):
         block = compute["costs"][cost]
         assert not block["guards"]["G1"]["pass"] and not block["guards_pass"]
         assert block["primary"]["token"] == h.STOP_TOKEN
-        assert block["primary"]["token_at_96_literal_bound"] == h.STOP_TOKEN
+        assert block["primary"]["reading_at_96_literal_bound"] == h.STOP_TOKEN
         assert all(s["token"] == h.STOP_TOKEN for s in block["secondary_tokens"].values())
+        assert all(s["reading_by_96_secondary_rule"] == h.STOP_TOKEN for s in block["secondary_tokens"].values())
         assert block["replication"]["interpretable"] is False
+
+
+def _block(mean, low, high):
+    return {"estimate": {"mean": mean, "interval": [low, high], "half_width": (high - low) / 2}}
+
+
+def test_a_failed_primary_g6_also_withholds_the_secondary_tokens():
+    grid = {"contrasts": {"J-F*": _block(0.01, -0.02, 0.04), "J-M": _block(0.04, 0.03, 0.05),
+                          "J-OL": _block(0.001, -0.005, 0.007)}, "F_star": "F-5-macro",
+                          "fixed_pair_spread": {"mean": 0.5}}
+    inventories = {inventory: grid for inventory in h.INVENTORIES}
+    guards = {name: {"pass": True} for name in ("G1", "G2", "G3", "G4", "G5", "G7", "caps")}
+    guards["G6"] = {"pass": False}
+    tokens = h.cost_tokens(inventories, guards)
+    assert tokens["primary"]["token"] == h.STOP_TOKEN
+    assert tokens["secondary_tokens"]["J-M"]["token"] == h.STOP_TOKEN
+    assert tokens["secondary_tokens"]["J-M"]["reading_by_96_secondary_rule"] == "supported"
+    assert tokens["secondary_tokens"]["J-OL"]["reading_by_96_secondary_rule"] == "not_supported_by_this_experiment"
+    guards["G6"] = {"pass": True}
+    tokens = h.cost_tokens(inventories, guards)
+    assert tokens["secondary_tokens"]["J-M"]["token"] == "supported"
+    assert tokens["secondary_tokens"]["J-OL"]["token"] == "not_supported_by_this_experiment"
+
+
+def test_runner_amendment_is_registered():
+    from scripts import post_freeze_amendments as pfa
+    entry = pfa.AMENDMENTS[h.RUNNER]
+    assert entry["issue"] == 104
+    assert entry["sha256"] == h.sha256_of(h.ROOT / h.RUNNER)
+    assert h.read_json(h.OUTPUT / "plan.json")["runner_sha256_at_freeze"] in entry["replaces"]
 
 
 def test_ol_schedule_mismatch_refuses(synthetic):
