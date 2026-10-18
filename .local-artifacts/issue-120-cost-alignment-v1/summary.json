@@ -1,0 +1,142 @@
+{
+  "arm_113": {
+    "estimate": {
+      "clusters": 311,
+      "interval": [
+        0.01794064010301952,
+        0.026043149568069173
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.02190656788727528,
+      "units": 933
+    },
+    "token": "supported"
+  },
+  "compute": {
+    "cpu_process_seconds": 23466.137158659752,
+    "engine_seconds": 0,
+    "gpu_seconds": 3541.011900956044,
+    "wall_seconds": 4166.953719563084
+  },
+  "disposition": {
+    "control_token": "not_supported_by_this_experiment",
+    "least_aligned": "c",
+    "least_aligned_token": "not_supported_by_this_experiment",
+    "reason": "no macro advantage under the control cost to persist (upper < delta)",
+    "rule": "absolute",
+    "rule_text": "primary: a cost is not aligned iff its alignment (|r| with the settle flag at the endpoint) is below 0.1; c* = the least-aligned such cost in {b, c, d} that passes the mixed-cell guard",
+    "sensitivity": {
+      "combined": {
+        "control_token": "not_supported_by_this_experiment",
+        "least_aligned": "c",
+        "least_aligned_token": "not_supported_by_this_experiment",
+        "reason": "no macro advantage under the control cost to persist (upper < delta)",
+        "rule": "combined",
+        "token": "not_supported_by_this_experiment"
+      },
+      "relative": {
+        "control_token": "not_supported_by_this_experiment",
+        "least_aligned": "c",
+        "least_aligned_token": "not_supported_by_this_experiment",
+        "reason": "no macro advantage under the control cost to persist (upper < delta)",
+        "rule": "relative",
+        "token": "not_supported_by_this_experiment"
+      }
+    },
+    "token": "not_supported_by_this_experiment"
+  },
+  "frozen_at": "2026-10-18T01:13:30Z",
+  "guards_pass": true,
+  "identity": "issue-120-cost-alignment-v1",
+  "issue": 120,
+  "mixed_cells": {
+    "a": {
+      "angle": 78,
+      "grid": 311,
+      "offset": 76,
+      "power": 47
+    },
+    "b": {
+      "angle": 85,
+      "grid": 280,
+      "offset": 83,
+      "power": 90
+    },
+    "c": {
+      "angle": 109,
+      "grid": 374,
+      "offset": 103,
+      "power": 103
+    },
+    "d": {
+      "angle": 117,
+      "grid": 389,
+      "offset": 113,
+      "power": 105
+    }
+  },
+  "primary": {
+    "a": {
+      "alignment": 0.09314724605701492,
+      "macro_minus_continuous": {
+        "clusters": 311,
+        "interval": [
+          -0.019186218390398455,
+          -0.004146696164381052
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.011638968391379966,
+        "units": 933
+      },
+      "mixed_grid_cells": 311,
+      "token": "not_supported_by_this_experiment"
+    },
+    "b": {
+      "alignment": 0.11192909090185267,
+      "macro_minus_continuous": {
+        "clusters": 280,
+        "interval": [
+          -0.029428252413371457,
+          -0.017729171453408805
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.023609657813526856,
+        "units": 840
+      },
+      "mixed_grid_cells": 280,
+      "token": "not_supported_by_this_experiment"
+    },
+    "c": {
+      "alignment": 0.055101378903083614,
+      "macro_minus_continuous": {
+        "clusters": 374,
+        "interval": [
+          -0.048077459084867734,
+          -0.025039510346370305
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.036463667649607935,
+        "units": 1122
+      },
+      "mixed_grid_cells": 374,
+      "token": "not_supported_by_this_experiment"
+    },
+    "d": {
+      "alignment": 0.10939849689877855,
+      "macro_minus_continuous": {
+        "clusters": 389,
+        "interval": [
+          -0.09147899271774591,
+          -0.06498788155158657
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.078422590711044,
+        "units": 1167
+      },
+      "mixed_grid_cells": 389,
+      "token": "not_supported_by_this_experiment"
+    }
+  },
+  "schema": "issue_120_report_v1",
+  "validation_command": "python -u -m scripts.run_cost_alignment --validate"
+}
