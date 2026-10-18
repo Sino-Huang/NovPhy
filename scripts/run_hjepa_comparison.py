@@ -3,7 +3,32 @@
 Binding runner module: scripts/run_hjepa_comparison.py
 Exact validation command: python -u -m scripts.run_hjepa_comparison --validate
 
-(Work in progress before the freeze; the docstring is completed with the protocol at the freeze.)
+#123 asks whether H-JEPA (Zhang et al., arXiv 2610.06805; official code kevinghst/H-JEPA @ 97054ec, vendored with
+per-file hashes in world_model/hjepa/vendor/), reproduced on NovPhy, ranks the Gate-B grid candidates of the sealed
+#109 evaluation split better or worse than the Gate-B unit U (LC : F-15-macro, hybrid, E99). This runner
+
+1. builds the fit / policy data only (--data-pixels / --assemble-pixels / --mirror-pixels: 320 x 240 agent frames,
+   zstd shards; --fit-carriers: the #112 retrain shot cache; --policy-data: E99 policy carriers and anchors;
+   --data-labels: engine slot labels at every 15th fit position); the evaluation stream is never read before the
+   freeze (stream_rows refuses it);
+2. --gport: the vendored modules plus this port's loader / optimizer / scheduler reproduce the official code's forward
+   pass and one optimizer step (scripts/hjepa_port_reference.py in the hjepa env);
+3. --selection / --selection-readouts: the one pre-declared selection per input type (SIGReg lambda in {0.09, 0.18},
+   HJ-px and HJ-car-m at B1, seed 20260908, policy-split pooled grid AUC under R1; ties at 4 d.p. -> 0.09);
+4. --smoke: data accounting, G-port, tests, throughput, the projection against 260 GPU-h / 72 h (STOP RULE) and the
+   lambda choice; --prepare freezes plan.json (every input hash, data manifest, arms, budgets, queues, readouts,
+   scoring, contrasts, guards, dispositions) before any main-arm training or evaluation read;
+5. --train (per GPU queue) and --bench-train (CLEVRER / Physion, EXPLORATORY); --readouts fits R1 / R2 / R3 / R4 /
+   P_c and the collapse / action / readout-ceiling diagnostics on fit (policy) data; --freeze-readouts hashes every
+   model and readout before any evaluation anchor is encoded;
+6. --score, once, in a process that did not train, under deterministic_scoring(): every arm-seed on the Gate-B mixed
+   cells of every inventory, the S10 wrong-anchor control, the position error and the U / C* position curves;
+   --bench-score the exploratory benchmark rollouts;
+7. --publish: records-manifest.json, compute.json, summary.json, findings.md (guards, tokens by the delta rule,
+   dispositions); --validate re-checks every hash, re-derives every table byte for byte and re-scores one record.
+
+G-fid (FourRoom Tier E / Tier T) runs in scripts/run_hjepa_fidelity.py and gates every H-JEPA token at publication.
+Every interval is a member-clustered percentile bootstrap (10000 draws, PCG64 7201), DESCRIPTIVE. Engine seconds 0.
 """
 from __future__ import annotations
 

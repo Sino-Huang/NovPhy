@@ -1,0 +1,2547 @@
+{
+  "arms": {
+    "HJ-car-m": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "carriers",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 1855172,
+      "projected_gpu_hours_per_seed": 0.08705667860340327,
+      "role": "primary, controlled",
+      "sampler": "mixture",
+      "size": "matched",
+      "steps": 9000,
+      "valid_clips": 3277954
+    },
+    "HJ-car-m-fs5": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 5
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 3,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 544,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 3,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 544,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 2,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "carriers",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H2fs5",
+      "parameters": 1835440,
+      "projected_gpu_hours_per_seed": 0.05289052991429344,
+      "role": "ablation: 2 levels, level-1 frameskip 5 (no Delta-1 level)",
+      "sampler": "mixture",
+      "size": "matched-fs5",
+      "steps": 9000,
+      "valid_clips": 3222278
+    },
+    "HJ-car-m-persist": {
+      "action": "persist",
+      "batch": 64,
+      "budget": "B1",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "carriers",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 1855172,
+      "projected_gpu_hours_per_seed": 0.0768504073494114,
+      "role": "ablation: launch at every step",
+      "sampler": "mixture",
+      "size": "matched",
+      "steps": 9000,
+      "valid_clips": 3277954
+    },
+    "HJ-car-m-uniform": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 448,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "carriers",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 1855172,
+      "projected_gpu_hours_per_seed": 0.0750566172064282,
+      "role": "ablation: H-JEPA's uniform sampler",
+      "sampler": "uniform",
+      "size": "matched",
+      "steps": 9000,
+      "valid_clips": 3277954
+    },
+    "HJ-car-native": {
+      "action": "sparse",
+      "batch": 128,
+      "budget": "B3",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 2048,
+            "input_dim": 236,
+            "output_dim": 192,
+            "projector": {
+              "type": "mlp"
+            },
+            "type": "mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 4,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 8,
+            "hidden_dim": 192,
+            "mlp_dim": 1024,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "carriers",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 30538900,
+      "projected_gpu_hours_per_seed": 2.4148862455030513,
+      "role": "native architecture on our input",
+      "sampler": "mixture",
+      "size": "native",
+      "steps": 128045,
+      "valid_clips": 3277954
+    },
+    "HJ-px": {
+      "action": "sparse",
+      "batch": 128,
+      "budget": "B3",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "projector": {
+              "type": "mlp"
+            },
+            "scale": "tiny",
+            "type": "vit"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 4,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 8,
+            "hidden_dim": 192,
+            "mlp_dim": 1024,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "pixels",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 35219796,
+      "projected_gpu_hours_per_seed": 15.70538975745763,
+      "role": "primary, faithful",
+      "sampler": "mixture",
+      "size": "paper",
+      "steps": 128045,
+      "valid_clips": 3277954
+    },
+    "HJ-px-B1": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "projector": {
+              "type": "mlp"
+            },
+            "scale": "tiny",
+            "type": "vit"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 4,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 8,
+            "hidden_dim": 192,
+            "mlp_dim": 1024,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "pixels",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 35219796,
+      "projected_gpu_hours_per_seed": 0.6039700063411146,
+      "role": "budget-matched faithful",
+      "sampler": "mixture",
+      "size": "paper",
+      "steps": 9000,
+      "valid_clips": 3277954
+    },
+    "HWM-car-m": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 512,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "input_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "identity"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": false,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 512,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "input_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "identity"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": false,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 512,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "carriers",
+      "kind": "hwm",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 1840100,
+      "projected_gpu_hours_per_seed": 0.08784811361692846,
+      "role": "representational lever (carriers)",
+      "sampler": "mixture",
+      "size": "matched-hwm",
+      "steps": 9000,
+      "valid_clips": 3277954
+    },
+    "HWM-px": {
+      "action": "sparse",
+      "batch": 128,
+      "budget": "B3",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "projector": {
+              "type": "mlp"
+            },
+            "scale": "tiny",
+            "type": "vit"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 4,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 8,
+            "hidden_dim": 192,
+            "mlp_dim": 1024,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "input_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "identity"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": false,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "encoder": {
+            "input_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "identity"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": false,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "pixels",
+      "kind": "hwm",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameters": 34922964,
+      "projected_gpu_hours_per_seed": 14.594279132154124,
+      "role": "representational lever (pixels)",
+      "sampler": "mixture",
+      "size": "paper",
+      "steps": 128045,
+      "valid_clips": 3277954
+    },
+    "LeWM-car-m": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 7,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 480,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 1,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "carriers",
+      "kind": "lewm",
+      "lambda": 0.18,
+      "layout": "L1",
+      "parameters": 1834220,
+      "projected_gpu_hours_per_seed": 0.07143866241676733,
+      "role": "temporal lever (carriers)",
+      "sampler": "mixture",
+      "size": "matched-lewm",
+      "steps": 9000,
+      "valid_clips": 3862552
+    },
+    "LeWM-px": {
+      "action": "sparse",
+      "batch": 128,
+      "budget": "B3",
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "projector": {
+              "type": "mlp"
+            },
+            "scale": "tiny",
+            "type": "vit"
+          },
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 4,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 8,
+            "hidden_dim": 192,
+            "mlp_dim": 1024,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 1,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "input": "pixels",
+      "kind": "lewm",
+      "lambda": 0.18,
+      "layout": "L1",
+      "parameters": 11350204,
+      "projected_gpu_hours_per_seed": 6.664113372626404,
+      "role": "temporal lever (pixels)",
+      "sampler": "mixture",
+      "size": "paper",
+      "steps": 150880,
+      "valid_clips": 3862552
+    }
+  },
+  "benchmarks": {
+    "arms": [
+      "HJ-bench (H3, matched carriers, uniform sampler, null action)",
+      "LeWM-bench"
+    ],
+    "budget": "B1",
+    "data": "#79 CLEVRER / #84 Physion-Dominoes annotation carriers, 12 scenes each, fold all",
+    "metric": "#79 field_errors position_mse at t in (15, 30, 60, 120) from contexts 0-3 through an R1 probe; next to #117 item-5 J (LC, full) rows",
+    "status": "EXPLORATORY, no ranking (no candidate actions)"
+  },
+  "caps": {
+    "gpu_hours": 260.0,
+    "stop": "over the cap: stop and report",
+    "wall_hours": 72.0
+  },
+  "conditional": {
+    "U-B3": "trigger: disposition 5; our LC recipe at the B3 update count (steps x batch), 3 seeds",
+    "closed_loop": "trigger: PC1 or PC2 supported for H-JEPA; GD planner live in the #104 player (#102 machinery); own engine-hour projection reported before launch"
+  },
+  "contrasts": {
+    "PC1": {
+      "first": "HJ-px",
+      "second": "U"
+    },
+    "PC2": {
+      "first": "HJ-car-m",
+      "second": "U"
+    },
+    "S11_carriers_J": {
+      "first": "HJ-car-m",
+      "second": "J"
+    },
+    "S11_carriers_J_dec": {
+      "first": "HJ-car-m",
+      "second": "J_dec"
+    },
+    "S11_pixels_J": {
+      "first": "HJ-px",
+      "second": "J"
+    },
+    "S11_pixels_J_dec": {
+      "first": "HJ-px",
+      "second": "J_dec"
+    },
+    "S1_pixels": {
+      "first": "HJ-px",
+      "second": "LeWM-px"
+    },
+    "S2_carriers": {
+      "first": "HJ-car-m",
+      "second": "LeWM-car-m"
+    },
+    "S3_pixels": {
+      "first": "HJ-px",
+      "second": "HWM-px"
+    },
+    "S4_carriers": {
+      "first": "HJ-car-m",
+      "second": "HWM-car-m"
+    },
+    "S5_carriers": {
+      "first": "HJ-car-m",
+      "second": "C*"
+    },
+    "S5_pixels": {
+      "first": "HJ-px",
+      "second": "C*"
+    },
+    "S6_carriers": {
+      "first": "HJ-car-m",
+      "second": "P"
+    },
+    "S6_pixels": {
+      "first": "HJ-px",
+      "second": "P"
+    },
+    "S7": {
+      "first": "HJ-px-B1",
+      "second": "U"
+    },
+    "S8": {
+      "first": "HJ-car-native",
+      "second": "U"
+    },
+    "S9_PC1_R2": {
+      "first": "HJ-px:R2",
+      "second": "U"
+    },
+    "S9_PC2_R2": {
+      "first": "HJ-car-m:R2",
+      "second": "U"
+    }
+  },
+  "data_manifest": [
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/index.npz",
+      "bytes": 60682311,
+      "sha256": "sha256:335644909ce4f116a85f1ef637385931172524595d70072576e4c6b380baffcc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/MANIFEST.json",
+      "bytes": 2710,
+      "sha256": "sha256:4f6c1789e8b6d9069b9742222267d48948e5145417bad29a4c7829b30badb5e5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/index.npz",
+      "bytes": 1598393,
+      "sha256": "sha256:c4804d354996c127a71d8a63a00068a795089617b93a11c351ac3067c0df117f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/MANIFEST.json",
+      "bytes": 375,
+      "sha256": "sha256:411594dd5f7465738fa0761f0e1846573891736ddbea314d4f331c8336103f82"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-00.jsonl",
+      "bytes": 5151848,
+      "sha256": "sha256:34f03197af457d7533d24a79378e038c7e591dcbc8bfa1b78a37d89681d9439f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-01.jsonl",
+      "bytes": 5196432,
+      "sha256": "sha256:7aca28c7d421993468994b83534ef2d57cd10c7d27925d42e6f6d1129c8a7113"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-02.jsonl",
+      "bytes": 5171726,
+      "sha256": "sha256:3bbe4f993cadbccedd4d11ec380c4a7c20d69ff06cae220183618d39df9f4560"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-03.jsonl",
+      "bytes": 5137299,
+      "sha256": "sha256:6fb22448b1dc7217255ac803c733d9d47d2f8ac6ebad0dc95d3f894d2d16c018"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-04.jsonl",
+      "bytes": 5172562,
+      "sha256": "sha256:d952082332dd2e72c704ea8245d9ecea07e9b0e4ca4a4869f0c8cdc069cb5746"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-05.jsonl",
+      "bytes": 5149146,
+      "sha256": "sha256:c7b4a79903b580c65b226c6abc485aa772777a4f6b477e692382bb164c8bc8ee"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-06.jsonl",
+      "bytes": 5136805,
+      "sha256": "sha256:fa8c80ecdf6bac2474a305563fd085f824187fadf585d87deab89672d5eb154a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-07.jsonl",
+      "bytes": 5138486,
+      "sha256": "sha256:dc3b2476812eada174cfaef61538dfef0100eacd40f2e0c99bce70c90a972bf0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-08.jsonl",
+      "bytes": 5163830,
+      "sha256": "sha256:05af8f78a212cffedb82db759f808cc2d7e40566f57c0be5dd2eba9381dbf133"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-09.jsonl",
+      "bytes": 5146621,
+      "sha256": "sha256:3c316b0c654db9c5bc00dbfe6d8073e42aa9d541d548673624ce193a3ef64e7f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-10.jsonl",
+      "bytes": 5137976,
+      "sha256": "sha256:18da30b8bee2b2847e0bc9799d4a930d4161428de9a5fb93add438bfc67c147a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-11.jsonl",
+      "bytes": 5138125,
+      "sha256": "sha256:e9f7a75b06acb2ea151289d8d094caa4691f33579b07bf66972ca42eacbb4dc5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-12.jsonl",
+      "bytes": 5136160,
+      "sha256": "sha256:619ca3c1a583f85ad5d9a133ef41e79533215df5c19a29d1218b3d0b4197adea"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-13.jsonl",
+      "bytes": 5145415,
+      "sha256": "sha256:a72284a7ce8086c763176358c70e226e86ac5fc87e1148555c86bffb9b2abf64"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-14.jsonl",
+      "bytes": 5138446,
+      "sha256": "sha256:41a8d45b156dc73a709fcbfc71fba071cf373ba38b0c1127534d3783583550f6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-15.jsonl",
+      "bytes": 5147837,
+      "sha256": "sha256:21cc83344e9aa5eed4003a1f5d70ce3ead7cbe6d5166a5b33c8d3d1415d46c0d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-16.jsonl",
+      "bytes": 5139622,
+      "sha256": "sha256:2fd6a2ec6419e3cfc48fb57bf05c5fdff543ca63dce96fef89cc8247a43e2c4a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-17.jsonl",
+      "bytes": 5181694,
+      "sha256": "sha256:cf640100ca8c37ef1f18d2f7260ebdcb4247ba6aac0973dbc97a8072a15b2165"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/shard-00.jsonl",
+      "bytes": 979792,
+      "sha256": "sha256:3ee8361d44bf6a9e19c55c0b97eb28052516805bc80c036a32435867ead818af"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/shard-01.jsonl",
+      "bytes": 980732,
+      "sha256": "sha256:ee50ef0cf3ea8ddceecc09ae07433ee5010af2feceb9aa247cc3d369a19ccea5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/fit-index.npz",
+      "bytes": 4093430,
+      "sha256": "sha256:acee6381ca2cf784d861f4cf9d0ca3801a20bf256c6dcfa42a572cae3ff3e43c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/fit-carriers.bin",
+      "bytes": 3685667696,
+      "sha256": "sha256:7f2c2a7026db91aeea39f9657de9388576189a74c693d4d01e68238db299ecd8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/policy.pt",
+      "bytes": 68233811,
+      "sha256": "sha256:2c4019df2f36b48793b840c82a3394b0f06c6f81a83ff841876514c58260000b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-00.pt",
+      "bytes": 5778037,
+      "sha256": "sha256:d6eebfb8592870e7904a4e9451792d25359249d5806676a6d71a41bd8391fe22"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-01.pt",
+      "bytes": 5784437,
+      "sha256": "sha256:0c3e08ceb99f781a45e6e69b7238ebb8f5dc7b2cbd703b541225751623ee089f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-02.pt",
+      "bytes": 5777141,
+      "sha256": "sha256:2fd6ed6ebb6979cf79811d539abae9290a73e39e17d7b892f9832bea8c1c7861"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-03.pt",
+      "bytes": 5769077,
+      "sha256": "sha256:090a2f113ddfd3235d02852df0ecc1a7933d406d8171d6731510774ecd2f8904"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-04.pt",
+      "bytes": 5778677,
+      "sha256": "sha256:cc18f71a53f4cd86e0f58fa0f774ff6cd12598fca1a586bcbed247c756dbebb8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-05.pt",
+      "bytes": 5758773,
+      "sha256": "sha256:27118c3d0112fabfe8d08e3f5dfd32724b2af314aab3190876b850501e76c8f7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-06.pt",
+      "bytes": 5772853,
+      "sha256": "sha256:5c811d8a575b7cab9fd25170b3476cfed0737ee6d30a7fcbd397eb409041b0f8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-07.pt",
+      "bytes": 5786421,
+      "sha256": "sha256:d7d690bb32a60ebf8176d737e450058bf9307cc479bce6d0a3d28af8e8dc8fcf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-08.pt",
+      "bytes": 5766197,
+      "sha256": "sha256:eb7454ae0711d3797643ff547b9c5b8432a96f09ec31720ed52e57ed8c51dac4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-09.pt",
+      "bytes": 5785961,
+      "sha256": "sha256:78d27f46117bdeb247c8498c66dd8466c494fa0e6bf206883214ef709b1d084c"
+    }
+  ],
+  "disclosures": [
+    "the evaluation split was scored by earlier tickets (#101-#121) for our models; it is pristine for H-JEPA",
+    "H-JEPA's LeWM is its 4-layer re-implementation; HWM is its identity-encoder re-implementation",
+    "anchor-mixture sampler (half of every batch starts at the launch frame) is an adaptation for action-sparse data; the uniform sampler is an ablation",
+    "the level-1 ViT uses activation checkpointing (identical gradients) on 32 GB RTX 5090s",
+    "320 x 240 frames, patch 16; the 20 x 20 ViT position table is bicubic-interpolated to 15 x 20 by the official interpolate_pos_encoding path",
+    "RTX 5090 instead of H200; torch 2.13 (novphy) for the NovPhy arms, 2.7.1 (hjepa env) for the fidelity check"
+  ],
+  "dispositions": {
+    "1": "H-JEPA ranks better than our Gate-B model (scoped) iff PC1 or PC2 is supported in the H-JEPA - U direction, G-fid, G-port and that arm's guards pass, and S10 is supported for that arm; names the arm; triggers the HJ-LC follow-up ticket",
+    "2": "our Gate-B model ranks better than H-JEPA (scoped) iff U - HJ-px and U - HJ-car-m are both supported and G-fid, G-port and every guard of both arms pass; scope: #109 sealed split, Gate-B grid cells, tie-free cost, readout R1, budgets B3 (pixels) / B1 (carriers), layout H3-Delta, Gate-B unit",
+    "3": "otherwise per-contrast tokens only (delta-rule wording)",
+    "4": "S5 and S11 reported next to every primary contrast (C* 0.783 vs U 0.744 at Gate B)",
+    "5": "if PC1 holds only at B3 and S7 does not: 'H-JEPA's advantage requires a larger training budget than ours'; the conditional arm U-B3 runs before any architectural reading"
+  },
+  "engine_seconds": 0,
+  "existing_arms": {
+    "C*": "LC : C-F-15, its published Gate-B records and checkpoints",
+    "J": "ICLR J (J-pe-1e-04), #101 published evaluation records",
+    "J_dec": "#101 J_dec (J-dec-1e-01), #101 published evaluation records",
+    "P": "the no-model action prior (Gate-B rule over the retrain fit-verdicts.json)",
+    "U": "Gate-B unit LC : F-15-macro (hybrid, E99), its published Gate-B records (rows) and checkpoints"
+  },
+  "frozen_at": "2026-10-18T12:24:06Z",
+  "frozen_before_training_and_evaluation": true,
+  "guards": {
+    "G_action": "per arm and seed: endpoint action sensitivity >= 0.05 on the fit anchors (16 grid launches)",
+    "G_chronology": "plan frozen_at <= readouts frozen_at <= anchors encoded_at <= first record scored_at",
+    "G_collapse": "per arm and seed: top-level effective rank >= 0.1 D and within-episode variance share >= 0.05",
+    "G_fid": "fidelity/gfid.json G_fid true (Tier E and Tier T pass)",
+    "G_isolation": "training / readouts read fit (and policy) only; scored branches are evaluation-roster captures; wrong anchors are fit levels",
+    "G_nonfinite": "per arm: <= 10 % nonfinite verdict slots on the grid cells",
+    "G_port": "gport/gport.json pass",
+    "G_readout": "per arm: R1 on the true frame-min(225, last) encodings reaches pooled policy grid AUC >= 0.65",
+    "G_records": "records-manifest.json exists; --validate re-checks it, re-scores >= 1 record and exits 0",
+    "failure": "a failed guard turns every token involving the arm into readiness_or_precision_insufficient",
+    "thresholds": {
+      "action_sensitivity": 0.05,
+      "effective_rank_fraction": 0.1,
+      "nonfinite_share": 0.1,
+      "readout_ceiling_auc": 0.65,
+      "within_episode_share": 0.05
+    }
+  },
+  "identity": "issue-123-hjepa-comparison-v1",
+  "inputs": [
+    {
+      "artifact": "scripts/run_hjepa_comparison.py",
+      "name": "runner",
+      "sha256": "sha256:db7f87ae101bd3ab3c3c23243b05cd814db06b443029fbd1dfacd8e488426177"
+    },
+    {
+      "artifact": "world_model/hjepa/novphy.py",
+      "name": "module",
+      "sha256": "sha256:6a2a6670cf231a3c1f2d9c102f2d26a641deaffd477cc9b11a97d5d7aa1f1173"
+    },
+    {
+      "artifact": "world_model/hjepa/__init__.py",
+      "name": "package_init",
+      "sha256": "sha256:4bd5b3bb5624b27026bd7605ab980ef98c84643d4a7b0a140d26d043c6405676"
+    },
+    {
+      "artifact": "scripts/run_hjepa_fidelity.py",
+      "name": "fidelity_runner",
+      "sha256": "sha256:0e78d456eba8d29f9f36af82b43e9cd689da6e701f354afcb38b067db449a166"
+    },
+    {
+      "artifact": "scripts/hjepa_train_ckpt.py",
+      "name": "tier_t_launcher",
+      "sha256": "sha256:ae6c27b830b8bd4bde08d852de8b27db8d5f7ac5384178984bd730baf0e74543"
+    },
+    {
+      "artifact": "scripts/hjepa_port_reference.py",
+      "name": "port_reference",
+      "sha256": "sha256:7e2db8db18c842e71e7d8b89eb93cadb15322aae246b0b0ad28f869c7e31da84"
+    },
+    {
+      "artifact": "tests/test_issue_123_hjepa_comparison.py",
+      "name": "tests",
+      "sha256": "sha256:d4f22c42e774e7a834a816d0ac6f45018ae0cd084d089ca255685fb00988aa57"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/gport/gport.json",
+      "name": "gport",
+      "sha256": "sha256:3be3bfea2988ce6a59700ac231658d2d3985b1d692972cf48fd3502d577f1650"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:0e0a76eab0d8dac7b10d354973fb66aa7c659f422cea2ee1394a902f8bfefe2f"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_slot_encoder_fix.py",
+      "name": "slot_encoder_fix_runner",
+      "sha256": "sha256:e256d0908c459b403826b07a39fa4bfa7d50692ede7db692b000d322aa422ddf"
+    },
+    {
+      "artifact": "scripts/run_gate_b.py",
+      "name": "gate_b_runner",
+      "sha256": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "retrain_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "retrain_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "power_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/plan.json",
+      "name": "gate_b_plan",
+      "sha256": "sha256:90bd1cce20c40ea825872b6c02d46ae393de45e6e3fa4dcd647f7ef39b2a9659"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/summary.json",
+      "name": "gate_b_summary",
+      "sha256": "sha256:a6cef412e0164cd6565d04884c07d7077f912d9da194a3a888a626cdf62a8539"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+      "name": "gate_b_anchors",
+      "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/plan.json",
+      "name": "issue_101_plan",
+      "sha256": "sha256:9674987323778442cd8537c45e71e64d04c78f5ed43b9d296eb011962e187f08"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/selection.json",
+      "name": "issue_101_selection",
+      "sha256": "sha256:e98e1ffb9214cec34bae79777c2c842efcdd139c3760b831ac1d2caa4b1ae285"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260908.json",
+      "name": "gate_b_record_unit_20260908",
+      "sha256": "sha256:c81ad5cbfdec6f875d1f4396a7cef2e7b7acb8d4b9083b7b7a52aca3f514525a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260909.json",
+      "name": "gate_b_record_unit_20260909",
+      "sha256": "sha256:412dabc64cf9b9b4aad035040fb19d8d2383373b128567b16b3ca0b58e8d5139"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260910.json",
+      "name": "gate_b_record_unit_20260910",
+      "sha256": "sha256:a56d08075232b1112a305f045ff208687fde8cb81b3f39df755809b37e770cfa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260908.json",
+      "name": "gate_b_record_c_star_20260908",
+      "sha256": "sha256:b96d768bb25ef79cde0e3eea27b070401cb555fa1bd6ca7aae3b730d1f0c33cb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260909.json",
+      "name": "gate_b_record_c_star_20260909",
+      "sha256": "sha256:2e003d59b908ad68d34db11189653a90b243c8f089990f31d91291c1cdcdfb9f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260910.json",
+      "name": "gate_b_record_c_star_20260910",
+      "sha256": "sha256:438104bda7b121a3bd69c135fb4951abeca077d97289497d150794917a7c93b3"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260908.json",
+      "name": "issue_101_record_J_20260908",
+      "sha256": "sha256:c05bf14aec2ad0b42b4acb0cb389d192eab60d1d49f94c998339c522cfbd1082"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260909.json",
+      "name": "issue_101_record_J_20260909",
+      "sha256": "sha256:697591eb02a3bcf124359514b8c191973ce4439133389680251ea1d4bc823ea7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260910.json",
+      "name": "issue_101_record_J_20260910",
+      "sha256": "sha256:5360981b6b913f99e927f1f4a597fc8eac6aebbbd9bf9230a103b08477b7f9cc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-dec-1e-01--seed20260908.json",
+      "name": "issue_101_record_J_dec_20260908",
+      "sha256": "sha256:bcfd37aac31031cbaf89fb82dcdbebf0d1517100636a3f29e4990c9b5d3f0855"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-dec-1e-01--seed20260909.json",
+      "name": "issue_101_record_J_dec_20260909",
+      "sha256": "sha256:f9c4f3b966dbeba1e6461ef26200e7db9ed689649f2c65b3129541734b71ad34"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-dec-1e-01--seed20260910.json",
+      "name": "issue_101_record_J_dec_20260910",
+      "sha256": "sha256:fcd2d697c33d3692a3bb39d4e945154d6a3e386402a343aa61d6442eec5f28f7"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/LICENSE",
+      "name": "vendor_LICENSE",
+      "sha256": "sha256:b1e890933507a009808e2ea532383810763d2e1955593561603af027dfcb624c"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/__init__.py",
+      "name": "vendor___init__.py",
+      "sha256": "sha256:c63c014f230d26617aaceafc2d6cff2003dfabc178f1266beb49fc7fa09eede4"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/hjepa_utils.py",
+      "name": "vendor_hjepa_utils.py",
+      "sha256": "sha256:be05e9c80f7884ec464ff52e4f913dc26d852250a5d9ed5691b11bb87639f655"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/loss.py",
+      "name": "vendor_loss.py",
+      "sha256": "sha256:648eb2317727321f53e265f867a35ba47293c73aba40d00339d08f0fea595faf"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/__init__.py",
+      "name": "vendor_models/__init__.py",
+      "sha256": "sha256:32829af0b030eea9d826a9c98f01155a6d90d49444fbbef17777b7d3874714c4"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/encoders/__init__.py",
+      "name": "vendor_models/encoders/__init__.py",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/encoders/build_encoder.py",
+      "name": "vendor_models/encoders/build_encoder.py",
+      "sha256": "sha256:f767a407a55dbe4d4cbd9697326bfdec75afdade8c9ccbf7f1b72c310b024f50"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/encoders/encoders.py",
+      "name": "vendor_models/encoders/encoders.py",
+      "sha256": "sha256:21ebe64d467690e9c734926d9278eca2886903e5c836071b5a65e64a5684ac06"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/encoders/hf_vit.py",
+      "name": "vendor_models/encoders/hf_vit.py",
+      "sha256": "sha256:01750d793516be3c00adc273bb293231fa4e326a4668bd2c7fdaf24fda31e8e2"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/encoders/seq_encoder.py",
+      "name": "vendor_models/encoders/seq_encoder.py",
+      "sha256": "sha256:51156b5e75f4fcbd297681be4eb6b16432725f80925635d363973f415b32b913"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/hjepa.py",
+      "name": "vendor_models/hjepa.py",
+      "sha256": "sha256:3373d2bf1796b20aa184666fa32160fb30bdf9f25b77bb66ad9243d45658f0c5"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/jepa.py",
+      "name": "vendor_models/jepa.py",
+      "sha256": "sha256:311b621a0700310c7bd11702a367938e5e2f337f70d31eb3f57bbebb05864beb"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/module.py",
+      "name": "vendor_models/module.py",
+      "sha256": "sha256:d1ebbacfb16b93ad17ca035ad4d05bab3201f4eeb4e18be653d83497bb980eb2"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/predictors/__init__.py",
+      "name": "vendor_models/predictors/__init__.py",
+      "sha256": "sha256:da4f6d9b191aa5516cb15f37536a53f7d4387d59529cea40483cbf1f76299c3d"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/predictors/predictors.py",
+      "name": "vendor_models/predictors/predictors.py",
+      "sha256": "sha256:fba1dba4ab68b61a764159be5e7a2bb77526ef700aed79fdb54c958a254f7069"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/models/probers.py",
+      "name": "vendor_models/probers.py",
+      "sha256": "sha256:a0c475ad402b76767f71bfac0bbae7905a04224fa250a584eb0a534c5f51f80e"
+    },
+    {
+      "artifact": "world_model/hjepa/vendor/VENDOR.json",
+      "name": "vendor_manifest",
+      "sha256": "sha256:135268857d1d1b54237abbdf790b99e0d33301f2f012f9ad5dd587b06ea906ac"
+    }
+  ],
+  "issue": 123,
+  "question": "does H-JEPA (arXiv 2610.06805, kevinghst/H-JEPA @ 97054ec), reproduced on NovPhy, rank the Gate-B grid candidates of the sealed #109 evaluation split better or worse than the Gate-B unit?",
+  "readouts": {
+    "P_c": "MLP(D->512, LN, GELU->18x3) slot presence (BCE) + engine-projected centres (MSE on present slots)",
+    "R1": "MLP(D->512, LN, GELU->236) frozen top-level encodings of real fit frames -> E99 carriers (primary)",
+    "R2": "same MLP on predicted endpoint latents of every fit shot (level anchor, executed launch) -> carrier at min(225, end)",
+    "R3": "goal latent: mean top-level encoding of true frame min(225, end) of pig-removing fit shots; cost = squared distance",
+    "R4": "R2 + 0.1 x softplus((c_success - c_failure) / 0.1) over 8 random fit mixed cells (grid, angle) per step",
+    "fit_frames": "every 15th position 0..min(last, 285) of every fit shot",
+    "freeze": "readouts-manifest.json (sha256 of every model.pt and readouts.pt) before any evaluation anchor is encoded",
+    "policy": "every readout fit, encode and rollout under deterministic_scoring(); fit split only; policy split only for the selection AUC and the G-readout ceiling",
+    "probe": {
+      "batch": 128,
+      "epochs": 25,
+      "hidden": 512,
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    }
+  },
+  "related_issues": [
+    108,
+    104,
+    109,
+    112,
+    101,
+    117
+  ],
+  "runner": "scripts/run_hjepa_comparison.py",
+  "schema": "issue_123_plan_v1",
+  "scoring": {
+    "anchors": "the Gate-B anchors: carriers = its E99 batch-1 parses (anchors-evaluation.pt); pixels = frame 0 of the same anchor branches (s99.image_tensor), encoded after the readout freeze",
+    "descriptive": [
+      "offset / angle / power AUC",
+      "top-1",
+      "position MSE at t in (15, 30, 60, 150, 225) via P_c with its readout floor (P_c on the true frame encodings)",
+      "R3 / R4 rankers",
+      "CLEVRER / Physion action-free rollout error (exploratory)"
+    ],
+    "endpoint": "top-level rollout of 15 steps of 15 frames (H3 / H2-fs5) or 225 steps (L1) from the level anchor; launch at frame 0, no-ops after (persist: launch every frame)",
+    "metric": "Gate-B pooled grid AUC: 311 mixed grid cells x 3 seeds, tie-free cost of R1 carriers (EndpointCosts.row(R1(z_end), R1(z_0))), m99.view, member-clustered bootstrap 10000 PCG64 7201",
+    "process": "one process that did not train, deterministic_scoring(), once"
+  },
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "selected_lambda": {
+    "carriers": 0.18,
+    "pixels": 0.18
+  },
+  "selection": {
+    "carriers": {
+      "arm": "HJ-car-m",
+      "policy_grid_auc_R1": {
+        "0.09": 0.48003565583352825,
+        "0.18": 0.5053230457485776
+      },
+      "rule": "largest policy-split pooled grid AUC under R1 at B1, seed 20260908; ties (4 d.p.) -> 0.09",
+      "selected_lambda": 0.18
+    },
+    "pixels": {
+      "arm": "HJ-px",
+      "policy_grid_auc_R1": {
+        "0.09": 0.4846923466604318,
+        "0.18": 0.5087074273244486
+      },
+      "rule": "largest policy-split pooled grid AUC under R1 at B1, seed 20260908; ties (4 d.p.) -> 0.09",
+      "selected_lambda": 0.18
+    }
+  },
+  "smoke_evidence": {
+    "accounting": {
+      "fit_label_shots": 13919,
+      "fit_levels": 480,
+      "fit_pixel_frames": 3904309,
+      "fit_pixel_shots_match": true,
+      "fit_positions": 3904309,
+      "fit_shots": 13919,
+      "gate_b_unit_parameters": 1837690,
+      "parameters": {
+        "HJ-car-m": 1855172,
+        "HJ-car-m-fs5": 1835440,
+        "HJ-car-m-persist": 1855172,
+        "HJ-car-m-uniform": 1855172,
+        "HJ-car-native": 30538900,
+        "HJ-px": 35219796,
+        "HJ-px-B1": 35219796,
+        "HWM-car-m": 1840100,
+        "HWM-px": 34922964,
+        "LeWM-car-m": 1834220,
+        "LeWM-px": 11350204
+      },
+      "policy_levels": 120,
+      "policy_shots": 3480,
+      "streams_read": [
+        "issue109-fit",
+        "issue109-policy"
+      ],
+      "valid_clips": {
+        "HJ-car-m": 3277954,
+        "HJ-car-m-fs5": 3222278,
+        "HJ-car-m-persist": 3277954,
+        "HJ-car-m-uniform": 3277954,
+        "HJ-car-native": 3277954,
+        "HJ-px": 3277954,
+        "HJ-px-B1": 3277954,
+        "HWM-car-m": 3277954,
+        "HWM-px": 3277954,
+        "LeWM-car-m": 3862552,
+        "LeWM-px": 3862552
+      }
+    },
+    "at": "2026-10-18T12:23:10Z",
+    "gport": {
+      "arms": {
+        "HJ-car-m": {
+          "embed_max_abs_delta": 3.5762786865234375e-07,
+          "grad_norm_relative_delta": 0.0,
+          "grad_tensor_max_relative_l2": 2.5169510990963317e-06,
+          "loss_max_relative_delta": 1.1920928955078125e-07,
+          "param_close_share": 0.9999983906745911,
+          "param_max_abs_delta": 3.5762786865234375e-07,
+          "pass": true
+        },
+        "HJ-car-m-fs5": {
+          "embed_max_abs_delta": 3.5762786865234375e-07,
+          "grad_norm_relative_delta": 8.722824150394747e-08,
+          "grad_tensor_max_relative_l2": 3.2359580472984817e-06,
+          "loss_max_relative_delta": 2.1121233344851447e-07,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true
+        },
+        "HJ-px": {
+          "embed_max_abs_delta": 6.32554292678833e-06,
+          "grad_norm_relative_delta": 1.4182943662865757e-07,
+          "grad_tensor_max_relative_l2": 2.9948530936962925e-05,
+          "loss_max_relative_delta": 2.2649765014648438e-06,
+          "param_close_share": 0.9999979734420776,
+          "param_max_abs_delta": 1.7881393432617188e-07,
+          "pass": true
+        },
+        "HWM-px": {
+          "embed_max_abs_delta": 8.299946784973145e-06,
+          "grad_norm_relative_delta": 2.1015690419545684e-07,
+          "grad_tensor_max_relative_l2": 3.8764999771956354e-05,
+          "loss_max_relative_delta": 2.1484452355704813e-06,
+          "param_close_share": 0.9999950528144836,
+          "param_max_abs_delta": 4.76837158203125e-07,
+          "pass": true
+        },
+        "LeWM-px": {
+          "embed_max_abs_delta": 6.67572021484375e-06,
+          "grad_norm_relative_delta": 1.082077645347104e-07,
+          "grad_tensor_max_relative_l2": 3.1203438993543386e-05,
+          "loss_max_relative_delta": 2.9200017482333046e-06,
+          "param_close_share": 0.9999948740005493,
+          "param_max_abs_delta": 2.384185791015625e-07,
+          "pass": true
+        }
+      },
+      "pass": true,
+      "tolerance": {
+        "embed_max_abs": 0.0001,
+        "grad_floor_of_global_norm": 1e-06,
+        "grad_norm_relative": 0.0001,
+        "grad_tensor_relative_l2": 0.001,
+        "loss_relative": 0.0001,
+        "lr_abs": 1e-12,
+        "param_close_abs": 1e-07,
+        "param_close_share": 0.999,
+        "param_max_abs_over_lr": 2.0
+      }
+    },
+    "ok": true,
+    "projection": {
+      "benchmark_gpu_hours": 2.0,
+      "cap_gpu_hours": 260.0,
+      "cap_wall_hours": 72.0,
+      "fidelity": {
+        "gpu_hours": 63.0,
+        "remaining_runs": [
+          "tier-e/hjepa_l3/42",
+          "tier-e/hjepa_l3/43",
+          "tier-e/hjepa_l3/44",
+          "tier-t/lewm/42",
+          "tier-t/lewm/43",
+          "tier-t/lewm/44",
+          "tier-t/hjepa_l2/42",
+          "tier-t/hjepa_l2/43",
+          "tier-t/hjepa_l2/44",
+          "tier-t/hjepa_l3/42",
+          "tier-t/hjepa_l3/43",
+          "tier-t/hjepa_l3/44"
+        ],
+        "rule": "remaining runs at their measured mean GPU time (else 3 h per Tier-E eval, 6 h per Tier-T run)",
+        "spent_gpu_hours": 12.355313668210616,
+        "wall_hours": 15.75
+      },
+      "projected_wall_hours": 49.883318645297415,
+      "readout_gpu_hours": 7.213430320128197,
+      "scoring_gpu_hours": 5.95,
+      "spent_issue123_gpu_hours": 3.451413283343621,
+      "total_gpu_hours": 215.2714958412511,
+      "training_gpu_hours": 121.30133856956868,
+      "training_queue_hours": [
+        30.299668889611752,
+        30.338688927585544,
+        30.342461065265365,
+        30.320519687106007
+      ],
+      "within_cap": true
+    },
+    "tests": {
+      "command": "pytest -q tests/test_issue_123_hjepa_comparison.py",
+      "exit_code": 0,
+      "tail": "13 passed, 4 warnings in 4.27s"
+    }
+  },
+  "token_rule": "supported iff mean >= 0.02 and lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient; primary contrasts in both directions",
+  "training": {
+    "checkpoint_every": 2000,
+    "loader": {
+      "carriers": {
+        "num_workers": 2,
+        "prefetch_factor": 4
+      },
+      "pixels": {
+        "num_workers": 5,
+        "prefetch_factor": 2
+      }
+    },
+    "precision": "bf16-mixed autocast, TF32 on, cudnn.benchmark on (main_hjepa runtime settings)",
+    "queue_projected_hours": [
+      30.299668889611752,
+      30.338688927585544,
+      30.342461065265365,
+      30.320519687106007
+    ],
+    "queues": [
+      [
+        "HJ-px/20260908",
+        "HWM-px/20260910"
+      ],
+      [
+        "HJ-px/20260909",
+        "LeWM-px/20260908",
+        "LeWM-px/20260910",
+        "HJ-px-B1/20260908",
+        "HWM-car-m/20260908",
+        "HWM-car-m/20260909",
+        "HJ-car-m/20260908",
+        "HJ-car-m/20260910",
+        "HJ-car-m-persist/20260909",
+        "HJ-car-m-uniform/20260908",
+        "HJ-car-m-uniform/20260910",
+        "LeWM-car-m/20260909",
+        "HJ-car-m-fs5/20260909"
+      ],
+      [
+        "HJ-px/20260910",
+        "LeWM-px/20260909",
+        "HJ-car-native/20260908",
+        "HJ-car-native/20260909",
+        "HJ-car-native/20260910",
+        "HJ-px-B1/20260910",
+        "LeWM-car-m/20260910",
+        "HJ-car-m-fs5/20260910"
+      ],
+      [
+        "HWM-px/20260908",
+        "HWM-px/20260909",
+        "HJ-px-B1/20260909",
+        "HWM-car-m/20260910",
+        "HJ-car-m/20260909",
+        "HJ-car-m-persist/20260908",
+        "HJ-car-m-persist/20260910",
+        "HJ-car-m-uniform/20260909",
+        "LeWM-car-m/20260908",
+        "HJ-car-m-fs5/20260908"
+      ]
+    ],
+    "recipe": {
+      "clip": "global grad-norm 1.0",
+      "objective": "vendor hjepa_forward (unchanged)",
+      "optimizer": "AdamW, per-level lr (5e-5 level 1, 1e-5 upper), wd 1e-3",
+      "schedule": "linear warm-up over max(1, int(0.01 x steps)) then cosine to 0, per step"
+    },
+    "typed_failure": "a NaN / nonfinite loss ends the run (model.pt complete False); never retried"
+  },
+  "validation_command": "python -u -m scripts.run_hjepa_comparison --validate",
+  "wrong_anchor": {
+    "arms": [
+      "HJ-px",
+      "HJ-car-m",
+      "HJ-px-B1",
+      "HJ-car-native"
+    ],
+    "pool": "the 480 fit anchors (retrain anchors-fit.pt / frame 0 of the same branches)",
+    "token": "S10 right - wrong, delta rule"
+  }
+}

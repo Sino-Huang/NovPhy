@@ -1,0 +1,16 @@
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-123] throughput HJ-px: 0.442 s/step at batch 128, 128045 steps -> 15.71 GPU-h per seed, peak 9.8 GiB
+[issue-123] throughput HJ-car-m: 0.035 s/step at batch 64, 9000 steps -> 0.09 GPU-h per seed, peak 0.3 GiB
+[issue-123] throughput HJ-px-B1: 0.242 s/step at batch 64, 9000 steps -> 0.60 GPU-h per seed, peak 5.2 GiB
+[issue-123] throughput LeWM-px: 0.159 s/step at batch 128, 150880 steps -> 6.66 GPU-h per seed, peak 3.6 GiB
+[issue-123] throughput HWM-px: 0.410 s/step at batch 128, 128045 steps -> 14.59 GPU-h per seed, peak 9.8 GiB
+[issue-123] throughput LeWM-car-m: 0.029 s/step at batch 64, 9000 steps -> 0.07 GPU-h per seed, peak 0.2 GiB
+[issue-123] throughput HWM-car-m: 0.035 s/step at batch 64, 9000 steps -> 0.09 GPU-h per seed, peak 0.2 GiB
+[issue-123] throughput HJ-car-native: 0.068 s/step at batch 128, 128045 steps -> 2.41 GPU-h per seed, peak 1.0 GiB
+[issue-123] throughput HJ-car-m-uniform: 0.030 s/step at batch 64, 9000 steps -> 0.08 GPU-h per seed, peak 0.3 GiB
+[issue-123] throughput HJ-car-m-persist: 0.031 s/step at batch 64, 9000 steps -> 0.08 GPU-h per seed, peak 0.3 GiB
+[issue-123] throughput HJ-car-m-fs5: 0.021 s/step at batch 64, 9000 steps -> 0.05 GPU-h per seed, peak 0.2 GiB
+[issue-123] smoke ok=True: projection 215 GPU-h, 50 h wall (cap 260 / 72); lambda {'pixels': {'arm': 'HJ-px', 'policy_grid_auc_R1': {'0.09': 0.4846923466604318, '0.18': 0.5087074273244486}, 'selected_lambda': 0.18, 'rule': 'largest policy-split pooled grid AUC under R1 at B1, seed 20260908; ties (4 d.p.) -> 0.09'}, 'carriers': {'arm': 'HJ-car-m', 'policy_grid_auc_R1': {'0.09': 0.48003565583352825, '0.18': 0.5053230457485776}, 'selected_lambda': 0.18, 'rule': 'largest policy-split pooled grid AUC under R1 at B1, seed 20260908; ties (4 d.p.) -> 0.09'}}
