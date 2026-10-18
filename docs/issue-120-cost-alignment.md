@@ -7,8 +7,8 @@ Parent: #108. Companion to #115. The binding shared rules of #85 apply, and #120
 | Runner | `scripts/run_cost_alignment.py` |
 | Verdict module | `world_model/data/cost_verdicts.py` (light; process-pool workers import only json/gzip/math and the #113 label module) |
 | Artifacts | `.local-artifacts/issue-120-cost-alignment-v1/` (committed: `plan.json`, `smoke.json`, `verdicts.json`, `findings.md`, `summary.json`, `compute.json`, `alignment.svg`, `records-manifest.json`, `ledger/`; local only, hashed in the manifest: `records/`, `carriers/`, `data/branches-evaluation.json`, `fit/branches-fit.json`; local logs: `logs/`) |
-| Freeze | Plan frozen 2026-10-18T01:13:30Z (commit ced60d7f), after a passed smoke and before any evaluation verdict under (b)–(d) and any score. Evaluation verdicts were derived once at 01:17:55Z (commit c71e1566, `verdicts.json`), before the first score at 01:18:09Z. The runner is unchanged since the freeze. |
-| Validation | `python -u -m scripts.run_cost_alignment --validate` exits 0 (146 s). `pytest tests/test_issue_120_cost_alignment.py` passes (12 tests). |
+| Freeze | Plan frozen 2026-10-18T01:13:30Z (commit ced60d7f), after a passed smoke and before any evaluation verdict under (b)–(d) and any score. Evaluation verdicts were derived once at 01:17:55Z (commit c71e1566, `verdicts.json`), before the first score at 01:18:09Z. The runner was unchanged from the freeze through publication; the post-publication edit is disclosed below. |
+| Validation | `python -u -m scripts.run_cost_alignment --validate` exits 0 (158 s after the phase-B/C fix). `pytest tests/test_issue_120_cost_alignment.py` passes (15 tests). |
 
 All intervals are percentile bootstraps clustered by level (member), with 10 000 draws (PCG64 7201), DESCRIPTIVE. The margin is δ = 0.02. Engine seconds and training are both zero.
 
@@ -171,7 +171,7 @@ Reading:
 - **Sensitivity readings.**
   - Relative: alignment below the control's.
   - Combined: max(|r settle|, |r presence|) below the control's.
-- **Guard failure.** A failed guard turns every token into `readiness_or_precision_insufficient`.
+- **Guard failure.** A failed guard turns every token into `readiness_or_precision_insufficient`. A cost below the mixed-cell guard does so for every token of that cost: its primary row, contrasts, inventory tables (`inventories[cost]`, the duplicate view of the contrasts) and wrong-anchor control, and under (a) the #113 arm.
 
 ### Guards (all pass)
 
@@ -206,6 +206,7 @@ Reading:
 `--validate` does the following and exits 0:
 - re-derives every table from the records and branch files;
 - byte-compares `compute.json`, `summary.json`, `findings.md`, `alignment.svg` and `records-manifest.json`. The manifest holds the sha256 of all 63 records, 63 carrier files and both branch files;
+- re-derives `verdicts.json` from the evaluation branch file and byte-compares it;
 - re-scores Gate-B F-15-macro and J (seed 20260908) on all 400 grid levels; every row is identical;
 - re-derives 24 evaluation branches from their native traces; all are identical.
 
@@ -226,7 +227,7 @@ Reading:
 
 - **Compute.** 3 541 GPU s in total, of which 3 528 is scoring: 63 records on 4 × RTX 5090, about 15 min elapsed, plus 13 s of smoke rollouts. The summed process wall is 4 167 s. The trace scans took 23 466 CPU process-s. Engine seconds: 0. The hardware is RTX 5090 instead of the #85 RTX 3090.
 - **Disposition rule set after the smoke.** The rule was set after the smoke had shown the fit alignments (|r| with the settle flag: a 0.059, b 0.096, c 0.085, d 0.139). A rule relative to the control would have left no eligible cost on the fit stream, so the absolute rule was made primary and the relative and combined rules are reported beside it. This was recorded in the frozen plan's disclosure and on #120 before scoring. On the evaluation split, all three rules select (c) and give the same token.
-- **Smoke evidence and the runner.** `smoke.json` was written by the runner before that rule edit. The edit touched only the disposition logic and its texts, so the smoke checks are unaffected. The frozen plan binds the runner bytes at the freeze, and those bytes are unchanged since.
+- **Smoke evidence and the runner.** `smoke.json` was written by the runner before that rule edit. The edit touched only the disposition logic and its texts, so the smoke checks are unaffected. The frozen plan records the runner bytes at the freeze; they were unchanged through publication, and the post-publication edit below is disclosed.
 - **Execution.** Each stage was launched once: smoke, freeze, derive, score with 4 workers (one per GPU), publish. Nothing was relaunched and there were no typed failures.
   - The shell's `$!` returned empty at the scoring launch. The four worker PIDs were therefore read with `pgrep` immediately after the launch and recorded (`logs/score-pids.txt`), and the wait used them.
   - Completion was confirmed from 63 records, 63 carrier files and 63 ledger entries.
@@ -236,3 +237,7 @@ Reading:
   - The full fit-stream prevalence, mixed cells and alignments.
   - No evaluation verdict under (b)–(d) and no model output under any new cost.
 - **Not tested.** The ordering of macro − continuous by the presence-count alignment is a 4-point descriptive pattern. The `ma-ref` disposition reading is descriptive; the frozen disposition is on the Gate-B predictor.
+- **Post-publication runner edit (phase-B/C review).** Commit `8d3a0743` changed `scripts/run_cost_alignment.py` for guard propagation and validation hardening only.
+  - The publication gated the `contrasts` copies but also published the original `inventories[cost][inventory].macro_minus_continuous` tokens ungated. `apply_guards` now gates the assembled publication in one place: a failed global guard turns every token (disposition, primary, contrasts, inventory tables, wrong-anchor, #113 arm) into the stop token, and a cost below the 42-cell guard every token of that cost. The disposition reads the gated primary rows as before. Tests force each global guard and each cost's mixed-cell guard false on the published `compute.json`.
+  - `--validate` now also regenerates `verdicts.json` (the post-freeze derive-phase record) from the manifest-hashed evaluation branch file and byte-compares it.
+  - Every retained guard passes, so no evidence, number or token changed: `--validate` regenerates every published file byte for byte and exits 0. The runner is listed in `scripts/post_freeze_amendments.py`.
