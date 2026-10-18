@@ -252,6 +252,18 @@ def load_windows(output):
     return payload
 
 
+def verify_window_shots(windows):
+    """windows-225.pt embeds the sha256 of every #101 pool shot it was assembled from (the plan, like #101's, does
+    not pin the shot files); every one is recomputed and any difference, or a shot order other than the pool's,
+    refuses the publication (phase-B/C review)."""
+    keys = [s["key"] for s in windows["shots"]]
+    changed = [s["key"] for s in windows["shots"] if sha256_of(dap.shot_path(P101, s["key"])) != s["sha256"]]
+    if changed or keys != list(windows["shot_keys"]):
+        raise ValueError(f"225-frame window sources changed since assembly: {len(changed)} shot hashes differ "
+                         f"({changed[:3]}), shot order equal: {keys == list(windows['shot_keys'])}")
+    return len(keys)
+
+
 def window_units(output, window):
     """Per policy level (roster order) its shots' windows: the #101 first 60-frame windows or the 225 ones."""
     return dap.window_units(dap.load_pool(P101) if window == SHORT else load_windows(output))
@@ -884,6 +896,7 @@ def compute_tables(output, plan):
     label_accuracy = accuracy_table(output, selection)
     pool = dap.load_pool(P101)
     windows = load_windows(output)
+    verify_window_shots(windows)
     eval_roster = {lv["identity"] for lv in gb.evaluation_levels()}
     fit_roster = {lv["identity"] for lv in rt.fit_levels()}
     policy_roster = {lv["identity"] for lv in dap.policy_levels()}

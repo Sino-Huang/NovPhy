@@ -223,3 +223,22 @@ def test_primary_token_rule():
     assert c2.token({"mean": 0.03, "interval": [0.001, 0.05]}) == "supported"
     assert c2.token({"mean": 0.01, "interval": [-0.01, 0.019]}) == "not_supported_by_this_experiment"
     assert c2.token({"mean": 0.03, "interval": [-0.001, 0.06]}) == "readiness_or_precision_insufficient"
+
+
+def test_window_225_shot_hashes_are_verified():
+    import copy
+    from scripts import run_remaining_frames_input as runner
+    published()
+    if not runner.windows_path(OUTPUT).is_file():
+        pytest.skip("windows-225.pt not present")
+    windows = runner.load_windows(OUTPUT)
+    windows = {k: windows[k] for k in ("shots", "shot_keys")}
+    assert runner.verify_window_shots(windows) == len(windows["shot_keys"])
+    tampered = copy.deepcopy(windows)
+    tampered["shots"][0]["sha256"] = "sha256:" + "0" * 64
+    with pytest.raises(ValueError, match="1 shot hashes differ"):
+        runner.verify_window_shots(tampered)
+    reordered = copy.deepcopy(windows)
+    reordered["shots"] = reordered["shots"][1:] + reordered["shots"][:1]
+    with pytest.raises(ValueError, match="shot order equal: False"):
+        runner.verify_window_shots(reordered)

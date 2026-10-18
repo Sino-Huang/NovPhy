@@ -72,6 +72,11 @@ AMENDMENTS = {
         "change": ("item 5: the frozen caps guard enters global_pass, guards_pass and the disposition stop condition; a "
                    "guard-forced scope also turns its per-request tokens into the stop token; validate log says "
                    "compute.json is compared by value; publication unchanged")},
+    "scripts/run_remaining_frames_input.py": {
+        "issue": 119, "replaces": ("sha256:fb8efa5b6fcb0313299d3039dceb379bc1c8a680100bbc4d894ee925dd36c8db",),
+        "sha256": "sha256:def0276923fa014543686f9aeeb6ddec9a1c313e701e6aa2c81bd67784bbaedc",
+        "change": ("compute_tables re-verifies the per-shot sha256 values and shot order embedded in windows-225.pt "
+                   "against the #101 pool shots and refuses on any difference; publication unchanged")},
 }
 
 
