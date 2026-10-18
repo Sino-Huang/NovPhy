@@ -1,0 +1,113 @@
+{
+  "checks": [
+    {
+      "control": "fused_training_path_equals_retrain",
+      "local_losses_equal": true,
+      "max_parameter_delta": 0.0,
+      "ok": true,
+      "parameter_names_equal": true,
+      "updates": 12
+    },
+    {
+      "arms": [
+        {
+          "arm": "additive",
+          "final_loss_finite": true,
+          "parameters": 1786234,
+          "peak_memory_gb": 9.847668224,
+          "seconds_per_update_full_cost": 0.15614430090257278,
+          "skipped": 0
+        },
+        {
+          "arm": "factored",
+          "final_loss_finite": true,
+          "parameters": 1806842,
+          "peak_memory_gb": 9.956895744,
+          "seconds_per_update_full_cost": 0.1653239960044933,
+          "skipped": 0
+        }
+      ],
+      "control": "arm_training",
+      "ok": true
+    },
+    {
+      "additive_interaction_share_max": 1.1016029146803838e-31,
+      "additive_parameters": {
+        "request_path": 316160,
+        "total": 1786234,
+        "trunk_heads_adapters": 1470074
+      },
+      "additive_trunk_init_equals_fused": true,
+      "control": "arm_structure",
+      "factored_composition_max_error": 0.0,
+      "factored_gamma_interaction_share_block0": 0.022420674091938316,
+      "factored_parameters": {
+        "request_path": 336768,
+        "total": 1806842,
+        "trunk_heads_adapters": 1470074
+      },
+      "factored_trunk_init_equals_fused": true,
+      "fused_is_cnn_hybrid": true,
+      "fused_parameters": {
+        "request_path": 367616,
+        "total": 1837690,
+        "trunk_heads_adapters": 1470074
+      },
+      "ok": true
+    },
+    {
+      "control": "policy_labels_equal_101",
+      "factored_label_rows": 1740,
+      "ok": true,
+      "projected_label_round_seconds": 51.787200244143605,
+      "units": 2
+    },
+    {
+      "block_equals_101": true,
+      "cells": 3,
+      "control": "scoring_path_fit",
+      "engine_error_range": [
+        0.005114508327096701,
+        0.024002816528081894
+      ],
+      "engine_errors": 736,
+      "ok": true,
+      "seconds_per_cell": {
+        "F-1-continuous": 0.3663792673808833,
+        "F-1-macro": 0.40625309470730525,
+        "F-1-micro": 0.46425912668928504,
+        "F-15-continuous": 0.02850695637365182,
+        "F-15-macro": 0.03111343706647555,
+        "F-15-micro": 0.03516995697282255,
+        "F-5-continuous": 0.0769014226583143,
+        "F-5-macro": 0.08497993368655443,
+        "F-5-micro": 0.09663624704505007,
+        "J": 0.5337551860138774
+      },
+      "stopped_rollout_equals_carrier_loop": true,
+      "truth_branches": 16,
+      "truth_seconds_per_branch": 17.776545319939032
+    },
+    {
+      "J": "J-pe-1e-04",
+      "control": "inputs_bound",
+      "gate_b": "pass",
+      "ok": true
+    }
+  ],
+  "identity": "issue-121-request-code-v1",
+  "ok": true,
+  "projection": {
+    "elapsed_hours_on_4_gpus": 2.1385847994751144,
+    "note": "training projected at the full-cost (horizon 225 + ranking) update time: an upper bound",
+    "scoring_gpu_seconds": 17434.16721988097,
+    "total_gpu_seconds": 27455.257639301475,
+    "training_and_policies_gpu_seconds_upper": 10021.090419420507,
+    "truth_wall_seconds_cpu": 3685.670396334026,
+    "within_limit": true
+  },
+  "reading": "fit-split payload, cells, anchors and branches; the Gate-B checkpoints and #101 policies; no evaluation-split capture or model output",
+  "run_at": "2026-10-18T02:09:01Z",
+  "schema": "issue_121_request_code_smoke_v1",
+  "wall_seconds": 151.20037324703299
+}

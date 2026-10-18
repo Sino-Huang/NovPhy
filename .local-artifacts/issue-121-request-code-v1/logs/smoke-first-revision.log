@@ -1,0 +1,16 @@
+[issue-112-dynamics] LC/fused/group0 update 12/12: horizon 225, mean loss 3493.561767578125, retired 0; 36s; eta 0s
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 225, mean loss 3493.561767578125, retired 0; 2s; eta 0s
+/mnt/array/sukaih/Project/NovPhy/scripts/run_request_code_factorisation.py:1153: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  return max(float((first[k] - second[k]).abs().max()) for k in first)
+/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/_inductor/compile_fx.py:321: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+  warnings.warn(
+[issue-112-dynamics] LC/additive/group0 update 21/21: horizon 225, mean loss 2721.50146484375, retired 0; 108s; eta 0s
+[issue-112-dynamics] LC/factored/group0 update 21/21: horizon 225, mean loss 2675.02099609375, retired 0; 117s; eta 0s
+[issue-121] smoke PASSED (315s); projection {'training_and_policies_gpu_seconds_upper': 10265.35942327464, 'scoring_gpu_seconds': 17734.616493156835, 'truth_wall_seconds_cpu': 3681.205804771278, 'total_gpu_seconds': 27999.975916431475, 'elapsed_hours_on_4_gpus': 2.182066832698358, 'within_limit': True, 'note': 'training projected at the full-cost (horizon 225 + ranking) update time: an upper bound'}
+[issue-121]   fused_training_path_equals_retrain: True
+[issue-121]   arm_training: True
+[issue-121]   arm_structure: True
+[issue-121]   policy_labels_equal_101: True
+[issue-121]   scoring_path_fit: True
+[issue-121]   inputs_bound: True
