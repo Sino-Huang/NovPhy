@@ -1,0 +1,533 @@
+{
+  "anchors": {
+    "path": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+    "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+  },
+  "bootstrap": {
+    "cluster": "level",
+    "draws": 10000,
+    "generator": "PCG64 7201",
+    "label": "DESCRIPTIVE",
+    "quantiles": [
+      0.025,
+      0.975
+    ]
+  },
+  "caps": {
+    "gpu_seconds": 43200.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 172800.0
+  },
+  "claim_boundary": "ranking AUC of fixed requests under four engine verdicts derived from the same retained branches, on one predictor family; DESCRIPTIVE intervals; no closed-loop claim",
+  "delta": 0.02,
+  "disclosure": "Known before the freeze: Gate B, #101, #115 and #96 results under cost (a) (on this predictor F-15-continuous 0.762 > F-15-macro 0.744 on grid, #101); the thresholds of (b)-(d) were set from a 400-600-shot exploration of the fit stream (pig displacement was degenerate there: 0.25 % of fit shots move the pig >= 0.01, so (c) uses the summed block and pig displacement); the full fit-stream prevalence, mixed-cell counts and alignments (smoke). The disposition's eligibility rule was set after the smoke showed that on the fit stream every alternative verdict correlates more with the settle flag than the control does (|r| a 0.059, b 0.096, c 0.085, d 0.139), so a rule relative to the control would leave no eligible cost; the absolute rule (|r| < 0.1) is primary and the relative and combined rules are reported beside it. No evaluation verdict under (b)-(d) and no model output under any new cost had been computed. Hardware: RTX 5090.",
+  "engine_seconds": 0,
+  "evaluation": {
+    "excluded": [
+      "issue109-policy",
+      "issue110-*"
+    ],
+    "fit_stream": "read only for the prior tables and the fit prevalence (fit/branches-fit.json)",
+    "predictors": "Gate-B LC hybrid handoff seeds (gateb) and the #115 ma-ref members",
+    "split": "#109 evaluation split as captured by the #104 campaign stream issue109-evaluation",
+    "superseded": "the ticket's held-out lineages 007/008/014/016 (#99/#100 era) are superseded by the sealed #109 evaluation split (Gate B passed; orchestrator decision)"
+  },
+  "frozen_at": "2026-10-18T01:13:30Z",
+  "frozen_before_evaluation_scoring": true,
+  "identity": "issue-120-cost-alignment-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/plan.json",
+      "name": "issue_108_gate_b_plan",
+      "sha256": "sha256:90bd1cce20c40ea825872b6c02d46ae393de45e6e3fa4dcd647f7ef39b2a9659"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+      "name": "issue_108_gate_b_anchors",
+      "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "issue_112_retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "issue_112_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "issue_112_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/plan.json",
+      "name": "issue_101_plan",
+      "sha256": "sha256:9674987323778442cd8537c45e71e64d04c78f5ed43b9d296eb011962e187f08"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/selection.json",
+      "name": "issue_101_selection",
+      "sha256": "sha256:e98e1ffb9214cec34bae79777c2c842efcdd139c3760b831ac1d2caa4b1ae285"
+    },
+    {
+      "artifact": ".local-artifacts/issue-115-predicate-feedback-v1/plan.json",
+      "name": "issue_115_plan",
+      "sha256": "sha256:bd69cb3b9bb5a1940a09853f777b79729d245af9f0b82c2d632001b8c660553a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-macro-predicates-v1/summaries-manifest.json",
+      "name": "issue_113_summaries_manifest",
+      "sha256": "sha256:0110b2bedc947428b08db1b9801ac2e3dcf3beb849466a8afe2c60bb4820371b"
+    },
+    {
+      "artifact": "world_model/data/observable_macro.py",
+      "name": "issue_113_label_module",
+      "sha256": "sha256:956d4163b340e117084a4fa8f0c2d90cefe169805069f49724a6f08b58a5fa16"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/request_policy.py",
+      "name": "request_policy",
+      "sha256": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c"
+    },
+    {
+      "artifact": "world_model/data/cost_verdicts.py",
+      "name": "cost_verdicts",
+      "sha256": "sha256:76f3c3c3e00240f3de3d3fe0edc697d3c1015948146dc8ccd326c297e629db4a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-120-cost-alignment-v1/fit/branches-fit.json",
+      "name": "fit_branches",
+      "sha256": "sha256:450d7a4a8000309f23107b38fcca97d03d1cdf7e9bdba89b04ecc86f76b78580"
+    },
+    {
+      "artifact": ".local-artifacts/issue-120-cost-alignment-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:089069448ee9d043733b00e7e1a3fd56094197b05d1b98845528a796da74a024"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "name": "gateb_20260908",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-115-predicate-feedback-v1/models/LC/ma-ref/fold-all/seed-20260908/predictor.pt",
+      "name": "ma_ref_20260908",
+      "sha256": "sha256:838ec30b047642e88729b38ebc4a7dc154b1d90ded1eadf5ffae2583f535a159"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260908/policy.pt",
+      "name": "policy_J_20260908",
+      "sha256": "sha256:23b782645e2254ea4a1fa9714962487a3bdb87f1502b925c954675a7362b5489"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/dec/lam-1e-01/seed-20260908/policy.pt",
+      "name": "policy_J_dec_20260908",
+      "sha256": "sha256:da2d3743ea00c5eba5e11f044a5588b01d5d130e89ddd1f4e4cc2cd50b868c9c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "name": "gateb_20260909",
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-115-predicate-feedback-v1/models/LC/ma-ref/fold-all/seed-20260909/predictor.pt",
+      "name": "ma_ref_20260909",
+      "sha256": "sha256:f12f99a90bdcd8356ff5913521bed54eb495214e11c669d461163cd9cd9e2f3a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260909/policy.pt",
+      "name": "policy_J_20260909",
+      "sha256": "sha256:5a5c07df026545e33f557dd52b773c1c40779e685fa3a8d7dd56b887341762d4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/dec/lam-1e-01/seed-20260909/policy.pt",
+      "name": "policy_J_dec_20260909",
+      "sha256": "sha256:ddbf63de977d089dec18ef8a0ee409b2ce5224d477f3b33b178ca86a64c2ed3e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "name": "gateb_20260910",
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-115-predicate-feedback-v1/models/LC/ma-ref/fold-all/seed-20260910/predictor.pt",
+      "name": "ma_ref_20260910",
+      "sha256": "sha256:e8bf721fefce2103487f1982fe854f257cc14f4b786a47b5ec2c28d15a309dc2"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260910/policy.pt",
+      "name": "policy_J_20260910",
+      "sha256": "sha256:faf929406d183c3d26d34132eba1c2e525117b5228bec5a00f55d7117651e358"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/dec/lam-1e-01/seed-20260910/policy.pt",
+      "name": "policy_J_dec_20260910",
+      "sha256": "sha256:a28e3ebd11fec572965f81e31ff8c29abc43af84cfd84af1d22014b7e59870eb"
+    }
+  ],
+  "issue": 120,
+  "module_sha256": "sha256:76f3c3c3e00240f3de3d3fe0edc697d3c1015948146dc8ccd326c297e629db4a",
+  "prohibited": [
+    "training",
+    "engine execution",
+    "re-scoring after publication",
+    "changing a cost, threshold, arm, rule or guard after the freeze",
+    "retrying or replacing a typed failure"
+  ],
+  "question": "does the macro - continuous fixed-request ranking difference survive a decision cost whose verdict is not aligned with the macro predicates?",
+  "related_issues": [
+    96,
+    101,
+    104,
+    108,
+    109,
+    111,
+    113,
+    115
+  ],
+  "rules": {
+    "alignment": "per cost over every complete evaluation branch: Pearson r (phi) of the verdict with (i) the #113 settle flag at the trace's last frame (settle_1, observable_macro.shot_labels on the stored #113 summaries) and (ii) the present pigs + blocks at the trace's last step (also each kind and verdict (a)); level-clustered bootstrap; within-level r reported beside. The alignment of a cost is |pooled r with the settle flag|",
+    "arm_113": "the single pre-declared #113-coordination arm: #120 item 3(a) under #113's redefined macro predicates = the #115 ma-ref predictor's fixed requests under cost (a), same contrast and rule",
+    "arms": {
+      "controls": [
+        "no-model action prior under each cost's fit verdicts (Gate-B rule)",
+        "wrong-anchor: Gate-B F-15-macro from the 480 fit anchors over the 16 grid candidates"
+      ],
+      "gateb": [
+        "F-1-continuous",
+        "F-1-micro",
+        "F-1-macro",
+        "F-5-continuous",
+        "F-5-micro",
+        "F-5-macro",
+        "F-15-continuous",
+        "F-15-micro",
+        "F-15-macro",
+        "J",
+        "J_dec"
+      ],
+      "ma-ref": [
+        "F-1-continuous",
+        "F-1-micro",
+        "F-1-macro",
+        "F-5-continuous",
+        "F-5-micro",
+        "F-5-macro",
+        "F-15-continuous",
+        "F-15-micro",
+        "F-15-macro"
+      ]
+    },
+    "cells": "per level x inventory, the complete candidates in ordinal order (Gate-B rule); under each cost the mixed-verdict cells of that cost's verdict; cost (a) cells equal the Gate-B cells",
+    "costs": {
+      "a": {
+        "definition": "engine pig removal of the branch (#104 campaign branches.json pig_removed, #85 engine channel); model cost = the #111 tie-free primary at frame 225: pig presence - 0.1 x pig-slot centre displacement",
+        "name": "current (pig removal)"
+      },
+      "b": {
+        "definition": "at least 1 block entity destroyed (engine entity_destroyed) during the shot, i.e. fewer blocks survive than the level starts with; model cost at frame 225 = sum over the block slots of presence - 0.1 x sum over the block slots of centre displacement (the tie-free form on the blocks)",
+        "name": "structure (block destroyed)"
+      },
+      "c": {
+        "definition": "summed displacement of the dynamic blocks and the pig from frame 0 to their last present native step >= 0.5 world units; model cost at frame 225 = minus the summed block- and pig-slot centre displacement",
+        "name": "motion magnitude (structure displacement)"
+      },
+      "d": {
+        "definition": "engine collision event between the launched bird and a block or the pig at or before frame 150 (native step first_fixed_step + 50 x 150); model cost = minus the summed block- and pig-slot centre displacement at the rollout's last visited frame <= 150",
+        "name": "early contact (bird hits structure)"
+      }
+    },
+    "disposition": "\"the macro ranking advantage persists under a verdict not aligned with the macro predicates\": primary: a cost is not aligned iff its alignment (|r| with the settle flag at the endpoint) is below 0.1; c* = the least-aligned such cost in {b, c, d} that passes the mixed-cell guard. supported iff the primary token is supported under (a) and under c*; not_supported_by_this_experiment iff either is not_supported_by_this_experiment; otherwise (or without an eligible c*) readiness_or_precision_insufficient. Reported beside it, as sensitivity readings with the same token logic: sensitivity: eligible iff the alignment (settle flag) is below the control's; c* = the least aligned eligible cost; sensitivity: alignment = max(|r settle flag|, |r presence count|); eligible iff below the control's; c* = the least aligned eligible cost",
+    "guards": {
+      "G1_isolation": "verdicts and scores from the evaluation stream only; fit only as priors; wrong anchors from the fit roster",
+      "G2_scoring_policy": "every record carries the #111 SCORING_POLICY",
+      "G3_chronology": "plan frozen_at <= evaluation verdicts derived_at <= first scored_at",
+      "G4_bindings": "predictor, policy and anchor-store hashes equal their published bindings",
+      "G5_replication": "under (a) on the Gate-B cells every retained row equals the #101 record of the arm, the Gate-B wrong-anchor rows and the #115 ma-ref default macro records exactly",
+      "G6_verdicts": "the event-derived #85 pig channel equals the campaign's pig_removed on every branch; the #113 summary frame counts equal the traces'; module bytes frozen",
+      "G7_nonfinite": "at most 10% excluded rows per record",
+      "failure": "a failed guard turns every token into readiness_or_precision_insufficient"
+    },
+    "mixed_cell_guard": "a cost with fewer than 42 mixed grid cells (levels) is readiness_or_precision_insufficient for every token of that cost; it is reported, not dropped",
+    "primary": "per cost, grid: mean over Delta in {1, 5, 15} of AUC(F-Delta-macro) - AUC(F-Delta-continuous) of the Gate-B LC hybrid, paired per (level, seed), level-clustered bootstrap; token by the delta rule (supported iff mean >= 0.02 and lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient); each Delta and the other inventories DESCRIPTIVE",
+    "rollouts": "one rollout per (predictor, arm, seed, level, inventory) from the Gate-B anchor to frame 225 under deterministic_scoring(); the frame-225 carrier and the last visited carrier at or before frame 150 feed the four model costs (cost_verdicts.DEFINITIONS)",
+    "thresholds": {
+      "blocks_destroyed_min": 1,
+      "displacement_min_world_units": 0.5,
+      "early_frames": 150
+    },
+    "verdict_source": "retained native traces of the executed #104 campaign branches (cost_verdicts.branch_quantities); (a) the campaign's pig_removed; the evaluation stream is derived after the freeze and before the first score, the fit stream in the smoke (priors only)"
+  },
+  "runner": "scripts/run_cost_alignment.py",
+  "runner_sha256_at_freeze": "sha256:ac8613a8b4d7c450e4c1d431d07b805d103ca91aef1bdad1f54f8f5750a5a520",
+  "schema": "issue_120_cost_alignment_plan_v1",
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "smoke_evidence": {
+    "cost_rows": {
+      "a_equals_tie_free": true,
+      "c": -0.25,
+      "d": -0.25,
+      "pass": true
+    },
+    "fit_scan": {
+      "alignment": {
+        "a": {
+          "present_blocks": 0.019871097440999963,
+          "present_pigs": -1.0,
+          "present_total": -0.18085332517276465,
+          "settle_end": 0.0586468181252345,
+          "verdict_a": 1.0
+        },
+        "b": {
+          "present_blocks": -0.22880878619229383,
+          "present_pigs": 0.08739439409793966,
+          "present_total": -0.207566299493018,
+          "settle_end": -0.09586639015766486,
+          "verdict_a": -0.08739439409793971
+        },
+        "c": {
+          "present_blocks": -0.006754038356296151,
+          "present_pigs": -0.44704845329113574,
+          "present_total": -0.09623275911098085,
+          "settle_end": -0.08509369093144012,
+          "verdict_a": 0.44704845329113574
+        },
+        "d": {
+          "present_blocks": 0.020612675020375802,
+          "present_pigs": -0.3995518142727302,
+          "present_total": -0.059793649786745715,
+          "settle_end": -0.13912659743132294,
+          "verdict_a": 0.3995518142727302
+        }
+      },
+      "branches": 13919,
+      "cpu_process_seconds": 12861.293800043408,
+      "mixed_cells": {
+        "a": {
+          "angle": 314,
+          "grid": 366
+        },
+        "b": {
+          "angle": 337,
+          "grid": 355
+        },
+        "c": {
+          "angle": 427,
+          "grid": 447
+        },
+        "d": {
+          "angle": 454,
+          "grid": 464
+        }
+      },
+      "pig_channel_mismatch": 0,
+      "prevalence": {
+        "a": 0.06020547453121632,
+        "b": 0.18054457935196494,
+        "c": 0.22465694374595876,
+        "d": 0.2863711473525397
+      },
+      "sha256": "sha256:450d7a4a8000309f23107b38fcca97d03d1cdf7e9bdba89b04ecc86f76b78580",
+      "summary_frame_mismatch": 0,
+      "wall_seconds": 293.9884318569675
+    },
+    "gpu_seconds": 13.146965608000755,
+    "identity": "issue-120-cost-alignment-v1",
+    "ok": true,
+    "projection": {
+      "candidates_per_record": 11680,
+      "elapsed_hours_on_4_gpus": 0.2570650459983477,
+      "gpu_seconds_per_record": {
+        "gateb:F-1-continuous": 174.16809195342162,
+        "gateb:F-1-macro": 122.46792394046983,
+        "gateb:F-1-micro": 140.53055866854265,
+        "gateb:F-15-continuous": 7.590476045540223,
+        "gateb:F-15-macro": 8.315874552354217,
+        "gateb:F-15-micro": 9.602886986297866,
+        "gateb:F-5-continuous": 22.132163147131603,
+        "gateb:F-5-macro": 24.611042427519955,
+        "gateb:F-5-micro": 28.246916157659143,
+        "gateb:J": 195.6862364624006,
+        "gateb:J_dec": 9.042613867204636,
+        "ma-ref:F-1-continuous": 115.90281245609125,
+        "ma-ref:F-1-macro": 126.56049345387146,
+        "ma-ref:F-1-micro": 141.22089124362296,
+        "ma-ref:F-15-continuous": 7.703035877396664,
+        "ma-ref:F-15-macro": 8.628330925324311,
+        "ma-ref:F-15-micro": 9.671712601557374,
+        "ma-ref:F-5-continuous": 22.438687353860587,
+        "ma-ref:F-5-macro": 25.37087844374279,
+        "ma-ref:F-5-micro": 28.55262191966176
+      },
+      "gpu_seconds_total": 3701.7366623762064,
+      "note": "batch-size effects ignored (smoke cells hold 16 candidates; evaluation cells 13-20)",
+      "wrong_anchor_record": 5.467972308397293
+    },
+    "rollouts": {
+      "cells": [
+        "issue-109-sc-fit-type010103-001",
+        "issue-109-sc-fit-type010103-002",
+        "issue-109-sc-fit-type010103-003"
+      ],
+      "checks": {
+        "gateb:F-1-continuous": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-1-macro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-1-micro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-15-continuous": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-15-macro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-15-micro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-5-continuous": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-5-macro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:F-5-micro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:J": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb:J_dec": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "gateb_pairs": [
+          "(1, 'continuous')",
+          "(1, 'micro')",
+          "(1, 'macro')",
+          "(5, 'continuous')",
+          "(5, 'micro')",
+          "(5, 'macro')",
+          "(15, 'continuous')",
+          "(15, 'micro')",
+          "(15, 'macro')"
+        ],
+        "ma-ref:F-1-continuous": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-1-macro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-1-micro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-15-continuous": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-15-macro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-15-micro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-5-continuous": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-5-macro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref:F-5-micro": {
+          "early_equal": true,
+          "endpoint_equal": true
+        },
+        "ma-ref_pairs": [
+          "(1, 'continuous')",
+          "(1, 'micro')",
+          "(1, 'macro')",
+          "(5, 'continuous')",
+          "(5, 'micro')",
+          "(5, 'macro')",
+          "(15, 'continuous')",
+          "(15, 'micro')",
+          "(15, 'macro')"
+        ]
+      },
+      "pass": true,
+      "timings": {
+        "gateb:F-1-continuous": 0.014911651708340893,
+        "gateb:F-1-macro": 0.010485267460656663,
+        "gateb:F-1-micro": 0.012031725913402624,
+        "gateb:F-15-continuous": 0.0006498695244469369,
+        "gateb:F-15-macro": 0.0007119755609892309,
+        "gateb:F-15-micro": 0.0008221649817035844,
+        "gateb:F-5-continuous": 0.001894876981774966,
+        "gateb:F-5-macro": 0.0021071097968767085,
+        "gateb:F-5-micro": 0.0024184003559639677,
+        "gateb:J": 0.016753958601232927,
+        "gateb:J_dec": 0.000774196392740123,
+        "ma-ref:F-1-continuous": 0.009923185997953018,
+        "ma-ref:F-1-macro": 0.010835658686119132,
+        "ma-ref:F-1-micro": 0.01209082972976224,
+        "ma-ref:F-15-continuous": 0.0006595064963524541,
+        "ma-ref:F-15-macro": 0.0007387269627846157,
+        "ma-ref:F-15-micro": 0.0008280575857497752,
+        "ma-ref:F-5-continuous": 0.0019211204926250502,
+        "ma-ref:F-5-macro": 0.0021721642503204444,
+        "ma-ref:F-5-micro": 0.002444573794491589
+      }
+    },
+    "schema": "issue_120_cost_alignment_smoke_v1",
+    "smoked_at": "2026-10-18T01:09:50Z",
+    "trace_tail_parse": {
+      "chunks": 1009,
+      "pass": true,
+      "traces": 12
+    },
+    "wall_seconds": 396.6746179310139
+  },
+  "training": "none",
+  "validation_command": "python -u -m scripts.run_cost_alignment --validate",
+  "version": 1
+}

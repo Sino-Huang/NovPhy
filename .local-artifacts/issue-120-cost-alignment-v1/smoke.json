@@ -1,0 +1,244 @@
+{
+  "cost_rows": {
+    "a_equals_tie_free": true,
+    "c": -0.25,
+    "d": -0.25,
+    "pass": true
+  },
+  "fit_scan": {
+    "alignment": {
+      "a": {
+        "present_blocks": 0.019871097440999963,
+        "present_pigs": -1.0,
+        "present_total": -0.18085332517276465,
+        "settle_end": 0.0586468181252345,
+        "verdict_a": 1.0
+      },
+      "b": {
+        "present_blocks": -0.22880878619229383,
+        "present_pigs": 0.08739439409793966,
+        "present_total": -0.207566299493018,
+        "settle_end": -0.09586639015766486,
+        "verdict_a": -0.08739439409793971
+      },
+      "c": {
+        "present_blocks": -0.006754038356296151,
+        "present_pigs": -0.44704845329113574,
+        "present_total": -0.09623275911098085,
+        "settle_end": -0.08509369093144012,
+        "verdict_a": 0.44704845329113574
+      },
+      "d": {
+        "present_blocks": 0.020612675020375802,
+        "present_pigs": -0.3995518142727302,
+        "present_total": -0.059793649786745715,
+        "settle_end": -0.13912659743132294,
+        "verdict_a": 0.3995518142727302
+      }
+    },
+    "branches": 13919,
+    "cpu_process_seconds": 12861.293800043408,
+    "mixed_cells": {
+      "a": {
+        "angle": 314,
+        "grid": 366
+      },
+      "b": {
+        "angle": 337,
+        "grid": 355
+      },
+      "c": {
+        "angle": 427,
+        "grid": 447
+      },
+      "d": {
+        "angle": 454,
+        "grid": 464
+      }
+    },
+    "pig_channel_mismatch": 0,
+    "prevalence": {
+      "a": 0.06020547453121632,
+      "b": 0.18054457935196494,
+      "c": 0.22465694374595876,
+      "d": 0.2863711473525397
+    },
+    "sha256": "sha256:450d7a4a8000309f23107b38fcca97d03d1cdf7e9bdba89b04ecc86f76b78580",
+    "summary_frame_mismatch": 0,
+    "wall_seconds": 293.9884318569675
+  },
+  "gpu_seconds": 13.146965608000755,
+  "identity": "issue-120-cost-alignment-v1",
+  "ok": true,
+  "projection": {
+    "candidates_per_record": 11680,
+    "elapsed_hours_on_4_gpus": 0.2570650459983477,
+    "gpu_seconds_per_record": {
+      "gateb:F-1-continuous": 174.16809195342162,
+      "gateb:F-1-macro": 122.46792394046983,
+      "gateb:F-1-micro": 140.53055866854265,
+      "gateb:F-15-continuous": 7.590476045540223,
+      "gateb:F-15-macro": 8.315874552354217,
+      "gateb:F-15-micro": 9.602886986297866,
+      "gateb:F-5-continuous": 22.132163147131603,
+      "gateb:F-5-macro": 24.611042427519955,
+      "gateb:F-5-micro": 28.246916157659143,
+      "gateb:J": 195.6862364624006,
+      "gateb:J_dec": 9.042613867204636,
+      "ma-ref:F-1-continuous": 115.90281245609125,
+      "ma-ref:F-1-macro": 126.56049345387146,
+      "ma-ref:F-1-micro": 141.22089124362296,
+      "ma-ref:F-15-continuous": 7.703035877396664,
+      "ma-ref:F-15-macro": 8.628330925324311,
+      "ma-ref:F-15-micro": 9.671712601557374,
+      "ma-ref:F-5-continuous": 22.438687353860587,
+      "ma-ref:F-5-macro": 25.37087844374279,
+      "ma-ref:F-5-micro": 28.55262191966176
+    },
+    "gpu_seconds_total": 3701.7366623762064,
+    "note": "batch-size effects ignored (smoke cells hold 16 candidates; evaluation cells 13-20)",
+    "wrong_anchor_record": 5.467972308397293
+  },
+  "rollouts": {
+    "cells": [
+      "issue-109-sc-fit-type010103-001",
+      "issue-109-sc-fit-type010103-002",
+      "issue-109-sc-fit-type010103-003"
+    ],
+    "checks": {
+      "gateb:F-1-continuous": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-1-macro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-1-micro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-15-continuous": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-15-macro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-15-micro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-5-continuous": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-5-macro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:F-5-micro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:J": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb:J_dec": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "gateb_pairs": [
+        "(1, 'continuous')",
+        "(1, 'micro')",
+        "(1, 'macro')",
+        "(5, 'continuous')",
+        "(5, 'micro')",
+        "(5, 'macro')",
+        "(15, 'continuous')",
+        "(15, 'micro')",
+        "(15, 'macro')"
+      ],
+      "ma-ref:F-1-continuous": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-1-macro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-1-micro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-15-continuous": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-15-macro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-15-micro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-5-continuous": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-5-macro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref:F-5-micro": {
+        "early_equal": true,
+        "endpoint_equal": true
+      },
+      "ma-ref_pairs": [
+        "(1, 'continuous')",
+        "(1, 'micro')",
+        "(1, 'macro')",
+        "(5, 'continuous')",
+        "(5, 'micro')",
+        "(5, 'macro')",
+        "(15, 'continuous')",
+        "(15, 'micro')",
+        "(15, 'macro')"
+      ]
+    },
+    "pass": true,
+    "timings": {
+      "gateb:F-1-continuous": 0.014911651708340893,
+      "gateb:F-1-macro": 0.010485267460656663,
+      "gateb:F-1-micro": 0.012031725913402624,
+      "gateb:F-15-continuous": 0.0006498695244469369,
+      "gateb:F-15-macro": 0.0007119755609892309,
+      "gateb:F-15-micro": 0.0008221649817035844,
+      "gateb:F-5-continuous": 0.001894876981774966,
+      "gateb:F-5-macro": 0.0021071097968767085,
+      "gateb:F-5-micro": 0.0024184003559639677,
+      "gateb:J": 0.016753958601232927,
+      "gateb:J_dec": 0.000774196392740123,
+      "ma-ref:F-1-continuous": 0.009923185997953018,
+      "ma-ref:F-1-macro": 0.010835658686119132,
+      "ma-ref:F-1-micro": 0.01209082972976224,
+      "ma-ref:F-15-continuous": 0.0006595064963524541,
+      "ma-ref:F-15-macro": 0.0007387269627846157,
+      "ma-ref:F-15-micro": 0.0008280575857497752,
+      "ma-ref:F-5-continuous": 0.0019211204926250502,
+      "ma-ref:F-5-macro": 0.0021721642503204444,
+      "ma-ref:F-5-micro": 0.002444573794491589
+    }
+  },
+  "schema": "issue_120_cost_alignment_smoke_v1",
+  "smoked_at": "2026-10-18T01:09:50Z",
+  "trace_tail_parse": {
+    "chunks": 1009,
+    "pass": true,
+    "traces": 12
+  },
+  "wall_seconds": 396.6746179310139
+}
