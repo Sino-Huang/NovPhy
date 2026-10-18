@@ -61,6 +61,11 @@ AMENDMENTS = {
                    "re-derives G1 on the frozen membership with it and reports the colour-excluded physical overlap, "
                    "G1 reads that audit and --validate regenerates it, load_plan verifies data_manifest_sha256 and "
                    "accepts module drift only through this registry, publication wrapped in deterministic_scoring()")},
+    "scripts/run_predicate_feedback_robustness.py": {
+        "issue": 115, "replaces": ("sha256:87655498f700bfd773d1a16ff3e4dfc9d6508841c49f031ca44310b6fb3dbe04",),
+        "sha256": "sha256:28483409fce5f18fe6b5704d7439d9be7780958bd7f2063318e2f33b86ae7c64",
+        "change": ("a failed guard also invalidates each disposition's contrast_tokens map and the reference J - T "
+                   "token (apply_guard_failure; frozen rule 'every token'); publication unchanged")},
 }
 
 

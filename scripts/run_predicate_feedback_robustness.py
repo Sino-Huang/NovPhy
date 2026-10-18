@@ -1648,21 +1648,36 @@ def records_manifest(output):
             "files": {str(p.relative_to(output)): sha256_of(p) for p in paths}}
 
 
-GUARD_FAILURE_NOTE = (f"a failed guard turns every token of this publication into {STOP_TOKEN}: the dispositions, "
-                      "the contrast tokens of every table and the wrong-anchor tokens are not interpretable")
+GUARD_FAILURE_NOTE = (f"a failed guard turns every token of this publication into {STOP_TOKEN}: the dispositions "
+                      "(overall, contrast and reference J - T tokens), the contrast tokens of every table and the "
+                      "wrong-anchor tokens are not interpretable")
 
 
 def invalidate(obj):
-    """Every contrast token below ``obj`` -> STOP_TOKEN (a failed guard; phase-A guard propagation)."""
+    """Every token below ``obj`` -> STOP_TOKEN (a failed guard): each ``token`` field and every value of a
+    ``contrast_tokens`` map (phase-A and phase-B/C guard propagation)."""
     if isinstance(obj, dict):
         for key, value in obj.items():
             if key == "token":
                 obj[key] = STOP_TOKEN
+            elif key == "contrast_tokens":
+                obj[key] = {k: STOP_TOKEN for k in value}
             else:
                 invalidate(value)
     elif isinstance(obj, list):
         for value in obj:
             invalidate(value)
+
+
+def apply_guard_failure(compute):
+    """The frozen rule on the assembled publication: a failed guard turns every token into STOP_TOKEN (estimates
+    unchanged); with every guard passing nothing changes."""
+    failed = sorted(k for k, g in compute["guards"].items() if not g["pass"])
+    if failed:
+        compute["guard_failure"] = {"failed_guards": failed, "note": GUARD_FAILURE_NOTE}
+        for key in ("dispositions", "dose_response", "predictor_tables", "wrong_anchor"):
+            invalidate(compute[key])
+    return compute
 
 
 def compute_tables(output, plan):
@@ -1682,7 +1697,6 @@ def compute_tables(output, plan):
     calibrations = {name: [calibration(output, name, s) for s in SEEDS] for name in REFERENCE.values()}
     guards = guard_block(output, plan, records, right, cells, dose, calibrations)
     guards_ok = all(g["pass"] for g in guards.values())
-    failed = sorted(k for k, g in guards.items() if not g["pass"])
     dispositions = {d: disposition(rows[PRIMARY], d, guards_ok) for d in REFERENCE}
     phases = {p.stem: read_json(p) for p in sorted((output / "ledger").glob("*.json"))}
     smoke_ = read_json(output / "smoke.json")
@@ -1706,11 +1720,7 @@ def compute_tables(output, plan):
                     "wall_seconds": sum(b["wall_seconds"] for b in all_phases.values()), "engine_seconds": 0,
                     "hardware": "4 x RTX 5090 (one process per GPU)"},
     }
-    if failed:
-        compute["guard_failure"] = {"failed_guards": failed, "note": GUARD_FAILURE_NOTE}
-        for key in ("dose_response", "predictor_tables", "wrong_anchor"):
-            invalidate(compute[key])
-    return compute
+    return apply_guard_failure(compute)
 
 
 def guard_block(output, plan, records, right, cells, dose, calibrations):

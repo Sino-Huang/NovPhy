@@ -343,3 +343,43 @@ def test_temporal_feedback_reads_the_rows_own_stride_history():
             q = max(t - (3 - j) * 5, 0)
             expected = next(s for p, s in feedback.states if int(p[0]) == q)
             assert torch.equal(call[:, j], expected)
+
+
+# --- guard propagation on the published compute.json (phase-B/C review) -------------------------------------
+
+TOKENS = {"supported", "not_supported_by_this_experiment", "readiness_or_precision_insufficient", "unsupported"}
+
+
+def token_values(obj):
+    if isinstance(obj, dict):
+        return [t for v in obj.values() for t in token_values(v)]
+    if isinstance(obj, list):
+        return [t for v in obj for t in token_values(v)]
+    return [obj] if isinstance(obj, str) and obj in TOKENS else []
+
+
+def test_every_failed_guard_invalidates_every_published_token():
+    import copy
+    import json
+
+    import pytest
+
+    from scripts import run_predicate_feedback_robustness as runner
+    if not (runner.OUTPUT / "compute.json").is_file():
+        pytest.skip("issue-115 publication not present")
+    compute = json.loads((runner.OUTPUT / "compute.json").read_text())
+    plan = json.loads((runner.OUTPUT / "plan.json").read_text())
+    assert runner.apply_guard_failure(copy.deepcopy(compute)) == compute  # every retained guard passes
+    assert "supported" in token_values(compute["dispositions"])
+    for guard in compute["guards"]:
+        failed = copy.deepcopy(compute)
+        failed["guards"][guard]["pass"] = False
+        runner.apply_guard_failure(failed)
+        assert failed["guard_failure"]["failed_guards"] == [guard]
+        tokens = token_values(failed) + token_values(runner.summary(plan, failed))
+        assert tokens and set(tokens) == {runner.STOP_TOKEN}, guard
+        for d, entry in failed["dispositions"].items():
+            assert set(entry["contrast_tokens"].values()) == {runner.STOP_TOKEN}
+            assert entry["reference_description_value_J_minus_T"]["token"] == runner.STOP_TOKEN
+            assert entry["contrasts"] == compute["dispositions"][d]["contrasts"]
+        assert f"Guard failure ({guard})" in runner.findings_md(plan, failed)
