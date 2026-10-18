@@ -1214,8 +1214,9 @@ def dispositions(ratios, guards):
                 blocks = {r: ratios[bench]["lolo"][key]["J/S"]["per_request"][r][str(ENDPOINT)] for r in REQUESTS}
                 per = {r: claim_token(b) for r, b in blocks.items()}
                 tokens = set(per.values())
-                if not guards["global_pass"] or not guards["G4"]["per_scope"][f"{bench}/{key}"]["pass"]:
-                    overall = STOP_TOKEN
+                if not global_pass(guards) or not guards["G4"]["per_scope"][f"{bench}/{key}"]["pass"]:
+                    overall = STOP_TOKEN  # the frozen rule: every token of the failed scope stops
+                    per = {r: STOP_TOKEN for r in per}
                 elif tokens == {"supported"}:
                     overall = "supported"
                 elif "not_supported_by_this_experiment" in tokens:
@@ -1301,12 +1302,25 @@ def guard_tables(output, plan, reports, missing, spot):
     chronology = plan["frozen_at"] <= min(trained) and max(trained) <= min(scored)
     ledger = load_ledger(output)
     caps = ledger["gpu_seconds_elapsed"] <= plan["caps"]["gpu_seconds"]
-    return {"G1": {"pass": g1}, "G2": {"pass": g2}, "G3": {"pass": g3, "policies": policies, "spot": spot},
-            "G4": {"per_scope": scope, "pass": all(e["pass"] for e in scope.values())},
-            "chronology": {"pass": chronology, "frozen_at": plan["frozen_at"], "last_trained": max(trained),
-                           "first_scored": min(scored)},
-            "caps": {"pass": caps, "gpu_seconds": ledger["gpu_seconds_elapsed"], "cap": plan["caps"]["gpu_seconds"]},
-            "global_pass": g1 and g2 and g3 and chronology}
+    out = {"G1": {"pass": g1}, "G2": {"pass": g2}, "G3": {"pass": g3, "policies": policies, "spot": spot},
+           "G4": {"per_scope": scope, "pass": all(e["pass"] for e in scope.values())},
+           "chronology": {"pass": chronology, "frozen_at": plan["frozen_at"], "last_trained": max(trained),
+                          "first_scored": min(scored)},
+           "caps": {"pass": caps, "gpu_seconds": ledger["gpu_seconds_elapsed"], "cap": plan["caps"]["gpu_seconds"]}}
+    out["global_pass"] = global_pass(out)
+    return out
+
+
+GLOBAL_GUARDS = ("G1", "G2", "G3", "chronology", "caps")
+
+
+def global_pass(guards):
+    """Every frozen guard that is not per scope, the GPU-seconds cap included (G4 is per scope)."""
+    return all(guards[k]["pass"] for k in GLOBAL_GUARDS)
+
+
+def guards_pass(guards):
+    return global_pass(guards) and guards["G4"]["pass"]
 
 
 def iclr_reference(per):
@@ -1364,7 +1378,7 @@ def compute_tables(output, plan, spot):
     score_wall = sum(v["wall_seconds"] for k, v in ledger["phases"].items() if k.startswith("score_"))
     return {
         "schema": SCHEMA_COMPUTE, "identity": IDENTITY, "frozen_at": plan["frozen_at"], "engine_seconds": 0,
-        "records": records_overview(output), "guards": guards, "guards_pass": guards["global_pass"] and guards["G4"]["pass"],
+        "records": records_overview(output), "guards": guards, "guards_pass": guards_pass(guards),
         "training": training, "rollout": rollout, "ratios": ratios, "dispositions": disp, "headline": headline(disp),
         "ranking": RANKING, "iclr_reference": iclr_reference(per),
         "compute": {"training_gpu_seconds": train_gpu, "scoring_wall_seconds": score_wall,
@@ -1597,14 +1611,15 @@ def validate(output):
         spot = spot_checks(output)
     fresh = compute_tables(output, plan, spot)
     if read_json(output / "compute.json") != json.loads(json_text(fresh)):
-        raise ValueError("compute.json differs from the fresh recomputation")
+        raise ValueError("compute.json differs from the fresh recomputation (compared by value)")
     for name, text in rendered(plan, fresh, output).items():
         if (output / name).read_bytes() != text.encode():
             raise ValueError(f"published {name} differs from the recomputation")
     if not fresh["guards"]["G3"]["pass"]:
         raise ValueError("deterministic re-scoring does not replicate the retained records")
-    log(f"validation passed: every table, the summary, the findings and the records manifest re-derived and "
-        f"byte-compared; spot re-scores replicate ({time.monotonic() - began:.1f}s)")
+    log(f"validation passed: every table re-derived; compute.json compared by value, the summary, the findings, "
+        f"comparisons.csv and the records manifest byte-compared; spot re-scores replicate "
+        f"({time.monotonic() - began:.1f}s)")
     return 0
 
 

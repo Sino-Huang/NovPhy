@@ -40,3 +40,55 @@ def test_claim_token_reads_the_interval_against_1_5():
     assert item5.claim_token({**block, "interval": [1.2, 1.6]}) == item5.STOP_TOKEN
     assert item5.claim_token({"clusters": 2, "interval": [0.1, 0.2]}) == item5.STOP_TOKEN
     assert item5.claim_token(None) == item5.STOP_TOKEN
+
+
+# --- guard propagation on the published compute.json (phase-B/C review) -------------------------------------
+
+def published():
+    import json
+
+    import pytest
+    path = item5.OUTPUT / "compute.json"
+    if not path.is_file():
+        pytest.skip("issue-117 item 5 publication not present")
+    return json.loads(path.read_text())
+
+
+def disposition_tokens(disp):
+    """Per scope: the overall token and every per-request token, keyed by request."""
+    return {k: {"overall": v["token"], **v["per_request"]} for k, v in disp.items()}
+
+
+def test_guards_reproduce_the_published_dispositions():
+    compute = published()
+    assert item5.dispositions(compute["ratios"], compute["guards"]) == compute["dispositions"]
+    assert compute["guards"]["global_pass"] == item5.global_pass(compute["guards"])
+    assert compute["guards_pass"] == item5.guards_pass(compute["guards"])
+    assert "supported" in {t for ts in disposition_tokens(compute["dispositions"]).values() for t in ts.values()}
+
+
+def test_a_failed_global_guard_incl_caps_stops_every_token_incl_per_request():
+    import copy
+    compute = published()
+    assert "caps" in item5.GLOBAL_GUARDS
+    for guard in item5.GLOBAL_GUARDS:
+        guards = copy.deepcopy(compute["guards"])
+        guards[guard]["pass"] = False
+        assert not item5.global_pass(guards) and not item5.guards_pass(guards)
+        disp = item5.dispositions(compute["ratios"], guards)
+        assert {t for ts in disposition_tokens(disp).values() for t in ts.values()} == {item5.STOP_TOKEN}, guard
+        assert {t for h in item5.headline(disp).values() for t in h.values()} == {item5.STOP_TOKEN}
+
+
+def test_a_failed_scope_guard_stops_every_token_of_that_scope_only():
+    import copy
+    compute = published()
+    scope = "physion/B/request"
+    guards = copy.deepcopy(compute["guards"])
+    guards["G4"]["per_scope"][scope]["pass"] = False
+    disp = item5.dispositions(compute["ratios"], guards)
+    for key, tokens in disposition_tokens(disp).items():
+        if key == scope:
+            assert set(tokens.values()) == {item5.STOP_TOKEN}
+        else:
+            assert tokens == disposition_tokens(compute["dispositions"])[key]

@@ -66,6 +66,12 @@ AMENDMENTS = {
         "sha256": "sha256:28483409fce5f18fe6b5704d7439d9be7780958bd7f2063318e2f33b86ae7c64",
         "change": ("a failed guard also invalidates each disposition's contrast_tokens map and the reference J - T "
                    "token (apply_guard_failure; frozen rule 'every token'); publication unchanged")},
+    "scripts/run_request_interference_benchmarks.py": {
+        "issue": 117, "replaces": ("sha256:746ce9d132f209c2cabb311c6d5885a469a3fab5f0af9ec489bfcbcb333b024b",),
+        "sha256": "sha256:5a7620fba0e33a7bba856c4e36611c8ded8d0595bf934c21eb27f5d67889ce2c",
+        "change": ("item 5: the frozen caps guard enters global_pass, guards_pass and the disposition stop condition; a "
+                   "guard-forced scope also turns its per-request tokens into the stop token; validate log says "
+                   "compute.json is compared by value; publication unchanged")},
 }
 
 
