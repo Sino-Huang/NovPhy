@@ -1,0 +1,121 @@
+{
+  "commit": "97054ec",
+  "files": {
+    "LICENSE": {
+      "edits": [],
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:b1e890933507a009808e2ea532383810763d2e1955593561603af027dfcb624c",
+      "vendored_sha256": "sha256:b1e890933507a009808e2ea532383810763d2e1955593561603af027dfcb624c"
+    },
+    "__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:c63c014f230d26617aaceafc2d6cff2003dfabc178f1266beb49fc7fa09eede4"
+    },
+    "hjepa_utils.py": {
+      "edits": [
+        "from loss import InverseDynamicsLoss, InverseDynamicsModel, SIGReg -> from .loss import InverseDynamicsLoss, InverseDynamicsModel, SIGReg",
+        "from models.encoders.build_encoder import build_encoder -> from .models.encoders.build_encoder import build_encoder",
+        "from models.encoders.seq_encoder import SequenceEncoder, SequenceMLPEncoder -> from .models.encoders.seq_encoder import SequenceEncoder, SequenceMLPEncoder",
+        "from models.hjepa import HJEPA -> from .models.hjepa import HJEPA",
+        "from models.jepa import FusionEncoder, JEPA, ProjectedEncoder, ProjectedPredictor -> from .models.jepa import FusionEncoder, JEPA, ProjectedEncoder, ProjectedPredictor",
+        "from models.module import Embedder, build_projector -> from .models.module import Embedder, build_projector",
+        "from models.predictors.predictors import ARPredictor, CausalTransformerPredictor -> from .models.predictors.predictors import ARPredictor, CausalTransformerPredictor"
+      ],
+      "upstream_path": "h_jepa/hjepa_utils.py",
+      "upstream_sha256": "sha256:59f54b9ccb5e9b3c9293e86480a3c39c0c4e6bf7b5fba4482e11e205db76f0e7",
+      "vendored_sha256": "sha256:be05e9c80f7884ec464ff52e4f913dc26d852250a5d9ed5691b11bb87639f655"
+    },
+    "loss.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/loss.py",
+      "upstream_sha256": "sha256:648eb2317727321f53e265f867a35ba47293c73aba40d00339d08f0fea595faf",
+      "vendored_sha256": "sha256:648eb2317727321f53e265f867a35ba47293c73aba40d00339d08f0fea595faf"
+    },
+    "models/__init__.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/__init__.py",
+      "upstream_sha256": "sha256:32829af0b030eea9d826a9c98f01155a6d90d49444fbbef17777b7d3874714c4",
+      "vendored_sha256": "sha256:32829af0b030eea9d826a9c98f01155a6d90d49444fbbef17777b7d3874714c4"
+    },
+    "models/encoders/__init__.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/encoders/__init__.py",
+      "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "models/encoders/build_encoder.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/encoders/build_encoder.py",
+      "upstream_sha256": "sha256:f767a407a55dbe4d4cbd9697326bfdec75afdade8c9ccbf7f1b72c310b024f50",
+      "vendored_sha256": "sha256:f767a407a55dbe4d4cbd9697326bfdec75afdade8c9ccbf7f1b72c310b024f50"
+    },
+    "models/encoders/encoders.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/encoders/encoders.py",
+      "upstream_sha256": "sha256:21ebe64d467690e9c734926d9278eca2886903e5c836071b5a65e64a5684ac06",
+      "vendored_sha256": "sha256:21ebe64d467690e9c734926d9278eca2886903e5c836071b5a65e64a5684ac06"
+    },
+    "models/encoders/hf_vit.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/encoders/hf_vit.py",
+      "upstream_sha256": "sha256:01750d793516be3c00adc273bb293231fa4e326a4668bd2c7fdaf24fda31e8e2",
+      "vendored_sha256": "sha256:01750d793516be3c00adc273bb293231fa4e326a4668bd2c7fdaf24fda31e8e2"
+    },
+    "models/encoders/seq_encoder.py": {
+      "edits": [
+        "from loss import init_module_weights -> from ...loss import init_module_weights"
+      ],
+      "upstream_path": "h_jepa/models/encoders/seq_encoder.py",
+      "upstream_sha256": "sha256:f306ff7d7153dc26d045b3287b69868fec371db8090504e4803318f913b43330",
+      "vendored_sha256": "sha256:51156b5e75f4fcbd297681be4eb6b16432725f80925635d363973f415b32b913"
+    },
+    "models/hjepa.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/hjepa.py",
+      "upstream_sha256": "sha256:3373d2bf1796b20aa184666fa32160fb30bdf9f25b77bb66ad9243d45658f0c5",
+      "vendored_sha256": "sha256:3373d2bf1796b20aa184666fa32160fb30bdf9f25b77bb66ad9243d45658f0c5"
+    },
+    "models/jepa.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/jepa.py",
+      "upstream_sha256": "sha256:311b621a0700310c7bd11702a367938e5e2f337f70d31eb3f57bbebb05864beb",
+      "vendored_sha256": "sha256:311b621a0700310c7bd11702a367938e5e2f337f70d31eb3f57bbebb05864beb"
+    },
+    "models/module.py": {
+      "edits": [
+        "from loss import init_module_weights -> from ..loss import init_module_weights"
+      ],
+      "upstream_path": "h_jepa/models/module.py",
+      "upstream_sha256": "sha256:1014f327f7dd46e54851c90ea2d2cf3d3f06c1d4359aa4cc836bec3122a0b486",
+      "vendored_sha256": "sha256:d1ebbacfb16b93ad17ca035ad4d05bab3201f4eeb4e18be653d83497bb980eb2"
+    },
+    "models/predictors/__init__.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/predictors/__init__.py",
+      "upstream_sha256": "sha256:da4f6d9b191aa5516cb15f37536a53f7d4387d59529cea40483cbf1f76299c3d",
+      "vendored_sha256": "sha256:da4f6d9b191aa5516cb15f37536a53f7d4387d59529cea40483cbf1f76299c3d"
+    },
+    "models/predictors/predictors.py": {
+      "edits": [],
+      "upstream_path": "h_jepa/models/predictors/predictors.py",
+      "upstream_sha256": "sha256:fba1dba4ab68b61a764159be5e7a2bb77526ef700aed79fdb54c958a254f7069",
+      "vendored_sha256": "sha256:fba1dba4ab68b61a764159be5e7a2bb77526ef700aed79fdb54c958a254f7069"
+    },
+    "models/probers.py": {
+      "edits": [
+        "from models.module import MLP -> from .module import MLP"
+      ],
+      "upstream_path": "h_jepa/models/probers.py",
+      "upstream_sha256": "sha256:88a3b2e7b1a094f1aba70429ffe992f35bc1e704457bc12b51090b43daca85de",
+      "vendored_sha256": "sha256:a0c475ad402b76767f71bfac0bbae7905a04224fa250a584eb0a534c5f51f80e"
+    }
+  },
+  "license": "MIT (vendor/LICENSE, Copyright the H-JEPA authors)",
+  "policy": "verbatim copies; the only edits rewrite top-level imports (loss, models.*) as package-relative imports",
+  "schema": "issue_123_hjepa_vendor_v1",
+  "upstream": "https://github.com/kevinghst/H-JEPA"
+}
