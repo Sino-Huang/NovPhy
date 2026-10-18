@@ -6,7 +6,7 @@ Parent: #108. Companion to #115. The binding shared rules of #85 apply, and #120
 | --- | --- |
 | Runner | `scripts/run_cost_alignment.py` |
 | Verdict module | `world_model/data/cost_verdicts.py` (light; process-pool workers import only json/gzip/math and the #113 label module) |
-| Artifacts | `.local-artifacts/issue-120-cost-alignment-v1/` (`plan.json`, `smoke.json`, `verdicts.json`, `findings.md`, `summary.json`, `compute.json`, `alignment.svg`, `records-manifest.json`; local only: `records/`, `carriers/`, `data/branches-evaluation.json`, `fit/branches-fit.json`, `ledger/`, `logs/`) |
+| Artifacts | `.local-artifacts/issue-120-cost-alignment-v1/` (committed: `plan.json`, `smoke.json`, `verdicts.json`, `findings.md`, `summary.json`, `compute.json`, `alignment.svg`, `records-manifest.json`, `ledger/`; local only, hashed in the manifest: `records/`, `carriers/`, `data/branches-evaluation.json`, `fit/branches-fit.json`; local logs: `logs/`) |
 | Freeze | Plan frozen 2026-10-18T01:13:30Z (commit ced60d7f), after a passed smoke and before any evaluation verdict under (b)–(d) and any score. Evaluation verdicts were derived once at 01:17:55Z (commit c71e1566, `verdicts.json`), before the first score at 01:18:09Z. The runner is unchanged since the freeze. |
 | Validation | `python -u -m scripts.run_cost_alignment --validate` exits 0 (146 s). `pytest tests/test_issue_120_cost_alignment.py` passes (12 tests). |
 
