@@ -1,0 +1,317 @@
+{
+  "arm_rule_changes_vs_96": "J step-pair frequencies (alpha_T, Delta_D, OL weights) pool this run's J traces over the scheduled cells, which are the mixed cells only; the OL draw uses one PCG64(7202) stream in the frozen order (inventory, level, seed)",
+  "arms": {
+    "C-F-1": "continuous checkpoint, fixed pair (1, continuous) at every step",
+    "C-F-15": "continuous checkpoint, fixed pair (15, continuous) at every step",
+    "C-F-5": "continuous checkpoint, fixed pair (5, continuous) at every step",
+    "C-J": "continuous checkpoint, joint argmax over its three MatchedController logits (horizon-only, complete control set) = #92 continuous-adaptive-e225",
+    "D": "hybrid checkpoint, description-only: Delta fixed at Delta_D, alpha = argmax_alpha L[Delta_D, alpha]; Delta_D = the modal Delta of J's pooled per-seed step-pair frequencies (outcome-free; 225 is divisible by every Delta so Delta_D is always feasible)",
+    "F-1-continuous": "hybrid checkpoint, fixed pair (1, continuous) at every step",
+    "F-1-macro": "hybrid checkpoint, fixed pair (1, macro) at every step",
+    "F-1-micro": "hybrid checkpoint, fixed pair (1, micro) at every step",
+    "F-15-continuous": "hybrid checkpoint, fixed pair (15, continuous) at every step",
+    "F-15-macro": "hybrid checkpoint, fixed pair (15, macro) at every step",
+    "F-15-micro": "hybrid checkpoint, fixed pair (15, micro) at every step",
+    "F-5-continuous": "hybrid checkpoint, fixed pair (5, continuous) at every step",
+    "F-5-macro": "hybrid checkpoint, fixed pair (5, macro) at every step",
+    "F-5-micro": "hybrid checkpoint, fixed pair (5, micro) at every step",
+    "J": "hybrid checkpoint, joint argmax over the nine MatchedController logits at every step (logits with Delta > remaining masked to -inf inside the controller; argmax ties to the lower PAIRS index) = #92 hybrid-adaptive-e225",
+    "M": "hybrid checkpoint, factorized selector from the same logits, no training: Delta* = argmax_Delta logsumexp_alpha L[Delta, alpha], alpha* = argmax_alpha logsumexp_Delta L[Delta, alpha]; pair (Delta*, alpha*)",
+    "OL": "hybrid checkpoint, open-loop: pairs drawn i.i.d. from J's pooled per-seed step-pair frequencies renormalized over the pairs feasible at the remaining horizon (uniform over feasible pairs if their pooled mass is zero); one draw sequence per cell shared by every candidate; one PCG64(7202) stream consumed in the frozen cell order (inventory, member, seed)",
+    "T": "hybrid checkpoint, temporal-only: alpha fixed at alpha_T, Delta = argmax_Delta L[Delta, alpha_T]; alpha_T = the modal alpha of J's pooled per-seed step-pair frequencies (outcome-free)"
+  },
+  "caps": {
+    "engine_seconds": 0,
+    "gpu_seconds": 21600.0,
+    "wall_seconds": 21600.0
+  },
+  "cells": {
+    "angle": 78,
+    "grid": 311,
+    "offset": 76,
+    "power": 47
+  },
+  "claim_boundary": "decision-only rollouts of the frozen ICLR #77 N1 checkpoints and controllers from the #105 F77 anchors of the sealed #109 evaluation levels to endpoint 225 on the Gate-B mixed cells; inventories never pooled; every interval DESCRIPTIVE; zero engine seconds; no training",
+  "contrasts": [
+    "J-F*",
+    "J-F_hindsight",
+    "J-F(1,macro)",
+    "J-F(1,continuous)",
+    "J-M",
+    "J-OL",
+    "J-T",
+    "J-D",
+    "C-J-C-F*"
+  ],
+  "delta": 0.02,
+  "design_delta": {
+    "angle": 0.05,
+    "grid": 0.02,
+    "offset": 0.05,
+    "power": 0.05
+  },
+  "frozen_at": "2026-10-18T07:28:19Z",
+  "frozen_before_scoring": true,
+  "g6_96_literal": 0.05,
+  "g6_half_width": 0.02,
+  "guards": {
+    "G1": "smoke: at least one #96 record with >= 2 distinct costs reproduces exactly on its original cell (bit-equal costs, chosen ordinal, ranking order, steps, schedules, calls, MACs; census over all 3186 #96 records reported), and the #96 G1 criterion (chosen ordinal equal, selected cost within 1e-3) holds on the #96 G1 J and F-15-continuous cells",
+    "G2": "anchor store hash equals the pinned #105 hash, parsed under SCORING_POLICY, covers every scored level, and the smoke re-parse is bit-identical",
+    "G3": "verdict resolution 1.0 on admissible candidates of mixed grid cells; nonfinite share <= 0.1",
+    "G4": "<= 0.2 of mixed grid cells have J or F* fully tied",
+    "G5": "J non-modal step share >= 0.1 on mixed grid cells AND Kendall tau-b(J, F(modal)) < 1 on >= 0.25 of them",
+    "G6": "primary (grid J - F*) half-width <= 0.02",
+    "G7": "every record carries the #111 SCORING_POLICY",
+    "caps": "summed worker GPU seconds <= 21600.0, elapsed scoring wall <= 21600.0 s"
+  },
+  "identity": "issue-104-heldout-contrasts-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/plan.json",
+      "name": "issue_96_plan",
+      "sha256": "sha256:c184830154eff435ee7f18776119d863b542fd1d57c8d73e54ebc0367385adc8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/compute.json",
+      "name": "issue_96_compute",
+      "sha256": "sha256:91639426ff330a03ed4038c905d0c80e30c3c7d1f3fdb45868527923d3703c74"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/frequencies.json",
+      "name": "issue_96_frequencies",
+      "sha256": "sha256:8159d6d8c80cf6846dc4c22011257357169b0b6c5dfac0a9d86b39ecb2965c81"
+    },
+    {
+      "artifact": "scripts/run_tau_ad_within_checkpoint.py",
+      "name": "issue_96_runner",
+      "sha256": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf"
+    },
+    {
+      "artifact": "scripts/run_launch_power_probe.py",
+      "name": "issue_94_runner_bootstrap_and_cell_auc",
+      "sha256": "sha256:27b30063682d45846f894eadc898bf2093ca2f69ea9b82e569f519ec0c2ac774"
+    },
+    {
+      "artifact": "scripts/run_lookahead_control.py",
+      "name": "issue_92_runner_loaders",
+      "sha256": "sha256:f68f4713e71c160d29cb966a40ee1ac22c371c11004fbf8d1ed46b6ebe2c3f47"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/plan.json",
+      "name": "issue_77_dynamics_plan",
+      "sha256": "sha256:5a237208eb5935eed92c57e8c796ac61d0dd681cd1ee2033274ab4836d85510d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "name": "issue_87_plan",
+      "sha256": "sha256:dcc495de4bc47227a4fb0e6736ba1dc138b516f3d436bbf3d527cde2ae4f0ae0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-105-hierarchy-baselines-v1/data/anchors-f77-evaluation.pt",
+      "name": "issue_105_f77_anchor_store",
+      "sha256": "sha256:75931f58a24bf1e583b1b7fd66fc67bfa9950f230877978994bc2233af753c0a"
+    },
+    {
+      "artifact": "scripts/run_gate_b.py",
+      "name": "gate_b_runner",
+      "sha256": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "issue_104_power_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/compute.json",
+      "name": "issue_101_compute",
+      "sha256": "sha256:29dad1e7d4aff733835424f20f67eb849aa196a62b1393b4c793d29e6e0db8ba"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/summary.json",
+      "name": "issue_101_summary",
+      "sha256": "sha256:b65a3c73030273c348d767bf99d0d32fefd686ba0cc62f631f03708f8cb0fc90"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/request_policy.py",
+      "name": "request_policy_module",
+      "sha256": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c"
+    },
+    {
+      "artifact": "world_model/training/matched_dynamics.py",
+      "name": "matched_dynamics",
+      "sha256": "sha256:6c96384926c205250f00dd67c9a21760215cc675b10fff82b5aa3ce314eb4bc6"
+    },
+    {
+      "artifact": "world_model/training/cnn_hybrid.py",
+      "name": "cnn_hybrid",
+      "sha256": "sha256:d72fac36e5e2b1eed30e84c2f149049b4215c321910279b2abb5d621b17a1b51"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-heldout-contrasts-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:2a68f751dc121ecc161e80f9ec6f3660aad43e8300737d1363cd61dbb014d93e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-heldout-contrasts-v1/data/cells.json",
+      "name": "cells",
+      "sha256": "sha256:38f4c122e55cb544deb8d363362011e524ba46752c487330c6a56d45cba4a6e6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/hybrid/predictor.pt",
+      "name": "checkpoint_predictor_hybrid_20260908",
+      "sha256": "sha256:0d6c246aa8493ce5f31297349adc226a7a10db22d9123c270a91c65f56efcbea"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/hybrid/controller.pt",
+      "name": "checkpoint_controller_hybrid_20260908",
+      "sha256": "sha256:7f8f2b81199644b6c61c818ab9e4d73a8bd2f7368738c2cb207b729f3793edb9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/continuous/predictor.pt",
+      "name": "checkpoint_predictor_continuous_20260908",
+      "sha256": "sha256:b91a59b017ddf9481ed68ef5e2f1075f4d2475fdbfda1afc8140b1365f78c911"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/continuous/controller.pt",
+      "name": "checkpoint_controller_continuous_20260908",
+      "sha256": "sha256:3b6e2662ab30a702a50976aec89d306f13c457cc540aeabba61e950b676f65b4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/hybrid/predictor.pt",
+      "name": "checkpoint_predictor_hybrid_20260909",
+      "sha256": "sha256:4a0048cbaaf248f0e168989da2f43c7e0ee999dd85cb3bb93871a3a700fab934"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/hybrid/controller.pt",
+      "name": "checkpoint_controller_hybrid_20260909",
+      "sha256": "sha256:46b63dd28e55d813192e7873c5dcad7ff83c21e7a1702f3cb61a53afaa69aeb6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/continuous/predictor.pt",
+      "name": "checkpoint_predictor_continuous_20260909",
+      "sha256": "sha256:cfceb3083dd1602089b473dd282a70e2a4f92c4120c71b048448e0e97239cccb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/continuous/controller.pt",
+      "name": "checkpoint_controller_continuous_20260909",
+      "sha256": "sha256:e65e31e2e921a44467c56effe66a9aa1a7952c2dd80d3b1437afa25eaecbde9c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/hybrid/predictor.pt",
+      "name": "checkpoint_predictor_hybrid_20260910",
+      "sha256": "sha256:3d8ac686cce8c5633733f21e8c7cde84b847f95951dfe7adc5a2558c2b74a8e3"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/hybrid/controller.pt",
+      "name": "checkpoint_controller_hybrid_20260910",
+      "sha256": "sha256:f8ff7bee606aca51398eecf9527339050464a973f753d00c82e4b7f7438a9f28"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/continuous/predictor.pt",
+      "name": "checkpoint_predictor_continuous_20260910",
+      "sha256": "sha256:f26f0e97e6bac95eb72f7cb0b91f1dc3ec9dc6f3d24ca66aa60822db9ddeed50"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/continuous/controller.pt",
+      "name": "checkpoint_controller_continuous_20260910",
+      "sha256": "sha256:488c0e80009e75984de89fee840fd9eff5d4199d9bfe61a30fd5564da057666f"
+    }
+  ],
+  "inventories": [
+    "grid",
+    "offset",
+    "angle",
+    "power"
+  ],
+  "issue": 104,
+  "launch": "phase 1 (F x9, J, M, C-F x3, C-J) on 4 GPUs once; --frequencies once; phase 2 (T, D, OL) once",
+  "primary_inventory": "grid",
+  "records": 54,
+  "related_issues": [
+    96,
+    101,
+    105,
+    108,
+    109,
+    111,
+    112
+  ],
+  "role": "#104 work item 3: the #96 contrast set re-run on the sealed #109 evaluation split, scored once",
+  "rules": {
+    "g6": "G6 (#104 reading): primary interval half-width <= delta = 0.02; reported per inventory for J - F* and per contrast; the #96 plan's literal G6 bound 0.05 and the #104 design delta (grid 0.02, union inventories 0.05) are reported alongside; where G6 fails the achieved half-width is stated with the mixed-level count m and m x (half-width / delta)^2",
+    "guard_failure": "any failed guard turns every token of that cost into readiness_or_precision_insufficient",
+    "primary": "theta_grid = AUC_J - AUC_F* over the mixed grid cells (tie-free cost); supported iff all guards pass AND mean >= 0.02 AND lower bound > 0; not_supported_by_this_experiment iff all guards pass AND upper bound < 0.02; otherwise readiness_or_precision_insufficient",
+    "primary_cost": "tie_free (#111 PRIMARY_COST, pre-declared); the #96 count cost is secondary, scored from the same endpoints and reported in full with its own guards",
+    "replication": "J - F* on offset / angle / power reported verbatim with the count meeting mean >= delta AND lower > 0 (the #96 rule, DESCRIPTIVE); not interpretable if any guard fails",
+    "secondary_reading": "the #112 Gate-B predictor's #96-style contrasts published by #101 (compute.json), re-tabulated with half-widths and the G6 reading; not re-scored",
+    "secondary_tokens": "J - M and J - OL on the grid: the same rule with guards G1-G5, G7 and caps and the contrast's own half-width <= 0.02 in place of G6 (the #96 rule)",
+    "selection": "F* (cross-fit r-dagger) = the fixed pair with the highest mean, over the other three inventories, of the member-mean AUC; F_hindsight = in-inventory best fixed pair; C-F* likewise over C-F; ties by arm order; selected per cost from that cost's AUCs (#96 rules)"
+  },
+  "runner": "scripts/run_heldout_96_contrasts.py",
+  "runner_sha256_at_freeze": "sha256:7c9a8d2843b9af6232c6f2e6beea71b731436558f8fde8c90ea543542f8d996e",
+  "scheduled_cells": 1536,
+  "schema": "issue_104_heldout_contrasts_plan_v1",
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "smoke_evidence": {
+    "census_totals": {
+      "chosen_equal": 3168,
+      "costs_bit_equal": 1126,
+      "counts_equal": 3101,
+      "exact": 1048,
+      "exact_with_two_or_more_distinct_costs": 16,
+      "ol_schedule_equal": 3186,
+      "order_equal": 3066,
+      "schedules_equal": 3038,
+      "steps_equal": 3186,
+      "within_cost_tolerance": 2272
+    },
+    "checks": {
+      "S1_exact_96_record": true,
+      "S2_96_g1_criterion": true,
+      "S3_S4_cells_and_anchors": true,
+      "S5_determinism": true,
+      "S6_checkpoint_identity": true,
+      "S7_96_anchor_binding": true
+    },
+    "exact_record": "decision--angle--issue-77-n1-001--seed20260910--D",
+    "ok": true,
+    "projection": 2563.994160495411,
+    "run_at": "2026-10-18T07:27:48Z"
+  },
+  "stack": {
+    "anchors": "#105 F77 store: the #71 repaired-adapter batch-1 parse of each evaluation level's decision frame (shot frame 0 of its first complete candidate, the Gate-B rule), parsed under deterministic_scoring()",
+    "controller": "#77 N1 MatchedController per seed and family (the #96 controllers)",
+    "costs": {
+      "count": "frozen TaskObjective: 1000 * clamp(pig presence, 0, 1) + sum over block slots of clamp(block presence, 0, 1)",
+      "tie_free": "pig presence (unclamped) - 0.1 * Euclidean displacement of the pig slot center (normalized screen units) between the start carrier and the endpoint carrier; lower is better"
+    },
+    "predictor": "#77 N1 hybrid / continuous checkpoints bound by the #87 plan (the #96 stack)",
+    "rollout": "request_policy.rollout_endpoints with t96.select_pairs / t96.arm_spec, endpoint 225"
+  },
+  "statistics": {
+    "cell_auc": "t96.cell_view (P(success cost < failure cost), ties 0.5, admissible candidates)",
+    "half_width": "(upper - lower) / 2",
+    "interval": "t96.contrast: paired per (level, seed); level-clustered percentile bootstrap of member means, 10000 draws, PCG64 7201, [0.025, 0.975], DESCRIPTIVE"
+  },
+  "validation_command": "python -u -m scripts.run_heldout_96_contrasts --validate",
+  "version": 1
+}
