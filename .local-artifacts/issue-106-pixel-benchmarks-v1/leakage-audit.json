@@ -1,0 +1,1769 @@
+{
+ "digest": "sha256 over (key, type, shape, length, content) per static key; strings as UTF-8 JSON, booleans uint8, integers int64, floats float64 (little-endian); storage width and object pointers do not enter",
+ "frozen_digest_overlap": {
+  "dynamics|readout": {
+   "layouts": 6,
+   "names": 996,
+   "parameter_sets": 0
+  },
+  "dynamics|testing": {
+   "layouts": 6,
+   "names": 0,
+   "parameter_sets": 0
+  },
+  "readout|testing": {
+   "layouts": 6,
+   "names": 0,
+   "parameter_sets": 0
+  }
+ },
+ "keys": {
+  "layout": [
+   "initial_position",
+   "initial_rotation",
+   "scale"
+  ],
+  "parameters": [
+   "initial_position",
+   "initial_rotation",
+   "scale",
+   "color",
+   "mass",
+   "dynamic_friction",
+   "static_friction",
+   "bounciness",
+   "push_force",
+   "push_position",
+   "push_time",
+   "model_names"
+  ],
+  "physical": [
+   "initial_position",
+   "initial_rotation",
+   "scale",
+   "mass",
+   "dynamic_friction",
+   "static_friction",
+   "bounciness",
+   "push_force",
+   "push_position",
+   "push_time",
+   "model_names"
+  ]
+ },
+ "overlap": {
+  "dynamics|readout": {
+   "layouts": 6,
+   "names": 996,
+   "parameter_sets": 0,
+   "physical_sets": 45
+  },
+  "dynamics|testing": {
+   "layouts": 6,
+   "names": 0,
+   "parameter_sets": 0,
+   "physical_sets": 12
+  },
+  "readout|testing": {
+   "layouts": 6,
+   "names": 0,
+   "parameter_sets": 0,
+   "physical_sets": 13
+  }
+ },
+ "parameter_sets_zero": true,
+ "physical_overlap": {
+  "closest_pair": {
+   "contact_labels_identical": true,
+   "frames": [
+    151,
+    151
+   ],
+   "max_abs_position": 3.252178430557251e-05,
+   "max_abs_velocity": 0.0008807182312011719,
+   "split": "dynamics",
+   "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom_2-redyellow_0004.hdf5",
+   "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_0001.hdf5"
+  },
+  "label": "DESCRIPTIVE (post-freeze, phase-B/C review); not part of the frozen G1 rule",
+  "near_identical": {
+   "rule": "same native frame count, identical per-frame target-contact labels and max |position difference| <= 0.001 world units",
+   "testing_trials": [
+    "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0003.hdf5",
+    "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom_2-redyellow_0004.hdf5",
+    "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+    "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom_2-redyellow_0002.hdf5"
+   ]
+  },
+  "pairs": [
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     161,
+     171
+    ],
+    "max_abs_position": 0.005848884582519531,
+    "max_abs_velocity": 1.6511377096176147,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_0008.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     161,
+     171
+    ],
+    "max_abs_position": 0.005848884582519531,
+    "max_abs_velocity": 1.6511377096176147,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0008.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006660618120804429,
+    "max_abs_velocity": 0.2639949768781662,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_boxroom_0003.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006660618120804429,
+    "max_abs_velocity": 0.2639949768781662,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0003.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.0001433640718460083,
+    "max_abs_velocity": 0.0021321289241313934,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_boxroom_0014.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.0001433640718460083,
+    "max_abs_velocity": 0.0021321289241313934,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0014.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006072228075936437,
+    "max_abs_velocity": 0.19001196324825287,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_0014.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006072228075936437,
+    "max_abs_velocity": 0.19001196324825287,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0014.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 3.252178430557251e-05,
+    "max_abs_velocity": 0.0008807182312011719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 3.252178430557251e-05,
+    "max_abs_velocity": 0.0008807182312011719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.004162859171628952,
+    "max_abs_velocity": 0.016959428787231445,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.004162859171628952,
+    "max_abs_velocity": 0.016959428787231445,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     170,
+     171
+    ],
+    "max_abs_position": 0.00129014253616333,
+    "max_abs_velocity": 0.06986692547798157,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_0008.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     170,
+     171
+    ],
+    "max_abs_position": 0.00129014253616333,
+    "max_abs_velocity": 0.06986692547798157,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0008.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     177
+    ],
+    "max_abs_position": 0.005971446633338928,
+    "max_abs_velocity": 1.6135032773017883,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_0011.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     176
+    ],
+    "max_abs_position": 0.00479651615023613,
+    "max_abs_velocity": 1.1904199123382568,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_0021.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     177
+    ],
+    "max_abs_position": 0.005971446633338928,
+    "max_abs_velocity": 1.6135032773017883,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0011.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     176
+    ],
+    "max_abs_position": 0.00479651615023613,
+    "max_abs_velocity": 1.1904199123382568,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0021.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     170
+    ],
+    "max_abs_position": 0.00033386796712875366,
+    "max_abs_velocity": 0.027796268463134766,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_0011.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     170
+    ],
+    "max_abs_position": 0.00033386796712875366,
+    "max_abs_velocity": 0.027796268463134766,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0011.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     162
+    ],
+    "max_abs_position": 0.005947485566139221,
+    "max_abs_velocity": 1.089015245437622,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_0010.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     171,
+     162
+    ],
+    "max_abs_position": 0.005947485566139221,
+    "max_abs_velocity": 1.089015245437622,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0010.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.00438845157623291,
+    "max_abs_velocity": 0.20474350452423096,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.00438845157623291,
+    "max_abs_velocity": 0.20474350452423096,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.006056561833247542,
+    "max_abs_velocity": 0.2867220938205719,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     165,
+     175
+    ],
+    "max_abs_position": 0.005026292055845261,
+    "max_abs_velocity": 0.7493256330490112,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     165,
+     174
+    ],
+    "max_abs_position": 0.005130380392074585,
+    "max_abs_velocity": 0.9883404970169067,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     165,
+     175
+    ],
+    "max_abs_position": 0.005026292055845261,
+    "max_abs_velocity": 0.7493256330490112,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     165,
+     174
+    ],
+    "max_abs_position": 0.005130380392074585,
+    "max_abs_velocity": 0.9883404970169067,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_boxroom_2_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     165,
+     165
+    ],
+    "max_abs_position": 0.0003930330276489258,
+    "max_abs_velocity": 0.09309923648834229,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     165,
+     165
+    ],
+    "max_abs_position": 0.0003930330276489258,
+    "max_abs_velocity": 0.09309923648834229,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.0001138448715209961,
+    "max_abs_velocity": 0.011538326740264893,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_0003.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     151,
+     151
+    ],
+    "max_abs_position": 0.0001138448715209961,
+    "max_abs_velocity": 0.011538326740264893,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4midRM1_tdwroom_2_0003.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     224,
+     237
+    ],
+    "max_abs_position": 0.0021581649780273438,
+    "max_abs_velocity": 0.5697122812271118,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0041.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     224,
+     237
+    ],
+    "max_abs_position": 0.0021581649780273438,
+    "max_abs_velocity": 0.5697122812271118,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0041.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     224,
+     239
+    ],
+    "max_abs_position": 0.006180524826049805,
+    "max_abs_velocity": 1.4181638360023499,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0007.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     224,
+     238
+    ],
+    "max_abs_position": 0.009512066841125488,
+    "max_abs_velocity": 1.5399190485477448,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0023.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     224,
+     239
+    ],
+    "max_abs_position": 0.006180524826049805,
+    "max_abs_velocity": 1.4181638360023499,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0007.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     224,
+     239
+    ],
+    "max_abs_position": 0.006180524826049805,
+    "max_abs_velocity": 1.4181638360023499,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0023.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     251
+    ],
+    "max_abs_position": 0.005835533142089844,
+    "max_abs_velocity": 0.4325298070907593,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0015.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0018.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0025.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     246
+    ],
+    "max_abs_position": 0.006159782409667969,
+    "max_abs_velocity": 1.562780737876892,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0026.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0049.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     251
+    ],
+    "max_abs_position": 0.005835533142089844,
+    "max_abs_velocity": 0.4325298070907593,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0015.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0018.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0025.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0026.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0049.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0006.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     246
+    ],
+    "max_abs_position": 0.006159782409667969,
+    "max_abs_velocity": 1.562780737876892,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0006.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     249
+    ],
+    "max_abs_position": 0.0028532743453979492,
+    "max_abs_velocity": 0.8408167362213135,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     250
+    ],
+    "max_abs_position": 0.0028493404388427734,
+    "max_abs_velocity": 0.6288442611694336,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     232
+    ],
+    "max_abs_position": 0.011700987815856934,
+    "max_abs_velocity": 1.5926640331745148,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     232
+    ],
+    "max_abs_position": 0.011700987815856934,
+    "max_abs_velocity": 1.5926640331745148,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     250
+    ],
+    "max_abs_position": 0.007311701774597168,
+    "max_abs_velocity": 1.4933658242225647,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0008.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     249
+    ],
+    "max_abs_position": 0.007311701774597168,
+    "max_abs_velocity": 1.4933658242225647,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0024.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     250
+    ],
+    "max_abs_position": 0.007311701774597168,
+    "max_abs_velocity": 1.4933658242225647,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0044.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     250
+    ],
+    "max_abs_position": 0.007311701774597168,
+    "max_abs_velocity": 1.4933658242225647,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0008.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     249
+    ],
+    "max_abs_position": 0.007311701774597168,
+    "max_abs_velocity": 1.4933658242225647,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0024.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     250
+    ],
+    "max_abs_position": 0.007311701774597168,
+    "max_abs_velocity": 1.4933658242225647,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0006.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0044.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     249
+    ],
+    "max_abs_position": 0.002238348126411438,
+    "max_abs_velocity": 0.8516033887863159,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     250
+    ],
+    "max_abs_position": 0.002909421920776367,
+    "max_abs_velocity": 0.6293116807937622,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     246
+    ],
+    "max_abs_position": 0.005676984786987305,
+    "max_abs_velocity": 1.5017999410629272,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     232
+    ],
+    "max_abs_position": 0.011120796203613281,
+    "max_abs_velocity": 1.6034506857395172,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     228,
+     232
+    ],
+    "max_abs_position": 0.011120796203613281,
+    "max_abs_velocity": 1.6034506857395172,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     251
+    ],
+    "max_abs_position": 0.005835533142089844,
+    "max_abs_velocity": 0.4325298070907593,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0015.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0018.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0025.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     246
+    ],
+    "max_abs_position": 0.006159782409667969,
+    "max_abs_velocity": 1.562780737876892,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0026.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0049.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     251
+    ],
+    "max_abs_position": 0.005835533142089844,
+    "max_abs_velocity": 0.4325298070907593,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0015.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0018.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0025.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0026.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     252
+    ],
+    "max_abs_position": 0.004576325416564941,
+    "max_abs_velocity": 1.1122292280197144,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0049.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     247
+    ],
+    "max_abs_position": 0.0061386823654174805,
+    "max_abs_velocity": 0.19139105081558228,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0006.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     248,
+     246
+    ],
+    "max_abs_position": 0.006159782409667969,
+    "max_abs_velocity": 1.562780737876892,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0006.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     249
+    ],
+    "max_abs_position": 0.0028532743453979492,
+    "max_abs_velocity": 0.8408167362213135,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     250
+    ],
+    "max_abs_position": 0.0028493404388427734,
+    "max_abs_velocity": 0.6288442611694336,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     246
+    ],
+    "max_abs_position": 0.006287574768066406,
+    "max_abs_velocity": 1.4910132884979248,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     232
+    ],
+    "max_abs_position": 0.011700987815856934,
+    "max_abs_velocity": 1.5926640331745148,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     242,
+     232
+    ],
+    "max_abs_position": 0.011700987815856934,
+    "max_abs_velocity": 1.5926640331745148,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     253
+    ],
+    "max_abs_position": 0.0029224157333374023,
+    "max_abs_velocity": 0.9035807847976685,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_0012.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     253
+    ],
+    "max_abs_position": 0.0029224157333374023,
+    "max_abs_velocity": 0.9035807847976685,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_boxroom_2_0012.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     253
+    ],
+    "max_abs_position": 0.0029224157333374023,
+    "max_abs_velocity": 0.9035807847976685,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0000.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     252
+    ],
+    "max_abs_position": 0.002119302749633789,
+    "max_abs_velocity": 0.216325581073761,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0015.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     253
+    ],
+    "max_abs_position": 0.0029224157333374023,
+    "max_abs_velocity": 0.9035807847976685,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     253
+    ],
+    "max_abs_position": 0.0029224157333374023,
+    "max_abs_velocity": 0.9035807847976685,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0000.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     251
+    ],
+    "max_abs_position": 0.005123019218444824,
+    "max_abs_velocity": 1.0355595350265503,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0015.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     250,
+     253
+    ],
+    "max_abs_position": 0.0029224157333374023,
+    "max_abs_velocity": 0.9035807847976685,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_boxroom_2_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     302
+    ],
+    "max_abs_position": 0.004053652286529541,
+    "max_abs_velocity": 0.3988625407218933,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0020.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     302
+    ],
+    "max_abs_position": 0.028106987476348877,
+    "max_abs_velocity": 1.3725371956825256,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0035.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     302
+    ],
+    "max_abs_position": 0.028106987476348877,
+    "max_abs_velocity": 1.3725371956825256,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0039.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     302
+    ],
+    "max_abs_position": 0.004053652286529541,
+    "max_abs_velocity": 0.3988625407218933,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_tdwroom_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     301
+    ],
+    "max_abs_position": 0.02023547887802124,
+    "max_abs_velocity": 1.4660142362117767,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0001.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_tdwroom_0018.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     301,
+     298
+    ],
+    "max_abs_position": 0.014070563018321991,
+    "max_abs_velocity": 1.2242628335952759,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0001.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     301,
+     298
+    ],
+    "max_abs_position": 0.014070563018321991,
+    "max_abs_velocity": 1.2242628335952759,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0004.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     301,
+     298
+    ],
+    "max_abs_position": 0.014070563018321991,
+    "max_abs_velocity": 1.2242628335952759,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0016.hdf5"
+   },
+   {
+    "contact_labels_identical": true,
+    "frames": [
+     301,
+     301
+    ],
+    "max_abs_position": 0.013941831886768341,
+    "max_abs_velocity": 0.6026905179023743,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0038.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     301,
+     298
+    ],
+    "max_abs_position": 0.014070563018321991,
+    "max_abs_velocity": 1.2242628335952759,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0040.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     301,
+     302
+    ],
+    "max_abs_position": 0.01204615831375122,
+    "max_abs_velocity": 1.3563324809074402,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0002.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_tdwroom_0019.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     289
+    ],
+    "max_abs_position": 0.04181325435638428,
+    "max_abs_velocity": 1.4648748561739922,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0005.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0011.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     289
+    ],
+    "max_abs_position": 0.03505212068557739,
+    "max_abs_velocity": 1.4635878652334213,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0005.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0021.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     289
+    ],
+    "max_abs_position": 0.04181325435638428,
+    "max_abs_velocity": 1.4648748561739922,
+    "split": "dynamics",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0005.hdf5",
+    "trial": "data/physion-dominoes/extracted/dynamics/Dominoes/pilot_dominoes_4mid_tdwroom_0031.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     283
+    ],
+    "max_abs_position": 0.04097485542297363,
+    "max_abs_velocity": 1.4641508758068085,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0005.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_tdwroom_0010.hdf5"
+   },
+   {
+    "contact_labels_identical": false,
+    "frames": [
+     302,
+     283
+    ],
+    "max_abs_position": 0.04097485542297363,
+    "max_abs_velocity": 1.4641508758068085,
+    "split": "readout",
+    "testing": "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0005.hdf5",
+    "trial": "data/physion-dominoes/extracted/readout/Dominoes/pilot_dominoes_4mid_tdwroom_0014.hdf5"
+   }
+  ],
+  "testing_sharing": {
+   "both": 12,
+   "dynamics": 15,
+   "either": 20,
+   "readout": 17
+  },
+  "testing_trials": 150,
+  "testing_trials_shared": [
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0001.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0002.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom-redyellow_0003.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_boxroom_2-redyellow_0004.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0001.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0003.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0004.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom-redyellow_0006.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4midRM1_tdwroom_2-redyellow_0002.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0001.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0002.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0003.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom-redyellow_0006.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0000.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0002.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0003.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_boxroom_2-redyellow_0004.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0001.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0002.hdf5",
+   "data/physion-dominoes/extracted/testing/Dominoes/hdf5s-redyellow/pilot_dominoes_4mid_tdwroom-redyellow_0005.hdf5"
+  ]
+ },
+ "plan_identity": "issue-106-pixel-benchmarks-v1",
+ "schema": "issue_106_leakage_audit_v1",
+ "trials": {
+  "dynamics": 2000,
+  "readout": 996,
+  "testing": 150
+ }
+}

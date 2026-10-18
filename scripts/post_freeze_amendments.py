@@ -1,14 +1,16 @@
-"""Disclosed post-freeze amendments of runners that later frozen plans pin as inputs.
+"""Disclosed post-freeze amendments of hash-pinned runners and modules: the one sanctioned registry.
 
-A frozen plan binds every upstream runner it imports by sha256 (``plan["inputs"]``), and ``load_plan``
-refuses to run on drift. After its own freeze a runner may still change, but only for reporting,
-guard propagation or validation hardening, never for evidence (the phase-A review fixes of the #108
-after-ICLR program). Each such change is listed here: the runner, the frozen sha256 values it replaces,
-the sha256 of its amended bytes and what changed; the ticket documents name the commit. ``matches``
-accepts a pinned input only if its current bytes are the frozen bytes or exactly the listed amendment
-of them, so any other change still refuses. Every downstream ``--validate`` still regenerates its
-published records byte for byte and re-scores spot checks through the amended module, so an amendment
-that changed evidence would fail validation.
+A frozen plan binds runners and modules by sha256: the upstream runners it imports (``plan["inputs"]``)
+and, in some plans, its own runner and modules (``runner_sha256_at_freeze``, ``inputs.modules``).
+``load_plan`` refuses to run on drift of an enforced pin. After its freeze a runner or module may still
+change, but only for digest repair, reporting, guard propagation or validation hardening, never for
+evidence (the phase-A and phase-B/C review fixes of the #108 after-ICLR program), or for the disclosed
+pre-scoring implementation repair listed below. Every such change is listed here: the file, the frozen
+sha256 values it replaces (earlier disclosed amendments of it included), the sha256 of its amended bytes
+and what changed; the ticket documents name the commit. ``matches`` accepts a pinned file only if its
+current bytes are the frozen bytes or exactly the listed amendment of them, so any other change still
+refuses. Every ``--validate`` still regenerates its published records byte for byte through the amended
+file, so an amendment that changed evidence would fail validation.
 """
 from __future__ import annotations
 
@@ -38,6 +40,27 @@ AMENDMENTS = {
         "sha256": "sha256:609e30af50798e7ecb50b905de195658fd2c77cd4a98a473284606ad4e921721",
         "change": ("a failed guard is reported with the statement that every secondary token is not interpretable "
                    "(frozen rule unchanged); load_plan uses this registry")},
+    "world_model/data/pixel_benchmarks.py": {
+        "issue": 106, "replaces": ("sha256:b495dfe77dc4c274fe8ce32a1576348b1794ac2ac7bb65fb66da5a0ecc0a9a09",),
+        "sha256": "sha256:4c2b8e5359e75a3df7dbc8db3757d847655cf8f07b83dff41fd75959ed04346c",
+        "change": ("A1 (parse stage, before any predictor, policy or score): the 512 x 512 Physion testing frames are "
+                   "resized to the frozen 256 x 256 parser input with the PIL box filter and the segmentation presence "
+                   "threshold is scaled to the stored area; testing labels re-derived")},
+    "world_model/training/pixel_carrier.py": {
+        "issue": 106, "replaces": ("sha256:bf34939649e8cc5d5d5357450a9e28de249755e5c42cac5e9a20b08138ee4a62",),
+        "sha256": "sha256:5efd891e635fcddac1aeb951fdc46b031ff760ea4acae70b807d6f15e7d7d2a3",
+        "change": ("A2 (after scoring): slot_attributes gains min_frames (default 1 = the frozen behaviour) for the "
+                   "EXPLORATORY readout; frozen records unchanged")},
+    "scripts/run_pixel_benchmarks.py": {
+        "issue": 106, "replaces": ("sha256:60e9371d95f0e285583008c298647742ee3a2fc3dcf68050d512bb639edaf84a",
+                                   "sha256:cc868cba940c72acc6e282809a02974e13323c610281f888cf24527ebb910d27",
+                                   "sha256:7d8f18fd1c43b62fe56467394793e2899dcf463ab8515d9ce2aa96c06fed34cf"),
+        "sha256": "sha256:6ab660e2988028b7fd55c95db4c728d7f2127e607fea715359073fd753e20878",
+        "change": ("A1 amendment listing, A2 EXPLORATORY readout mode; A3 (phase-B/C review): the Physion static "
+                   "digest hashes canonical string / number contents instead of object pointers, mode leakage-audit "
+                   "re-derives G1 on the frozen membership with it and reports the colour-excluded physical overlap, "
+                   "G1 reads that audit and --validate regenerates it, load_plan verifies data_manifest_sha256 and "
+                   "accepts module drift only through this registry, publication wrapped in deterministic_scoring()")},
 }
 
 

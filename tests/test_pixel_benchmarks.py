@@ -103,3 +103,71 @@ def test_grouped_bootstrap_point_is_pooled_mean():
     values = np.array([[1, 0, 1, 1], [0, 0, 1, 1]], float)
     stat = pc.clustered_bootstrap(values, groups=[0, 0, 1, 2], draws=200)
     assert abs(stat["mean"] - 0.625) < 1e-12 and stat["clusters"] == 3
+
+
+# --- phase-B/C review: canonical G1 digest, data pin and the amendment registry ------------------------------
+
+class Static(dict):
+    """Stands in for an h5py group: ``static[key][()]`` returns the stored value."""
+
+    def __getitem__(self, key):
+        value = dict.__getitem__(self, key)
+        return {(): value}
+
+
+def test_static_digest_hashes_contents_not_storage():
+    from scripts import run_pixel_benchmarks as runner
+    keys = ("model_names", "push_time", "mass")
+    names = np.array([b"cube", b"vase_05"], dtype=object)
+    base = Static(model_names=names, push_time=np.int64(30), mass=np.array([2.0, 500.0]))
+    digest = runner.static_digest(base, keys)
+    copy = np.empty(2, dtype=object)
+    copy[:] = [bytes(b"cu") + b"be", b"vase_05"]  # equal contents, distinct objects
+    assert runner.static_digest(Static(base, model_names=copy), keys) == digest
+    assert runner.static_digest(Static(base, model_names=np.array(["cube", "vase_05"])), keys) == digest
+    assert runner.static_digest(Static(base, push_time=np.int32(30)), keys) == digest
+    assert runner.static_digest(Static(base, model_names=np.array([b"cube", b"vase_06"], dtype=object)), keys) != digest
+    assert runner.static_digest(Static(base, push_time=np.int64(31)), keys) != digest
+    assert runner.static_digest(Static(base, mass=np.array([[2.0, 500.0]])), keys) != digest  # shape delimited
+    del base["mass"]
+    assert runner.static_digest(base, keys) != digest  # absence marked
+    assert "color" in runner.PHYSION_PARAMETERS and "color" not in runner.PHYSION_PHYSICAL
+
+
+def test_load_plan_accepts_modules_only_through_the_registry_and_checks_the_data_manifest(tmp_path):
+    import json
+    import shutil
+
+    import pytest
+
+    from scripts import run_pixel_benchmarks as runner
+    if not (runner.OUTPUT / "plan.json").is_file():
+        pytest.skip("issue-106 publication not present")
+    plan = runner.load_plan(runner.OUTPUT)
+    assert all(runner.accepted_hashes(plan, runner.module_hashes()).values())
+    drifted = {**runner.module_hashes(), "world_model/data/pixel_benchmarks.py": "0" * 64}
+    assert not runner.accepted_hashes(plan, drifted)["world_model/data/pixel_benchmarks.py"]
+    for name in ("plan.json", "smoke.json", "data-manifest.json"):
+        shutil.copy(runner.OUTPUT / name, tmp_path / name)
+    runner.load_plan(tmp_path)
+    manifest = json.loads((tmp_path / "data-manifest.json").read_text())
+    (tmp_path / "data-manifest.json").write_text(json.dumps(manifest) + " ")
+    with pytest.raises(SystemExit, match="data-manifest.json drift"):
+        runner.load_plan(tmp_path)
+
+
+def test_published_g1_reads_the_canonical_audit():
+    import json
+
+    import pytest
+
+    from scripts import run_pixel_benchmarks as runner
+    if not (runner.OUTPUT / "leakage-audit.json").is_file():
+        pytest.skip("issue-106 leakage audit not present")
+    audit = json.loads((runner.OUTPUT / "leakage-audit.json").read_text())
+    summary = json.loads((runner.OUTPUT / "summary.json").read_text())
+    assert summary["guards"]["G1"]["passed"] is audit["parameter_sets_zero"] is True
+    sharing = audit["physical_overlap"]["testing_sharing"]
+    assert (sharing["either"], sharing["dynamics"], sharing["readout"], sharing["both"]) == (20, 15, 17, 12)
+    assert "do not establish generalization to independent physical realizations" in \
+        summary["split_overlap"]["qualification"]

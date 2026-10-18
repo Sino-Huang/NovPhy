@@ -13,7 +13,10 @@ Modes (one process per GPU for the sharded ones: ``--workers 4 --worker k`` with
   policy    J (nine requests) and J-cont (horizon-only, continuous requests) per predictor member (sharded)
   score     deterministic scoring: rollout errors, CLEVRER QA, Physion OCP (sharded by member)
   publish   tables, contrasts, dispositions, guards, compute, findings, records manifest
-  validate  regenerate the published files byte for byte and spot re-score (also ``--validate``)
+  leakage-audit  G1 on the frozen Physion membership with the canonical static digest, and the DESCRIPTIVE
+            physical overlap (colour excluded) with trajectory distances (post-freeze, CPU only)
+  validate  regenerate the published files and the leakage audit byte for byte and require the stored spot check
+            (mode ``spot``, G5) to have passed (also ``--validate``)
 """
 from __future__ import annotations
 
@@ -37,6 +40,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import post_freeze_amendments as amendments  # noqa: E402
 from world_model.data import pixel_benchmarks as pb  # noqa: E402
 from world_model.model import Abstraction  # noqa: E402
 from world_model.planning import scoring_harness as harness  # noqa: E402
@@ -52,7 +56,7 @@ OUTPUT = ROOT / ".local-artifacts/issue-106-pixel-benchmarks-v1"
 IDENTITY = "issue-106-pixel-benchmarks-v1"
 VALIDATION_COMMAND = "python -u -m scripts.run_pixel_benchmarks --validate"
 SCHEMA = {k: f"issue_106_{k}_v1" for k in ("plan", "smoke", "record", "report", "compute", "ledger", "summary",
-                                            "manifest", "data_manifest", "fidelity")}
+                                            "manifest", "data_manifest", "fidelity", "leakage_audit")}
 BENCHES = ("clevrer", "physion")
 FAMILIES = ("hybrid", "label-free")
 SEEDS = (20260908, 20260909, 20260910, 20260911, 20260912)
@@ -289,6 +293,34 @@ def clevrer_membership(split):
 
 PHYSION_PARAMETERS = ("initial_position", "initial_rotation", "scale", "color", "mass", "dynamic_friction",
                       "static_friction", "bounciness", "push_force", "push_position", "push_time", "model_names")
+PHYSION_LAYOUT = ("initial_position", "initial_rotation", "scale")
+PHYSION_PHYSICAL = tuple(k for k in PHYSION_PARAMETERS if k != "color")  # appearance-only colour excluded
+
+
+def canonical_value(value):
+    """(type, shape, bytes) of a static HDF5 value by content: strings (object, bytes or unicode arrays) as UTF-8
+    JSON, booleans as uint8, integers as little-endian int64, floats as little-endian float64. Storage width, byte
+    order and object pointers do not enter (the frozen digest serialized object-dtype ``model_names`` as pointers)."""
+    array = np.asarray(value)
+    if array.dtype.kind in "OSU":
+        items = [x.decode() if isinstance(x, bytes) else str(x) for x in array.reshape(-1).tolist()]
+        return "str", array.shape, json.dumps(items).encode()
+    kind, dtype = {"b": ("bool", "<u1"), "i": ("int", "<i8"), "u": ("int", "<i8"),
+                   "f": ("float", "<f8")}[array.dtype.kind]
+    return kind, array.shape, np.ascontiguousarray(array, dtype).tobytes()
+
+
+def static_digest(static, keys):
+    """sha256 over the canonical values of ``keys`` (key, type, shape and length delimited; absent keys marked)."""
+    digest = hashlib.sha256()
+    for key in keys:
+        if key in static:
+            kind, shape, payload = canonical_value(static[key][()])
+            head = json.dumps([key, kind, list(shape), len(payload)]).encode()
+        else:
+            head, payload = json.dumps([key, None]).encode(), b""
+        digest.update(len(head).to_bytes(8, "little") + head + payload)
+    return digest.hexdigest()
 
 
 def _physion_header(path):
@@ -298,11 +330,8 @@ def _physion_header(path):
         with h5py.File(path, "r") as h:
             static = h["static"]
             pb.physion_roles(static)
-            def digest(keys):
-                return hashlib.sha256(b"".join(np.ascontiguousarray(static[k][()]).tobytes()
-                                               for k in keys if k in static)).hexdigest()
-            header["layout_sha256"] = digest(("initial_position", "initial_rotation", "scale"))
-            header["parameters_sha256"] = digest(PHYSION_PARAMETERS)
+            header["layout_sha256"] = static_digest(static, PHYSION_LAYOUT)
+            header["parameters_sha256"] = static_digest(static, PHYSION_PARAMETERS)
         header["error"] = None
     except Exception as error:  # typed: unreadable or out-of-contract trial
         header = {"name": Path(path).stem, "error": f"{type(error).__name__}: {error}"}
@@ -329,6 +358,100 @@ def physion_membership(split, glitchy):
         else:
             members.append(h)
     return members, excluded
+
+
+FIT_SPLITS = ("dynamics", "readout")
+SPLIT_PAIRS = (("dynamics", "readout"), ("dynamics", "testing"), ("readout", "testing"))
+NEAR_IDENTICAL_POSITION = 1e-3  # world units; DESCRIPTIVE reporting threshold set after the review, not a guard
+
+
+def _physion_signatures(path):
+    import h5py
+    with h5py.File(pb.ROOT / path, "r") as h:
+        static = h["static"]
+        return {"layout": static_digest(static, PHYSION_LAYOUT), "parameters": static_digest(static, PHYSION_PARAMETERS),
+                "physical": static_digest(static, PHYSION_PHYSICAL)}
+
+
+def _physion_motion(path):
+    import h5py
+    with h5py.File(pb.ROOT / path, "r") as h:
+        frames = [h["frames"][k] for k in sorted(h["frames"].keys())]
+        return (np.stack([f["objects/positions"][()] for f in frames]).astype(np.float64),
+                np.stack([f["objects/velocities"][()] for f in frames]).astype(np.float64),
+                np.array([bool(f["labels/target_contacting_zone"][()]) for f in frames]))
+
+
+def _pair_motion(job):
+    """Max abs position / velocity difference over the common native frames of a testing trial and a fitting
+    trial with the same physical parameters, and whether their per-frame target-contact labels are identical."""
+    testing, split, trial = job
+    (pos_t, vel_t, contact_t), (pos_f, vel_f, contact_f) = _physion_motion(testing), _physion_motion(trial)
+    n = min(len(pos_t), len(pos_f))
+    return {"testing": testing, "split": split, "trial": trial, "frames": [len(pos_t), len(pos_f)],
+            "max_abs_position": float(np.abs(pos_t[:n] - pos_f[:n]).max()),
+            "max_abs_velocity": float(np.abs(vel_t[:n] - vel_f[:n]).max()),
+            "contact_labels_identical": bool(len(contact_t) == len(contact_f) and (contact_t == contact_f).all())}
+
+
+def leakage_audit_payload(plan):
+    """G1 re-derived on the frozen Physion membership from the retained HDF5s with the canonical static digest
+    (the frozen counts used a digest that serialized object pointers), and the DESCRIPTIVE physical overlap: the
+    same parameter list without the appearance-only colour, and the trajectories of every testing / fitting pair
+    that shares it. Deterministic; written by mode ``leakage-audit`` and regenerated by ``--validate``."""
+    trials = {split: plan["membership"]["physion"][split]["trials"] for split in pb.PHYSION_SPLITS}
+    with spawn_pool(46) as pool:
+        signatures = {split: list(pool.map(_physion_signatures, paths, chunksize=8)) for split, paths in trials.items()}
+        sets = {split: {kind: {s[kind] for s in rows} for kind in ("layout", "parameters", "physical")}
+                for split, rows in signatures.items()}
+        names = {split: {Path(p).stem for p in paths} for split, paths in trials.items()}
+        overlap = {f"{a}|{b}": {"names": len(names[a] & names[b]),
+                                "layouts": len(sets[a]["layout"] & sets[b]["layout"]),
+                                "parameter_sets": len(sets[a]["parameters"] & sets[b]["parameters"]),
+                                "physical_sets": len(sets[a]["physical"] & sets[b]["physical"])}
+                   for a, b in SPLIT_PAIRS}
+        fit = {}
+        for split in FIT_SPLITS:
+            for path, signature in zip(trials[split], signatures[split]):
+                fit.setdefault(signature["physical"], []).append((split, path))
+        shared = {path: fit[s["physical"]] for path, s in zip(trials["testing"], signatures["testing"])
+                  if s["physical"] in fit}
+        jobs = sorted((testing, split, path) for testing, partners in shared.items() for split, path in partners)
+        pairs = list(pool.map(_pair_motion, jobs))
+    with_split = {split: {t for t, partners in shared.items() if any(p[0] == split for p in partners)}
+                  for split in FIT_SPLITS}
+    near = sorted({p["testing"] for p in pairs if p["frames"][0] == p["frames"][1] and p["contact_labels_identical"]
+                   and p["max_abs_position"] <= NEAR_IDENTICAL_POSITION})
+    return {"schema": SCHEMA["leakage_audit"], "plan_identity": IDENTITY,
+            "digest": ("sha256 over (key, type, shape, length, content) per static key; strings as UTF-8 JSON, "
+                       "booleans uint8, integers int64, floats float64 (little-endian); storage width and object "
+                       "pointers do not enter"),
+            "keys": {"parameters": PHYSION_PARAMETERS, "physical": PHYSION_PHYSICAL, "layout": PHYSION_LAYOUT},
+            "trials": {split: len(paths) for split, paths in trials.items()},
+            "frozen_digest_overlap": plan["membership"]["physion_split_overlap"],
+            "overlap": overlap,
+            "parameter_sets_zero": all(v["parameter_sets"] == 0 for v in overlap.values()),
+            "physical_overlap": {
+                "label": "DESCRIPTIVE (post-freeze, phase-B/C review); not part of the frozen G1 rule",
+                "testing_trials": len(trials["testing"]),
+                "testing_sharing": {**{split: len(with_split[split]) for split in FIT_SPLITS},
+                                    "either": len(shared), "both": len(with_split["dynamics"] & with_split["readout"])},
+                "testing_trials_shared": sorted(shared),
+                "near_identical": {"rule": (f"same native frame count, identical per-frame target-contact labels and "
+                                            f"max |position difference| <= {NEAR_IDENTICAL_POSITION} world units"),
+                                   "testing_trials": near},
+                "closest_pair": min(pairs, key=lambda p: (p["max_abs_position"], p["testing"], p["trial"]))
+                if pairs else None,
+                "pairs": pairs}}
+
+
+def leakage_audit(output):
+    output = Path(output)
+    plan = load_plan(output)
+    began = time.monotonic()
+    write_json(output / "leakage-audit.json", leakage_audit_payload(plan))
+    log(f"leakage audit written ({time.monotonic() - began:.0f}s CPU wall)")
+    return 0
 
 
 def clevrer_labels(job):
@@ -365,28 +488,23 @@ def module_hashes():
     return {m: sha256_of(ROOT / m) for m in MODULES}
 
 
-def accepted_hashes(output, plan):
-    """Frozen module hashes plus the disclosed post-freeze amendments chained onto them
-    (<output>/amendments.json: per amendment, module -> {replaces, sha256})."""
-    accepted = {m: {h} for m, h in plan["inputs"]["modules"].items()}
-    path = Path(output) / "amendments.json"
-    if path.is_file():
-        for amendment in read_json(path)["amendments"]:
-            for module, change in amendment["modules"].items():
-                if change["replaces"] in accepted.get(module, set()):
-                    accepted[module].add(change["sha256"])
-    return accepted
+def accepted_hashes(plan, current):
+    """Per frozen module: True iff its current bytes are the frozen bytes or the disclosed post-freeze amendment
+    of them in scripts/post_freeze_amendments.py (amendments.json lists the A1-A3 changes as disclosure only)."""
+    return {m: amendments.matches(m, f"sha256:{h}", f"sha256:{current.get(m)}")
+            for m, h in plan["inputs"]["modules"].items()}
 
 
 def load_plan(output, *, check=True):
     plan = read_json(Path(output) / "plan.json")
     if check:
-        accepted = accepted_hashes(output, plan)
-        drift = {m: h for m, h in module_hashes().items() if h not in accepted.get(m, set())}
-        if drift:
-            raise SystemExit(f"input drift after freeze: {sorted(drift)}")
+        drift = sorted(m for m, ok in accepted_hashes(plan, module_hashes()).items() if not ok)
+        if drift or set(MODULES) != set(plan["inputs"]["modules"]):
+            raise SystemExit(f"input drift after freeze: {drift or sorted(set(MODULES) ^ set(plan['inputs']['modules']))}")
         if sha256_of(Path(output) / "smoke.json") != plan["inputs"]["smoke_sha256"]:
             raise SystemExit("smoke.json drift after freeze")
+        if sha256_of(Path(output) / "data-manifest.json") != plan["inputs"]["data_manifest_sha256"]:
+            raise SystemExit("data-manifest.json drift after freeze")
     return plan
 
 
@@ -1655,8 +1773,16 @@ def fmt_sci(stat):
 def guards(output, plan, records):
     out = {}
     clevrer = plan["membership"]["clevrer"]
-    out["G1"] = {"passed": not (set(clevrer["train"]["scenes"]) & set(clevrer["validation"]["scenes"]))
-                 and all(v["parameter_sets"] == 0 for v in plan["membership"]["physion_split_overlap"].values())}
+    audit_path = Path(output) / "leakage-audit.json"
+    audit = read_json(audit_path) if audit_path.is_file() else None
+    scenes = len(set(clevrer["train"]["scenes"]) & set(clevrer["validation"]["scenes"]))
+    out["G1"] = {"passed": scenes == 0 and bool(audit and audit["parameter_sets_zero"]),
+                 "clevrer_scene_overlap": scenes,
+                 "physion_parameter_sets": ({k: v["parameter_sets"] for k, v in audit["overlap"].items()}
+                                            if audit else None),
+                 "basis": ("leakage-audit.json: canonical content digest on the frozen membership (post-freeze, "
+                           "phase-B/C review; the frozen counts in plan.json used a digest that serialized "
+                           "object-dtype model_names as pointers and are reported there unchanged)")}
     out["G2"] = {"passed": all(r["scoring_policy"] == dict(harness.SCORING_POLICY) for r in records.values()
                                if not r["typed_failure"])}
     frozen = plan["frozen_at"]
@@ -1849,9 +1975,34 @@ def build_publication(output):
                "records": len(records),
                "amendments": (read_json(output / "amendments.json")["amendments"]
                               if (output / "amendments.json").is_file() else []),
-               "exploratory": exploratory_tables(output) if (output / "exploratory").is_dir() else None}
+               "exploratory": exploratory_tables(output) if (output / "exploratory").is_dir() else None,
+               "split_overlap": split_overlap(output)}
     compute = compute_summary(output)
     return summary, compute, findings(summary, compute, plan)
+
+
+def split_overlap(output):
+    """The leakage audit as published: G1's canonical parameter-set counts and the DESCRIPTIVE physical overlap
+    with its qualification of the official-split Physion results."""
+    path = Path(output) / "leakage-audit.json"
+    if not path.is_file():
+        return None
+    audit = read_json(path)
+    physical = audit["physical_overlap"]
+    sharing, testing = physical["testing_sharing"], physical["testing_trials"]
+    return {"parameter_sets": {k: v["parameter_sets"] for k, v in audit["overlap"].items()},
+            "physical_sets": {k: v["physical_sets"] for k, v in audit["overlap"].items()},
+            "testing_trials": testing, "testing_sharing_physical_parameters": sharing,
+            "near_identical_testing_trials": physical["near_identical"]["testing_trials"],
+            "near_identical_rule": physical["near_identical"]["rule"],
+            "closest_pair": physical["closest_pair"],
+            "qualification": (
+                f"{sharing['either']} of {testing} Physion testing trials share every physical parameter except the "
+                f"appearance-only colour with a dynamics ({sharing['dynamics']}) or readout ({sharing['readout']}) "
+                f"trial ({sharing['both']} with both), and {len(physical['near_identical']['testing_trials'])} have a "
+                "near-identical trajectory in a fitting split. The official release split measures transfer to new "
+                "colours on the release's test trials; the Physion results do not establish generalization to "
+                "independent physical realizations.")}
 
 
 def findings(summary, compute, plan):
@@ -1863,6 +2014,24 @@ def findings(summary, compute, plan):
     for bench in BENCHES:
         c = summary["contrasts"][bench]["J - J-cont"]
         lines.append(f"- {bench}: J − J-cont {fmt(c)} → `{summary['tokens'][bench]['J - J-cont']}`")
+    overlap = summary["split_overlap"]
+    g1 = summary["guards"]["G1"]
+    lines += ["", "## Split isolation (G1, canonical content digest) and physical overlap", "",
+              f"- G1 {'passed' if g1['passed'] else 'FAILED'}: CLEVRER train / validation scene overlap "
+              f"{g1['clevrer_scene_overlap']}; Physion full static parameter sets shared "
+              + (", ".join(f"{k} {v}" for k, v in overlap["parameter_sets"].items()) if overlap else "not audited")
+              + ". " + g1["basis"] + "."]
+    if overlap:
+        pair = overlap["closest_pair"]
+        lines += ["- DESCRIPTIVE, colour excluded: shared physical parameter sets "
+                  + ", ".join(f"{k} {v}" for k, v in overlap["physical_sets"].items()) + ".",
+                  f"- Closest testing / fitting pair: `{Path(pair['testing']).name}` vs {pair['split']} "
+                  f"`{Path(pair['trial']).name}`: max |position difference| {pair['max_abs_position']:.3g}, max "
+                  f"|velocity difference| {pair['max_abs_velocity']:.3g} over {pair['frames'][0]} / {pair['frames'][1]} "
+                  f"frames, per-frame target-contact labels identical: {pair['contact_labels_identical']}.",
+                  f"- Near-identical rule ({overlap['near_identical_rule']}; DESCRIPTIVE, set after the review): "
+                  f"{len(overlap['near_identical_testing_trials'])} testing trials.",
+                  f"- **Qualification.** {overlap['qualification']}"]
     for family in FAMILIES:
         lines += ["", f"## Rollout error, {family} (position MSE vs the parsed carrier; DESCRIPTIVE seed x clip "
                       "intervals; annotation-truth MSE in summary.json)", ""]
@@ -1935,7 +2104,8 @@ def manifest_records(output):
 def publish(output):
     output = Path(output)
     began = time.monotonic()
-    summary, compute, text = build_publication(output)
+    with harness.deterministic_scoring():
+        summary, compute, text = build_publication(output)
     write_json(output / "summary.json", summary)
     write_json(output / "compute.json", compute)
     (output / "findings.md").write_text(text)
@@ -1998,13 +2168,13 @@ def spot(output):
 
 def validate(output):
     output = Path(output)
-    load_plan(output)
+    plan = load_plan(output)
     with harness.deterministic_scoring():
         summary, compute, text = build_publication(output)
     expected = {"summary.json": dumps(summary), "findings.md": text,
-                "records-manifest.json": dumps(manifest_records(output))}
+                "records-manifest.json": dumps(manifest_records(output)),
+                "leakage-audit.json": dumps(leakage_audit_payload(plan))}
     bad = [name for name, content in expected.items() if (output / name).read_text() != content]
-    expected["compute.json"] = dumps(compute)
     bad += ["compute.json"] if (output / "compute.json").read_text() != dumps(compute) else []
     spot_ = read_json(output / "spot.json")
     if not spot_["passed"]:
@@ -2012,7 +2182,7 @@ def validate(output):
     if bad:
         log(f"validate FAILED: {bad}")
         return 1
-    log("validate: published files regenerate byte for byte; spot check passed")
+    log("validate: published files and the leakage audit regenerate byte for byte; stored spot check (G5) passed")
     return 0
 
 
@@ -2232,7 +2402,7 @@ def projection(t):
 # =========================================================================== main
 
 MODES = {"manifest", "smoke", "freeze", "prepare", "encoder", "parse", "train", "policy", "score", "spot", "publish",
-         "validate", "explore"}
+         "validate", "explore", "leakage-audit"}
 
 
 def main(argv=None):
@@ -2260,6 +2430,8 @@ def main(argv=None):
         return validate(output)
     if mode == "spot":
         return spot(output)
+    if mode == "leakage-audit":
+        return leakage_audit(output)
     return {"prepare": prepare, "encoder": encoder, "parse": parse_stage, "train": train, "policy": policy_stage,
             "score": score, "explore": explore}[mode](output, args.workers, args.worker)
 
