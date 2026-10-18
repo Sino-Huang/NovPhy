@@ -8,7 +8,7 @@ Parent: #108. The binding shared rules of #85 apply, and #119 adopts the #111 sc
 | Module | `world_model/training/remaining_input.py`: the input variants, the elapsed-channel policy, window rows with an elapsed column, distillation, label accuracy, request mix by κ. `request_policy.py` is unchanged, because it is hash-pinned by later plans. |
 | Artifacts | `.local-artifacts/issue-119-remaining-frames-v1/`: `plan.json`, `smoke.json`, `selection.json`, `findings.md`, `summary.json`, `compute.json`, `records-manifest.json`, `models/*/seed-*/report.json`, `records/`, `accuracy/` |
 | Freeze | The plan was frozen at commit 3d5c039a after a passed smoke and before any training or score. |
-| Validation | `python -u -m scripts.run_remaining_frames_input --validate` exits 0. `pytest tests/test_issue_119_remaining_frames_input.py` passes (14 tests). |
+| Validation | `python -u -m scripts.run_remaining_frames_input --validate` exits 0. `pytest tests/test_issue_119_remaining_frames_input.py` passes (15 tests). |
 
 Intervals are percentile bootstraps clustered by level (member): 10 000 draws, PCG64 7201, DESCRIPTIVE. The margin is δ = 0.02. Tokens follow the δ rule only:
 - `supported` iff the mean is ≥ δ and the lower bound is > 0;
@@ -253,3 +253,4 @@ The projection was 0.75 h on 4 GPUs.
   - re-derives `compute.json`, `summary.json`, `findings.md` and the manifest, and byte-compares them;
   - re-derives the selection (G7);
   - re-scores J(b, L60) seed 20260908 on all 311 grid cells (rows and schedules), and recomputes its label-accuracy record exactly.
+- **Post-publication runner edit (phase-B/C review).** Commit `6b08b9af` changed `scripts/run_remaining_frames_input.py` for validation hardening only. `windows-225.pt` is assembled from the #101 pool shots, which the plan does not pin (as in #101), and embeds the sha256 of each of its 3 480 shots. Nothing re-verified those hashes. `compute_tables` now recomputes every shot's sha256 and the shot order before any table, and refuses the publication on any difference; only the (a, b) × L225 cells depend on these files. All 3 480 hashes match, so no evidence, number or token changed: `--validate` regenerates every published file byte for byte and exits 0. A test checks the retained file and a tampered copy. The runner is listed in `scripts/post_freeze_amendments.py`.
