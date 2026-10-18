@@ -313,3 +313,14 @@ def test_post_freeze_amendments_accept_only_frozen_or_listed_bytes():
             assert not pfa.matches(artifact, frozen, "sha256:" + "0" * 64)
         assert not pfa.matches(artifact, "sha256:" + "1" * 64, entry["sha256"])
     assert not pfa.matches("scripts/run_gate_b.py", "sha256:a", "sha256:b")
+
+
+def test_phase_bc_amended_runners_and_modules_are_registered():
+    from scripts import post_freeze_amendments as pfa
+    issues = {entry["issue"] for entry in pfa.AMENDMENTS.values()}
+    assert {106, 115, 117, 119, 120, 121} <= issues
+    for path in ("scripts/run_pixel_benchmarks.py", "world_model/data/pixel_benchmarks.py",
+                 "world_model/training/pixel_carrier.py", "scripts/run_predicate_feedback_robustness.py",
+                 "scripts/run_request_interference_benchmarks.py", "scripts/run_remaining_frames_input.py",
+                 "scripts/run_cost_alignment.py", "scripts/run_request_code_factorisation.py"):
+        assert path in pfa.AMENDMENTS, path

@@ -168,3 +168,21 @@ def test_arms_run_every_pair_and_count_macs():
         else:
             assert continuous == fused - (144 * 256 + 256 * code) + 3 * 16 * film
         assert width == 384
+
+
+def test_d2_publication_states_the_demonstrated_claim_beside_the_frozen_token():
+    import json
+
+    import pytest
+
+    from scripts import run_request_code_factorisation as runner
+    if not (runner.OUTPUT / "compute.json").is_file():
+        pytest.skip("issue-121 publication not present")
+    compute = json.loads((runner.OUTPUT / "compute.json").read_text())
+    d2 = compute["dispositions"]["interaction_decision_value"]
+    assert d2["claim"] == "axis interaction in the request code carries measurable decision value"  # frozen
+    assert d2["token"] == "supported"
+    assert {k: d2[k] for k in runner.D2_READING} == runner.D2_READING
+    assert "parameterization" in d2["demonstrated_claim"] and "unidentified" in d2["qualification"]
+    findings = (runner.OUTPUT / "findings.md").read_text()
+    assert runner.D2_READING["demonstrated_claim"] in findings

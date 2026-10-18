@@ -787,7 +787,16 @@ def dispositions(ranking, rollout, guards_ok):
             "claim": "axis interaction in the request code carries measurable decision value",
             "token": second, "contrast": "fused - additive, grid, nine-fixed-request mean AUC",
             "estimate": primary["estimate"],
-            "J": ranking[PRIMARY]["contrasts"]["fused-additive"]["per_request"]["J"]["estimate"]}}
+            "J": ranking[PRIMARY]["contrasts"]["fused-additive"]["per_request"]["J"]["estimate"], **D2_READING}}
+
+
+D2_READING = {  # phase-B/C review: what the frozen operational token demonstrates (the token and its rule unchanged)
+    "demonstrated_claim": ("the trained fused parameterization outperforms the trained additive parameterization on "
+                           "fixed-request mean grid AUC"),
+    "qualification": ("fused - additive changes the trained parameterization and its optimization as well as the "
+                      "interaction capacity, so interaction-specific decision value remains unidentified. The small "
+                      "fused FiLM interaction share neither proves nor disproves a decision-relevant interaction "
+                      "effect, and factored - additive does not isolate the removal of the fused model's interaction")}
 
 
 def replication(records):
@@ -997,6 +1006,9 @@ def findings_md(plan, compute):
     add(f"| {second['claim']} | `{second['token']}` | {second['contrast']}: {signed(second['estimate'])}; "
         f"J (descriptive): {signed(second['J'])} |")
     add("")
+    add(f"The second token is the frozen operational rule. What it demonstrates: {second['demonstrated_claim']}. "
+        f"{second['qualification'][0].upper()}{second['qualification'][1:]}.")
+    add("")
     ratios, errors = compute["rollout"]["ratios"], compute["rollout"]["errors"]
     add(f"## Rollout error at t = {ENDPOINT} (#100 engine_position_mse, every mixed grid candidate)")
     add("")
@@ -1064,7 +1076,8 @@ def findings_md(plan, compute):
     add("Two-way decomposition of the effective FiLM scale gamma and shift beta over the 3 x 3 requests. "
         "Interaction share = SS_interaction / SS_total (0 iff additive in Delta and alpha). Var over alpha = mean "
         "variance over alpha at fixed Delta relative to the mean squared norm (the identity FiLM is gamma = beta = 0); "
-        "var over Delta likewise. rms = root mean square entry.")
+        "var over Delta likewise. rms = root mean square entry. A small interaction share is a parameter-space "
+        "diagnostic: it does not show that interaction is irrelevant to decisions.")
     add("")
     add("| arm | block | gamma interaction share | gamma var over alpha | gamma var over Delta | gamma rms | "
         "beta interaction share | beta var over alpha | beta var over Delta | beta rms |")
@@ -1138,6 +1151,7 @@ def summary(plan, compute):
     grid = compute["ranking"][PRIMARY]
     return {"schema": SCHEMA_REPORT, "identity": IDENTITY, "frozen_at": plan["frozen_at"],
             "dispositions": {k: v["token"] for k, v in d.items()},
+            "interaction_decision_value_reading": {k: d["interaction_decision_value"][k] for k in D2_READING},
             "additive_over_fused_t225": d["additive_within_1_5x"]["ratios"],
             "grid_request_mean_auc": {a: grid["arms"][a]["request_mean"] for a in CODE_ARMS},
             "grid_J_auc": {a: grid["arms"][a]["J"]["auc"] for a in CODE_ARMS},

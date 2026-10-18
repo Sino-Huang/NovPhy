@@ -83,6 +83,14 @@ AMENDMENTS = {
         "change": ("apply_guards gates every token of the assembled publication, the inventories view included (global "
                    "guards and each cost's mixed-cell guard); --validate regenerates verdicts.json from the evaluation "
                    "branch file; publication unchanged")},
+    "scripts/run_request_code_factorisation.py": {
+        "issue": 121, "replaces": ("sha256:2410017a4ce2514420a5d0d5cd0ffe680c5fd037a7f500f72d8fbe79bece36f7",
+                                   "sha256:cf8ef0e728e58cc992e23aa709ed599e363299dcd304781d20cc8cb3a8a83a49"),
+        "sha256": "sha256:f9bd6279334ba8ea1f9fcaa59cd5405e62aedd4a166f48bb7b45384fe1008106",
+        "change": ("A1 (validation only): the spot check re-scores each record's first seed that is not a typed failure; "
+                   "A2 (reporting, phase-B/C review): the second disposition carries its demonstrated claim (trained "
+                   "fused vs trained additive parameterization) and the qualification that interaction-specific "
+                   "decision value is unidentified; frozen claim, rule, token and numbers unchanged")},
 }
 
 

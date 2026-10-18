@@ -9,6 +9,8 @@ Frozen 2026-10-18T02:09:12Z; runner `scripts/run_request_code_factorisation.py`;
 | an additive request code matches the fused code within 1.5x per-request rollout error at t = 225 | `not_supported_by_this_experiment` | additive / fused per request at t = 225: F-1-continuous 1.34 (sup.), F-1-micro 1.51 (insuff.), F-1-macro 1.42 (sup.), F-5-continuous 1.84 (no), F-5-micro 2.02 (no), F-5-macro 1.53 (insuff.), F-15-continuous 1.36 (sup.), F-15-micro 1.33 (sup.), F-15-macro 1.14 (sup.) |
 | axis interaction in the request code carries measurable decision value | `supported` | fused - additive, grid, nine-fixed-request mean AUC: +0.050 [+0.041, +0.059]; J (descriptive): +0.013 [+0.004, +0.022] |
 
+The second token is the frozen operational rule. What it demonstrates: the trained fused parameterization outperforms the trained additive parameterization on fixed-request mean grid AUC. Fused - additive changes the trained parameterization and its optimization as well as the interaction capacity, so interaction-specific decision value remains unidentified. The small fused FiLM interaction share neither proves nor disproves a decision-relevant interaction effect, and factored - additive does not isolate the removal of the fused model's interaction.
+
 ## Rollout error at t = 225 (#100 engine_position_mse, every mixed grid candidate)
 
 | request | fused | additive | factored | additive / fused | factored / fused |
@@ -160,7 +162,7 @@ J is each arm's own policy (scheduled requests); its row is DESCRIPTIVE and does
 
 ## Coupling diagnostic (per block; seed means)
 
-Two-way decomposition of the effective FiLM scale gamma and shift beta over the 3 x 3 requests. Interaction share = SS_interaction / SS_total (0 iff additive in Delta and alpha). Var over alpha = mean variance over alpha at fixed Delta relative to the mean squared norm (the identity FiLM is gamma = beta = 0); var over Delta likewise. rms = root mean square entry.
+Two-way decomposition of the effective FiLM scale gamma and shift beta over the 3 x 3 requests. Interaction share = SS_interaction / SS_total (0 iff additive in Delta and alpha). Var over alpha = mean variance over alpha at fixed Delta relative to the mean squared norm (the identity FiLM is gamma = beta = 0); var over Delta likewise. rms = root mean square entry. A small interaction share is a parameter-space diagnostic: it does not show that interaction is irrelevant to decisions.
 
 | arm | block | gamma interaction share | gamma var over alpha | gamma var over Delta | gamma rms | beta interaction share | beta var over alpha | beta var over Delta | beta rms |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
