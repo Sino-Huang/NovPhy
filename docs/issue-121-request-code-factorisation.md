@@ -7,10 +7,10 @@ Parent: #108. The binding shared rules of #85 apply, and #121 adopts the #111 sc
 | --- | --- |
 | Runner | `scripts/run_request_code_factorisation.py` |
 | Module | `world_model/training/request_code.py`: the additive and factored-FiLM predictor classes (subclasses of `CNNHybridPredictor`; `predictor.py` and `cnn_hybrid.py` are hash-pinned by earlier plans and unchanged), the per-arm parameter split, the FiLM table and the two-way coupling decomposition |
-| Tests | `tests/test_issue_121_request_code.py` (10 tests): fused equals the original, the additive rank-2 structure, the factored-FiLM composition, matched trunk initialisation, parameter and MAC accounting |
+| Tests | `tests/test_issue_121_request_code.py` (11 tests): fused equals the original, the additive rank-2 structure, the factored-FiLM composition, matched trunk initialisation, parameter and MAC accounting, the D2 reading beside the frozen token |
 | Artifacts | `.local-artifacts/issue-121-request-code-v1/`: `plan.json`, `smoke.json`, `findings.md` (every table), `summary.json`, `compute.json`, `records-manifest.json`, `ledger/`, `logs/`, `training/` reports, `models/policies/*/seed-*/report.json`. Checkpoints, records and the truth store stay local, hashed in `records-manifest.json` |
 | Freeze | Plan frozen 2026-10-18T02:09:12Z, commit 750e4757, after a passed smoke and before any training update, evaluation byte or score |
-| Validation | `python -u -m scripts.run_request_code_factorisation --validate` (exit 0: the tables are re-derived and byte-compared, and additive F-1-macro and factored J are re-scored on every grid cell); `pytest tests/test_issue_121_request_code.py` (10 passed) |
+| Validation | `python -u -m scripts.run_request_code_factorisation --validate` (exit 0: the tables are re-derived and byte-compared, and additive F-1-macro and factored J are re-scored on every grid cell); `pytest tests/test_issue_121_request_code.py` (11 passed) |
 
 Engine time is zero seconds. The reading is confirmatory because Gate B passed: one score on the #104 sealed #109
 evaluation split. The cells are the Gate-B cells (grid 311, offset 76, angle 78, power 47), × 3 seeds. Grid is primary;
@@ -22,24 +22,30 @@ offset, angle, power and the rollout error are DESCRIPTIVE. Intervals are level-
 | claim | token | evidence |
 | --- | --- | --- |
 | "an additive request code matches the fused code within 1.5× per-request rollout error at t = 225" | **`not_supported_by_this_experiment`** | additive / fused at t = 225: F-5-continuous 1.84 [1.79, 1.90] and F-5-micro 2.02 [1.96, 2.08] have lower bounds > 1.5. F-1-micro 1.51 and F-5-macro 1.53 are insufficient. The other five requests are < 1.5 (1.14–1.42) |
-| "axis interaction in the request code carries measurable decision value" | **`supported`**, with the qualifications below | fused − additive, grid, nine-fixed-request mean AUC: +0.050 [+0.041, +0.059]. J (reported beside it): +0.013 [+0.004, +0.022], insufficient |
+| "axis interaction in the request code carries measurable decision value" | **`supported`** under the frozen operational rule; demonstrated claim and qualifications below | fused − additive, grid, nine-fixed-request mean AUC: +0.050 [+0.041, +0.059]. J (reported beside it): +0.013 [+0.004, +0.022], insufficient |
 
-**The D2 token is about the two codes as trained, not about axis interaction.** Three findings qualify it.
+**What the D2 token demonstrates.** The frozen token stays as the historical operational rule, but its demonstrated
+claim is narrower than its wording: **the trained fused parameterization outperforms the trained additive
+parameterization on fixed-request mean grid AUC.** fused − additive changes the trained parameterization and its
+optimization as well as the interaction capacity. Interaction-specific decision value therefore remains unidentified:
+this run neither shows it nor rules it out. Three findings qualify the token.
 
-1. **The fused model barely uses the interaction its MLP allows** (coupling diagnostic, below).
+1. **The fused FiLM interaction share is small, not zero** (coupling diagnostic, below).
    - Over the nine requests, the interaction term is 0.26–0.43 % of the variation of the FiLM scale γ per block, and
      0.30–0.39 % of the shift β (seed means).
    - It is 0.69 % of the variation of the code itself.
-   - The fused FiLM is therefore additive in (Δ, α) to within 0.5 %. Whatever separates fused from additive is not
-     interaction in the modulation.
-2. **Adding interaction to the additive code does not close the gap.** The factored-FiLM arm adds a multiplicative
-   scale interaction to the additive arm.
+   - In parameter space the fused FiLM is additive in (Δ, α) to within about 0.5 % (about 99.5 % additive variance).
+     This is a diagnostic, not a decision-level test: a small share neither proves nor disproves a decision-relevant
+     interaction effect, so it does not show that interaction is irrelevant.
+2. **Adding a FiLM-level interaction to the additive code does not close the gap.** The factored-FiLM arm adds a
+   multiplicative scale interaction to the additive arm.
    - factored − additive is −0.003 [−0.012, +0.006] (nine-request mean, `not_supported_by_this_experiment`).
    - fused − factored is +0.052 [+0.049, +0.056].
 
-   [INFERENCE] The gap is more likely to come from how the code path is parameterised and optimised than from
-   interaction: a nonlinear MLP code versus linear per-axis maps, with different initial code scales. Retrain-to-retrain
-   variation is another candidate (point 3). This run does not separate the two.
+   factored − additive is a different parameterization, not the removal of the fused model's interaction, so it does
+   not isolate that interaction's effect either. [INFERENCE] Candidate explanations of the fused − additive gap include
+   how the code path is parameterised and optimised (a nonlinear MLP code versus linear per-axis maps, with different
+   initial code scales), interaction, and retrain-to-retrain variation (point 3). This run does not separate them.
 3. **The seeds disagree in size** (post hoc, DESCRIPTIVE; computed from the retained records after publication, not
    part of any token). Per seed, fused − additive on the grid nine-request mean is:
    - +0.052 (20260908);
@@ -56,8 +62,9 @@ offset, angle, power and the rollout error are DESCRIPTIVE. Intervals are level-
 The decision value in D2 is therefore relative between the codes. It is not value over the prior.
 
 **Handoff to #105.**
-- The implementation's fused code is additive in its FiLM effect to within 0.5 %. So #105's schedule-level
-  independence dispositions are not undercut by an encoding-level re-coupling.
+- In parameter space, the implementation's fused code is additive in its FiLM effect to within about 0.5 %. This does
+  not establish that encoding-level coupling is irrelevant to decisions, so it neither supports nor undercuts #105's
+  schedule-level independence dispositions.
 - The particular fused parameterisation still matters for accuracy: replacing it with the additive code costs 1.1–2.0×
   rollout error at t = 225 and −0.05 fixed-request AUC.
 
@@ -159,7 +166,8 @@ The factored arm transfers worst off-grid: offset nine-request mean 0.577 vs fus
   code.
 - **The fused modulation is large but mostly request-invariant.** γ rms reaches 0.83 in block 0. Within a block, the
   variation over α at fixed Δ is ≤ 2.3 % of the squared norm (≤ 1 % for γ), and over Δ at fixed α ≤ 5.3 %. So FiLM
-  applies largely the same scale and shift to every request, and the small request-dependent part is additive.
+  applies largely the same scale and shift to every request, and the small request-dependent part is almost entirely
+  additive in parameter space (a diagnostic; see the D2 qualification above).
 - **The additive arm is exactly additive** (share 0 in float64), as constructed.
 - **The factored arm uses its multiplicative scale only a little** (γ share 0.14–0.18 %). Its α-dependence is larger
   than fused's: β var over α is 0.13–0.42 vs 0.01–0.02.
@@ -218,7 +226,7 @@ All seven pass.
   "exit 127" for each worker. The workers themselves were alive and were awaited by PID. Their completion was confirmed
   from the training and policy reports. Nothing was relaunched.
 
-## Post-freeze amendment
+## Post-freeze amendments
 
 **A1 (validation only).** The frozen `--validate` spot check re-scored the first seed (20260908) of two records:
 additive F-1-macro and factored J. Factored seed 20260908 is the typed failure, so the J re-score was silently skipped.
@@ -227,7 +235,17 @@ After publication, the spot check was amended to use each record's first seed th
 - **What it changes.** Only what `--validate` re-checks.
 - **What it does not change.** No record, table, rule or token changes, and neither do the published bytes.
 - **Hashes.** The module hash pinned by the plan is unchanged. The runner hash at the freeze is in `plan.json`; no other
-  plan pins this runner.
+  plan pins this runner. Since the phase-B/C fix (A2), A1 is also listed in `scripts/post_freeze_amendments.py`, the
+  one sanctioned registry; it was first disclosed only here.
+
+**A2 (reporting only; phase-B/C review; commit `1dc6ed49`).** The second disposition's rendering now states what the
+frozen operational token demonstrates. `compute.json` gains `demonstrated_claim` and `qualification` in
+`dispositions.interaction_decision_value`, `summary.json` gains `interaction_decision_value_reading`, and `findings.md`
+prints both under the dispositions table and adds to the coupling diagnostic that a small interaction share does not
+show interaction to be decision-irrelevant. The frozen claim text, rule and token (`supported`) and every number are
+unchanged; no record changed. `--validate` regenerates the new files byte for byte and exits 0. This document's
+headline, mechanistic reading and #105 handoff were reworded to match. The runner (A1 and A2) is listed in
+`scripts/post_freeze_amendments.py`.
 
 ## Claim boundary
 
@@ -327,6 +345,10 @@ nine-fixed-request mean (each request 1/9), paired by (level, seed), level-clust
 - `supported` iff the mean is ≥ δ = 0.02 and the lower bound is > 0;
 - `not_supported_by_this_experiment` iff the upper bound is < δ;
 - otherwise `readiness_or_precision_insufficient`.
+
+The token is operational: the rule compares the two trained codes. A `supported` token shows that the trained fused
+parameterization outperforms the trained additive one on this metric; it does not by itself identify decision value of
+the interaction (phase-B/C review).
 
 The J contrast is reported beside it with its own token and does not enter D2. fused − factored (code-level
 interaction beyond modulation-level interaction) and factored − additive (modulation-level interaction) are
