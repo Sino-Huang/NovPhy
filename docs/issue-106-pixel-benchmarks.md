@@ -10,11 +10,11 @@ Prior dispositions and the #79 / #84 / #115 / #117 artefacts are read-only input
 
 | | |
 | --- | --- |
-| Runner | `scripts/run_pixel_benchmarks.py` (modes `manifest`, `smoke`, `freeze`, `prepare`, `encoder`, `parse`, `train`, `policy`, `score`, `spot`, `publish`, `validate`); modules `world_model/data/pixel_benchmarks.py` (readers, frozen descriptions), `world_model/training/pixel_carrier.py` (parser loss, carrier builder, rollouts, QA resolution, bootstrap); tests `tests/test_pixel_benchmarks.py` |
-| Artifacts | `.local-artifacts/issue-106-pixel-benchmarks-v1/` (`plan.json`, `smoke.json`, `data-manifest.json`, `amendments.json`, `summary.json`, `findings.md`, `compute.json`, `ledger.json`, `launches.json`, `spot.json`, training / policy / encoder reports, `records-manifest.json`) |
+| Runner | `scripts/run_pixel_benchmarks.py` (modes `manifest`, `smoke`, `freeze`, `prepare`, `encoder`, `parse`, `train`, `policy`, `score`, `spot`, `publish`, `validate`, and the post-freeze `explore` (A2) and `leakage-audit` (A3)); modules `world_model/data/pixel_benchmarks.py` (readers, frozen descriptions), `world_model/training/pixel_carrier.py` (parser loss, carrier builder, rollouts, QA resolution, bootstrap); tests `tests/test_pixel_benchmarks.py` |
+| Artifacts | `.local-artifacts/issue-106-pixel-benchmarks-v1/` (`plan.json`, `smoke.json`, `data-manifest.json`, `amendments.json`, `leakage-audit.json`, `summary.json`, `findings.md`, `compute.json`, `ledger.json`, `launches.json`, `spot.json`, training / policy / encoder reports, `records-manifest.json`) |
 | Data | `data/clevrer/` and `data/physion-dominoes/`, with `manifest.pre-download.json` (sizes measured before the download) and `manifest.json` (sha256, S3 ETags, extraction counts) |
 | Freeze | Plan frozen 2026-10-17T21:51:28Z in commit 2264726a, before any encoder, predictor or policy update and before any score |
-| Validation | `python -u -m scripts.run_pixel_benchmarks --validate` (exit 0: summary, findings, compute and records manifest regenerate byte for byte; G5 spot re-parse diff 0.0, re-score diff ≤ 1.2e-7); `pytest tests/test_pixel_benchmarks.py` (7 passed) |
+| Validation | `python -u -m scripts.run_pixel_benchmarks --validate` (exit 0: summary, findings, compute, records manifest and `leakage-audit.json` regenerate byte for byte, and the stored G5 spot check passed: spot re-parse diff 0.0, re-score diff ≤ 1.2e-7, run by mode `spot`); `pytest tests/test_pixel_benchmarks.py` (10 passed) |
 
 Zero engine seconds. Intervals are DESCRIPTIVE percentile bootstraps (10 000 draws, PCG64 7201). Each draw resamples seeds
 (5 predictor members) and items independently; CLEVRER question options are clustered by video. All numbers and per-seed
@@ -44,7 +44,7 @@ values are in `findings.md` / `summary.json`.
 - The parser feeds the deployment-adapter carrier (236 values, motion = centre difference / elapsed). At test time it sees pixels only.
 
 **Slots.**
-- CLEVRER: one slot per colour × material key. 41 % of videos repeat a key and are excluded, leaving 6285 train and 3132 validation videos.
+- CLEVRER: one slot per colour × material key. Videos that repeat a key are excluded: 3715 of 10 000 train (37.15 %) and 1868 of 5000 validation (37.36 %), 37.22 % pooled. This leaves 6285 train and 3132 validation videos. The results describe this parser-compatible subpopulation, not full-release CLEVRER.
 - Physion: HDF5 object order (zone, target, probe, middle dominoes, distractors, occluders). The kind is the object's role.
 
 **Parser centre targets.**
@@ -76,7 +76,7 @@ Recipe: #112 LC as #117 item 5 adapted it, nine requests round-robin, 9000 updat
 **Decisions.**
 - CLEVRER predictive and counterfactual questions are answered zero-shot from the member's micro head on request-selected rollouts: gated contact ≥ 0.5, objects resolved from parsed attributes.
 - Physion OCP uses the physopt readout protocol (StandardScaler + LogisticRegression, C grid logspace(−8, 8, 17), 5 folds) on simulated features. Two anchors are reported, observed and input, plus a macro-predicate rule.
-- Equal compute: every arm of a member uses the same predictor, and J and J-cont share the policy recipe. MACs are reported per decision.
+- Equal training recipe: every arm of a member uses the same predictor, and J and J-cont share the policy recipe. Inference compute is not matched; MACs per decision are reported beside accuracy (J / J-cont: CLEVRER 57.3M / 62.7M, Physion 34.4M / 47.2M), so no accuracy-at-fixed-MAC comparison is claimed.
 
 **Dispositions.**
 - Primary, per benchmark: J − J-cont under the #114 rule (margin 0.02).
@@ -85,8 +85,10 @@ Recipe: #112 LC as #117 item 5 adapted it, nine requests round-robin, 9000 updat
 
 ## Results
 
-**Guards.** G1–G6 pass.
-- G1: CLEVRER scene sets are disjoint, and no Physion full parameter set is shared across splits. Six fixed generator layouts (for example `4midRM1_boxroom`) do recur across splits; they are reported as information.
+**Guards.** G1–G6 pass. G1 is re-derived with a canonical content digest (A3, below).
+- G1: CLEVRER scene sets are disjoint, and no Physion full static parameter set is shared across splits (canonical digest, `leakage-audit.json`: 0 / 0 / 0). Six fixed generator layouts (for example `4midRM1_boxroom`) do recur across splits; they are reported as information.
+- **Physical overlap (DESCRIPTIVE, post-freeze).** The full parameter set includes the appearance-only colour. Without it, 20 of 150 testing trials share every physical parameter with a fitting-split trial: 15 with a dynamics trial, 17 with a readout trial, 12 with both. These are near-repeated physical realizations, not only shared layouts. The closest pair, testing `pilot_dominoes_4midRM1_boxroom_2-redyellow_0004` and dynamics `pilot_dominoes_4midRM1_boxroom_0001`, differs by at most 3.3e-5 in position and 8.8e-4 in velocity over 151 frames, with identical per-frame target-contact labels. Four testing trials have a fitting-split partner within 1e-3 world units at every frame with identical labels; this threshold was set after the review and is descriptive.
+- **Qualification.** The official release split measures transfer to new colours on the release's own test trials. The Physion results do not establish generalization to independent physical realizations: predictor training and readout fitting have seen physically repeated test situations. This is not evidence of annotation access by the test-time parser, and it does not by itself invalidate the official-split comparison. A claim about unseen physical realizations would need a separately frozen group-disjoint evaluation.
 - G5: the pixels-only spot re-parse and re-score pass.
 
 **Training.** 20 of 20 predictors trained with no skipped update; 40 of 40 policies trained. Compute was 12 010 GPU s (3.3 GPU-h); wall time from freeze to publication was about 1.6 h on 4 GPUs.
@@ -146,11 +148,11 @@ Secondary results:
 
 ## Reading
 
-- **The CLEVRER token reflects a readout at its floor, not evidence about J.** The frozen 0.5 threshold on the gated micro head never fires. The largest value on any validation video is 0.051, and annotated collisions have a median of 0.013. The max-over-frames existence rule also admits single-frame phantom objects: 362 against 1911 real in 400 videos, which leaves 38 % of choices unresolved. Every arm therefore makes identical decisions.
+- **The CLEVRER token reflects a readout at its floor, not evidence about J.** The frozen 0.5 threshold on the gated micro head never fires. The largest value on any validation video is 0.051, and annotated collisions have a median of 0.013. The max-over-frames existence rule also admits single-frame phantom objects: 362 against 1911 real in 400 videos, which leaves 38 % of choices unresolved. No arm shows a ≥ δ downstream advantage, and CLEVRER is dominated by the frozen readout floor. Decisions are not exactly identical: J − J-cont is −0.0000546.
   - The EXPLORATORY repaired readout (amendment A2) uses a 5-frame existence rule and thresholds fitted on the training split. Every arm still sits at 0.532 option accuracy and 0.50 predictive accuracy.
   - The micro head trained on these pixel carriers does not detect instantaneous collisions.
 - **Physion OCP** sits near chance for every rollout arm (0.51–0.57). The observed-protocol anchor reaches 0.627, which shows the parsed carrier holds some OCP signal. The rollouts do not preserve it, and the macro OCP-onset predicate never fires (exploratory fitted threshold: about 0.50).
-- The description levels are learnable as heads and the requests run on pixel carriers, but on these two benchmarks no request choice changes the downstream decision. The binding limits are parser localisation (Physion) and the sparse-event micro head (CLEVRER).
+- The description levels are learnable as heads and the requests run on pixel carriers. On these two benchmarks, however, no request choice shows a demonstrated ≥ δ downstream advantage (Physion J and J-cont: 0.517 and 0.539, an insufficient contrast). The binding limits are parser localisation (Physion) and the sparse-event micro head (CLEVRER).
 
 ## Disclosures
 
@@ -162,3 +164,14 @@ Secondary results:
   - `publish`, after A2.
 - No typed failure was retried.
 - Hardware: 4 × RTX 5090 instead of the #85 RTX 3090.
+
+## Post-freeze amendment A3 (phase-B/C review; disclosure)
+
+Commit `fcfe6e6c` changed `scripts/run_pixel_benchmarks.py` after the publication. The changes are digest repair, validation hardening and reporting. No training, scoring or record changed. `compute.json` and `records-manifest.json` are byte-identical; `summary.json` and `findings.md` gain the G1 audit, the physical-overlap qualification and the A3 entry. Every token is unchanged.
+
+- **G1 digest.** The frozen `_physion_header` digest concatenated NumPy `.tobytes()`. For the object-dtype `model_names` field that serializes object pointers, so the frozen zero full-parameter-set overlap was not a content check. The digest now hashes canonical contents: strings as UTF-8, integers as int64 and floats as float64, delimited by key, type and shape. Mode `leakage-audit` re-derives G1 on the frozen membership from the retained HDF5s and writes `leakage-audit.json`. G1 reads that file, and `--validate` regenerates it byte for byte. **Outcome: G1 still passes.** No full static parameter set is shared between any two splits (0 / 0 / 0), so the frozen guard rule leaves every token standing. The frozen counts in `plan.json` are unchanged and reported beside the audit.
+- **Physical overlap.** The audit also reports the colour-excluded overlap and the trajectory distance of all 136 testing / fitting pairs that share it. `findings.md` and `summary.json` (`split_overlap`) carry the qualification above.
+- **Data pin.** `load_plan` now verifies `data_manifest_sha256` (S1). Before, only G6 at publication compared the manifest.
+- **Amendment registry.** `load_plan` accepts module drift only through `scripts/post_freeze_amendments.py`, which now lists A1 (`pixel_benchmarks.py`), A2 (`pixel_carrier.py`) and A1–A3 (this runner). `amendments.json` stays as the disclosure record and gains the A3 entry; it no longer authorizes anything (S4).
+- **Wording.** A2's "identical decisions for every arm" and the "every arm makes identical decisions" and "no request choice changes the downstream decision" sentences were numerically inexact. They are corrected above and in the A3 entry. The CLEVRER exclusion share was printed as 41 %; it is 37.22 % pooled. The "Equal compute" design line now reads "equal training recipe".
+- **Uniformity.** `publish` builds the publication under `deterministic_scoring()`, as `validate` does. The module docstring no longer claims that `--validate` re-scores; it requires the stored `spot.json` (mode `spot`, G5).
