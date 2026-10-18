@@ -228,7 +228,7 @@ python -u -m scripts.publish_power_cohort_campaign --validate
 | Runner | `scripts/run_heldout_96_contrasts.py` (post-freeze amendment A1, registered in `scripts/post_freeze_amendments.py`) |
 | Artifacts | `.local-artifacts/issue-104-heldout-contrasts-v1/` (`plan.json`, `smoke.json`, `findings.md`, `summary.json`, `compute.json`, `comparisons.csv`, `frequencies.json`, `records-manifest.json`, `ledger/`; the 54 raw records stay local in `records/`, 128 MB, bound by the manifest) |
 | Freeze | Plan frozen 2026-10-18T07:28:19Z (commit 901de655), after a passed smoke and before any evaluation-split score |
-| Validation | `python -u -m scripts.run_heldout_96_contrasts --validate` exits 0. It re-derives the cells, re-scores J seed 20260908 on all 512 cells bit for bit, and regenerates every published file and the record manifest byte for byte. `pytest tests/test_issue_104_heldout_contrasts.py` passes (8 tests). |
+| Validation | `python -u -m scripts.run_heldout_96_contrasts --validate` exits 0. It re-derives the cells, re-scores J seed 20260908 on all 512 cells bit for bit, and regenerates every published file and the record manifest byte for byte. `pytest tests/test_issue_104_heldout_contrasts.py` passes (7 tests), as does the amendment-registry test of `tests/test_issue_101_decision_aware_policy.py`. |
 
 ### Protocol (frozen; decisions posted on #104 before scoring)
 
