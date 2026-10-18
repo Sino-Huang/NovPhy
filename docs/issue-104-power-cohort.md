@@ -290,7 +290,9 @@ Achieved half-width of J − F\* against the G6 bound:
 | angle | 78 (234) | −0.1596 [−0.2061, −0.1130] [F-5-macro] | **0.0466** | no | yes (0.05) | ≈ 424 |
 | power | 47 (141) | −0.2617 [−0.3360, −0.1921] [F-5-macro] | **0.0720** | no | no (0.05) | ≈ 609 |
 
-**Achieved-half-width statement.** G6 fails on every inventory. On grid, 311 mixed levels give a half-width of 0.030. That is 2.5 times narrower than #96 (0.075 over 14 members), but 1.5 times wider than δ. The #104 design (293 levels for δ 0.02) assumed the development variance; the held-out between-level variance is larger.
+**Achieved-half-width statement.** G6 fails on every inventory. On grid, 311 mixed levels give a tie-free half-width of 0.030, 1.5 times wider than δ. Like for like under #96's count cost, the grid half-width is 0.021 here against #96's 0.075 over 14 members (3.5 times narrower). The tie-free 0.030 is not directly comparable to #96's count-cost 0.075. The #104 design (293 levels for δ 0.02) assumed the development variance; the held-out between-level variance is larger.
+
+*Correction (2026-10-19, round-2 review):* an earlier version of this paragraph compared the tie-free 0.030 with #96's count-cost 0.075 and called it "2.5 times narrower". That compares two different costs; the like-for-like count-cost comparison is given above. No number, guard or token changed.
 
 Power (47 < 53 levels) misses even its design δ of 0.05, as the yield table predicted. Offset also misses it (0.063). Angle meets it (0.047).
 
