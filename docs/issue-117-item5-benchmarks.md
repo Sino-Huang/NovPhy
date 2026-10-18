@@ -8,12 +8,14 @@ Items 1–3 (NovPhy) are in `docs/issue-117-request-interference.md`.
 | Runner | `scripts/run_request_interference_benchmarks.py`; tests `tests/test_issue_117_item5_benchmarks.py` |
 | Artifacts | `.local-artifacts/issue-117-item5-benchmarks-v1/` (every table is in `findings.md`; also `compute.json`, `comparisons.csv`, `records-manifest.json`) |
 | Freeze | Plan frozen 2026-10-17T16:09:11Z in commit 845215d2, before any training update and any score |
-| Validation | `python -u -m scripts.run_request_interference_benchmarks --validate` (exit 0); `pytest tests/test_issue_117_item5_benchmarks.py` (4 passed) |
+| Validation | `python -u -m scripts.run_request_interference_benchmarks --validate` (exit 0); `pytest tests/test_issue_117_item5_benchmarks.py` (7 passed) |
 
 Zero engine seconds. Leave-one-scene-out (LOSO) results are EXPLORATORY. In-sample results are DESCRIPTIVE.
 
-Intervals are scene-clustered percentile bootstraps (10 000 draws, PCG64 7201) of the seed-mean log ratio, reported as
-geometric ratios. The three per-seed ratios are listed beside every interval in `findings.md`.
+Per scene, the estimator is the log of the ratio of seed-mean errors (the joint's mean over the three seeds divided by
+the specialist's), averaged over scenes; the interval is a scene-clustered percentile bootstrap of those scene values
+(10 000 draws, PCG64 7201), reported as a geometric ratio. It covers scene sampling, not training-seed variation. The
+three per-seed ratios are listed beside every interval in `findings.md`.
 
 ## Question
 
@@ -68,14 +70,17 @@ specialist, and its asymmetry is reported across Δ and description.
 - The projection was 8.1 GPU-h, 2.0 h on 4 GPUs.
 
 **Pre-declared 1.5× disposition.** The claim, per benchmark, recipe and budget, is "sharing all weights costs no more
-than 1.5× per-request rollout error at t = 120 against a matched specialist".
+than 1.5× per-request rollout error at t = 120 against a matched specialist". The endpoint is t = 120, the frozen
+benchmark-specific endpoint of the #79 / #84 clips and metric. The ticket's literal t = 225 is not delivered on these
+benchmarks; this is a declared adaptation, not t = 225 compliance.
 - Per request, on LOSO:
   - `supported` iff the joint / specialist upper bound < 1.5;
   - `not_supported_by_this_experiment` iff the lower bound > 1.5;
   - otherwise `readiness_or_precision_insufficient`.
 - The overall token is `supported` iff every request is supported.
 - The headline per benchmark and recipe is the per-request budget, the negative-transfer contrast, as on NovPhy.
-- A failed guard makes every affected token `readiness_or_precision_insufficient`.
+- A failed guard makes every affected token `readiness_or_precision_insufficient`: the overall token and every
+  per-request token of the scope. The global guards include the GPU-seconds cap.
 
 ## Results
 
@@ -161,8 +166,8 @@ error of J, D and S at both budgets. Two patterns stand out:
 
 | | Δ = 5 / 15 (here vs published) | Δ = 1 continuous (here vs published) | published per-seed range at Δ = 1 |
 | --- | --- | --- | --- |
-| CLEVRER | 0.047 / 0.017 vs 0.044 / 0.017 | 3.73 vs 2.98 | 2.51–3.64 |
-| Physion-Dominoes | 0.016 / 0.001 vs 0.016 / 0.001 | 255 vs 167 | 91–274 |
+| CLEVRER | 0.047 / 0.017 vs 0.044 / 0.017 | 3.73 vs 2.98 | 2.51–3.64 (3.73 lies slightly above it) |
+| Physion-Dominoes | 0.016 / 0.001 vs 0.016 / 0.001 | 255 vs 167 | 91–274 (255 lies inside it) |
 
 **Ratios.** The in-sample request-mean joint / specialist ratio at t = 120 is below 1 at the per-request budget:
 - CLEVRER: B 0.04, LC 0.33;
@@ -193,8 +198,11 @@ intervals straddle 1.5. The cost comes from sharing across Δ (J / D15 1.67 [0.8
 Together with NovPhy (`supported` for B, LC1 and LC3 at the per-request budget), the "Δ = 1 is hurt by sharing"
 reading does not hold on any benchmark at matched per-request updates. Δ = 1 is the request that gains most.
 
-At the full budget, specialists that make 6× the joint's updates of their request can beat the joint. This is the
-update-allocation effect #116 also found; at matched updates per request there is no negative transfer.
+At the full budget, specialists that make 6× the joint's updates of their request can beat the joint. This is an
+update-allocation comparison, consistent with what #116 also found; it does not isolate a cause. At matched updates per
+request, the 1.5× criterion is supported in three of the four benchmark × recipe cells. Physion-Dominoes LC remains
+unresolved at Δ = 15: F-15-continuous is 1.58 [0.79, 3.08], so a cost above 1.5× is not excluded there. Even where the
+criterion is supported, it bounds the cost below 1.5×; it does not show zero negative transfer.
 
 ## Disclosures
 
@@ -216,6 +224,18 @@ update-allocation effect #116 also found; at matched updates per request there i
   held-out scenes exist. The in-sample cohort repeats the ICLR setting and is descriptive.
 - **Item 3** (training-dynamics probes) is not part of item 5. Every update's loss and pre-clip norm are logged
   (`updates/`, local), and none was nonfinite.
+- **Post-publication runner edit (phase-B/C review).** Commit `5dbd04df` changed
+  `scripts/run_request_interference_benchmarks.py` for guard propagation and reporting only. The frozen caps guard now
+  enters `global_pass`, `guards_pass` and the disposition stop condition (before, a publish-time cap breach would have
+  left `guards_pass: true`; training and scoring already raised on a breach). When a scope's guard fails, every
+  per-request token of that scope is now the stop token too, not only the overall token. The validation log now says
+  that `compute.json` is compared by value. Every retained guard passes, so no evidence, number or token changed:
+  `--validate` regenerates every published file and exits 0. Tests force each global guard (the cap included) and one
+  scope guard false on the published `compute.json`. The runner is listed in `scripts/post_freeze_amendments.py`.
+- **Wording corrections (phase-B/C review).** The interval description now names the estimator: per scene, the log
+  ratio of seed-mean errors. "At matched updates per request there is no negative transfer" is replaced by the
+  qualified reading above. The #117 result comment's "Δ = 1 lands inside the published seed spread: CLEVRER 3.73 vs
+  2.51–3.64" was wrong: 3.73 lies slightly above that range. Physion's 255 lies inside 91–274.
 
 ## Compute
 
