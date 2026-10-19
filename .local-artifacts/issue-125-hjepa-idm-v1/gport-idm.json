@@ -1,0 +1,727 @@
+{
+  "arms": {
+    "HJ-car-m-IDM": {
+      "arm": "HJ-car-m-IDM",
+      "drawn_crop_starts": [
+        0,
+        2
+      ],
+      "embed_max_abs_delta": 4.76837158203125e-07,
+      "gamma1": 100.0,
+      "grad_norm": 3.3536386489868164,
+      "grad_norm_relative_delta": 0.0,
+      "grad_tensor_max_relative_l2": 7.61475746458018e-07,
+      "head_grad_max_relative_l2": 3.165295652252098e-07,
+      "head_grad_tensors": 18,
+      "head_null_tensors": 0,
+      "head_tensors_in_optimizer_groups": {
+        "level1": 6,
+        "level2": 6,
+        "level3": 6
+      },
+      "idm_terms": {
+        "idm_loss_level1": {
+          "official": 0.0051940688863396645,
+          "port": 0.0051940688863396645
+        },
+        "idm_loss_level2": {
+          "official": 0.0362989604473114,
+          "port": 0.0362989567220211
+        },
+        "idm_loss_level3": {
+          "official": 0.04083268344402313,
+          "port": 0.04083268344402313
+        },
+        "sigreg_loss_action_level2": {
+          "official": 1.6825567483901978,
+          "port": 1.6825567483901978
+        },
+        "sigreg_loss_action_level3": {
+          "official": 1.7163881063461304,
+          "port": 1.7163881063461304
+        }
+      },
+      "idm_terms_expected": [
+        "idm_loss_level1",
+        "idm_loss_level2",
+        "idm_loss_level3",
+        "sigreg_loss_action_level2",
+        "sigreg_loss_action_level3"
+      ],
+      "idm_terms_present": true,
+      "lambda": 0.18,
+      "loss": 8.361982345581055,
+      "loss_max_relative_delta": 2.384185791015625e-07,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        1,
+        2,
+        3,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "null_gradient_floor": 3.3536386489868162e-06,
+      "null_gradient_max_abs_l2": 0.0,
+      "null_gradient_tensors": 0,
+      "official_grad_norm": 3.3536386489868164,
+      "official_loss": 8.361982345581055,
+      "official_lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 0.9999977946281433,
+      "param_max_abs_delta": 4.76837158203125e-07,
+      "pass": true,
+      "reference_sha256": "sha256:254492df18c36df0c6d92f4ed2852c27c9f6b7762383ae17da05ca77f367444f",
+      "step2": {
+        "drawn_crop_starts": [
+          0,
+          2
+        ],
+        "grad_norm": 3.2990949153900146,
+        "grad_norm_relative_delta": 0.0,
+        "grad_tensor_max_relative_l2": 1.0402928865005379e-06,
+        "idm_terms_official": {
+          "idm_loss_level1": 0.0051940688863396645,
+          "idm_loss_level2": 0.03570752590894699,
+          "idm_loss_level3": 0.040277592837810516,
+          "sigreg_loss_action_level2": 1.6535959243774414,
+          "sigreg_loss_action_level3": 1.7314985990524292
+        },
+        "loss": 8.300886154174805,
+        "loss_max_relative_delta": 2.384185791015625e-07,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9807261824607849,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.9807261824607849
+          },
+          "level2": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9689728617668152,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9689728617668152
+          },
+          "level3": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9637869596481323,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9637869596481323
+          }
+        },
+        "null_gradient_floor": 3.2990949153900144e-06,
+        "null_gradient_max_abs_l2": 0.0,
+        "null_gradient_tensors": 0,
+        "official_grad_norm": 3.2990949153900146,
+        "official_loss": 8.300887107849121,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "official_lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "official_update_norm": 0.03692926466464996,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.894664317369461e-07,
+            "max_relative_l2": 6.366099114529788e-07,
+            "null_max_abs_l2": 0.0,
+            "null_tensors": 0,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.470741376280784e-08,
+            "max_relative_l2": 5.979869115435577e-07,
+            "null_max_abs_l2": 0.0,
+            "null_tensors": 0,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.9999961853027344,
+        "param_max_abs_delta": 4.76837158203125e-07,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.03692926466464996,
+        "update_relative_l2": 5.21265201314236e-06,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    },
+    "HJ-px-IDM": {
+      "arm": "HJ-px-IDM",
+      "drawn_crop_starts": [
+        0,
+        2
+      ],
+      "embed_max_abs_delta": 6.765127182006836e-06,
+      "gamma1": 100.0,
+      "grad_norm": 4.205494403839111,
+      "grad_norm_relative_delta": 1.133843411689472e-07,
+      "grad_tensor_max_relative_l2": 4.4106956920586526e-05,
+      "head_grad_max_relative_l2": 4.299556167097762e-06,
+      "head_grad_tensors": 18,
+      "head_null_tensors": 0,
+      "head_tensors_in_optimizer_groups": {
+        "level1": 6,
+        "level2": 6,
+        "level3": 6
+      },
+      "idm_terms": {
+        "idm_loss_level1": {
+          "official": 0.00585298053920269,
+          "port": 0.00585298053920269
+        },
+        "idm_loss_level2": {
+          "official": 0.04275967553257942,
+          "port": 0.042759671807289124
+        },
+        "idm_loss_level3": {
+          "official": 0.05254966765642166,
+          "port": 0.05254966765642166
+        },
+        "sigreg_loss_action_level2": {
+          "official": 1.7406725883483887,
+          "port": 1.7406725883483887
+        },
+        "sigreg_loss_action_level3": {
+          "official": 1.7766963243484497,
+          "port": 1.7766962051391602
+        }
+      },
+      "idm_terms_expected": [
+        "idm_loss_level1",
+        "idm_loss_level2",
+        "idm_loss_level3",
+        "sigreg_loss_action_level2",
+        "sigreg_loss_action_level3"
+      ],
+      "idm_terms_present": true,
+      "lambda": 0.18,
+      "loss": 6.789422035217285,
+      "loss_max_relative_delta": 2.9490780305323627e-06,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        1,
+        2,
+        3,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "null_gradient_floor": 4.205493927001953e-06,
+      "null_gradient_max_abs_l2": 9.569358638827907e-08,
+      "null_gradient_tensors": 20,
+      "official_grad_norm": 4.205493927001953,
+      "official_loss": 6.789422035217285,
+      "official_lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 0.9999967813491821,
+      "param_max_abs_delta": 7.301568984985352e-07,
+      "pass": true,
+      "reference_sha256": "sha256:f66e2e65d37e65bc4c88bbf432e6d1f24aaf7c87e812a134e1653381e2e350db",
+      "step2": {
+        "drawn_crop_starts": [
+          0,
+          2
+        ],
+        "grad_norm": 4.1730756759643555,
+        "grad_norm_relative_delta": 0.0,
+        "grad_tensor_max_relative_l2": 4.39285759057384e-05,
+        "idm_terms_official": {
+          "idm_loss_level1": 0.00585298053920269,
+          "idm_loss_level2": 0.043140992522239685,
+          "idm_loss_level3": 0.05198324844241142,
+          "sigreg_loss_action_level2": 1.6969152688980103,
+          "sigreg_loss_action_level3": 1.75830078125
+        },
+        "loss": 6.782278537750244,
+        "loss_max_relative_delta": 2.9490780305323627e-06,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9983407855033875,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.9983430504798889
+          },
+          "level2": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9951912760734558,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9951925873756409
+          },
+          "level3": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9950617551803589,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9950619339942932
+          }
+        },
+        "null_gradient_floor": 4.173075675964355e-06,
+        "null_gradient_max_abs_l2": 9.863759231620861e-08,
+        "null_gradient_tensors": 20,
+        "official_grad_norm": 4.1730756759643555,
+        "official_loss": 6.782278060913086,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "official_lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "official_update_norm": 0.1526489555835724,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.8933694064617157e-07,
+            "max_relative_l2": 3.63786457455717e-05,
+            "null_max_abs_l2": 4.306958345523526e-09,
+            "null_tensors": 20,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.467925429344177e-08,
+            "max_relative_l2": 3.494670818326995e-05,
+            "null_max_abs_l2": 5.833998284465736e-10,
+            "null_tensors": 20,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.9998860359191895,
+        "param_max_abs_delta": 1.7002224922180176e-05,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.1526489406824112,
+        "update_relative_l2": 0.0007908281404525042,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    },
+    "LeWM-car-m-IDM": {
+      "arm": "LeWM-car-m-IDM",
+      "drawn_crop_starts": [],
+      "embed_max_abs_delta": 4.172325134277344e-07,
+      "gamma1": 100.0,
+      "grad_norm": 1.8117704391479492,
+      "grad_norm_relative_delta": 0.0,
+      "grad_tensor_max_relative_l2": 6.70524684664997e-07,
+      "head_grad_max_relative_l2": 1.5569241895718733e-07,
+      "head_grad_tensors": 6,
+      "head_null_tensors": 0,
+      "head_tensors_in_optimizer_groups": {
+        "level1": 6
+      },
+      "idm_terms": {
+        "idm_loss_level1": {
+          "official": 0.005441776476800442,
+          "port": 0.005441776476800442
+        }
+      },
+      "idm_terms_expected": [
+        "idm_loss_level1"
+      ],
+      "idm_terms_present": true,
+      "lambda": 0.18,
+      "loss": 1.8844608068466187,
+      "loss_max_relative_delta": 8.89764179571139e-08,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "null_gradient_floor": 1.8117704391479491e-06,
+      "null_gradient_max_abs_l2": 0.0,
+      "null_gradient_tensors": 0,
+      "official_grad_norm": 1.8117704391479492,
+      "official_loss": 1.8844608068466187,
+      "official_lrs_after_step": [
+        5.555555555555556e-07
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 1.0,
+      "param_max_abs_delta": 0.0,
+      "pass": true,
+      "reference_sha256": "sha256:0112461cf10315b722ce9da154370c9b10faf3f09b430df9590e096b789bfdec",
+      "step2": {
+        "drawn_crop_starts": [],
+        "grad_norm": 1.8128738403320312,
+        "grad_norm_relative_delta": 0.0,
+        "grad_tensor_max_relative_l2": 1.1362114946678048e-06,
+        "idm_terms_official": {
+          "idm_loss_level1": 0.005441776476800442
+        },
+        "loss": 1.8825546503067017,
+        "loss_max_relative_delta": 2.9802322387695312e-08,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05
+        ],
+        "lrs_at_step": [
+          5e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9912804961204529,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.9912804961204529
+          }
+        },
+        "null_gradient_floor": 1.8128738403320312e-06,
+        "null_gradient_max_abs_l2": 0.0,
+        "null_gradient_tensors": 0,
+        "official_grad_norm": 1.8128738403320312,
+        "official_loss": 1.8825546503067017,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05
+        ],
+        "official_lrs_at_step": [
+          5e-05
+        ],
+        "official_update_norm": 0.05948176234960556,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.898972988128662e-07,
+            "max_relative_l2": 7.171959168772446e-07,
+            "null_max_abs_l2": 0.0,
+            "null_tensors": 0,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.470827430486679e-08,
+            "max_relative_l2": 6.232772307157575e-07,
+            "null_max_abs_l2": 0.0,
+            "null_tensors": 0,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 1.0,
+        "param_max_abs_delta": 3.771856427192688e-08,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.05948176980018616,
+        "update_relative_l2": 4.024475401820382e-06,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    },
+    "LeWM-px-IDM": {
+      "arm": "LeWM-px-IDM",
+      "drawn_crop_starts": [],
+      "embed_max_abs_delta": 7.68899917602539e-06,
+      "gamma1": 100.0,
+      "grad_norm": 2.5289924144744873,
+      "grad_norm_relative_delta": 0.0,
+      "grad_tensor_max_relative_l2": 4.176718357484788e-05,
+      "head_grad_max_relative_l2": 4.4051835175196175e-06,
+      "head_grad_tensors": 6,
+      "head_null_tensors": 0,
+      "head_tensors_in_optimizer_groups": {
+        "level1": 6
+      },
+      "idm_terms": {
+        "idm_loss_level1": {
+          "official": 0.005854331888258457,
+          "port": 0.00585433142259717
+        }
+      },
+      "idm_terms_expected": [
+        "idm_loss_level1"
+      ],
+      "idm_terms_present": true,
+      "lambda": 0.18,
+      "loss": 1.100904941558838,
+      "loss_max_relative_delta": 1.2012865920728934e-06,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "null_gradient_floor": 2.528992414474487e-06,
+      "null_gradient_max_abs_l2": 9.182934235241191e-08,
+      "null_gradient_tensors": 16,
+      "official_grad_norm": 2.5289924144744873,
+      "official_loss": 1.100904941558838,
+      "official_lrs_after_step": [
+        5.555555555555556e-07
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 0.9999913573265076,
+      "param_max_abs_delta": 2.384185791015625e-07,
+      "pass": true,
+      "reference_sha256": "sha256:ae7562345a05d003cf5317298678679b8dc86f284ba5d6bed4b5518817887d2e",
+      "step2": {
+        "drawn_crop_starts": [],
+        "grad_norm": 2.520737409591675,
+        "grad_norm_relative_delta": 9.45828612072178e-08,
+        "grad_tensor_max_relative_l2": 3.9513062802143395e-05,
+        "idm_terms_official": {
+          "idm_loss_level1": 0.005854331888258457
+        },
+        "loss": 1.0988988876342773,
+        "loss_max_relative_delta": 1.2012865920728934e-06,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05
+        ],
+        "lrs_at_step": [
+          5e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9983429312705994,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.9983551502227783
+          }
+        },
+        "null_gradient_floor": 2.520737648010254e-06,
+        "null_gradient_max_abs_l2": 9.222940633435428e-08,
+        "null_gradient_tensors": 16,
+        "official_grad_norm": 2.520737648010254,
+        "official_loss": 1.0988988876342773,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05
+        ],
+        "official_lrs_at_step": [
+          5e-05
+        ],
+        "official_update_norm": 0.15375277400016785,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.892879158258438e-07,
+            "max_relative_l2": 3.83857186534442e-05,
+            "null_max_abs_l2": 6.855896739210721e-09,
+            "null_tensors": 16,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.4688899070024487e-08,
+            "max_relative_l2": 3.762730193557218e-05,
+            "null_max_abs_l2": 8.181892385827894e-10,
+            "null_tensors": 16,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.9996724128723145,
+        "param_max_abs_delta": 4.0522776544094086e-05,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.15375278890132904,
+        "update_relative_l2": 0.0011217870051041245,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    }
+  },
+  "checked_at": "2026-10-19T06:16:37Z",
+  "device": "cpu float32",
+  "official": {
+    "code": "kevinghst/H-JEPA @ 97054ec (hjepa env)",
+    "script": "scripts/hjepa_idm_port_reference.py",
+    "script_sha256": "sha256:c32b087d80b431512412e9441a695ea2f0ed5155be3c141af5d6fd29f8e3c8b8"
+  },
+  "pass": true,
+  "port": {
+    "module": "world_model/hjepa/idm.py",
+    "module_sha256": "sha256:71cb8bfcb240e08b6c37143b78fb864d149e7c41f69e80e2c69f3b3ab66c22c5"
+  },
+  "schema": "issue_125_gport_idm_v1",
+  "tolerance": {
+    "embed_max_abs": 0.0001,
+    "grad_floor_of_global_norm": 1e-06,
+    "grad_norm_relative": 0.0001,
+    "grad_tensor_relative_l2": 0.001,
+    "loss_relative": 0.0001,
+    "lr_abs": 1e-12,
+    "param_close_abs": 1e-07,
+    "param_close_share": 0.999,
+    "param_max_abs_over_lr": 2.0
+  },
+  "tolerance_source": "scripts/run_hjepa_comparison.py GPORT_TOLERANCE (#123's declared tolerances)",
+  "vendor_hashes_match": {
+    "LICENSE": true,
+    "__init__.py": true,
+    "hjepa_utils.py": true,
+    "loss.py": true,
+    "models/__init__.py": true,
+    "models/encoders/__init__.py": true,
+    "models/encoders/build_encoder.py": true,
+    "models/encoders/encoders.py": true,
+    "models/encoders/hf_vit.py": true,
+    "models/encoders/seq_encoder.py": true,
+    "models/hjepa.py": true,
+    "models/jepa.py": true,
+    "models/module.py": true,
+    "models/predictors/__init__.py": true,
+    "models/predictors/predictors.py": true,
+    "models/probers.py": true
+  }
+}

@@ -1,0 +1,16 @@
+17:16:14 | INFO  | __init__.py | JAX version 0.10.2 available.
+17:16:14 | INFO  | atomic_chec~| [atomic_save] installed crash-safe checkpoint plugin (write to sibling .tmp + fsync + atomic rename)
+/srv/home/shua0171/miniconda3/envs/hjepa/lib/python3.11/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+17:16:14 | INFO  | main_hjepa.~| HJEPA optimizer parameter groups: [('level1', 5e-05, 47), ('level2', 1e-05, 68), ('level3', 1e-05, 68)]
+17:16:14 | INFO  | lr_schedule~| 	User provided a dict
+[hjepa-idm-port-reference] HJ-car-m-IDM: loss 8.361982, IDM terms {'idm_loss_level1': 0.005194, 'sigreg_loss_action_level2': 1.682557, 'idm_loss_level2': 0.036299, 'sigreg_loss_action_level3': 1.716388, 'idm_loss_level3': 0.040833}, step-2 loss 8.300887 at LRs [5e-05, 1e-05, 1e-05], needed [0, 1, 2, 3, 10, 15, 20, 25, 30, 45]
+17:16:15 | INFO  | main_hjepa.~| HJEPA optimizer parameter groups: [('level1', 5e-05, 278), ('level2', 1e-05, 126), ('level3', 1e-05, 126)]
+17:16:15 | INFO  | lr_schedule~| 	User provided a dict
+[hjepa-idm-port-reference] HJ-px-IDM: loss 6.789422, IDM terms {'idm_loss_level1': 0.005853, 'sigreg_loss_action_level2': 1.740673, 'idm_loss_level2': 0.04276, 'sigreg_loss_action_level3': 1.776696, 'idm_loss_level3': 0.05255}, step-2 loss 6.782278 at LRs [5e-05, 1e-05, 1e-05], needed [0, 1, 2, 3, 10, 15, 20, 25, 30, 45]
+17:16:19 | INFO  | main_hjepa.~| HJEPA optimizer parameter groups: [('level1', 5e-05, 112)]
+17:16:19 | INFO  | lr_schedule~| 	User provided a dict
+[hjepa-idm-port-reference] LeWM-car-m-IDM: loss 1.884461, IDM terms {'idm_loss_level1': 0.005442}, step-2 loss 1.882555 at LRs [5e-05], needed [0, 1, 2, 3]
+17:16:19 | INFO  | main_hjepa.~| HJEPA optimizer parameter groups: [('level1', 5e-05, 278)]
+17:16:19 | INFO  | lr_schedule~| 	User provided a dict
+[hjepa-idm-port-reference] LeWM-px-IDM: loss 1.100905, IDM terms {'idm_loss_level1': 0.005854}, step-2 loss 1.098899 at LRs [5e-05], needed [0, 1, 2, 3]

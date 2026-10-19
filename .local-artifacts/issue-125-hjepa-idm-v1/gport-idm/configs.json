@@ -1,0 +1,542 @@
+{
+  "HJ-car-m-IDM": {
+    "config": {
+      "data": {
+        "dataset": {
+          "level1": {
+            "frameskip": 1
+          }
+        }
+      },
+      "img_size": 320,
+      "level1": {
+        "encoder": {
+          "hidden_dim": 384,
+          "input_dim": 236,
+          "output_dim": 112,
+          "projector": {
+            "type": "identity"
+          },
+          "type": "mlp"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 100.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 5e-05,
+        "predictor": {
+          "depth": 2,
+          "dim_head": 28,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 4,
+          "hidden_dim": 112,
+          "mlp_dim": 96,
+          "projector": {
+            "type": "identity"
+          }
+        },
+        "wm": {
+          "action_dim": 5,
+          "embed_dim": 112,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "level2": {
+        "action_embed": {
+          "input_dim": 4,
+          "patch_embed": false
+        },
+        "action_encoder": {
+          "input_dim": 112,
+          "max_chunk": 6,
+          "output_dim": 4,
+          "queue_size": 4000
+        },
+        "action_sigreg_coeff": 0.005,
+        "encoder": {
+          "final_ln": false,
+          "hidden_dim": 224,
+          "input_dim": 112,
+          "output_dim": 112,
+          "projector": {
+            "type": "identity"
+          },
+          "type": "latent_mlp"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 50.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 1e-05,
+        "predictor": {
+          "depth": 2,
+          "dim_head": 28,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 4,
+          "hidden_dim": 112,
+          "mlp_dim": 96,
+          "projector": {
+            "type": "identity"
+          }
+        },
+        "stride": 5,
+        "window_size": 1,
+        "wm": {
+          "embed_dim": 112,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "level3": {
+        "action_embed": {
+          "input_dim": 4,
+          "patch_embed": false
+        },
+        "action_encoder": {
+          "input_dim": 112,
+          "max_chunk": 4,
+          "output_dim": 4,
+          "queue_size": 4000
+        },
+        "action_sigreg_coeff": 0.005,
+        "encoder": {
+          "final_ln": false,
+          "hidden_dim": 224,
+          "input_dim": 112,
+          "output_dim": 112,
+          "projector": {
+            "type": "identity"
+          },
+          "type": "latent_mlp"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 50.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 1e-05,
+        "predictor": {
+          "depth": 2,
+          "dim_head": 28,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 4,
+          "hidden_dim": 112,
+          "mlp_dim": 96,
+          "projector": {
+            "type": "identity"
+          }
+        },
+        "stride": 3,
+        "window_size": 1,
+        "wm": {
+          "embed_dim": 112,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "num_levels": 3,
+      "optimizer": {
+        "lr": 5e-05,
+        "type": "AdamW",
+        "weight_decay": 0.001
+      },
+      "patch_size": 16
+    },
+    "crop_starts": [
+      0,
+      2,
+      null
+    ],
+    "idm": {
+      "1": [
+        112,
+        256,
+        112
+      ],
+      "2": [
+        112,
+        256,
+        112
+      ],
+      "3": [
+        112,
+        256,
+        112
+      ]
+    },
+    "input": "carriers",
+    "level1_steps": 46
+  },
+  "HJ-px-IDM": {
+    "config": {
+      "data": {
+        "dataset": {
+          "level1": {
+            "frameskip": 1
+          }
+        }
+      },
+      "img_size": 320,
+      "level1": {
+        "encoder": {
+          "projector": {
+            "type": "mlp"
+          },
+          "scale": "tiny",
+          "type": "vit"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 100.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 5e-05,
+        "predictor": {
+          "depth": 4,
+          "dim_head": 64,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 8,
+          "hidden_dim": 192,
+          "mlp_dim": 1024,
+          "projector": {
+            "type": "mlp"
+          }
+        },
+        "wm": {
+          "action_dim": 5,
+          "embed_dim": 192,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "level2": {
+        "action_embed": {
+          "input_dim": 4,
+          "patch_embed": false
+        },
+        "action_encoder": {
+          "input_dim": 192,
+          "max_chunk": 6,
+          "output_dim": 4,
+          "queue_size": 4000
+        },
+        "action_sigreg_coeff": 0.005,
+        "encoder": {
+          "final_ln": false,
+          "hidden_dim": 384,
+          "input_dim": 192,
+          "output_dim": 192,
+          "projector": {
+            "type": "identity"
+          },
+          "type": "latent_mlp"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 50.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 1e-05,
+        "predictor": {
+          "depth": 6,
+          "dim_head": 64,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 16,
+          "hidden_dim": 192,
+          "mlp_dim": 2048,
+          "projector": {
+            "type": "mlp"
+          }
+        },
+        "stride": 5,
+        "window_size": 1,
+        "wm": {
+          "embed_dim": 192,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "level3": {
+        "action_embed": {
+          "input_dim": 4,
+          "patch_embed": false
+        },
+        "action_encoder": {
+          "input_dim": 192,
+          "max_chunk": 4,
+          "output_dim": 4,
+          "queue_size": 4000
+        },
+        "action_sigreg_coeff": 0.005,
+        "encoder": {
+          "final_ln": false,
+          "hidden_dim": 384,
+          "input_dim": 192,
+          "output_dim": 192,
+          "projector": {
+            "type": "identity"
+          },
+          "type": "latent_mlp"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 50.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 1e-05,
+        "predictor": {
+          "depth": 6,
+          "dim_head": 64,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 16,
+          "hidden_dim": 192,
+          "mlp_dim": 2048,
+          "projector": {
+            "type": "mlp"
+          }
+        },
+        "stride": 3,
+        "window_size": 1,
+        "wm": {
+          "embed_dim": 192,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "num_levels": 3,
+      "optimizer": {
+        "lr": 5e-05,
+        "type": "AdamW",
+        "weight_decay": 0.001
+      },
+      "patch_size": 16
+    },
+    "crop_starts": [
+      0,
+      2,
+      null
+    ],
+    "idm": {
+      "1": [
+        192,
+        256,
+        192
+      ],
+      "2": [
+        192,
+        256,
+        192
+      ],
+      "3": [
+        192,
+        256,
+        192
+      ]
+    },
+    "input": "pixels",
+    "level1_steps": 46
+  },
+  "LeWM-car-m-IDM": {
+    "config": {
+      "data": {
+        "dataset": {
+          "level1": {
+            "frameskip": 1
+          }
+        }
+      },
+      "img_size": 320,
+      "level1": {
+        "encoder": {
+          "hidden_dim": 384,
+          "input_dim": 236,
+          "output_dim": 112,
+          "projector": {
+            "type": "identity"
+          },
+          "type": "mlp"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 100.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 5e-05,
+        "predictor": {
+          "depth": 7,
+          "dim_head": 28,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 4,
+          "hidden_dim": 112,
+          "mlp_dim": 384,
+          "projector": {
+            "type": "identity"
+          }
+        },
+        "wm": {
+          "action_dim": 5,
+          "embed_dim": 112,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "num_levels": 1,
+      "optimizer": {
+        "lr": 5e-05,
+        "type": "AdamW",
+        "weight_decay": 0.001
+      },
+      "patch_size": 16
+    },
+    "crop_starts": [
+      null
+    ],
+    "idm": {
+      "1": [
+        112,
+        256,
+        112
+      ]
+    },
+    "input": "carriers",
+    "level1_steps": 4
+  },
+  "LeWM-px-IDM": {
+    "config": {
+      "data": {
+        "dataset": {
+          "level1": {
+            "frameskip": 1
+          }
+        }
+      },
+      "img_size": 320,
+      "level1": {
+        "encoder": {
+          "projector": {
+            "type": "mlp"
+          },
+          "scale": "tiny",
+          "type": "vit"
+        },
+        "idm": {
+          "hidden_dim": 256
+        },
+        "idm_coeff": 100.0,
+        "loss": {
+          "embed": {
+            "sigreg": {
+              "enabled": true,
+              "weight": 0.18
+            }
+          }
+        },
+        "lr": 5e-05,
+        "predictor": {
+          "depth": 4,
+          "dim_head": 64,
+          "dropout": 0.1,
+          "emb_dropout": 0.0,
+          "heads": 8,
+          "hidden_dim": 192,
+          "mlp_dim": 1024,
+          "projector": {
+            "type": "mlp"
+          }
+        },
+        "wm": {
+          "action_dim": 5,
+          "embed_dim": 192,
+          "history_size": 3,
+          "rollout_n": 1,
+          "use_proprio": false
+        }
+      },
+      "num_levels": 1,
+      "optimizer": {
+        "lr": 5e-05,
+        "type": "AdamW",
+        "weight_decay": 0.001
+      },
+      "patch_size": 16
+    },
+    "crop_starts": [
+      null
+    ],
+    "idm": {
+      "1": [
+        192,
+        256,
+        192
+      ]
+    },
+    "input": "pixels",
+    "level1_steps": 4
+  }
+}
