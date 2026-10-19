@@ -44,3 +44,62 @@ Runner `scripts/run_hjepa_comparison.py`; adapter `world_model/hjepa/novphy.py`;
 - **Infrastructure.** The first `--smoke` process died after about 50 s without output or a traceback, and wrote no `smoke.json`. It was not detached from the launching shell. It was relaunched once, detached (`setsid`), and completed. Its log is kept as `logs/smoke-attempt1-killed.log`.
 - **Docstring.** The runner's docstring was completed with the protocol before the freeze. No logic changed.
 - **Compute rule.** The ticket's cap is 260 GPU-h and 72 h wall. The projection's 49.9 h wall assumes uncontended GPUs. Training runs beside the remaining Tier T and Tier E jobs, so the measured wall time will be longer. If the measured wall time passes 72 h, this is reported on the ticket. Scope is not cut.
+
+## Post-freeze amendment A1: GPU-window schedule (2026-10-19, scheduling only)
+
+**Owner rule** (10:40 AEDT, binding): GPU jobs run only from 18:00 to 07:00 Australia/Melbourne. The orchestrator stopped every #123 GPU process at 10:38, and none has run since. Readouts and scoring had not started, and no evaluation-split file had been read. From the 19 October window on, every remaining #123 GPU stage goes through the night-window scheduler (`scripts/gpu_window.py`, `docs/gpu-window-scheduler.md`):
+- cron runs a tick every 5 min;
+- the scheduler launches jobs only in [18:00, 06:50);
+- it sends SIGTERM at 06:50 and SIGKILL to anything left at 07:00.
+
+**Amended files** (registered in `scripts/post_freeze_amendments.py`; frozen → amended sha256):
+- **`scripts/run_hjepa_comparison.py`** (`db7f87ae…` → `b3390059…`).
+  - `--train` handles SIGTERM and SIGUSR1. The running arm-seed writes `resume.pt` after its current optimizer step; the queue then exits 75, and the relaunch resumes there. The write is atomic (tmp + `os.replace`), as the frozen 2000-step checkpoints already were.
+  - The CPU and CUDA RNG are restored after the loader iterator is created. Creating the iterator draws the worker seed from the CPU generator, which had shifted a resumed run's CPU stream; on the GPUs SIGReg draws from the CUDA generator.
+  - `cuda_rng` is saved only when CUDA exists.
+  - Objective, optimizer, schedule and batches are unchanged; batch *b* is `PCG64([seed, b])`, so the sampler position is the step.
+  - `tests/test_issue_123_training_resume.py` (HJ-car-m, CPU) compares N uninterrupted steps against k steps, SIGTERM, resume and N − k steps. Model, optimizer state, scheduler and CPU RNG are bitwise identical, and so is the final `model.pt`. The test fails with the frozen restore order.
+  - On the GPUs the restored state is exact, but the kernels (cuDNN autotune, bf16) are not bitwise reproducible run to run, paused or not.
+- **`scripts/hjepa_train_ckpt.py`** (`ae6c27b8…` → `f07eed6a…`).
+  - On SIGTERM, the official `ResumeCheckpoint` saves `lightning_resume/last.ckpt` through its own `_save` at the end of the current train batch, and the run exits 75. Lightning's own SIGTERM stop, during validation or the epoch-end hooks, also exits 75.
+  - **Mid-epoch resume, the official semantics** (measured on CPU):
+    - global step, optimizer and LR continue exactly;
+    - the interrupted epoch runs only its remaining batches;
+    - the data order is **not** restored: the remaining batches come from a new shuffle sequence.
+  - A relaunch from a finished resume file runs, once, the train-end hooks that Lightning skips: the final object dump and the planning eval, which resumes from its atomic per-task chunks.
+  - `main_hjepa.py` and every hyperparameter are unchanged.
+- **`scripts/run_hjepa_fidelity.py`** (`0e78d456…` → `05bbd271…`).
+  - `--queue` forwards SIGTERM to its job, records the job's exit in the ledger, starts no further job and returns 75.
+  - It returns 1 if a job exited non-zero, or if a Tier-T job left no planning-eval metrics; before, it always returned 0.
+  - `--table` and the G-fid rules are unchanged.
+
+**Corrections and disclosures.**
+- The periodic `resume.pt` writes were already atomic in the frozen code (`atomic_torch`: tmp + replace).
+- Current checkpoints:
+  - training resumes HJ-px/20260908 at step 100 000 and HJ-px/20260909, HJ-px/20260910 and HWM-px/20260908 at step 66 000;
+  - Tier T H-JEPA-3 resumes at global step 6566 (seed 42, end of epoch 0), 2000 (seed 43) and 4000 (seed 44) of 45 962.
+- The H-JEPA-3 relaunch segments started at 09:14 (seed 42), 10:03 (seed 43) and 09:47 (seed 44). They were killed at 10:38 and have no ledger line: about 2.9 GPU-h, counted below. Steps after each segment's last checkpoint are recomputed.
+- Tier E finished 9/9 before the rule. Its chunk files are atomic and `metrics.yaml` is written last, so an interrupted task is never counted.
+
+**Compute.** The caps count active compute time, not calendar time:
+- a run's GPU seconds are its time on the GPU;
+- the scheduler records each run's seconds;
+- daytime pauses do not count.
+
+Recorded so far: about 117 GPU-h.
+- 43.9 h of checkpointed training;
+- about 0.5 h of training steps recomputed;
+- 64.5 h in the fidelity ledger;
+- 2.9 h of unrecorded Tier-T segments;
+- 4.9 h of benchmarks and selection.
+
+Remaining, projected: about 141 GPU-h.
+- training 93 h (queues 18 / 24 / 24 / 27 h);
+- Tier T H-JEPA-3 32 h, including the train-end planning eval;
+- readouts 8 h;
+- scoring 6 h;
+- publish and validate about 1.5 h.
+
+The total, about 258 GPU-h, is close to the 260 GPU-h cap. Shared GPUs count each process's full wall time. If the measured total passes the cap, it is reported here and on the ticket. Scope is not cut.
+
+Nights to finish: 141 GPU-h / (4 GPUs × 13 h) ≈ 2.7, so 3 nights. The critical path is training queue 3 (27 h), followed by readouts, freeze, score, publish and validate. The scheduler projects the last job, `--validate`, to end on 22 October at about 05:00.

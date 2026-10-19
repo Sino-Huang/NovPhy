@@ -33,6 +33,7 @@ import json
 import math
 import os
 from pathlib import Path
+import signal
 import statistics
 import subprocess
 import time
@@ -54,6 +55,7 @@ TRAIN_OVERRIDES = ("final_probing_decoding_eval.enabled=false", "num_workers=8",
 # at step 541 (26 GB allocated against a measured 9.4 GiB steady-state peak); that infrastructure failure is
 # relaunched once with these settings and disclosed.
 MEMORY_ENV = {"PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True", "CUDNN_CONV_WSCAP_DBG": "2048"}
+PAUSED = 75  # queue (and Tier-T job) exit code after a SIGTERM stop; relaunched the next night
 
 
 def log(message):
@@ -110,12 +112,26 @@ def command(tier, model, seed):
 
 def queue(tier, gpu, jobs):
     """Run the (model, seed) jobs one after another on one GPU; a job whose metrics exist is skipped
-    (typed failures are recorded and never retried)."""
+    (typed failures are recorded and never retried). SIGTERM or SIGUSR1 forwards SIGTERM to the running job,
+    records its exit as usual (75 = paused at a resume checkpoint), starts no further job and returns 75;
+    otherwise returns 1 if a job exited non-zero or a Tier-T job exited 0 without metrics, else 0."""
     env = {**os.environ, "HJEPA_HOME": str(HJEPA_HOME), "CUDA_VISIBLE_DEVICES": str(gpu), "MUJOCO_GL": "egl",
            "PYTHONUNBUFFERED": "1", **(MEMORY_ENV if tier == "tier-t" else {})}
     logs = OUTPUT / "logs"
     logs.mkdir(parents=True, exist_ok=True)
+    stop, running, failed = [], [], []
+
+    def request_stop(signum, _frame):
+        stop.append(signum)
+        for proc in running:
+            proc.send_signal(signal.SIGTERM)
+
+    signal.signal(signal.SIGTERM, request_stop)
+    signal.signal(signal.SIGUSR1, request_stop)
     for model, seed in jobs:
+        if stop:
+            log(f"stop requested (signal {stop[0]}); not starting {tier} {model} seed {seed} or later jobs")
+            break
         done = (eval_dir(model, seed) / "metrics.yaml") if tier == "tier-e" else tier_t_metrics(model, seed)
         if done is not None and Path(done).is_file():
             log(f"{tier} {model} seed {seed}: metrics exist; skipped")
@@ -124,14 +140,20 @@ def queue(tier, gpu, jobs):
         began, wall0 = time.time(), time.monotonic()
         with (logs / f"{tier}--{model}--seed{seed}.log").open("a") as handle:
             proc = subprocess.Popen(argv, cwd=HJEPA_REF / "h_jepa", env=env, stdout=handle, stderr=subprocess.STDOUT)
+            running.append(proc)
+            if stop:  # signalled while the job was being spawned
+                proc.send_signal(signal.SIGTERM)
             (logs / f"{tier}--{model}--seed{seed}.pid").write_text(f"{proc.pid}\n")
             log(f"{tier} {model} seed {seed} on GPU {gpu}: worker pid {proc.pid}")
             code = proc.wait()
+            running.remove(proc)
         wall = time.monotonic() - wall0
         record({"tier": tier, "model": model, "seed": seed, "gpu": gpu, "pid": proc.pid, "exit_code": code,
                 "started_unix": began, "wall_seconds": wall, "gpu_seconds": wall})
         log(f"{tier} {model} seed {seed}: exit {code} after {wall:.0f}s")
-    return 0
+        if code != 0 or (tier == "tier-t" and tier_t_metrics(model, seed) is None):
+            failed.append((model, seed))
+    return PAUSED if stop else 1 if failed else 0
 
 
 def mean_se(values):

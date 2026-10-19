@@ -40,6 +40,7 @@ import gzip
 import json
 import os
 from pathlib import Path
+import signal
 import time
 
 import numpy as np
@@ -603,6 +604,18 @@ SELECTION_SEED = SEEDS[0]
 CHECKPOINT_EVERY = 2000
 LOG_EVERY = 50
 PIXEL_LOADER = {"num_workers": 5, "prefetch_factor": 2}
+# GPU-window stop (post-freeze amendment A1, scheduling only): SIGTERM / SIGUSR1 ask the running arm-seed to write
+# resume.pt after its current optimizer step and the queue to exit EXIT_PAUSED; the next launch resumes there.
+EXIT_PAUSED = 75  # EX_TEMPFAIL
+STOP_REQUESTED = []  # signal numbers received; train_run reads it at every optimizer-step boundary
+
+
+class TrainingPaused(Exception):
+    """A stop signal was honoured: resume.pt holds the state after the last completed optimizer step."""
+
+
+def request_stop(signum, _frame):
+    STOP_REQUESTED.append(signum)
 
 
 def valid_clips(arm, ends):
@@ -689,13 +702,11 @@ def train_run(output, arm, seed, lam, steps, batch, out_dir, device="cuda", max_
     scheduler = hn.WarmupCosine(optimizer, hn.warmup_steps(steps), steps)
     start, elapsed = 0, 0.0
     resume = out_dir / "resume.pt"
-    if resume.is_file():
-        state = torch.load(resume, map_location="cpu", weights_only=False)
+    state = torch.load(resume, map_location="cpu", weights_only=False) if resume.is_file() else None
+    if state is not None:
         model.load_state_dict(state["model"])
         optimizer.load_state_dict(state["optimizer"])
         scheduler.load_state_dict(state["scheduler"])
-        torch.set_rng_state(state["cpu_rng"])
-        torch.cuda.set_rng_state(state["cuda_rng"])
         start, elapsed = state["step"], state["elapsed"]
         log(f"{arm} seed {seed}: resumed at step {start}")
     source = source or BatchSource(output, arm, seed, steps, batch)
@@ -703,6 +714,12 @@ def train_run(output, arm, seed, lam, steps, batch, out_dir, device="cuda", max_
     pixels = hn.ARMS[arm]["input"] == "pixels"
     loader = torch.utils.data.DataLoader(source, batch_size=None, sampler=sampler, pin_memory=pixels,
                                          **(PIXEL_LOADER if pixels else {"num_workers": 2, "prefetch_factor": 4}))
+    batches = iter(loader)  # draws the loader's worker base seed from the CPU generator
+    if state is not None:
+        # restored after that draw, so a resumed run continues the CPU (and CUDA) streams of the uninterrupted run
+        torch.set_rng_state(state["cpu_rng"])
+        if state["cuda_rng"] is not None:
+            torch.cuda.set_rng_state(state["cuda_rng"])
     geometry = hn.Geometry(arm)
     log_path = out_dir / "train-log.jsonl"
     began = time.monotonic()
@@ -710,7 +727,7 @@ def train_run(output, arm, seed, lam, steps, batch, out_dir, device="cuda", max_
     step = start
     trace = []
     with open(log_path, "a") as log_file:
-        for item in loader:
+        for item in batches:
             step = item["b"]
             starts = {level: s for level, s in enumerate(item["starts"], start=1)}
             model.plan = (geometry.level1_steps, starts, item["needed"])
@@ -735,11 +752,15 @@ def train_run(output, arm, seed, lam, steps, batch, out_dir, device="cuda", max_
                 log_file.write(json.dumps(entry) + "\n")
                 log_file.flush()
                 trace.append(entry)
-            if (step + 1) % CHECKPOINT_EVERY == 0 and step + 1 < steps:
+            stop = bool(STOP_REQUESTED) and step + 1 < steps
+            if stop or ((step + 1) % CHECKPOINT_EVERY == 0 and step + 1 < steps):
                 atomic_torch(resume, {"model": model.state_dict(), "optimizer": optimizer.state_dict(),
                                       "scheduler": scheduler.state_dict(), "cpu_rng": torch.get_rng_state(),
-                                      "cuda_rng": torch.cuda.get_rng_state(), "step": step + 1,
-                                      "elapsed": elapsed + time.monotonic() - began})
+                                      "cuda_rng": torch.cuda.get_rng_state() if torch.cuda.is_available() else None,
+                                      "step": step + 1, "elapsed": elapsed + time.monotonic() - began})
+            if stop:
+                log(f"{arm} seed {seed}: stop signal; resume.pt written at step {step + 1}")
+                raise TrainingPaused(f"{arm} seed {seed} paused at step {step + 1} of {steps}")
     seconds = elapsed + time.monotonic() - began
     if failure is None and max_steps is not None and step + 1 < steps:
         return {"partial": True, "steps_done": step + 1 - start, "seconds": time.monotonic() - began}
@@ -1543,13 +1564,23 @@ def prepare(output):
 
 
 def train(output, gpu):
-    """Run this GPU's frozen training queue (one arm-seed after another)."""
+    """Run this GPU's frozen training queue (one arm-seed after another). On SIGTERM / SIGUSR1 the current arm-seed
+    writes resume.pt after its current optimizer step and the queue exits EXIT_PAUSED; a relaunch resumes there."""
     plan = load_plan(output)
+    for signum in (signal.SIGTERM, signal.SIGUSR1):
+        signal.signal(signum, request_stop)
     for name in plan["training"]["queues"][gpu]:
+        if STOP_REQUESTED:
+            log(f"queue {gpu}: stop signal; exiting before {name}")
+            return EXIT_PAUSED
         arm, seed = name.split("/")
         spec = plan["arms"][arm]
-        report = train_run(output, arm, int(seed), spec["lambda"], spec["steps"], spec["batch"],
-                           run_dir(output, arm, int(seed)))
+        try:
+            report = train_run(output, arm, int(seed), spec["lambda"], spec["steps"], spec["batch"],
+                               run_dir(output, arm, int(seed)))
+        except TrainingPaused as paused:
+            log(f"queue {gpu}: {paused}")
+            return EXIT_PAUSED
         if not report.get("partial"):
             mark(output, f"train-{arm}-seed{seed}", report["wall_seconds"], report["gpu_seconds"])
     return 0

@@ -324,3 +324,15 @@ def test_phase_bc_amended_runners_and_modules_are_registered():
                  "scripts/run_request_interference_benchmarks.py", "scripts/run_remaining_frames_input.py",
                  "scripts/run_cost_alignment.py", "scripts/run_request_code_factorisation.py"):
         assert path in pfa.AMENDMENTS, path
+
+
+def test_issue_123_gpu_window_amendments_are_registered():
+    """#123 A1 (owner GPU-window rule): graceful stop / resume of the main training, Tier-T launcher and fidelity
+    queue; each replaces exactly the bytes frozen in the #123 plan."""
+    import json
+    from scripts import post_freeze_amendments as pfa
+    plan = json.load(open(".local-artifacts/issue-123-hjepa-comparison-v1/plan.json"))
+    frozen = {entry["artifact"]: entry["sha256"] for entry in plan["inputs"]}
+    for path in ("scripts/run_hjepa_comparison.py", "scripts/hjepa_train_ckpt.py", "scripts/run_hjepa_fidelity.py"):
+        assert pfa.AMENDMENTS[path]["issue"] == 123
+        assert pfa.AMENDMENTS[path]["replaces"] == (frozen[path],)

@@ -99,6 +99,34 @@ AMENDMENTS = {
                    "J - OL, which the frozen code had gated by the #96 secondary rule (own half-width in place of G6); "
                    "that rule and the #96 literal G6 bound stay as DESCRIPTIVE readings; records, estimates and "
                    "intervals unchanged")},
+    "scripts/run_hjepa_comparison.py": {
+        "issue": 123, "replaces": ("sha256:db7f87ae101bd3ab3c3c23243b05cd814db06b443029fbd1dfacd8e488426177",),
+        "sha256": "sha256:b3390059a7d83c8433c5dc13fc211c25c6522d466cc11baf56f75268dfe4f6f4",
+        "change": ("A1 (scheduling only; owner GPU-window rule 2026-10-19, during main training, before any readout "
+                   "or evaluation read): --train handles SIGTERM / SIGUSR1: the running arm-seed writes resume.pt "
+                   "(atomic tmp + os.replace, as the 2000-step checkpoints) after its current optimizer step and the "
+                   "queue exits 75; the relaunch resumes there; the CPU / CUDA RNG states are restored after the "
+                   "loader iterator is created (its worker-seed draw shifted a resumed run's CPU stream) and the CUDA "
+                   "RNG is saved only when CUDA exists; objective, optimizer, schedule and batches unchanged; "
+                   "tests/test_issue_123_training_resume.py: stop-and-resume bit-identical to the uninterrupted run")},
+    "scripts/hjepa_train_ckpt.py": {
+        "issue": 123, "replaces": ("sha256:ae6c27b830b8bd4bde08d852de8b27db8d5f7ac5384178984bd730baf0e74543",),
+        "sha256": "sha256:f07eed6a3f03aea47561ae1a9153697cb7e239c2fe643a49b7c1eabd89e585be",
+        "change": ("A1 (scheduling only; owner GPU-window rule): on SIGTERM the Tier-T run saves the official "
+                   "ResumeCheckpoint state (its own _save: same file, format, atomic replace) at the end of the "
+                   "current train batch and exits 75; Lightning's own SIGTERM stop also exits 75; a relaunch from a "
+                   "finished resume file runs the train-end hooks Lightning skips (final object dump, planning eval "
+                   "resuming from its per-task chunks) once; official resume semantics otherwise (step, optimizer, "
+                   "LR continue; the interrupted epoch runs its remaining batches in a new shuffle order); "
+                   "main_hjepa.py and every hyperparameter unchanged")},
+    "scripts/run_hjepa_fidelity.py": {
+        "issue": 123, "replaces": ("sha256:0e78d456eba8d29f9f36af82b43e9cd689da6e701f354afcb38b067db449a166",),
+        "sha256": "sha256:05bbd271873b044cac1f9db21139e91def98ff76bba729e770df79dae86aba5e",
+        "change": ("A1 (scheduling only; owner GPU-window rule): the --queue driver forwards SIGTERM / SIGUSR1 to "
+                   "its running job, records the job's exit in the ledger as before, starts no further job and "
+                   "returns 75; otherwise it returns 1 if a job exited non-zero or a Tier-T job left no "
+                   "planning-eval metrics (was always 0); commands, overrides, --table and the G-fid rules "
+                   "unchanged")},
 }
 
 
