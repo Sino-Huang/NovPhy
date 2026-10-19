@@ -40,14 +40,14 @@ Runner `scripts/run_hjepa_comparison.py`; adapter `world_model/hjepa/novphy.py`;
 - **λ.** Selection readouts (R1 under `deterministic_scoring()`, 94 policy-split mixed grid cells), pooled policy grid AUC under R1 at B1, seed 20260908: HJ-px 0.4847 (λ 0.09) vs **0.5087 (λ 0.18)**; HJ-car-m 0.4800 (λ 0.09) vs **0.5053 (λ 0.18)**. No tie at 4 d.p., so **λ = 0.18 for both input types**, applied to every arm of that type. Both selected AUCs are near chance; this is the pre-declared rule, not a quality claim.
 - **Smoke** (`smoke.json`, ok = true): 13/13 tests pass; G-port pass; 13 919 fit shots / 480 levels / 3 904 309 pixel frames, matching the carrier store; 13 919 label shots; 3 480 policy shots / 120 levels; only the fit and policy streams read. Throughput on one RTX 5090 beside the fidelity jobs (s/step at the budget batch → GPU-h per seed): HJ-px 0.442 → 15.7, HWM-px 0.410 → 14.6, LeWM-px 0.159 → 6.7, HJ-car-native 0.068 → 2.4, HJ-px-B1 0.242 → 0.60, carrier B1 arms 0.02–0.04 s → ≤ 0.09. **Projection 215 GPU-h, 49.9 h wall, against the 260 GPU-h / 72 h cap: within cap.** This includes 121 h of training, 7 h of readouts, 6 h of scoring, 2 h of benchmarks, 12 h of fidelity already spent and 63 h of fidelity remaining at the measured rates. The four LPT training queues hold about 30.3 h each.
 - **Selection-run diagnostics** (fit/policy only, B1, for information; the guards apply to the main runs). Top-level effective rank: HJ-px 44 / 192, HJ-car-m 14 / 112. Within-episode share χ: HJ-px 0.002, HJ-car-m 0.017. Endpoint action sensitivity: about 2–5e-7 for all four runs. The trained top-level action pooler maps every grid launch to the same macro-action, up to 2e-6 against an embedding norm of 13; the level-1 action embedding still separates launches, with spread 0.4. The policy readout ceiling is HJ-px 0.79–0.83 and HJ-car-m 0.52–0.57. These are the App. K/L slow-feature signatures the guards were declared for. Nothing is changed in response: the objective, the guards and the thresholds stay as frozen in the ticket.
-- **Scoring-path rehearsal (pre-freeze, policy/fit only).** A scratch run of `score_arm_seed` / `score_reference_curves` / `compute_tables` / `findings_md` used the λ-0.18 selection models on policy-split cells, with stand-ins for every evaluation input: policy anchors, policy carriers, policy frames and engine labels, and `_position_entry` on fit keys. It ran end to end, and the re-score replicated bit for bit. No evaluation file was opened.
+- **Scoring-path rehearsal (pre-freeze, policy/fit only).** A scratch run of `score_arm_seed` / `score_reference_curves` / `compute_tables` / `findings_md` used the λ-0.18 selection models on policy-split cells, with stand-ins for every evaluation input: policy anchors, policy carriers, policy frames and engine labels, and `_position_entry` on fit keys. It ran end to end, and the re-score replicated bit for bit. No evaluation feature, label or anchor was used. (Corrected in A2: this line first read "No evaluation file was opened", which is literally inaccurate; see *Evaluation-artefact access before scoring* below.)
 - **Infrastructure.** The first `--smoke` process died after about 50 s without output or a traceback, and wrote no `smoke.json`. It was not detached from the launching shell. It was relaunched once, detached (`setsid`), and completed. Its log is kept as `logs/smoke-attempt1-killed.log`.
 - **Docstring.** The runner's docstring was completed with the protocol before the freeze. No logic changed.
 - **Compute rule.** The ticket's cap is 260 GPU-h and 72 h wall. The projection's 49.9 h wall assumes uncontended GPUs. Training runs beside the remaining Tier T and Tier E jobs, so the measured wall time will be longer. If the measured wall time passes 72 h, this is reported on the ticket. Scope is not cut.
 
 ## Post-freeze amendment A1: GPU-window schedule (2026-10-19, scheduling only)
 
-**Owner rule** (10:40 AEDT, binding): GPU jobs run only from 18:00 to 07:00 Australia/Melbourne. The orchestrator stopped every #123 GPU process at 10:38, and none has run since. Readouts and scoring had not started, and no evaluation-split file had been read. From the 19 October window on, every remaining #123 GPU stage goes through the night-window scheduler (`scripts/gpu_window.py`, `docs/gpu-window-scheduler.md`):
+**Owner rule** (10:40 AEDT, binding): GPU jobs run only from 18:00 to 07:00 Australia/Melbourne. The orchestrator stopped every #123 GPU process at 10:38, and none has run since. Readouts and scoring had not started, and no evaluation feature or label had been read. (Corrected in A2: this first read "no evaluation-split file had been read"; see *Evaluation-artefact access before scoring* below.) From the 19 October window on, every remaining #123 GPU stage goes through the night-window scheduler (`scripts/gpu_window.py`, `docs/gpu-window-scheduler.md`):
 - cron runs a tick every 5 min;
 - the scheduler launches jobs only in [18:00, 06:50);
 - it sends SIGTERM at 06:50 and SIGKILL to anything left at 07:00.
@@ -103,3 +103,73 @@ Remaining, projected: about 141 GPU-h.
 The total, about 258 GPU-h, is close to the 260 GPU-h cap. Shared GPUs count each process's full wall time. If the measured total passes the cap, it is reported here and on the ticket. Scope is not cut.
 
 Nights to finish: 141 GPU-h / (4 GPUs × 13 h) ≈ 2.7, so 3 nights. The critical path is training queue 3 (27 h), followed by readouts, freeze, score, publish and validate. The scheduler projects the last job, `--validate`, to end on 22 October at about 05:00.
+
+## Post-freeze amendment A2: pre-scoring fidelity fixes (2026-10-19, before any readout or scoring)
+
+**Trigger.** The pre-scoring fidelity review (`round2/review/123-prescore-fidelity.md`) found four must-fix defects. All four predate A1. No readout, readout freeze, record or evaluation-feature read existed when they were fixed: main training was paused by the GPU-window rule. Nothing was retuned, and no threshold, contrast, rule or token definition changed. The work was done on CPU only, in daytime.
+
+**Amended files** (registered in `scripts/post_freeze_amendments.py`; frozen → amended sha256; the registry test `tests/test_issue_101_decision_aware_policy.py::test_issue_123_prescore_amendments_are_registered` checks each link and `load_plan`'s acceptance):
+- **`scripts/run_hjepa_comparison.py`**: the chain is `db7f87ae…` (frozen) → `b3390059…` (A1) → `045530a9…` (A2). Only the docstring, the G-port mode and the guard / publication / validation code changed. Training, resume, RNG, data, readouts and scoring are byte-for-byte the A1 code.
+- **`scripts/hjepa_port_reference.py`**: `7e2db8db…` → `c3087869…`.
+- **`tests/test_issue_123_hjepa_comparison.py`**: `d4f22c42…` → `749ed45d…`. The 13 frozen tests are unchanged and 5 tests were added.
+
+**The fixes.**
+1. **G-records gates publication (P1).**
+   - Before A2, `--publish` emitted tokens before the required re-score, and a failed `--validate` left them in place.
+   - Now G-records is a global guard. It passes only if `validation.json` exists, binds the sha256 of the current `records-manifest.json`, that manifest lists exactly the current records, and the receipt's re-score replicated.
+   - `--publish` therefore emits only `readiness_or_precision_insufficient` until validation has passed.
+   - `--validate` keeps the frozen checks: every record hash, every published table re-derived and byte-compared, and one record re-scored under `deterministic_scoring()`. It then writes the receipt and re-derives the publication with G-records passing.
+   - Any failure withdraws the publication, writes a failed receipt and re-derives the publication with every token the stop token, and `--validate` exits non-zero.
+   - The scheduler queue is unchanged (publish, then validate). `--validate` now derives the tables twice; its 60 min estimate stands, and the dry-run still ends on 22 October at about 05:00.
+2. **Failed-arm publication (P1).**
+   - An absent paired estimate (no cell with both views) is now the stop token; before, `reverse(None)` crashed.
+   - The unguarded `raw_token` / `raw_reverse_token` (contrasts) and `raw_token` (S10) fields were removed. The estimates stay as numbers.
+   - The contrast and S10 assembly moved into `grid_contrasts` / `wrong_anchor_table`, with unchanged rules.
+3. **G-nonfinite per readout (P2).**
+   - Before A2, G-nonfinite counted R1 `excluded` flags only, so >10 % invalid R2 costs could still yield an S9 token.
+   - It now counts the actual cost values (None or nonfinite) of each token-bearing readout separately: R1 (PC1, PC2, S1–S8, S10, S11) and R2 (S9).
+   - Either share above 10 % fails the arm. By the frozen rule "a failed guard turns every token involving the arm into the stop token", that covers all of the arm's tokens, S9 included. `compute.json` reports `nonfinite_shares: {R1, R2}`, and `findings.md` shows both.
+4. **G-port optimizer parity (P2).**
+   - The frozen check stepped at the schedule's step-0 LR (0), so parameter-update parity was vacuous, and AdamW moments were not compared.
+   - The reference and the port now run the frozen step unchanged, then advance the scheduler to the end of warm-up (every group at its base LR: 5e-5 level 1, 1e-5 upper), zero the gradients, and take a second step on the same inputs and crop starts.
+   - Checks use the declared tolerances:
+     - loss, gradient norm and per-tensor gradients, as for step 1;
+     - LRs at and after the step within 1e-12, and every LR > 0;
+     - AdamW step counts equal; `exp_avg` and `sqrt(exp_avg_sq)` under the per-tensor gradient rule, with the floor at 1e-6 × each moment's global norm;
+     - ≥ 99.9 % of the updated parameters within 1e-7, and max |Δ| ≤ 2 × LR + 1e-7;
+     - every parameter group moves (max |Δ| > 1e-7) on both sides.
+   - The publication's G-port passes only if both the frozen `gport/gport.json` and the A2 `gport/a2/gport.json` pass.
+
+**G-port A2 re-run (CPU, float32, all five arms): PASS.**
+- The reference ran in the `hjepa` env (torch 2.7.1) and the comparison in `novphy` (torch 2.13), with `CUDA_VISIBLE_DEVICES=""`.
+- Files: references in `gport/a2/reference-*.pt`; record `gport/a2/gport.json` (`sha256:c2b52c9d681d556128ad8ca2ceb207451491125b7a2d8b7fc45aafbc1e1ac184`); logs `logs/gport-a2-reference.log` and `logs/gport-a2.log`.
+- The frozen `gport/gport.json` (`3be3bfea…`, pass) and its references are kept unchanged; the A2 record cites it by hash.
+- The A2 references' step-1 fields (initial state, inputs, gradients, embeddings, losses, post-step state, LRs, crop draws) are bitwise identical to the frozen references.
+- A wrong gradient clip (0.25) still passes every step-1 quantity but fails the A2 `exp_avg` check (test `test_positive_lr_step_detects_what_the_lr_zero_step_cannot`).
+
+| arm | LRs at the step | loss rel | grad rel-L2 | exp_avg / √exp_avg_sq rel-L2 | params within 1e-7 | max \|Δ\| | min moved share | update rel-L2 (diagnostic) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| HJ-car-m | 5e-05/1e-05/1e-05 | 1.2e-07 | 1.8e-06 | 1.8e-06 / 1.9e-06 | 0.99999 | 3.6e-07 | 0.990 | 5.2e-06 |
+| HJ-car-m-fs5 | 5e-05/1e-05 | 2.1e-07 | 1.9e-06 | 2.7e-06 / 1.6e-06 | 1.00000 | 1.2e-07 | 0.994 | 4.5e-06 |
+| HJ-px | 5e-05/1e-05/1e-05 | 2.3e-06 | 3.1e-05 | 2.6e-05 / 2.5e-05 | 0.99989 | 1.8e-05 | 0.996 | 6.6e-04 |
+| HWM-px | 5e-05/1e-05/1e-05 | 2.1e-06 | 3.8e-05 | 3.3e-05 / 3.2e-05 | 0.99987 | 2.5e-05 | 0.996 | 8.8e-04 |
+| LeWM-px | 5e-05 | 2.9e-06 | 3.0e-05 | 2.8e-05 / 2.7e-05 | 0.99966 | 1.6e-05 | 0.999 | 7.2e-04 |
+
+The pixel arms' largest single-element deltas, up to 2.5e-5 against the 1e-4 bound, sit in the tensors whose exact gradient is 0 (16–20 per arm). There Adam divides float noise by ε, so the update is noise. LeWM-px's close share, 0.99966, is the nearest to its bound (0.999).
+
+**Evaluation-artefact access before scoring.** The earlier wording "no evaluation file read / opened" was literally inaccurate. Before any scoring:
+- `stream_rows` parsed the mixed-stream campaign `branches.json`, which holds fit, policy and evaluation rows, and kept only the fit / policy rows; it refuses the evaluation stream.
+- The #109 cohort plan, which lists every split's level identities, was parsed for split membership.
+- `--prepare` and every `load_plan` (each `--train` launch included) sha256-hash the pinned inputs. Among them are evaluation artefacts: `branches.json`, the Gate-B `anchors-evaluation.pt`, the Gate-B U / C\* records, plan and summary, and the #101 J / J_dec records. Hashing reads the bytes but decodes nothing.
+
+No evaluation feature (anchor, frame, carrier) or label (verdict, engine label) entered training, readout fitting, λ selection, the smoke or the scoring-path rehearsal; the pre-scoring review found no such flow either. This is a wording correction, not evidence of tuning leakage. The runner docstring was corrected in the same way.
+
+**Verification (CPU, `CUDA_VISIBLE_DEVICES=""`).**
+- Test suites:
+  - `tests/test_issue_123_hjepa_comparison.py`: 18 passed;
+  - `tests/test_issue_123_training_resume.py` (resume exactness): 3 passed;
+  - `tests/test_gpu_window.py`: 17 passed;
+  - `tests/test_issue_101_decision_aware_policy.py` (amendment registry): 18 passed;
+  - `tests/test_issue_104_heldout_contrasts.py`: 7 passed.
+- `load_plan` accepts the amended files.
+- `python scripts/gpu_window.py dry-run` is unchanged: at 18:00 it launches the four training queues and the three Tier-T jobs, and every job ends by 22 October at 05:00.

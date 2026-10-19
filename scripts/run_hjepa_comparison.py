@@ -9,15 +9,17 @@ per-file hashes in world_model/hjepa/vendor/), reproduced on NovPhy, ranks the G
 
 1. builds the fit / policy data only (--data-pixels / --assemble-pixels / --mirror-pixels: 320 x 240 agent frames,
    zstd shards; --fit-carriers: the #112 retrain shot cache; --policy-data: E99 policy carriers and anchors;
-   --data-labels: engine slot labels at every 15th fit position); the evaluation stream is never read before the
-   freeze (stream_rows refuses it);
+   --data-labels: engine slot labels at every 15th fit position); no evaluation-stream feature or label is used before
+   the freeze (stream_rows parses the mixed-stream campaign branches.json and keeps one stream's rows, refusing the
+   evaluation stream; pinned evaluation artefacts are only hashed);
 2. --gport: the vendored modules plus this port's loader / optimizer / scheduler reproduce the official code's forward
-   pass and one optimizer step (scripts/hjepa_port_reference.py in the hjepa env);
+   pass, the optimizer step at the step-0 LR and (A2) a positive-LR step with its AdamW state and updated parameters
+   (scripts/hjepa_port_reference.py in the hjepa env; gport/gport.json is the frozen record, gport/a2/ the re-run);
 3. --selection / --selection-readouts: the one pre-declared selection per input type (SIGReg lambda in {0.09, 0.18},
    HJ-px and HJ-car-m at B1, seed 20260908, policy-split pooled grid AUC under R1; ties at 4 d.p. -> 0.09);
 4. --smoke: data accounting, G-port, tests, throughput, the projection against 260 GPU-h / 72 h (STOP RULE) and the
    lambda choice; --prepare freezes plan.json (every input hash, data manifest, arms, budgets, queues, readouts,
-   scoring, contrasts, guards, dispositions) before any main-arm training or evaluation read;
+   scoring, contrasts, guards, dispositions) before any main-arm training or evaluation feature / label read;
 5. --train (per GPU queue) and --bench-train (CLEVRER / Physion, EXPLORATORY); --readouts fits R1 / R2 / R3 / R4 /
    P_c and the collapse / action / readout-ceiling diagnostics on fit (policy) data; --freeze-readouts hashes every
    model and readout before any evaluation anchor is encoded;
@@ -25,7 +27,9 @@ per-file hashes in world_model/hjepa/vendor/), reproduced on NovPhy, ranks the G
    cells of every inventory, the S10 wrong-anchor control, the position error and the U / C* position curves;
    --bench-score the exploratory benchmark rollouts;
 7. --publish: records-manifest.json, compute.json, summary.json, findings.md (guards, tokens by the delta rule,
-   dispositions); --validate re-checks every hash, re-derives every table byte for byte and re-scores one record.
+   dispositions; every token is the stop token until G-records passes); --validate re-checks every hash, re-derives
+   every table byte for byte, re-scores one record and writes validation.json bound to the records manifest, then
+   re-derives the publication with it (on any failure: with every token the stop token, exit non-zero).
 
 G-fid (FourRoom Tier E / Tier T) runs in scripts/run_hjepa_fidelity.py and gates every H-JEPA token at publication.
 Every interval is a member-clustered percentile bootstrap (10000 draws, PCG64 7201), DESCRIPTIVE. Engine seconds 0.
@@ -383,6 +387,11 @@ def gport_dir(output):
     return Path(output) / "gport"
 
 
+def gport_a2_dir(output):
+    """A2 (post-freeze, pre-scoring): the re-run with the positive-LR step; gport/gport.json stays as frozen."""
+    return gport_dir(output) / "a2"
+
+
 def gport_configs(output):
     from world_model.hjepa import novphy as hn
     configs = {}
@@ -439,6 +448,7 @@ def gport_arm(reference):
                         if v.is_floating_point() and v.numel() and post[k].shape == v.shape])
     close_share = float((deltas <= tol["param_close_abs"]).float().mean())
     lrs = [group["lr"] for group in optimizer.param_groups]
+    first = {k: v.detach().clone() for k, v in post.items()}
     out = {"arm": arm, "needed_frames": needed, "official_needed_frames": reference["official_needed_frames"],
            "needed_equal": needed == reference["official_needed_frames"],
            "drawn_crop_starts": reference["drawn"], "loss": scalars.get("loss"),
@@ -465,25 +475,134 @@ def gport_arm(reference):
                        and close_share >= tol["param_close_share"]
                        and out["param_max_abs_delta"] <= tol["param_max_abs_over_lr"] * lr_max + tol["param_close_abs"]
                        and max(abs(a - b) for a, b in zip(lrs, reference["lrs_after_step"])) <= tol["lr_abs"])
+    if "step2" not in reference:
+        out["step2"] = None
+        out["pass"] = False
+        return out
+    batch2 = {"pixels_level1": x[:, needed].clone(), "action_level1": reference["inputs"]["action"].clone()}
+    out["step2"] = gport_step2(reference["step2"], hn, model, wrapper, cfg, batch2, optimizer, scheduler, params,
+                               first, reference["post_state"], reference["total_steps"])
+    out["pass"] = bool(out["pass"] and out["step2"]["pass"])
+    return out
+
+
+def per_tensor_l2(mine, official, floor):
+    """The gradient rule on {name: tensor}: max relative L2 over tensors above the floor, max absolute L2 below."""
+    above = [float((mine[k] - v).norm() / v.norm()) for k, v in official.items() if float(v.norm()) > floor]
+    below = [float((mine[k] - v).norm()) for k, v in official.items() if float(v.norm()) <= floor]
+    return max(above or [0.0]), max(below or [0.0]), len(below)
+
+
+def gport_step2(reference, hn, model, wrapper, cfg, batch, optimizer, scheduler, params, first, official_first,
+                total_steps):
+    """A2: the positive-LR step. The scheduler is advanced to the end of warm-up (every group at its base LR), then
+    one more spt step on the same inputs and crop starts; loss, gradients, LRs, the AdamW state and the updated
+    parameters are compared with the official step under the declared GPORT_TOLERANCE, and every parameter group
+    must move on both sides."""
+    tol = GPORT_TOLERANCE
+    warmup = hn.warmup_steps(total_steps)
+    while scheduler.last_epoch < warmup:
+        scheduler.step()
+    lrs_at = [group["lr"] for group in optimizer.param_groups]
+    optimizer.zero_grad(set_to_none=True)
+    torch.manual_seed(reference["seed"])
+    output = hn.hjepa_utils.hjepa_forward(wrapper, batch, "fit", cfg, normalize_batch=hn.normalize_uint8_images_on_device)
+    scalars = {k: float(v) for k, v in output.items() if "loss" in k and torch.is_tensor(v) and v.ndim == 0}
+    output["loss"].backward()
+    names = {id(p): name for name, p in model.named_parameters()}
+    grads = {name: p.grad.detach().clone() for name, p in model.named_parameters() if p.grad is not None}
+    norm = float(torch.nn.utils.clip_grad_norm_(params, hn.GRAD_CLIP))
+    optimizer.step()
+    scheduler.step()
+    loss_rel = max(abs(scalars[k] - v) / max(1.0, abs(v)) for k, v in reference["scalars"].items())
+    floor = tol["grad_floor_of_global_norm"] * reference["grad_norm"]
+    grad_rel, grad_null_abs, null_tensors = per_tensor_l2(grads, reference["grads"], floor)
+    # AdamW state: step counts equal; exp_avg and sqrt(exp_avg_sq) (gradient units) under the gradient rule, the
+    # floor taken from each moment's official global norm
+    state = {names[id(p)]: s for p, s in optimizer.state.items()}
+    official_state = reference["optimizer_state"]
+    steps_equal = (set(state) == set(official_state)
+                   and all(float(state[k]["step"]) == float(v["step"]) for k, v in official_state.items()))
+    moments = {}
+    for key, transform in (("exp_avg", lambda t: t), ("exp_avg_sq", torch.sqrt)):
+        mine = {k: transform(s[key].float()) for k, s in state.items()}
+        theirs = {k: transform(s[key].float()) for k, s in official_state.items()}
+        global_norm = float(torch.cat([v.flatten() for v in theirs.values()]).norm())
+        m_floor = tol["grad_floor_of_global_norm"] * global_norm
+        rel, null_abs, nulls = per_tensor_l2(mine, theirs, m_floor) if set(mine) == set(theirs) else (float("inf"),) * 3
+        moments[key] = {"max_relative_l2": rel, "null_max_abs_l2": null_abs, "null_tensors": nulls, "floor": m_floor,
+                        "pass": bool(rel <= tol["grad_tensor_relative_l2"] and null_abs <= m_floor)}
+    post = model.state_dict()
+    official_post = reference["post_state"]
+    deltas = torch.cat([(post[k].float() - v.float()).abs().flatten() for k, v in official_post.items()
+                        if v.is_floating_point() and v.numel() and post[k].shape == v.shape])
+    close_share = float((deltas <= tol["param_close_abs"]).float().mean())
+    lr_max = max(lrs_at)
+    # parameter movement per optimizer group, port and official
+    movement = {}
+    for group in optimizer.param_groups:
+        group_names = [names[id(p)] for p in group["params"]]
+        mine = torch.cat([(post[k].float() - first[k].float()).abs().flatten() for k in group_names])
+        theirs = torch.cat([(official_post[k].float() - official_first[k].float()).abs().flatten() for k in group_names])
+        movement[group["name"]] = {"lr": group["lr"], "port_max_abs": float(mine.max()), "official_max_abs": float(theirs.max()),
+                                   "port_moved_share": float((mine > tol["param_close_abs"]).float().mean()),
+                                   "official_moved_share": float((theirs > tol["param_close_abs"]).float().mean())}
+    moved = all(m["port_max_abs"] > tol["param_close_abs"] and m["official_max_abs"] > tol["param_close_abs"]
+                for m in movement.values())
+    update = torch.cat([(post[k].float() - first[k].float()).flatten() for k in names.values()])
+    official_update = torch.cat([(official_post[k].float() - official_first[k].float()).flatten() for k in names.values()])
+    lrs_after = [group["lr"] for group in optimizer.param_groups]
+    out = {"warmup_steps": warmup, "official_warmup_steps": reference["warmup_steps"],
+           "lrs_at_step": lrs_at, "official_lrs_at_step": reference["lrs_at_step"],
+           "lrs_after_step": lrs_after, "official_lrs_after_step": reference["lrs_after_step"],
+           "drawn_crop_starts": reference["drawn"], "loss": scalars.get("loss"),
+           "official_loss": reference["scalars"]["loss"], "loss_max_relative_delta": loss_rel,
+           "grad_norm": norm, "official_grad_norm": reference["grad_norm"],
+           "grad_norm_relative_delta": abs(norm - reference["grad_norm"]) / max(reference["grad_norm"], 1e-12),
+           "grad_tensor_max_relative_l2": grad_rel, "null_gradient_tensors": null_tensors,
+           "null_gradient_max_abs_l2": grad_null_abs, "null_gradient_floor": floor,
+           "optimizer_steps_equal": bool(steps_equal), "optimizer_moments": moments,
+           "param_close_share": close_share, "param_max_abs_delta": float(deltas.max()), "lr_max": lr_max,
+           "movement": movement, "parameters_moved": bool(moved),
+           "update_relative_l2": float((update - official_update).norm() / official_update.norm()),
+           "update_norm": float(update.norm()), "official_update_norm": float(official_update.norm())}
+    out["pass"] = bool(warmup == reference["warmup_steps"] and min(reference["lrs_at_step"]) > 0
+                       and max(abs(a - b) for a, b in zip(lrs_at, reference["lrs_at_step"])) <= tol["lr_abs"]
+                       and max(abs(a - b) for a, b in zip(lrs_after, reference["lrs_after_step"])) <= tol["lr_abs"]
+                       and loss_rel <= tol["loss_relative"]
+                       and out["grad_norm_relative_delta"] <= tol["grad_norm_relative"]
+                       and grad_rel <= tol["grad_tensor_relative_l2"] and grad_null_abs <= floor
+                       and steps_equal and all(m["pass"] for m in moments.values())
+                       and close_share >= tol["param_close_share"]
+                       and out["param_max_abs_delta"] <= tol["param_max_abs_over_lr"] * lr_max + tol["param_close_abs"]
+                       and moved)
     return out
 
 
 def gport(output):
-    """Compare every reference arm; writes gport/gport.json (G-port passes iff every arm passes)."""
+    """A2: compare every reference arm of gport/a2 (the official step at the step-0 LR plus the positive-LR step);
+    writes gport/a2/gport.json (passes iff every arm passes both steps). gport/gport.json, the frozen record of
+    the first step alone, is kept unchanged."""
     torch.set_num_threads(8)
     vendor = read_json(ROOT / "world_model/hjepa/vendor/VENDOR.json")
     hashes = {rel: sha256_of(ROOT / "world_model/hjepa/vendor" / rel) == entry["vendored_sha256"]
               for rel, entry in vendor["files"].items()}
     arms = {}
     for arm in GPORT_ARMS:
-        reference = torch.load(gport_dir(output) / f"reference-{arm}.pt", map_location="cpu", weights_only=False)
-        arms[arm] = gport_arm(reference)
-        log(f"G-port {arm}: pass {arms[arm]['pass']} (loss {arms[arm]['loss']:.6f} vs {arms[arm]['official_loss']:.6f})")
-    result = {"schema": "issue_123_gport_v1", "checked_at": utc_now(), "tolerance": GPORT_TOLERANCE,
+        path = gport_a2_dir(output) / f"reference-{arm}.pt"
+        reference = torch.load(path, map_location="cpu", weights_only=False)
+        arms[arm] = {**gport_arm(reference), "reference_sha256": sha256_of(path)}
+        step2 = arms[arm]["step2"] or {}
+        log(f"G-port {arm}: pass {arms[arm]['pass']} (loss {arms[arm]['loss']:.6f} vs {arms[arm]['official_loss']:.6f}; "
+            f"positive-LR step pass {step2.get('pass')}, LRs {step2.get('lrs_at_step')})")
+    frozen = gport_dir(output) / "gport.json"
+    result = {"schema": "issue_123_gport_v2", "amendment": "A2", "checked_at": utc_now(), "tolerance": GPORT_TOLERANCE,
               "vendor_hashes_match": hashes, "arms": arms, "device": "cpu float32",
+              "frozen_record": {"artifact": str(frozen.relative_to(ROOT)), "sha256": sha256_of(frozen),
+                                "pass": bool(read_json(frozen)["pass"])},
               "pass": bool(all(hashes.values()) and all(a["pass"] for a in arms.values()))}
-    write_json(gport_dir(output) / "gport.json", result)
-    log(f"G-port: {'PASS' if result['pass'] else 'FAIL'}")
+    write_json(gport_a2_dir(output) / "gport.json", result)
+    log(f"G-port (A2): {'PASS' if result['pass'] else 'FAIL'}")
     return 0 if result["pass"] else 1
 
 
@@ -2081,6 +2200,9 @@ def view_rows(plan, cells, inventory, records, references, prior_stats):
 
 
 def reverse(block):
+    """The second - first block of a first - second estimate; None (no paired cell) stays None."""
+    if block is None:
+        return None
     return {**block, "mean": -block["mean"], "interval": [-block["interval"][1], -block["interval"][0]]}
 
 
@@ -2088,8 +2210,26 @@ def arm_of(view):
     return view.split(":")[0]
 
 
+def nonfinite_shares(records):
+    """A2: per token-bearing readout (R1: PC1 / PC2 / S1-S8 / S10 / S11; R2: S9), the share of the grid verdict slots
+    of the scored records whose actual cost is None or nonfinite (None when no record of the arm was scored)."""
+    from world_model.planning import scoring_harness as harness
+    keys = {"R1": harness.PRIMARY_COST, "R2": f"{harness.PRIMARY_COST}_R2"}
+    slots, bad = 0, dict.fromkeys(keys, 0)
+    for record in records:
+        if record["typed_failure"]:
+            continue
+        for cell in record["inventories"]["grid"].values():
+            for row in cell["rows"]:
+                slots += 1
+                for name, key in keys.items():
+                    bad[name] += row.get(key) is None or not np.isfinite(row[key])
+    return {name: bad[name] / slots if slots else None for name in keys}
+
+
 def arm_guards(output, plan, records):
-    """Per-arm guard evaluation (seed-wise collapse / action, pooled readout ceiling, nonfinite share)."""
+    """Per-arm guard evaluation (seed-wise collapse / action, pooled readout ceiling, nonfinite share of every
+    token-bearing readout)."""
     from world_model.hjepa import novphy as hn
     out = {}
     for arm in plan["arms"]:
@@ -2113,24 +2253,49 @@ def arm_guards(output, plan, records):
             if report["policy_auc"]["ceiling"] is not None:
                 ceilings.append(report["policy_auc"]["ceiling"])
         ceiling = float(np.mean(ceilings)) if ceilings else None
-        slots = nonfinite = 0
-        for seed in SEEDS:
-            record = records[(arm, seed)]
-            if record["typed_failure"]:
-                continue
-            for rows in record["inventories"]["grid"].values():
-                slots += len(rows["rows"])
-                nonfinite += sum(1 for r in rows["rows"] if r["excluded"])
-        share = nonfinite / slots if slots else None
+        shares = nonfinite_shares([records[(arm, seed)] for seed in SEEDS])
         guards = {"G_collapse": all(s.get("G_collapse", False) for s in seeds.values()),
                   "G_action": all(s.get("G_action", False) for s in seeds.values()),
                   "G_readout": ceiling is not None and ceiling >= GUARD_THRESHOLDS["readout_ceiling_auc"],
-                  "G_nonfinite": share is not None and share <= GUARD_THRESHOLDS["nonfinite_share"],
+                  "G_nonfinite": all(share is not None and share <= GUARD_THRESHOLDS["nonfinite_share"]
+                                     for share in shares.values()),
                   "G_trained": all(not records[(arm, s)]["typed_failure"] for s in SEEDS)}
-        out[arm] = {"seeds": seeds, "policy_ceiling_auc": ceiling, "nonfinite_share": share, **guards,
+        out[arm] = {"seeds": seeds, "policy_ceiling_auc": ceiling, "nonfinite_shares": shares, **guards,
                     "pass": all(guards.values()), "parameters": plan["arms"][arm]["parameters"],
                     "role": hn.ARMS[arm]["role"]}
     return out
+
+
+VALIDATION_RECEIPT = "validation.json"
+PUBLISHED = ("compute.json", "summary.json", "findings.md")
+
+
+def records_guard(output):
+    """A2 G-records: passes only if the --validate receipt binds the current records-manifest.json (by sha256), that
+    manifest lists exactly the current records, and the receipt's re-score replicated the retained record."""
+    output = Path(output)
+    manifest_path, receipt_path = output / "records-manifest.json", output / VALIDATION_RECEIPT
+    if not manifest_path.is_file() or not receipt_path.is_file():
+        return {"pass": False, "receipt": None}
+    receipt = read_json(receipt_path)
+    bound = bool(receipt.get("plan_identity") == IDENTITY
+                 and receipt.get("records_manifest_sha256") == sha256_of(manifest_path)
+                 and read_json(manifest_path) == records_manifest(output))
+    spot = receipt.get("spot_check")
+    return {"pass": bool(bound and receipt.get("pass") is True and spot is not None and spot.get("pass") is True),
+            "receipt": VALIDATION_RECEIPT, "bound_to_current_records": bound,
+            "records_manifest_sha256": receipt.get("records_manifest_sha256"), "spot_check": spot}
+
+
+def write_receipt(output, spot, error=None):
+    """The --validate receipt, bound to the sha256 of the records-manifest.json it checked."""
+    output = Path(output)
+    manifest_path = output / "records-manifest.json"
+    write_json(output / VALIDATION_RECEIPT, {
+        "schema": "issue_123_validation_receipt_v1", "plan_identity": IDENTITY,
+        "records_manifest_sha256": sha256_of(manifest_path) if manifest_path.is_file() else None,
+        "spot_check": spot, "error": error, "validated_at": utc_now(),
+        "pass": bool(error is None and spot is not None and spot["pass"])})
 
 
 def global_guards(output, plan, records, manifest):
@@ -2139,6 +2304,8 @@ def global_guards(output, plan, records, manifest):
     gfid = Path(output) / "fidelity" / "gfid.json"
     fid = read_json(gfid) if gfid.is_file() else {"G_fid": None}
     gport_result = read_json(gport_dir(output) / "gport.json")
+    gport_a2 = gport_a2_dir(output) / "gport.json"
+    gport_a2_result = read_json(gport_a2) if gport_a2.is_file() else {"pass": None}
     roster = {level["identity"] for level in gb.evaluation_levels()}
     fit_roster = {level["identity"] for level in rt.fit_levels()}
     scored = [r for r in records.values() if not r["typed_failure"]]
@@ -2151,24 +2318,68 @@ def global_guards(output, plan, records, manifest):
     policies = all(r.get("scoring_policy") == harness.SCORING_POLICY for r in records.values())
     return {"G_fid": {"pass": fid["G_fid"] is True, "value": fid["G_fid"],
                       "tiers": {t: fid["tiers"][t]["pass"] for t in ("tier-e", "tier-t")} if "tiers" in fid else None},
-            "G_port": {"pass": bool(gport_result["pass"])},
+            "G_port": {"pass": bool(gport_result["pass"] and gport_a2_result["pass"] is True),
+                       "frozen_step": bool(gport_result["pass"]), "positive_lr_step": gport_a2_result["pass"]},
             "G_isolation": {"pass": bool(isolation)},
             "G_chronology": {"pass": bool(chronology), "plan_frozen_at": plan["frozen_at"],
                              "readouts_frozen_at": manifest["frozen_at"], "anchors_read_at": pixel_store["read_at"],
                              "first_record_scored_at": first_scored},
-            "G_scoring_policy": {"pass": bool(policies)}}
+            "G_scoring_policy": {"pass": bool(policies)},
+            "G_records": records_guard(output)}
 
 
 def token_pair(block, guarded):
     from scripts import run_decision_dynamics_controls as c2
-    if not guarded:
+    if not guarded or block is None:
         return STOP_TOKEN, STOP_TOKEN
     return c2.token(block), c2.token(reverse(block))
 
 
+def grid_contrasts(rows, arms, guards_arm, global_ok):
+    """PC1, PC2, S1-S9 and S11 on the grid rows. Each token is gated by the global guards and by every guard of each
+    arm involved; an absent paired estimate is the stop token; the estimates are kept as numbers only."""
+    from scripts import run_decision_chain_attribution as m99
+    contrasts = {}
+    for label, (first, second) in CONTRASTS.items():
+        paired = m99.paired(rows, [(1, first), (-1, second)])
+        involved = [a for a in (arm_of(first), arm_of(second)) if a in arms]
+        guarded = bool(global_ok and all(guards_arm[a]["pass"] for a in involved))
+        forward, backward = token_pair(paired["estimate"], guarded)
+        contrasts[label] = {"first": first, "second": second, **paired, "token": forward,
+                            "reverse_token": backward, "guards_pass": guarded}
+    return contrasts
+
+
+def wrong_anchor_table(cells, records, guards_arm, global_ok):
+    """S10 (right - wrong anchor) per WRONG_ANCHOR_ARMS arm; the token is gated as the contrasts' tokens."""
+    from scripts import run_decision_dynamics_controls as c2
+    wrong = {}
+    for arm in WRONG_ANCHOR_ARMS:
+        wrows = []
+        for member, entry in sorted(cells["grid"]["mixed"].items()):
+            for seed in SEEDS:
+                record = records[(arm, seed)]
+                if record["typed_failure"]:
+                    wrows.append({"member": member, "seed": seed, "views": {arm: None}})
+                    continue
+                right = record["inventories"]["grid"][member]["rows"]
+                others = [record["wrong_anchor"][a]["rows"] for a in sorted(record["wrong_anchor"])]
+                aucs = [a for a in (c2.auc(entry, w) for w in others) if a is not None]
+                rhos = [r for r in (c2.spearman_rows(right, w) for w in others) if r is not None]
+                wrows.append({"member": member, "seed": seed, "views": {arm: {
+                    "right": c2.auc(entry, right), "wrong": float(np.mean(aucs)) if aucs else None,
+                    "stability": float(np.mean(rhos)) if rhos else None}}})
+        diff = c2.difference_block(wrows, [(1, arm, "right"), (-1, arm, "wrong")])
+        guarded = bool(global_ok and guards_arm[arm]["pass"])
+        wrong[arm] = {"right": c2.field_block(wrows, arm, "right"), "wrong": c2.field_block(wrows, arm, "wrong"),
+                      "right_minus_wrong": diff, "stability": c2.field_block(wrows, arm, "stability"),
+                      "token": c2.token(diff) if guarded else STOP_TOKEN, "guards_pass": guarded,
+                      "wrong_anchors": len(records[(arm, SEEDS[0])]["wrong_anchor"] or {})}
+    return wrong
+
+
 def compute_tables(output, plan):
     from scripts import run_decision_chain_attribution as m99
-    from scripts import run_decision_dynamics_controls as c2
     from scripts import run_gate_b as gb
     from scripts import run_hjepa_fidelity as fid
     from world_model.planning import scoring_harness as harness
@@ -2204,41 +2415,8 @@ def compute_tables(output, plan):
             ranker["chance_top1"] = float(np.mean(chances)) if chances else None
             block["rankers"][name] = ranker
         if inventory == "grid":
-            contrasts = {}
-            for label, (first, second) in CONTRASTS.items():
-                paired = m99.paired(rows, [(1, first), (-1, second)])
-                involved = [a for a in (arm_of(first), arm_of(second)) if a in plan["arms"]]
-                guarded = global_ok and all(guards_arm[a]["pass"] for a in involved)
-                forward, backward = token_pair(paired["estimate"], guarded)
-                contrasts[label] = {"first": first, "second": second, **paired, "token": forward,
-                                    "reverse_token": backward, "guards_pass": guarded,
-                                    "raw_token": c2.token(paired["estimate"]),
-                                    "raw_reverse_token": c2.token(reverse(paired["estimate"]))}
-            block["contrasts"] = contrasts
-            wrong = {}
-            for arm in WRONG_ANCHOR_ARMS:
-                wrows = []
-                for member, entry in sorted(cells["grid"]["mixed"].items()):
-                    for seed in SEEDS:
-                        record = records[(arm, seed)]
-                        if record["typed_failure"]:
-                            wrows.append({"member": member, "seed": seed, "views": {arm: None}})
-                            continue
-                        right = record["inventories"]["grid"][member]["rows"]
-                        others = [record["wrong_anchor"][a]["rows"] for a in sorted(record["wrong_anchor"])]
-                        aucs = [a for a in (c2.auc(entry, w) for w in others) if a is not None]
-                        rhos = [r for r in (c2.spearman_rows(right, w) for w in others) if r is not None]
-                        wrows.append({"member": member, "seed": seed, "views": {arm: {
-                            "right": c2.auc(entry, right), "wrong": float(np.mean(aucs)) if aucs else None,
-                            "stability": float(np.mean(rhos)) if rhos else None}}})
-                diff = c2.difference_block(wrows, [(1, arm, "right"), (-1, arm, "wrong")])
-                guarded = global_ok and guards_arm[arm]["pass"]
-                wrong[arm] = {"right": c2.field_block(wrows, arm, "right"), "wrong": c2.field_block(wrows, arm, "wrong"),
-                              "right_minus_wrong": diff, "stability": c2.field_block(wrows, arm, "stability"),
-                              "token": c2.token(diff) if guarded else STOP_TOKEN, "raw_token": c2.token(diff),
-                              "guards_pass": guarded,
-                              "wrong_anchors": len(records[(arm, SEEDS[0])]["wrong_anchor"] or {})}
-            block["S10_wrong_anchor"] = wrong
+            block["contrasts"] = grid_contrasts(rows, plan["arms"], guards_arm, global_ok)
+            block["S10_wrong_anchor"] = wrong_anchor_table(cells, records, guards_arm, global_ok)
         tables[inventory] = block
     positions = position_table(output, plan, records, cells)
     disposition = dispositions(tables["grid"])
@@ -2341,12 +2519,13 @@ def findings_md(plan, compute):
              "## Guards", "", "| guard | pass |", "| --- | --- |"]
     for name, g in compute["guards"]["global"].items():
         lines.append(f"| {name} | {g['pass']} |")
-    lines += ["", "| arm | role | params | G-collapse | G-action | G-readout (policy ceiling) | G-nonfinite | trained | pass |",
+    lines += ["", "| arm | role | params | G-collapse | G-action | G-readout (policy ceiling) | G-nonfinite (R1 / R2 share) | trained | pass |",
               "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for arm, g in compute["guards"]["arms"].items():
         lines.append(f"| {arm} | {g['role']} | {g['parameters']:,} | {g['G_collapse']} | {g['G_action']} | "
                      f"{g['G_readout']} ({fmt_num(g['policy_ceiling_auc'])}) | {g['G_nonfinite']} "
-                     f"({fmt_num(g['nonfinite_share'], 3)}) | {g['G_trained']} | {g['pass']} |")
+                     f"({fmt_num(g['nonfinite_shares']['R1'], 3)} / {fmt_num(g['nonfinite_shares']['R2'], 3)}) | "
+                     f"{g['G_trained']} | {g['pass']} |")
     lines += ["", "Per seed (top level): effective rank / D, within-episode share chi, action sensitivity, policy AUCs.", "",
               "| arm | seed | erank / D | chi | sensitivity | policy R1 AUC | policy ceiling |",
               "| --- | --- | --- | --- | --- | --- | --- |"]
@@ -2420,16 +2599,24 @@ def rendered(plan, compute):
             "findings.md": findings_md(plan, compute)}
 
 
-def publish(output):
+def write_publication(output, plan):
     from world_model.planning import scoring_harness as harness
-    output = Path(output)
-    plan = load_plan(output)
-    write_json(output / "records-manifest.json", records_manifest(output))
     with harness.deterministic_scoring():
         compute = compute_tables(output, plan)
     for name, text in rendered(plan, compute).items():
-        (output / name).write_text(text)
-    log(f"published: disposition {compute['disposition']['disposition']} ({compute['disposition']['label']})")
+        (Path(output) / name).write_text(text)
+    return compute
+
+
+def publish(output):
+    """records-manifest.json and the tables. Until --validate binds a passing re-score to this records manifest
+    (G-records, validation.json), every token is the stop token."""
+    output = Path(output)
+    plan = load_plan(output)
+    write_json(output / "records-manifest.json", records_manifest(output))
+    compute = write_publication(output, plan)
+    log(f"published: disposition {compute['disposition']['disposition']} ({compute['disposition']['label']}); "
+        f"G-records {compute['guards']['global']['G_records']['pass']}")
     return 0
 
 
@@ -2463,27 +2650,46 @@ def spot_check(output, plan):
 
 
 def validate(output):
-    from world_model.planning import scoring_harness as harness
+    """Re-check every record hash, byte-compare every published table with its recomputation, re-score one record.
+    Pass: validation.json (bound to the records manifest) passes G-records and the publication is re-derived with
+    it. Any failure withdraws the publication, writes a failed receipt and re-derives it with every token the
+    stop token (G-records fails), then exits non-zero."""
     output = Path(output)
     began = time.monotonic()
     plan = load_plan(output)
-    manifest = read_json(output / "records-manifest.json")
-    for entry in manifest["records"]:
-        if sha256_of(ROOT / entry["artifact"]) != entry["sha256"]:
-            raise ValueError(f"record {entry['artifact']} differs from records-manifest.json")
-    if manifest != records_manifest(output):
-        raise ValueError("records-manifest.json does not list exactly the current records")
-    with harness.deterministic_scoring():
-        compute = compute_tables(output, plan)
-    for name, text in rendered(plan, compute).items():
-        if (output / name).read_bytes() != text.encode():
-            raise ValueError(f"published {name} differs from the recomputation")
-    spot = spot_check(output, plan)
-    if not spot["pass"]:
-        raise ValueError(f"re-scoring does not replicate the retained record: {spot}")
+    spot = None
+    try:
+        manifest = read_json(output / "records-manifest.json")
+        for entry in manifest["records"]:
+            if sha256_of(ROOT / entry["artifact"]) != entry["sha256"]:
+                raise ValueError(f"record {entry['artifact']} differs from records-manifest.json")
+        if manifest != records_manifest(output):
+            raise ValueError("records-manifest.json does not list exactly the current records")
+        from world_model.planning import scoring_harness as harness
+        with harness.deterministic_scoring():
+            compute = compute_tables(output, plan)
+        for name, text in rendered(plan, compute).items():
+            if (output / name).read_bytes() != text.encode():
+                raise ValueError(f"published {name} differs from the recomputation")
+        spot = spot_check(output, plan)
+        if not spot["pass"]:
+            raise ValueError(f"re-scoring does not replicate the retained record: {spot}")
+    except Exception as error:
+        for name in PUBLISHED:
+            (output / name).unlink(missing_ok=True)
+        write_receipt(output, spot, f"{type(error).__name__}: {error}")
+        write_publication(output, plan)
+        log("validation FAILED: publication withdrawn and re-derived with every token "
+            f"{STOP_TOKEN} (G-records fails)")
+        raise
+    write_receipt(output, spot)
+    compute = write_publication(output, plan)
+    if not compute["guards"]["global"]["G_records"]["pass"]:
+        raise ValueError("the validation receipt does not pass G-records")
     log(f"validation passed ({time.monotonic() - began:.0f}s): {len(manifest['records'])} records hash-checked, every "
         f"table re-derived and byte-compared, {spot['arm']} seed {spot['seed']} re-scored on {spot['cells']} grid cells "
-        f"(max delta {spot['max_abs_delta']})")
+        f"(max delta {spot['max_abs_delta']}); validation.json binds records-manifest.json and the publication is "
+        f"re-derived with G-records passing: disposition {compute['disposition']['disposition']}")
     return 0
 
 

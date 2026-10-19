@@ -1,0 +1,813 @@
+{
+  "amendment": "A2",
+  "arms": {
+    "HJ-car-m": {
+      "arm": "HJ-car-m",
+      "drawn_crop_starts": [
+        7,
+        3
+      ],
+      "embed_max_abs_delta": 3.5762786865234375e-07,
+      "grad_norm": 1.6966811418533325,
+      "grad_norm_relative_delta": 0.0,
+      "grad_tensor_max_relative_l2": 2.5169510990963317e-06,
+      "loss": 3.536468029022217,
+      "loss_max_relative_delta": 1.1920928955078125e-07,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        7,
+        8,
+        9,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "null_gradient_floor": 1.6966811418533324e-06,
+      "null_gradient_max_abs_l2": 0.0,
+      "null_gradient_tensors": 0,
+      "official_grad_norm": 1.6966811418533325,
+      "official_loss": 3.536468029022217,
+      "official_lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "official_needed_frames": [
+        0,
+        7,
+        8,
+        9,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 0.9999983906745911,
+      "param_max_abs_delta": 3.5762786865234375e-07,
+      "pass": true,
+      "reference_sha256": "sha256:49edb8afcfe3107220ea8dcc5af440fabb0bed3168fa0faadaa6515bd0d3d9f9",
+      "step2": {
+        "drawn_crop_starts": [
+          7,
+          3
+        ],
+        "grad_norm": 1.6940571069717407,
+        "grad_norm_relative_delta": 0.0,
+        "grad_tensor_max_relative_l2": 1.824717173803947e-06,
+        "loss": 3.5365500450134277,
+        "loss_max_relative_delta": 1.1920928955078125e-07,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9998312592506409,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.9998312592506409
+          },
+          "level2": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9921035170555115,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9921035170555115
+          },
+          "level3": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9897315502166748,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9897315502166748
+          }
+        },
+        "null_gradient_floor": 1.6940571069717406e-06,
+        "null_gradient_max_abs_l2": 0.0,
+        "null_gradient_tensors": 0,
+        "official_grad_norm": 1.6940571069717407,
+        "official_loss": 3.5365500450134277,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "official_lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "official_update_norm": 0.03733127936720848,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.899520754814148e-07,
+            "max_relative_l2": 1.7815997352954582e-06,
+            "null_max_abs_l2": 2.0011847268273236e-13,
+            "null_tensors": 1,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.4707406312227245e-08,
+            "max_relative_l2": 1.8828517340807593e-06,
+            "null_max_abs_l2": 0.0,
+            "null_tensors": 0,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.9999946355819702,
+        "param_max_abs_delta": 3.5762786865234375e-07,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.03733127936720848,
+        "update_relative_l2": 5.226962002780056e-06,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    },
+    "HJ-car-m-fs5": {
+      "arm": "HJ-car-m-fs5",
+      "drawn_crop_starts": [
+        2
+      ],
+      "embed_max_abs_delta": 3.5762786865234375e-07,
+      "grad_norm": 1.3666365146636963,
+      "grad_norm_relative_delta": 8.722824150394747e-08,
+      "grad_tensor_max_relative_l2": 3.2359580472984817e-06,
+      "loss": 2.3846371173858643,
+      "loss_max_relative_delta": 2.1121233344851447e-07,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9
+      ],
+      "null_gradient_floor": 1.3666363954544067e-06,
+      "null_gradient_max_abs_l2": 0.0,
+      "null_gradient_tensors": 0,
+      "official_grad_norm": 1.3666363954544067,
+      "official_loss": 2.3846371173858643,
+      "official_lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07
+      ],
+      "official_needed_frames": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 1.0,
+      "param_max_abs_delta": 0.0,
+      "pass": true,
+      "reference_sha256": "sha256:965281caf6d89791231704f8a45b15a3c145efa43877254b7f9e5b01de604c8e",
+      "step2": {
+        "drawn_crop_starts": [
+          2
+        ],
+        "grad_norm": 1.3649400472640991,
+        "grad_norm_relative_delta": 0.0,
+        "grad_tensor_max_relative_l2": 1.8942740780403255e-06,
+        "loss": 2.3851730823516846,
+        "loss_max_relative_delta": 2.1121233344851447e-07,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06
+        ],
+        "lrs_at_step": [
+          5e-05,
+          1e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.999508798122406,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.999508798122406
+          },
+          "level2": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9936072826385498,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9936072826385498
+          }
+        },
+        "null_gradient_floor": 1.3649400472640991e-06,
+        "null_gradient_max_abs_l2": 0.0,
+        "null_gradient_tensors": 0,
+        "official_grad_norm": 1.3649400472640991,
+        "official_loss": 2.3851730823516846,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06
+        ],
+        "official_lrs_at_step": [
+          5e-05,
+          1e-05
+        ],
+        "official_update_norm": 0.043606411665678024,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.8993683159351348e-07,
+            "max_relative_l2": 2.6755376438813983e-06,
+            "null_max_abs_l2": 0.0,
+            "null_tensors": 0,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.470669850707054e-08,
+            "max_relative_l2": 1.6190964515772066e-06,
+            "null_max_abs_l2": 0.0,
+            "null_tensors": 0,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.9999983906745911,
+        "param_max_abs_delta": 1.1920928955078125e-07,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.043606411665678024,
+        "update_relative_l2": 4.534487743512727e-06,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    },
+    "HJ-px": {
+      "arm": "HJ-px",
+      "drawn_crop_starts": [
+        7,
+        3
+      ],
+      "embed_max_abs_delta": 6.32554292678833e-06,
+      "grad_norm": 3.362046003341675,
+      "grad_norm_relative_delta": 1.4182943662865757e-07,
+      "grad_tensor_max_relative_l2": 2.9948530936962925e-05,
+      "loss": 1.046656847000122,
+      "loss_max_relative_delta": 2.2649765014648438e-06,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        7,
+        8,
+        9,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "null_gradient_floor": 3.362046480178833e-06,
+      "null_gradient_max_abs_l2": 6.489652548680169e-08,
+      "null_gradient_tensors": 20,
+      "official_grad_norm": 3.362046480178833,
+      "official_loss": 1.046656847000122,
+      "official_lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "official_needed_frames": [
+        0,
+        7,
+        8,
+        9,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 0.9999979734420776,
+      "param_max_abs_delta": 1.7881393432617188e-07,
+      "pass": true,
+      "reference_sha256": "sha256:c2ed4f7b834423472b3489f43b6ef7d7a186f00267d6a970ec02715ec7d4c5b0",
+      "step2": {
+        "drawn_crop_starts": [
+          7,
+          3
+        ],
+        "grad_norm": 3.383495569229126,
+        "grad_norm_relative_delta": 2.1139545522320118e-07,
+        "grad_tensor_max_relative_l2": 3.084304626099765e-05,
+        "loss": 1.0487020015716553,
+        "loss_max_relative_delta": 2.2649765014648438e-06,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9991407990455627,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.999132513999939
+          },
+          "level2": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9962487816810608,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9962491393089294
+          },
+          "level3": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9962511658668518,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9962509274482727
+          }
+        },
+        "null_gradient_floor": 3.383496284484863e-06,
+        "null_gradient_max_abs_l2": 6.501031890593367e-08,
+        "null_gradient_tensors": 20,
+        "official_grad_norm": 3.3834962844848633,
+        "official_loss": 1.0487020015716553,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "official_lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "official_update_norm": 0.15301130712032318,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.8963685631752012e-07,
+            "max_relative_l2": 2.569999560364522e-05,
+            "null_max_abs_l2": 3.563056516497909e-09,
+            "null_tensors": 20,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.466989263892174e-08,
+            "max_relative_l2": 2.5467681552981958e-05,
+            "null_max_abs_l2": 4.5505746393281754e-10,
+            "null_tensors": 20,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.999886691570282,
+        "param_max_abs_delta": 1.7976388335227966e-05,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.15301130712032318,
+        "update_relative_l2": 0.000659962126519531,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    },
+    "HWM-px": {
+      "arm": "HWM-px",
+      "drawn_crop_starts": [
+        7,
+        3
+      ],
+      "embed_max_abs_delta": 8.299946784973145e-06,
+      "grad_norm": 4.537916660308838,
+      "grad_norm_relative_delta": 2.1015690419545684e-07,
+      "grad_tensor_max_relative_l2": 3.8764999771956354e-05,
+      "loss": 0.9717303514480591,
+      "loss_max_relative_delta": 2.1484452355704813e-06,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        7,
+        8,
+        9,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "null_gradient_floor": 4.537915706634521e-06,
+      "null_gradient_max_abs_l2": 1.2262364634807454e-07,
+      "null_gradient_tensors": 20,
+      "official_grad_norm": 4.5379157066345215,
+      "official_loss": 0.9717303514480591,
+      "official_lrs_after_step": [
+        5.555555555555556e-07,
+        1.1111111111111112e-07,
+        1.1111111111111112e-07
+      ],
+      "official_needed_frames": [
+        0,
+        7,
+        8,
+        9,
+        10,
+        15,
+        20,
+        25,
+        30,
+        45
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 0.9999950528144836,
+      "param_max_abs_delta": 4.76837158203125e-07,
+      "pass": true,
+      "reference_sha256": "sha256:6f08bf2612fd8fe11cd1840cd20c8a32f5ca6a34273e055cb622798f298b3820",
+      "step2": {
+        "drawn_crop_starts": [
+          7,
+          3
+        ],
+        "grad_norm": 4.544500827789307,
+        "grad_norm_relative_delta": 0.0,
+        "grad_tensor_max_relative_l2": 3.7858982977923006e-05,
+        "loss": 0.9740929007530212,
+        "loss_max_relative_delta": 2.1484452355704813e-06,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9990713000297546,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.9990691542625427
+          },
+          "level2": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9967021346092224,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9967019557952881
+          },
+          "level3": {
+            "lr": 9.999999689197617e-06,
+            "official_max_abs": 1.0013580322265625e-05,
+            "official_moved_share": 0.9963467717170715,
+            "port_max_abs": 1.0013580322265625e-05,
+            "port_moved_share": 0.9963476061820984
+          }
+        },
+        "null_gradient_floor": 4.544500827789307e-06,
+        "null_gradient_max_abs_l2": 1.2413212857609324e-07,
+        "null_gradient_tensors": 20,
+        "official_grad_norm": 4.544500827789307,
+        "official_loss": 0.9740928411483765,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05,
+          9.999999689197617e-06,
+          9.999999689197617e-06
+        ],
+        "official_lrs_at_step": [
+          5e-05,
+          1e-05,
+          1e-05
+        ],
+        "official_update_norm": 0.15318788588047028,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.8975061178207397e-07,
+            "max_relative_l2": 3.285342245362699e-05,
+            "null_max_abs_l2": 5.08419084610523e-09,
+            "null_tensors": 20,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.467373341321945e-08,
+            "max_relative_l2": 3.241793820052408e-05,
+            "null_max_abs_l2": 6.481287173620842e-10,
+            "null_tensors": 20,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.9998670816421509,
+        "param_max_abs_delta": 2.4957582354545593e-05,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.15318790078163147,
+        "update_relative_l2": 0.0008840228547342122,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    },
+    "LeWM-px": {
+      "arm": "LeWM-px",
+      "drawn_crop_starts": [],
+      "embed_max_abs_delta": 6.67572021484375e-06,
+      "grad_norm": 2.203341007232666,
+      "grad_norm_relative_delta": 1.082077645347104e-07,
+      "grad_tensor_max_relative_l2": 3.1203438993543386e-05,
+      "loss": 0.3993695378303528,
+      "loss_max_relative_delta": 2.9200017482333046e-06,
+      "lr_max": 5.555555555555556e-07,
+      "lrs_after_step": [
+        5.555555555555556e-07
+      ],
+      "needed_equal": true,
+      "needed_frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "null_gradient_floor": 2.203340768814087e-06,
+      "null_gradient_max_abs_l2": 4.7511463208138593e-08,
+      "null_gradient_tensors": 16,
+      "official_grad_norm": 2.203340768814087,
+      "official_loss": 0.3993695080280304,
+      "official_lrs_after_step": [
+        5.555555555555556e-07
+      ],
+      "official_needed_frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "official_torch": "2.7.1+cu128",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "lr": 5e-05,
+        "weight_decay": 0.001
+      },
+      "optimizer_equal": true,
+      "param_close_share": 0.9999948740005493,
+      "param_max_abs_delta": 2.384185791015625e-07,
+      "pass": true,
+      "reference_sha256": "sha256:756da3cf5de2415c63140e2a75e0c4a65f8d49ff12867a28a2253460f15cc564",
+      "step2": {
+        "drawn_crop_starts": [],
+        "grad_norm": 2.207587957382202,
+        "grad_norm_relative_delta": 2.1599911958758856e-07,
+        "grad_tensor_max_relative_l2": 3.034421752090566e-05,
+        "loss": 0.3993186950683594,
+        "loss_max_relative_delta": 2.9200017482333046e-06,
+        "lr_max": 5e-05,
+        "lrs_after_step": [
+          4.9999998445988085e-05
+        ],
+        "lrs_at_step": [
+          5e-05
+        ],
+        "movement": {
+          "level1": {
+            "lr": 4.9999998445988085e-05,
+            "official_max_abs": 5.030632019042969e-05,
+            "official_moved_share": 0.9993629455566406,
+            "port_max_abs": 5.030632019042969e-05,
+            "port_moved_share": 0.9993648529052734
+          }
+        },
+        "null_gradient_floor": 2.2075884342193604e-06,
+        "null_gradient_max_abs_l2": 4.7059039331998065e-08,
+        "null_gradient_tensors": 16,
+        "official_grad_norm": 2.2075884342193604,
+        "official_loss": 0.3993186950683594,
+        "official_lrs_after_step": [
+          4.9999998445988085e-05
+        ],
+        "official_lrs_at_step": [
+          5e-05
+        ],
+        "official_update_norm": 0.15471996366977692,
+        "official_warmup_steps": 90,
+        "optimizer_moments": {
+          "exp_avg": {
+            "floor": 1.8970729410648345e-07,
+            "max_relative_l2": 2.7932524972129613e-05,
+            "null_max_abs_l2": 4.0075454066368366e-09,
+            "null_tensors": 16,
+            "pass": true
+          },
+          "exp_avg_sq": {
+            "floor": 4.4686198234558105e-08,
+            "max_relative_l2": 2.737891009019222e-05,
+            "null_max_abs_l2": 5.370364153378659e-10,
+            "null_tensors": 16,
+            "pass": true
+          }
+        },
+        "optimizer_steps_equal": true,
+        "param_close_share": 0.9996628165245056,
+        "param_max_abs_delta": 1.6395002603530884e-05,
+        "parameters_moved": true,
+        "pass": true,
+        "update_norm": 0.15471996366977692,
+        "update_relative_l2": 0.0007207639282569289,
+        "warmup_steps": 90
+      },
+      "torch": "2.13.0+cu130"
+    }
+  },
+  "checked_at": "2026-10-19T00:53:26Z",
+  "device": "cpu float32",
+  "frozen_record": {
+    "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/gport/gport.json",
+    "pass": true,
+    "sha256": "sha256:3be3bfea2988ce6a59700ac231658d2d3985b1d692972cf48fd3502d577f1650"
+  },
+  "pass": true,
+  "schema": "issue_123_gport_v2",
+  "tolerance": {
+    "embed_max_abs": 0.0001,
+    "grad_floor_of_global_norm": 1e-06,
+    "grad_norm_relative": 0.0001,
+    "grad_tensor_relative_l2": 0.001,
+    "loss_relative": 0.0001,
+    "lr_abs": 1e-12,
+    "param_close_abs": 1e-07,
+    "param_close_share": 0.999,
+    "param_max_abs_over_lr": 2.0
+  },
+  "vendor_hashes_match": {
+    "LICENSE": true,
+    "__init__.py": true,
+    "hjepa_utils.py": true,
+    "loss.py": true,
+    "models/__init__.py": true,
+    "models/encoders/__init__.py": true,
+    "models/encoders/build_encoder.py": true,
+    "models/encoders/encoders.py": true,
+    "models/encoders/hf_vit.py": true,
+    "models/encoders/seq_encoder.py": true,
+    "models/hjepa.py": true,
+    "models/jepa.py": true,
+    "models/module.py": true,
+    "models/predictors/__init__.py": true,
+    "models/predictors/predictors.py": true,
+    "models/probers.py": true
+  }
+}

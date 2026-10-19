@@ -12,6 +12,12 @@ takes one step exactly as stable-pretraining 0.1.7's manual optimisation does: b
 ``clip_grad_norm_`` 1.0 over the optimizer's parameters, the optimizer built by
 ``main_hjepa._build_hjepa_optimizer_factory`` (spt ``create_optimizer``), ``opt.step()``, and spt's
 ``LinearWarmupCosineAnnealingLR`` with its default warm-up (1 % of the total steps) stepped once. CPU, float32.
+
+That first step runs at the schedule's step-0 LR, which is 0, so it moves no parameter. A2 (post-freeze,
+pre-scoring) adds a positive-LR step: the scheduler is advanced to the end of warm-up (every group at its base
+LR), the gradients are zeroed, and a second step (forward on the same inputs and crop starts, backward, clip,
+``opt.step()``, ``scheduler.step()``) is recorded with the parameters, the AdamW state (step, exp_avg,
+exp_avg_sq) and the LRs after it. The first step's record is unchanged.
 """
 from __future__ import annotations
 
@@ -23,7 +29,7 @@ import sys
 import torch
 
 H_JEPA = Path(os.environ.get("HJEPA_REF", "/mnt/array/sukaih/hjepa-ref/H-JEPA")) / "h_jepa"
-SEED_INIT, SEED_INPUT, SEED_STEP = 20261018, 7, 11
+SEED_INIT, SEED_INPUT, SEED_STEP, SEED_STEP2 = 20261018, 7, 11, 13
 BATCH = 4
 TOTAL_STEPS = 9000
 
@@ -103,15 +109,45 @@ def main(configs_path, out_dir):
         norm = torch.nn.utils.clip_grad_norm_(params, 1.0)
         optimizer.step()
         scheduler.step()
+        step1_lrs = [group["lr"] for group in optimizer.param_groups]
+        post_state = {k: v.clone() for k, v in model.state_dict().items()}
+        step1_drawn = list(drawn)
+        # A2: the positive-LR step (the scheduler at the end of warm-up: every group at its base LR)
+        warmup = max(1, int(0.01 * TOTAL_STEPS))
+        while scheduler.last_epoch < warmup:
+            scheduler.step()
+        step2_lrs = [group["lr"] for group in optimizer.param_groups]
+        optimizer.zero_grad(set_to_none=True)
+        drawn.clear()
+        torch.manual_seed(SEED_STEP2)
+        batch2 = {"pixels_level1": x.clone(), "action_level1": action.clone()}
+        output2 = hjepa_forward(wrapper, batch2, "fit", cfg, normalize_batch=main_hjepa._normalize_uint8_images_on_device)
+        output2["loss"].backward()
+        grads2 = {name: p.grad.detach().clone() for name, p in model.named_parameters() if p.grad is not None}
+        norm2 = torch.nn.utils.clip_grad_norm_(params, 1.0)
+        optimizer.step()
+        scheduler.step()
+        state2 = {name: {k: (v.detach().clone() if torch.is_tensor(v) else v) for k, v in optimizer.state[p].items()}
+                  for name, p in model.named_parameters() if p in optimizer.state}
         torch.save({"arm": arm, "config": spec["config"], "init_state": init, "inputs": {"x": x, "action": action},
                     "crop_starts": spec["crop_starts"], "official_needed_frames": list(needed),
-                    "drawn": list(drawn), "scalars": scalars, "embeds": embeds, "grads": grads,
-                    "grad_norm": float(norm), "post_state": {k: v.clone() for k, v in model.state_dict().items()},
-                    "lrs_after_step": [group["lr"] for group in optimizer.param_groups],
+                    "drawn": step1_drawn, "scalars": scalars, "embeds": embeds, "grads": grads,
+                    "grad_norm": float(norm), "post_state": post_state,
+                    "lrs_after_step": step1_lrs,
                     "optimizer_defaults": {k: v for k, v in optimizer.defaults.items() if isinstance(v, (int, float, tuple))},
                     "torch": torch.__version__, "seeds": [SEED_INIT, SEED_INPUT, SEED_STEP], "batch": BATCH,
-                    "total_steps": TOTAL_STEPS}, out_dir / f"reference-{arm}.pt")
-        print(f"[hjepa-port-reference] {arm}: loss {scalars['loss']:.6f}, needed {needed}", flush=True)
+                    "total_steps": TOTAL_STEPS,
+                    "step2": {"seed": SEED_STEP2, "warmup_steps": warmup, "lrs_at_step": step2_lrs,
+                              "drawn": list(drawn),
+                              "scalars": {k: float(v) for k, v in output2.items()
+                                          if "loss" in k and torch.is_tensor(v) and v.ndim == 0},
+                              "grads": grads2, "grad_norm": float(norm2),
+                              "post_state": {k: v.clone() for k, v in model.state_dict().items()},
+                              "optimizer_state": state2,
+                              "lrs_after_step": [group["lr"] for group in optimizer.param_groups]}},
+                   out_dir / f"reference-{arm}.pt")
+        print(f"[hjepa-port-reference] {arm}: loss {scalars['loss']:.6f}, step-2 loss "
+              f"{float(output2['loss']):.6f} at LRs {step2_lrs}, needed {needed}", flush=True)
 
 
 if __name__ == "__main__":

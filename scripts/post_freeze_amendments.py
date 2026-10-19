@@ -100,15 +100,26 @@ AMENDMENTS = {
                    "that rule and the #96 literal G6 bound stay as DESCRIPTIVE readings; records, estimates and "
                    "intervals unchanged")},
     "scripts/run_hjepa_comparison.py": {
-        "issue": 123, "replaces": ("sha256:db7f87ae101bd3ab3c3c23243b05cd814db06b443029fbd1dfacd8e488426177",),
-        "sha256": "sha256:b3390059a7d83c8433c5dc13fc211c25c6522d466cc11baf56f75268dfe4f6f4",
+        "issue": 123, "replaces": ("sha256:db7f87ae101bd3ab3c3c23243b05cd814db06b443029fbd1dfacd8e488426177",
+                                   "sha256:b3390059a7d83c8433c5dc13fc211c25c6522d466cc11baf56f75268dfe4f6f4"),
+        "sha256": "sha256:045530a99823ae3402ee48087db763ed09caa9f0b00543303f822921641f5cab",
         "change": ("A1 (scheduling only; owner GPU-window rule 2026-10-19, during main training, before any readout "
-                   "or evaluation read): --train handles SIGTERM / SIGUSR1: the running arm-seed writes resume.pt "
-                   "(atomic tmp + os.replace, as the 2000-step checkpoints) after its current optimizer step and the "
-                   "queue exits 75; the relaunch resumes there; the CPU / CUDA RNG states are restored after the "
-                   "loader iterator is created (its worker-seed draw shifted a resumed run's CPU stream) and the CUDA "
-                   "RNG is saved only when CUDA exists; objective, optimizer, schedule and batches unchanged; "
-                   "tests/test_issue_123_training_resume.py: stop-and-resume bit-identical to the uninterrupted run")},
+                   "or any evaluation feature / label read): --train handles SIGTERM / SIGUSR1: the running arm-seed "
+                   "writes resume.pt (atomic tmp + os.replace, as the 2000-step checkpoints) after its current "
+                   "optimizer step and the queue exits 75; the relaunch resumes there; the CPU / CUDA RNG states are "
+                   "restored after the loader iterator is created (its worker-seed draw shifted a resumed run's CPU "
+                   "stream) and the CUDA RNG is saved only when CUDA exists; objective, optimizer, schedule and "
+                   "batches unchanged; tests/test_issue_123_training_resume.py: stop-and-resume bit-identical to the "
+                   "uninterrupted run. A2 (pre-scoring fidelity review 2026-10-19, before any readout or evaluation "
+                   "feature / label read; publication, validation, guards and the G-port check only): G-records gates "
+                   "every token (fail closed until --validate writes validation.json bound to the records-manifest "
+                   "sha256 with a passing re-score; a failed validation withdraws the publication and re-derives it "
+                   "with every token the stop token); an absent paired estimate is the stop token (reverse(None) no "
+                   "longer crashes) and the unguarded raw_token / raw_reverse_token fields are removed (estimates "
+                   "kept as numbers); G-nonfinite counts the actual R1 and R2 cost values separately and either "
+                   "share above 10 % fails the arm (S9 included); G-port also requires gport/a2/gport.json, whose "
+                   "check adds a positive-LR step (AdamW state, updated parameters, movement); training, resume, "
+                   "RNG, data, readouts and scoring unchanged")},
     "scripts/hjepa_train_ckpt.py": {
         "issue": 123, "replaces": ("sha256:ae6c27b830b8bd4bde08d852de8b27db8d5f7ac5384178984bd730baf0e74543",),
         "sha256": "sha256:f07eed6a3f03aea47561ae1a9153697cb7e239c2fe643a49b7c1eabd89e585be",
@@ -127,6 +138,19 @@ AMENDMENTS = {
                    "returns 75; otherwise it returns 1 if a job exited non-zero or a Tier-T job left no "
                    "planning-eval metrics (was always 0); commands, overrides, --table and the G-fid rules "
                    "unchanged")},
+    "scripts/hjepa_port_reference.py": {
+        "issue": 123, "replaces": ("sha256:7e2db8db18c842e71e7d8b89eb93cadb15322aae246b0b0ad28f869c7e31da84",),
+        "sha256": "sha256:c30878693388960bf529cc5128e853d1e3593abb43887fd8915299c2b631afde",
+        "change": ("A2 (pre-scoring fidelity review): after the frozen step (unchanged, LR 0) the official scheduler "
+                   "is advanced to the end of warm-up and a second step at every group's base LR is recorded with "
+                   "its gradients, AdamW state (step, exp_avg, exp_avg_sq), parameters and LRs; re-run on CPU into "
+                   "gport/a2/ (the frozen gport/ references and gport.json are kept)")},
+    "tests/test_issue_123_hjepa_comparison.py": {
+        "issue": 123, "replaces": ("sha256:d4f22c42e774e7a834a816d0ac6f45018ae0cd084d089ca255685fb00988aa57",),
+        "sha256": "sha256:749ed45dabe3068be696b3ac100796893dcfd3a75b3a288f8a18c8d1ef4c4930",
+        "change": ("A2 (pre-scoring fidelity review): tests of the G-records gate and failed validation, failed-arm "
+                   "publication with empty estimates, per-readout G-nonfinite with S9 gating, the positive-LR G-port "
+                   "record and its sensitivity to a wrong gradient clip; the frozen tests unchanged")},
 }
 
 

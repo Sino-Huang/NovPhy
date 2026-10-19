@@ -1,4 +1,5 @@
-"""Issue #123: tests of the uncertain code only (clip sampler, launch encoding, readout fit isolation, port)."""
+"""Issue #123: tests of the uncertain code only (clip sampler, launch encoding, readout fit isolation, port) and of
+the A2 publication guards (G-records, failed-arm abstention, per-readout G-nonfinite, positive-LR G-port)."""
 from __future__ import annotations
 
 import json
@@ -151,3 +152,169 @@ def test_port_check_passed():
         pytest.skip("G-port has not been run on this checkout")
     result = json.loads(path.read_text())
     assert result["pass"] and set(result["arms"]) == {"HJ-px", "HWM-px", "LeWM-px", "HJ-car-m", "HJ-car-m-fs5"}
+
+
+A2_GPORT = ROOT / ".local-artifacts/issue-123-hjepa-comparison-v1/gport/a2"
+
+
+def test_port_positive_lr_step_passed():
+    """A2: the re-run passes both the step-0-LR step and the positive-LR step (parameters move, AdamW state and
+    updated parameters within the declared tolerance); the frozen gport.json is kept and referenced by hash."""
+    import hashlib
+    path = A2_GPORT / "gport.json"
+    if not path.is_file():
+        pytest.skip("the A2 G-port re-run has not been run on this checkout")
+    result = json.loads(path.read_text())
+    frozen = ROOT / result["frozen_record"]["artifact"]
+    assert result["frozen_record"]["sha256"] == "sha256:" + hashlib.sha256(frozen.read_bytes()).hexdigest()
+    assert result["pass"] and set(result["arms"]) == {"HJ-px", "HWM-px", "LeWM-px", "HJ-car-m", "HJ-car-m-fs5"}
+    for arm, block in result["arms"].items():
+        step2 = block["step2"]
+        assert step2["pass"] and step2["parameters_moved"] and min(step2["lrs_at_step"]) > 0, arm
+        assert step2["optimizer_steps_equal"] and all(m["pass"] for m in step2["optimizer_moments"].values()), arm
+
+
+def test_positive_lr_step_detects_what_the_lr_zero_step_cannot():
+    """A wrong gradient clip leaves the step-0-LR check passing (no parameter moves) but fails the A2 step through
+    the AdamW moments."""
+    from scripts import run_hjepa_comparison as hc
+    path = A2_GPORT / "reference-HJ-car-m.pt"
+    if not path.is_file():
+        pytest.skip("the A2 G-port re-run has not been run on this checkout")
+    reference = torch.load(path, map_location="cpu", weights_only=False)
+    right = hc.gport_arm(reference)
+    assert right["pass"]
+    clip = hn.GRAD_CLIP
+    try:
+        hn.GRAD_CLIP = clip / 4
+        wrong = hc.gport_arm(reference)
+    finally:
+        hn.GRAD_CLIP = clip
+    for key in ("loss_max_relative_delta", "grad_norm_relative_delta", "grad_tensor_max_relative_l2",
+                "param_close_share", "param_max_abs_delta"):  # the step at LR 0 cannot see the clip
+        assert wrong[key] == pytest.approx(right[key], rel=1e-3, abs=1e-9), key
+    assert not wrong["step2"]["optimizer_moments"]["exp_avg"]["pass"] and not wrong["pass"]
+
+
+def contrast_rows(missing=(), strong=("HJ-car-m", "HJ-car-m:R2"), members=12):
+    """Synthetic grid rows over every view a contrast reads: views of `missing` arms have no AUC (empty estimates),
+    `strong` views rank far above U."""
+    from scripts import run_hjepa_comparison as hc
+    rng = np.random.default_rng(7)
+    names = sorted({name for pair in hc.CONTRASTS.values() for name in pair})
+    rows = []
+    for m in range(members):
+        for seed in hc.SEEDS:
+            views = {}
+            for name in names:
+                auc = 0.95 if name in strong else 0.5 + 0.005 * float(rng.standard_normal())
+                views[name] = {"auc": None if hc.arm_of(name) in missing else auc}
+            rows.append({"member": f"level-{m:02d}", "seed": seed, "views": views})
+    return rows
+
+
+def all_tokens(block):
+    if isinstance(block, dict):
+        for key, value in block.items():
+            if "token" in key:
+                yield key, value
+            yield from all_tokens(value)
+
+
+def test_failed_arm_with_empty_estimates_abstains_without_crashing():
+    """An arm that fails a guard and has no paired estimate (and an arm that fails a guard with estimates) publishes
+    only the stop token, keeps its estimates as numbers, and carries no unguarded token field."""
+    from scripts import run_hjepa_comparison as hc
+    arms = tuple(hn.ARMS)
+    rows = contrast_rows(missing=("HJ-px",))
+    passing = {arm: {"pass": True} for arm in arms}
+    control = hc.grid_contrasts(rows, arms, passing, True)
+    assert control["PC2"]["token"] == "supported" and control["S9_PC2_R2"]["token"] == "supported"
+    assert control["PC1"]["estimate"] is None and control["PC1"]["token"] == hc.STOP_TOKEN  # empty, guards pass
+    guards = {**passing, "HJ-px": {"pass": False}, "HJ-car-m": {"pass": False}}
+    contrasts = hc.grid_contrasts(rows, arms, guards, True)
+    for label, (first, second) in hc.CONTRASTS.items():
+        involved = {hc.arm_of(first), hc.arm_of(second)}
+        if involved & {"HJ-px", "HJ-car-m"}:
+            block = contrasts[label]
+            assert block["token"] == block["reverse_token"] == hc.STOP_TOKEN and not block["guards_pass"], label
+            assert (block["estimate"] is None) == ("HJ-px" in involved), label
+    assert contrasts["PC2"]["estimate"]["mean"] > 0.4  # the diagnostic number stays
+    records = {(arm, seed): {"typed_failure": "nonfinite_loss", "wrong_anchor": None}
+               for arm in hc.WRONG_ANCHOR_ARMS for seed in hc.SEEDS}
+    cells = {"grid": {"mixed": {f"level-{m:02d}": {"verdicts": {}} for m in range(3)}}}
+    wrong = hc.wrong_anchor_table(cells, records, {arm: {"pass": False} for arm in arms}, True)
+    assert all(w["token"] == hc.STOP_TOKEN and w["right_minus_wrong"] is None for w in wrong.values())
+    grid = {"contrasts": contrasts, "S10_wrong_anchor": wrong}
+    assert not any(key.startswith("raw") for key, _ in all_tokens(grid))
+    assert hc.dispositions(grid)["disposition"] == 3
+    assert hc.reverse(None) is None
+
+
+def test_nonfinite_guard_counts_r1_and_r2_costs_and_gates_s9(tmp_path):
+    """G-nonfinite counts the actual cost values of R1 and of R2 separately; > 10 % failed R2 costs fail the arm
+    (its S9 token included) even when every R1 cost is finite."""
+    from scripts import run_hjepa_comparison as hc
+    from world_model.planning import scoring_harness as harness
+    arm = "HJ-car-m"
+    plan = {"arms": {arm: {"parameters": 1855172}}}
+    for seed in hc.SEEDS:
+        run = hc.run_dir(tmp_path, arm, seed)
+        run.mkdir(parents=True)
+        (run / "readouts.json").write_text(json.dumps({
+            "collapse": [{"dim": 112, "effective_rank": 50.0, "within_episode_share": 0.5}],
+            "action_sensitivity": 1.0, "policy_auc": {"ceiling": 0.9, "R1": 0.6}}))
+
+    def records(bad_r2):
+        rows = [{"ordinal": i, "excluded": False, harness.PRIMARY_COST: 0.1 * i,
+                 f"{harness.PRIMARY_COST}_R2": None if i < bad_r2 else (float("nan") if i == bad_r2 else 0.2)}
+                for i in range(20)]
+        return {(arm, seed): {"typed_failure": None, "inventories": {"grid": {"level-00": {"rows": rows}}}}
+                for seed in hc.SEEDS}
+
+    ok = hc.arm_guards(tmp_path, plan, records(1))[arm]  # 2 of 20 R2 costs fail (None, NaN): 10 %
+    assert ok["nonfinite_shares"] == {"R1": 0.0, "R2": 0.1} and ok["G_nonfinite"] and ok["pass"]
+    failed = hc.arm_guards(tmp_path, plan, records(2))[arm]  # 3 of 20: 15 %
+    assert failed["nonfinite_shares"] == {"R1": 0.0, "R2": 0.15} and not failed["G_nonfinite"] and not failed["pass"]
+    arms = tuple(hn.ARMS)
+    guards = {**{a: {"pass": True} for a in arms}, arm: failed}
+    contrasts = hc.grid_contrasts(contrast_rows(), arms, guards, True)
+    assert contrasts["S9_PC2_R2"]["token"] == contrasts["PC2"]["token"] == hc.STOP_TOKEN
+    assert contrasts["S9_PC1_R2"]["token"] == "not_supported_by_this_experiment"
+
+
+def test_publication_tokens_wait_for_a_bound_passing_validation(tmp_path, monkeypatch):
+    """G-records: --publish emits only the stop token until --validate's re-score passes and its receipt binds the
+    current records manifest; a failed re-score turns every published token back into the stop token."""
+    from scripts import run_hjepa_comparison as hc
+    manifest = {"schema": "issue_123_records_manifest_v1", "plan_identity": hc.IDENTITY, "records": []}
+    spot = {"arm": "HJ-car-m", "seed": hc.SEEDS[0], "cells": 311, "max_abs_delta": {}, "pass": True}
+
+    def tables(output, plan):
+        guard = hc.records_guard(output)
+        return {"guards": {"global": {"G_records": guard}}, "token": "supported" if guard["pass"] else hc.STOP_TOKEN,
+                "disposition": {"disposition": 1 if guard["pass"] else 3, "label": "test"}}
+
+    monkeypatch.setattr(hc, "load_plan", lambda output: {"identity": hc.IDENTITY})
+    monkeypatch.setattr(hc, "records_manifest", lambda output: json.loads(json.dumps(manifest)))
+    monkeypatch.setattr(hc, "compute_tables", tables)
+    monkeypatch.setattr(hc, "rendered", lambda plan, compute: {n: json.dumps(compute["token"]) for n in hc.PUBLISHED})
+    monkeypatch.setattr(hc, "spot_check", lambda output, plan: dict(spot))
+
+    def published():
+        return {json.loads((tmp_path / n).read_text()) for n in hc.PUBLISHED}
+
+    hc.publish(tmp_path)
+    assert published() == {hc.STOP_TOKEN} and not hc.records_guard(tmp_path)["pass"]
+    assert hc.validate(tmp_path) == 0
+    assert published() == {"supported"} and hc.records_guard(tmp_path)["pass"]
+    assert hc.validate(tmp_path) == 0  # re-validation byte-compares the released publication
+    manifest["records"] = [{"artifact": "records/x.json", "sha256": "sha256:0", "bytes": 1}]  # records changed
+    assert not hc.records_guard(tmp_path)["pass"]
+    manifest["records"] = []
+    spot["pass"] = False
+    with pytest.raises(ValueError, match="re-scoring"):
+        hc.validate(tmp_path)
+    assert published() == {hc.STOP_TOKEN}
+    receipt = json.loads((tmp_path / hc.VALIDATION_RECEIPT).read_text())
+    assert receipt["pass"] is False and not hc.records_guard(tmp_path)["pass"]

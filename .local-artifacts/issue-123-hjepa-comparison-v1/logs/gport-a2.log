@@ -1,0 +1,9 @@
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  scalars = {k: float(v) for k, v in output.items() if "loss" in k and torch.is_tensor(v) and v.ndim == 0}
+[issue-123] G-port HJ-px: pass True (loss 1.046657 vs 1.046657; positive-LR step pass True, LRs [5e-05, 1e-05, 1e-05])
+[issue-123] G-port HWM-px: pass True (loss 0.971730 vs 0.971730; positive-LR step pass True, LRs [5e-05, 1e-05, 1e-05])
+[issue-123] G-port LeWM-px: pass True (loss 0.399370 vs 0.399370; positive-LR step pass True, LRs [5e-05])
+[issue-123] G-port HJ-car-m: pass True (loss 3.536468 vs 3.536468; positive-LR step pass True, LRs [5e-05, 1e-05, 1e-05])
+[issue-123] G-port HJ-car-m-fs5: pass True (loss 2.384637 vs 2.384637; positive-LR step pass True, LRs [5e-05, 1e-05])
+[issue-123] G-port (A2): PASS
