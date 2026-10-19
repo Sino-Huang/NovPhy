@@ -325,6 +325,43 @@ def test_trigger_never_uses_resume_pt(tmp_path, monkeypatch):
         ri.trigger_part("HJ-px", rc.SEEDS[0], data=None, device="cpu")
 
 
+def test_trigger_refuses_after_123_evaluation_reads(tmp_path, monkeypatch):
+    """The trigger runs only before #123's first evaluation read: at its start, and again at its end."""
+    source, out = tmp_path / "issue-123", tmp_path / "issue-125"
+    monkeypatch.setattr(ri, "SOURCE", source)
+    monkeypatch.setattr(ri, "mark", lambda *a, **k: None)
+    monkeypatch.setattr(rc, "FitData", lambda path: None)
+    record = rc.record_path(source, "HJ-px", rc.SEEDS[0])
+    record.parent.mkdir(parents=True)
+    rc.write_json(record, {"scored_at": "2026-10-22T00:00:00Z"})
+    monkeypatch.setattr(ri, "trigger_part", lambda *a, **k: pytest.fail("refused before any trigger work"))
+    assert ri.trigger(out) == 1
+    refusal = json.loads((out / "trigger-refused.json").read_text())
+    assert refusal["when"] == "at start" and refusal["issue_123_state"]["records_scored"] == 1
+    assert not ri.trigger_path(out).exists() and not (out / "trigger-parts").exists()
+    # #123 scores while the trigger runs: refused at its end, no trigger.json
+    record.unlink()
+    (out / "trigger-refused.json").unlink()
+    calls = []
+
+    def part(arm, seed, data):
+        calls.append((arm, seed))
+        if len(calls) == 2:
+            rc.write_json(record, {"scored_at": "2026-10-22T00:00:00Z"})
+        return {**readout_report(60.0, 0.3, 0.3), "model": "m", "model_sha256": "s", "seconds": 0.0}
+
+    monkeypatch.setattr(ri, "trigger_part", part)
+    assert ri.trigger(out) == 1
+    assert json.loads((out / "trigger-refused.json").read_text())["when"].startswith("at end")
+    assert not ri.trigger_path(out).exists() and len(calls) == len(ri.TRIGGER_ARMS) * len(rc.SEEDS)
+    # before any #123 evaluation read: trigger.json, both states recorded clean
+    record.unlink()
+    assert ri.trigger(out) == 0
+    result = json.loads(ri.trigger_path(out).read_text())
+    assert result["issue_123_state_at_start"]["before_123_evaluation_read"]
+    assert result["issue_123_state_at_end"]["before_123_evaluation_read"] and result["triggered"] is False
+
+
 def test_not_triggered_stages_exit_zero_with_a_record(tmp_path):
     rc.write_json(tmp_path / "trigger.json", {"triggered": False})
     assert ri.selection(tmp_path, 1, 3) == 0
@@ -381,22 +418,52 @@ def test_failed_guard_turns_every_involved_token_into_the_stop_token():
     assert all(c["token"] == rc.STOP_TOKEN for c in ri.grid_contrasts(rows, passing, False).values())
 
 
+def test_si1_si2_need_every_published_123_global_guard(tmp_path, monkeypatch):
+    monkeypatch.setattr(ri, "SOURCE", tmp_path)
+    monkeypatch.setattr(rc, "records_guard", lambda output: {"pass": True})
+    for arm in ri.ISSUE_123_ARMS:
+        for seed in rc.SEEDS:
+            path = rc.record_path(tmp_path, arm, seed)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            rc.write_json(path, {"schema": rc.SCHEMA_RECORD, "plan_identity": rc.IDENTITY})
+    names = ("G_fid", "G_port", "G_isolation", "G_chronology", "G_scoring_policy", "G_records")
+
+    def guards(**failing):
+        rc.write_json(tmp_path / "compute.json", {"guards": {
+            "arms": {arm: {"pass": True} for arm in ri.ISSUE_123_ARMS},
+            "global": {name: {"pass": name not in failing} for name in names if failing.get(name) != "absent"}}})
+        return ri.issue_123_inputs()[1]
+
+    assert all(g["pass"] for g in guards().values())
+    for name in names:
+        result = guards(**{name: True})
+        assert not any(g["pass"] for g in result.values()), name
+        assert result["HJ-px"]["issue_123_global_guards"][name] is False and result["HJ-px"]["issue_123_arm_guards_pass"]
+    for name in ri.ISSUE_123_GLOBAL_GUARDS:
+        with pytest.raises(ValueError, match=name):
+            guards(**{name: "absent"})
+
+
 def test_scheduler_jobs_wait_for_123_training_and_avoid_its_gpu():
     spec = json.loads((ROOT / "scripts/gpu_window_issue_125.json").read_text())["jobs"]
-    known = {j["id"]: {} for j in json.loads((ROOT / "scripts/gpu_window_issue_123.json").read_text())["jobs"]}
+    issue_123 = {j["id"]: j for j in json.loads((ROOT / "scripts/gpu_window_issue_123.json").read_text())["jobs"]}
+    known = dict(issue_123)
     for job in spec:
         gw.validate_spec(job, known)
         known[job["id"]] = job
     by_id = {j["id"]: j for j in spec}
-    assert set(by_id) == {"125-trigger", "125-select-q0", "125-select-q1", "125-select-q2", "125-smoke"}
-    assert by_id["125-trigger"]["depends_on"] == [f"123-train-q{g}" for g in range(4)]
-    assert by_id["125-trigger"]["command"][-1] == "--trigger"
+    assert set(by_id) == {"125-select-q0", "125-select-q1", "125-select-q2", "125-smoke"}
+    # the trigger is in the #123 queue: #123 scoring (its first evaluation read) waits for it
+    trigger = issue_123["125-trigger"]
+    assert trigger["depends_on"] == [f"123-train-q{g}" for g in range(4)]
+    assert trigger["command"][-1] == "--trigger"
+    assert "125-trigger" in issue_123["123-score"]["depends_on"]
     for q in range(3):
         job = by_id[f"125-select-q{q}"]
         assert job["depends_on"] == ["125-trigger"]
         assert job["command"][-4:] == ["--gpu", str(q), "--workers", "3"]
     assert by_id["125-smoke"]["depends_on"] == ["125-select-q0", "125-select-q1", "125-select-q2"]
     # #123 scores, publishes and validates on GPU 0: no #125 job there; every job pins its GPU
-    for job in spec:
+    for job in (*spec, trigger):
         assert job["gpu"] != 0 and job["env"]["CUDA_VISIBLE_DEVICES"] == str(job["gpu"])
         assert not any(mode in job["command"] for mode in ("--train", "--readouts", "--score", "--prepare"))

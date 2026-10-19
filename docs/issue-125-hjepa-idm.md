@@ -16,7 +16,7 @@ change from #123's frozen plan.
 | `world_model/hjepa/idm.py` | IDM arms, configs, heads, matched sizes |
 | `scripts/hjepa_idm_port_reference.py` | official side of G-port-IDM (hjepa env, CPU) |
 | `tests/test_issue_125_hjepa_idm.py` | CPU tests |
-| `scripts/gpu_window_issue_125.json` | scheduler jobs (trigger, selection, smoke) |
+| `scripts/gpu_window_issue_125.json` | scheduler jobs (selection, smoke); `125-trigger` is in `scripts/gpu_window_issue_123.json` |
 | `.local-artifacts/issue-125-hjepa-idm-v1/` | `gport-idm.json`, `trigger.json`, selection, `smoke.json`, `plan.json`, models, records, publication |
 | `.local-artifacts/issue-125-hjepa-idm-v1/decisions.md` | implementer decisions (posted on #125) |
 
@@ -65,12 +65,14 @@ frames and fit anchors only:
 - G-action: endpoint launch sensitivity ≥ 0.05.
 
 The ticket is triggered iff any seed of either arm fails. The result is written to `trigger.json`. No evaluation
-file is read.
+file is read. The trigger runs only before #123's first evaluation read. If #123 records, evaluation anchors or the
+evaluation position cache exist at its start or its end, it writes `trigger-refused.json` instead and exits 1.
 
 ## Schedule
 
 Night window only (18:00–07:00 Australia/Melbourne), through `scripts/gpu_window.py`:
-1. `125-trigger` runs after all four `123-train-q*` queues, on GPU 1 beside `123-readouts-g1`.
+1. `125-trigger` runs after all four `123-train-q*` queues, on GPU 1 beside `123-readouts-g1`. `123-score` depends
+   on it, so #123 scores only after the trigger.
 2. `125-select-q0/q1/q2` run on GPUs 1, 2 and 3.
 3. `125-smoke` runs on GPU 1.
 

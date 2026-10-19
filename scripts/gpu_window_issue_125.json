@@ -1,10 +1,5 @@
 {
   "jobs": [
-    {"id": "125-trigger", "gpu": 1, "shares_gpu": true, "resumable": true, "est_minutes": 60,
-     "depends_on": ["123-train-q0", "123-train-q1", "123-train-q2", "123-train-q3"],
-     "command": ["python", "-u", "-m", "scripts.run_hjepa_idm", "--trigger"],
-     "env": {"CUDA_VISIBLE_DEVICES": "1"},
-     "note": "#125 frozen trigger on the trained #123 HJ-px / HJ-car-m model.pt (fit frames and fit anchors only); shares GPU 1 with 123-readouts-g1 so it finishes before #123 scores; resumable per arm-seed (parts written atomically, an interrupted part is recomputed deterministically); writes trigger.json"},
     {"id": "125-select-q0", "gpu": 1, "resumable": true, "est_minutes": 75,
      "depends_on": ["125-trigger"],
      "command": ["python", "-u", "-m", "scripts.run_hjepa_idm", "--selection", "--gpu", "0", "--workers", "3"],

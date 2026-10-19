@@ -87,6 +87,7 @@ CONTRASTS = {
     "SI7_carriers_J": ("HJ-car-m-IDM", "J"), "SI7_carriers_J_dec": ("HJ-car-m-IDM", "J_dec"),
 }
 ISSUE_123_ARMS = ("HJ-px", "HJ-car-m")  # SI1 / SI2 read #123's published records of these arms
+ISSUE_123_GLOBAL_GUARDS = ("G_isolation", "G_chronology", "G_scoring_policy", "G_records")  # required in compute.json
 
 read_json = rc.read_json
 write_json = rc.write_json
@@ -449,6 +450,18 @@ def issue_123_state():
     return state
 
 
+def refuse_trigger(output, state, when):
+    """Record why the trigger was not evaluated (trigger-refused.json; no trigger.json); exit 1 (scheduler: failed)."""
+    write_json(Path(output) / "trigger-refused.json", {
+        "schema": "issue_125_trigger_refusal_v1", "identity": IDENTITY, "refused_at": utc_now(), "when": when,
+        "rule": ("the trigger runs only before #123's first evaluation-split read (no #123 scoring record, evaluation "
+                 "pixel anchors or evaluation position cache), at its start and at its end (ticket 125: trigger "
+                 "before evaluation); the scheduler makes 123-score depend on 125-trigger"),
+        "issue_123_state": state})
+    log(f"trigger refused {when}: #123 has read the evaluation split ({state}); trigger-refused.json written")
+    return 1
+
+
 @torch.no_grad()
 def trigger_part(arm, seed, data, device="cuda"):
     """fit_readouts steps 1-2 (rc.fit_readouts lines 'fit probe frames' and 'fit anchors'), on #123's model.pt:
@@ -492,12 +505,15 @@ def trigger_part(arm, seed, data, device="cuda"):
 
 
 def trigger(output):
-    """Evaluate the frozen trigger once (resumable per arm-seed: parts are written atomically); trigger.json."""
+    """Evaluate the frozen trigger once (resumable per arm-seed: parts are written atomically); trigger.json. Refuses
+    (trigger-refused.json, exit 1) if #123 has read the evaluation split before it starts or by the time it ends."""
     output = Path(output)
     if trigger_path(output).is_file():
         log(f"trigger.json exists: triggered = {triggered(output)}")
         return 0
     state_before = issue_123_state()
+    if not state_before["before_123_evaluation_read"]:
+        return refuse_trigger(output, state_before, "at start")
     parts_dir = output / "trigger-parts"
     parts_dir.mkdir(parents=True, exist_ok=True)
     data = rc.FitData(SOURCE)
@@ -513,6 +529,9 @@ def trigger(output):
                 log(f"trigger {arm} seed {seed}: {seed_guards(part)}")
             parts[(arm, seed)] = read_json(path)
     arms, failing, fired = trigger_decision(parts)
+    state_after = issue_123_state()
+    if not state_after["before_123_evaluation_read"]:
+        return refuse_trigger(output, state_after, "at end (#123 evaluation read during the trigger)")
     result = {"schema": "issue_125_trigger_v1", "identity": IDENTITY, "evaluated_at": utc_now(),
               "rule": ("triggered iff at least one #123 primary H-JEPA arm (HJ-px, HJ-car-m) fails G-collapse (top-level "
                        "effective rank < 0.1 D or within-episode variance share < 0.05) or G-action (endpoint launch "
@@ -529,7 +548,7 @@ def trigger(output):
               "parts": {f"{arm}/{seed}": {"sha256": sha256_of(parts_dir / f"{arm}--seed{seed}.json"),
                                           **{k: parts[(arm, seed)][k] for k in ("model", "model_sha256")}}
                         for arm in TRIGGER_ARMS for seed in SEEDS},
-              "issue_123_state_at_start": state_before, "issue_123_state_at_end": issue_123_state()}
+              "issue_123_state_at_start": state_before, "issue_123_state_at_end": state_after}
     write_json(trigger_path(output), result)
     log(f"trigger: triggered = {fired} (failing {failing or 'none'})")
     return 0
@@ -789,8 +808,9 @@ def frozen_plan(output, frozen_at):
                                 "#123's thresholds; global G-fid (#123 fidelity/gfid.json), G-port (#123), G-isolation, "
                                 "G-chronology, G-scoring-policy, G-records",
                    "G_port_IDM": "gport-idm.json pass",
-                   "issue_123_arms": "SI1 / SI2 also need #123's published guard pass of HJ-px / HJ-car-m and #123's "
-                                     "G-records (validated publication)",
+                   "issue_123_arms": "SI1 / SI2 also need #123's published guard pass of HJ-px / HJ-car-m, #123's "
+                                     "G-records (validated publication) and every global guard #123 published "
+                                     "(G-isolation, G-chronology, G-scoring-policy and G-records required)",
                    "failure": "a failed guard turns every token involving the arm into readiness_or_precision_insufficient",
                    "thresholds": rc.GUARD_THRESHOLDS},
         "dispositions": {
@@ -1034,16 +1054,25 @@ def write_receipt(output, spot, error=None):
 
 
 def issue_123_inputs():
-    """#123's published records of HJ-px / HJ-car-m and their guards (SI1 / SI2); never re-scored."""
+    """#123's published records of HJ-px / HJ-car-m and their guards (SI1 / SI2); never re-scored. An arm passes only
+    if its #123 arm guards, #123's G-records (validation.json, re-checked now) and every global guard #123 published in
+    compute.json pass; G-isolation, G-chronology, G-scoring-policy and G-records must be among them."""
     compute = read_json(SOURCE / "compute.json")
     validated = rc.records_guard(SOURCE)
+    published = compute["guards"]["global"]
+    missing = [name for name in ISSUE_123_GLOBAL_GUARDS if name not in published]
+    if missing:
+        raise ValueError(f"#123 compute.json does not publish the global guards {missing}")
+    global_123 = {name: bool(guard["pass"]) for name, guard in published.items()}
     records = {(arm, seed): read_json(rc.record_path(SOURCE, arm, seed)) for arm in ISSUE_123_ARMS for seed in SEEDS}
     for (arm, seed), record in records.items():
         if record.get("schema") != rc.SCHEMA_RECORD or record.get("plan_identity") != rc.IDENTITY:
             raise ValueError(f"#123 record {arm}/{seed} binding differs")
-    guards = {arm: {"pass": bool(compute["guards"]["arms"][arm]["pass"] and validated["pass"]),
+    guards = {arm: {"pass": bool(compute["guards"]["arms"][arm]["pass"] and validated["pass"]
+                                 and all(global_123.values())),
                     "issue_123_arm_guards_pass": compute["guards"]["arms"][arm]["pass"],
-                    "issue_123_G_records": validated["pass"], "source": "#123 compute.json and validation.json"}
+                    "issue_123_G_records": validated["pass"], "issue_123_global_guards": global_123,
+                    "source": "#123 compute.json (guards.arms, guards.global) and validation.json"}
               for arm in ISSUE_123_ARMS}
     return records, guards
 

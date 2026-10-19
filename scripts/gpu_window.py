@@ -5,18 +5,24 @@ cron runs ``tick`` every 5 minutes through scripts/gpu_window_cron.sh.
 
 tick, local time in [18:00, 06:50): reconcile ended runs, log foreign GPU processes, then launch every ready job
     (queued or paused, every dependency completed, its GPU free) in queue order. A non-resumable job launches only
-    if its est_minutes end before 06:50. Each run is started in its own session (setsid) as
-    ``gpu_window.py _wrap EXIT_FILE -- COMMAND``: the wrapper forwards SIGTERM / SIGUSR1 to the command and writes
-    the command's exit status to EXIT_FILE.
-tick, [06:50, 07:00): SIGTERM, once per run, to the wrapper of every running job (it forwards it to the command).
-tick, [07:00, 18:00): SIGKILL every process still alive of a managed run (logged as an overrun). Never launches.
+    if its est_minutes end before 06:50. Surviving processes of a finished run of the job are SIGKILLed (and
+    logged as stray_killed) before it is relaunched. Each run is started in its own session (setsid) as
+    ``gpu_window.py _wrap --stop-at T1 --kill-at T2 EXIT_FILE -- COMMAND``: the wrapper forwards SIGTERM / SIGUSR1
+    to the command and writes the command's exit status to EXIT_FILE. Independently of cron, the wrapper itself
+    SIGTERMs the command at T1 (the 06:50 ending the launch's window) and SIGKILLs every other process of the run
+    (its process group and its tag) at T2 (07:00), by its own clock, and logs both (window_stop / window_kill).
+tick, [06:50, 07:00): SIGTERM, once per run, to the wrapper of every running job (it forwards it to the command
+    unless it already sent its own window_stop).
+tick, [07:00, 18:00): SIGKILL every process still alive of any run of any job (logged as overrun_killed for a
+    running job, stray_killed for a finished one). Never launches.
 
 A run's processes are found by the environment variable GPU_WINDOW_RUN=<job>#<run> that the wrapper and everything
 it starts inherit, so the scheduler signals only processes it launched. A run ends
 - completed: exit 0;
-- paused: exit 75, or any end after a scheduler stop (a schedule interruption is not a failure); it is relaunched
-  in the next window and resumes from its own checkpoint;
+- paused: exit 75, or any end after a scheduler or wrapper stop (a schedule interruption is not a failure); it is
+  relaunched in the next window and resumes from its own checkpoint;
 - failed: any other exit (typed failures included); never retried. ``enqueue --requeue ID`` after a fix.
+``enqueue SPEC --update-deps`` changes the dependencies of queued or paused jobs to those in SPEC (under the lock).
 
 State in .local-artifacts/gpu-window/ (GPU_WINDOW_HOME overrides): queue.json (jobs and runs), events.jsonl,
 logs/<job>.log (stdout/stderr of every run), runs/<job>.<n>.exit.json, lock (flock; ticks never overlap).
@@ -83,6 +89,12 @@ def next_open(now):
     return _next(now, OPEN)
 
 
+def window_ends(now):
+    """(06:50, 07:00) ending the window that a run launched at now runs in; the wrapper enforces both itself."""
+    kill_at = _next(now, CLOSE)
+    return datetime.combine(kill_at.date(), STOP, tzinfo=ZONE), kill_at
+
+
 # --------------------------------------------------------------------------- state
 
 def load():
@@ -102,10 +114,11 @@ def save(queue):
     write_atomic(HOME / "queue.json", queue)
 
 
-def event(now, kind, **fields):
+def event(now, kind, home=None, **fields):
+    home = Path(home or HOME)
     entry = {"at": stamp(now), "event": kind, **fields}
-    HOME.mkdir(parents=True, exist_ok=True)
-    with (HOME / "events.jsonl").open("a") as handle:
+    home.mkdir(parents=True, exist_ok=True)
+    with (home / "events.jsonl").open("a") as handle:
         handle.write(json.dumps(entry, sort_keys=True) + "\n")
     print(json.dumps(entry, sort_keys=True), flush=True)
 
@@ -141,6 +154,36 @@ def members(value, exact=True):
     return sorted(found)
 
 
+def sigkill(pids):
+    for pid in pids:
+        with contextlib.suppress(ProcessLookupError):
+            os.kill(pid, signal.SIGKILL)
+
+
+def wait_gone(pids, prefix, timeout=10.0):
+    """True once none of pids carries a tag starting with prefix any more (killed processes leave /proc environ)."""
+    deadline = time.monotonic() + timeout
+    while set(pids) & set(members(prefix, exact=False)):
+        if time.monotonic() > deadline:
+            return False
+        time.sleep(0.1)
+    return True
+
+
+def run_processes(tag):
+    """Every process of this wrapper's run but the wrapper: its tag, and its process group if it leads one (setsid)."""
+    me = os.getpid()
+    pids = set(members(tag)) if tag else set()
+    if os.getpgrp() == me:
+        for entry in os.scandir("/proc"):
+            if entry.name.isdigit():
+                with contextlib.suppress(OSError):
+                    if os.getpgid(int(entry.name)) == me:
+                        pids.add(int(entry.name))
+    pids.discard(me)
+    return sorted(pids)
+
+
 def gpu_processes():
     """[(gpu index, pid, MiB)] of every compute process, or None if nvidia-smi fails. Called inside the window only."""
     try:
@@ -163,40 +206,79 @@ def launch(job, now):
     exit_file.parent.mkdir(parents=True, exist_ok=True)
     log.parent.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, **job["env"], TAG: tag}
+    stop_at, kill_at = window_ends(now)
     with log.open("a") as handle:
         handle.write(f"\n=== gpu-window {tag} launched {stamp(now)} on GPU {job['gpu']}: "
                      f"{shlex.join(job['command'])} ===\n")
         handle.flush()
-        proc = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "_wrap", str(exit_file), "--",
-                                 *job["command"]], cwd=ROOT / job["cwd"], env=env, stdin=subprocess.DEVNULL,
-                                stdout=handle, stderr=subprocess.STDOUT, start_new_session=True)
+        proc = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "_wrap", "--stop-at", stop_at.isoformat(),
+                                 "--kill-at", kill_at.isoformat(), str(exit_file), "--", *job["command"]],
+                                cwd=ROOT / job["cwd"], env=env, stdin=subprocess.DEVNULL, stdout=handle,
+                                stderr=subprocess.STDOUT, start_new_session=True)
     job["runs"].append({"run": n, "tag": tag, "pid": proc.pid, "pgid": proc.pid, "launched_at": stamp(now),
                         "launched_unix": now.timestamp(), "exit_file": str(exit_file), "log": str(log),
+                        "window_stop_at": stamp(stop_at), "window_kill_at": stamp(kill_at),
                         "stop_sent_at": None, "killed_at": None, "killed_unix": None, "ended_at": None,
                         "exit_code": None, "outcome": None, "seconds": None})
     job["state"] = "running"
     event(now, "launch", job=job["id"], run=n, pid=proc.pid, gpu=job["gpu"])
 
 
-def wrap(exit_file, argv):
-    """Run argv in this session, forward SIGTERM / SIGUSR1 to it, write its exit status to exit_file."""
+def wrap(exit_file, argv, stop_at=None, kill_at=None):
+    """Run argv in this session, forward SIGTERM / SIGUSR1 to it, write its exit status to exit_file. By its own clock
+    (no cron needed), SIGTERM argv at stop_at and SIGKILL every other process of the run at kill_at; both are logged
+    to the job log and events.jsonl and recorded in exit_file. argv gets at most one SIGTERM."""
     began = time.monotonic()
-    child, pending = None, []
+    home = Path(exit_file).resolve().parent.parent
+    tag = os.environ.get(TAG)
+    job, _, run = (tag or "").partition("#")
+    run = int(run) if run.isdigit() else None
+    child, pending, termed = None, [], []
+    window = {"window_stop_sent_at": None, "window_killed_at": None}
+
+    def deliver(signum):
+        if signum == signal.SIGTERM:
+            if termed:
+                return
+            termed.append(signum)
+        if child.poll() is None:
+            child.send_signal(signum)
 
     def forward(signum, _frame):
         if child is None:
             pending.append(signum)
-        elif child.poll() is None:
-            child.send_signal(signum)
+        else:
+            deliver(signum)
 
     for signum in (signal.SIGTERM, signal.SIGUSR1):
         signal.signal(signum, forward)
     child = subprocess.Popen(argv)
     for signum in pending:
-        child.send_signal(signum)
-    code = child.wait()
+        deliver(signum)
+    deadlines = [(at, key) for at, key in ((stop_at, "window_stop_sent_at"), (kill_at, "window_killed_at")) if at]
+    while True:
+        due = [at for at, key in deadlines if window[key] is None]
+        timeout = min(max(min(due).timestamp() - time.time(), 0.0), 60.0) if due else None
+        try:
+            code = child.wait(timeout=timeout)
+            break
+        except subprocess.TimeoutExpired:
+            pass
+        now = datetime.now(ZONE)
+        if stop_at and window["window_stop_sent_at"] is None and now >= stop_at:
+            window["window_stop_sent_at"] = stamp(now)
+            already = bool(termed)
+            deliver(signal.SIGTERM)
+            event(now, "window_stop", home, job=job, run=run, pid=child.pid, signal="SIGTERM",
+                  already_forwarded=already, reason=f"wrapper clock reached {stamp(stop_at)}")
+        if kill_at and window["window_killed_at"] is None and now >= kill_at:
+            pids = run_processes(tag)
+            sigkill(pids)
+            window["window_killed_at"] = stamp(now)
+            event(now, "window_kill", home, job=job, run=run, pids=pids, signal="SIGKILL",
+                  reason=f"wrapper clock reached {stamp(kill_at)}")
     write_atomic(exit_file, {"exit_code": code, "ended_at": stamp(datetime.now(ZONE)),
-                             "seconds": time.monotonic() - began})
+                             "seconds": time.monotonic() - began, **window})
     return 0
 
 
@@ -245,11 +327,13 @@ def reconcile(queue, now):
         if status is None and alive:
             continue
         code = None if status is None else status["exit_code"]
-        interrupted = run["stop_sent_at"] is not None or run["killed_at"] is not None
+        window = {k: (status or {}).get(k) for k in ("window_stop_sent_at", "window_killed_at")}
+        interrupted = (run["stop_sent_at"] is not None or run["killed_at"] is not None
+                       or any(v is not None for v in window.values()))
         state = "completed" if code == 0 else "paused" if code == EXIT_PAUSED or interrupted else "failed"
         seconds = status["seconds"] if status else (run["killed_unix"] or now.timestamp()) - run["launched_unix"]
         run.update(ended_at=status["ended_at"] if status else stamp(now), exit_code=code, outcome=state,
-                   seconds=seconds)
+                   seconds=seconds, **window)
         job["state"] = state
         event(now, "ended", job=job["id"], run=run["run"], exit_code=code, state=state, seconds=round(seconds),
               interrupted=interrupted, stray_pids=alive)
@@ -269,18 +353,20 @@ def stop_running(queue, now, reason):
 
 
 def kill_running(queue, now, reason):
+    """SIGKILL every surviving process of every run of every job (finished runs included: a tagged descendant that
+    outlived its wrapper). killed_* is recorded, and the kill logged as reason, only for a running job's last run;
+    processes of a finished run are logged as stray_killed."""
     for job in queue["jobs"]:
-        if job["state"] != "running":
-            continue
-        run = job["runs"][-1]
-        pids = members(run["tag"])
+        pids = members(job["id"] + "#", exact=False)
         if not pids:
             continue
-        for pid in pids:
-            with contextlib.suppress(ProcessLookupError):
-                os.kill(pid, signal.SIGKILL)
-        run["killed_at"], run["killed_unix"] = stamp(now), now.timestamp()
-        event(now, reason, job=job["id"], run=run["run"], pids=pids, stop_sent_at=run["stop_sent_at"])
+        sigkill(pids)
+        if job["state"] == "running":
+            run = job["runs"][-1]
+            run["killed_at"], run["killed_unix"] = stamp(now), now.timestamp()
+            event(now, reason, job=job["id"], run=run["run"], pids=pids, stop_sent_at=run["stop_sent_at"])
+        else:
+            event(now, "stray_killed", job=job["id"], state=job["state"], pids=pids, reason=reason)
 
 
 def log_foreign(queue, now):
@@ -301,9 +387,18 @@ def launch_ready(queue, now):
     for job in queue["jobs"]:
         if launch_blocker(job, queue["jobs"], now) is not None:
             continue
+        # every recorded run of a launchable job has ended: its surviving processes are strays, killed before relaunch
+        strays = sorted({pid for run in job["runs"] for pid in members(run["tag"])})
+        if strays:
+            sigkill(strays)
+            gone = wait_gone(strays, job["id"] + "#")
+            event(now, "stray_killed", job=job["id"], state=job["state"], pids=strays, gone=gone,
+                  reason="processes of a finished run alive before relaunch")
         orphans = members(job["id"] + "#", exact=False)
         if orphans:
-            event(now, "launch_skipped", job=job["id"], reason="processes of an unrecorded run alive", pids=orphans)
+            event(now, "launch_skipped", job=job["id"], pids=orphans,
+                  reason="killed strays still alive" if set(orphans) & set(strays)
+                  else "processes of an unrecorded run alive")
             continue
         launch(job, now)
         save(queue)
@@ -353,7 +448,27 @@ def validate_spec(spec, known):
     return {**job, "state": "queued", "runs": []}
 
 
-def enqueue(path, requeue, now):
+def check_acyclic(jobs):
+    deps = {j["id"]: j["depends_on"] for j in jobs}
+    done, active = set(), []
+
+    def visit(job_id):
+        if job_id in active:
+            raise ValueError("dependency cycle: " + " -> ".join([*active[active.index(job_id):], job_id]))
+        if job_id not in done:
+            active.append(job_id)
+            for dep in deps[job_id]:
+                visit(dep)
+            active.pop()
+            done.add(job_id)
+
+    for job_id in deps:
+        visit(job_id)
+
+
+def enqueue(path, requeue, now, update_deps=False):
+    """Append the new jobs of a spec file (jobs already queued must match it). With update_deps, a queued or paused
+    job whose spec differs only in depends_on takes the spec's dependencies (logged as depends_updated)."""
     with locked(blocking=True):
         queue = load()
         known = {j["id"]: j for j in queue["jobs"]}
@@ -364,16 +479,32 @@ def enqueue(path, requeue, now):
             job["state"] = "queued"
             event(now, "requeued", job=requeue)
         else:
+            added, updates = [], {}
             for spec in json.loads(Path(path).read_text())["jobs"]:
                 job = validate_spec(spec, known)
                 if job["id"] in known:
-                    declared = {k: known[job["id"]][k] for k in (*SPEC_DEFAULTS, "command", "resumable")}
-                    if declared != {k: job[k] for k in declared}:
-                        raise ValueError(f"{job['id']} is already queued with a different spec")
+                    old = known[job["id"]]
+                    differs = [k for k in (*SPEC_DEFAULTS, "command", "resumable") if old[k] != job[k]]
+                    if update_deps and differs == ["depends_on"]:
+                        if old["state"] not in ("queued", "paused"):
+                            raise ValueError(f"{job['id']} is {old['state']}; dependencies change only on queued or "
+                                             "paused jobs")
+                        updates[job["id"]] = job["depends_on"]
+                    elif differs:
+                        raise ValueError(f"{job['id']} is already queued with a different spec ({', '.join(differs)})")
                     continue
-                queue["jobs"].append(job)
+                added.append(job)
                 known[job["id"]] = job
+            jobs = [*queue["jobs"], *added]
+            check_acyclic([{**j, "depends_on": updates.get(j["id"], j["depends_on"])} for j in jobs])
+            for job in jobs:
+                if job["id"] in updates:
+                    event(now, "depends_updated", job=job["id"], state=job["state"], old=job["depends_on"],
+                          new=updates[job["id"]])
+                    job["depends_on"] = updates[job["id"]]
+            for job in added:
                 event(now, "enqueued", job=job["id"], state=job["state"])
+            queue["jobs"] = jobs
         save(queue)
     return 0
 
@@ -463,8 +594,8 @@ def dry_run(now):
     current = phase(now)
     running = [j for j in queue["jobs"] if j["state"] == "running"]
     if current == "day":
-        print(f"tick now: launches nothing (outside the window); would SIGKILL "
-              f"{[j['id'] for j in running if members(j['runs'][-1]['tag'])] or 'nothing'}")
+        print(f"tick now: launches nothing (outside the window); would SIGKILL every process of "
+              f"{[j['id'] for j in queue['jobs'] if members(j['id'] + '#', exact=False)] or 'nothing'}")
     elif current == "stop":
         print(f"tick now: launches nothing; would SIGTERM {[j['id'] for j in running] or 'nothing'}")
     else:
@@ -496,14 +627,19 @@ def main(argv=None):
     p = sub.add_parser("enqueue")
     p.add_argument("spec", nargs="?", help='JSON file {"jobs": [...]}')
     p.add_argument("--requeue", metavar="ID", help="return a failed or paused job to the queue")
+    p.add_argument("--update-deps", action="store_true",
+                   help="queued / paused jobs whose spec differs only in depends_on take the spec's dependencies")
     p = sub.add_parser("stop-now")
     p.add_argument("--kill", action="store_true", help="SIGKILL instead of SIGTERM")
     p = sub.add_parser("_wrap")
+    p.add_argument("--stop-at", type=datetime.fromisoformat, help="SIGTERM the command at this time (with offset)")
+    p.add_argument("--kill-at", type=datetime.fromisoformat, help="SIGKILL every process of the run at this time")
     p.add_argument("exit_file")
     p.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
     if args.mode == "_wrap":
-        return wrap(args.exit_file, args.command[1:] if args.command[:1] == ["--"] else args.command)
+        return wrap(args.exit_file, args.command[1:] if args.command[:1] == ["--"] else args.command,
+                    args.stop_at, args.kill_at)
     now = datetime.fromisoformat(args.now) if args.now else datetime.now(ZONE)
     now = now.replace(tzinfo=ZONE) if now.tzinfo is None else now
     if args.mode == "tick":
@@ -513,9 +649,9 @@ def main(argv=None):
     if args.mode == "dry-run":
         return dry_run(now)
     if args.mode == "enqueue":
-        if bool(args.spec) == bool(args.requeue):
-            parser.error("enqueue takes a spec file or --requeue ID")
-        return enqueue(args.spec, args.requeue, now)
+        if bool(args.spec) == bool(args.requeue) or (args.update_deps and not args.spec):
+            parser.error("enqueue takes a spec file (optionally with --update-deps) or --requeue ID")
+        return enqueue(args.spec, args.requeue, now, args.update_deps)
     return stop_now(now, args.kill)
 
 

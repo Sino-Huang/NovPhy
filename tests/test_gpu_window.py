@@ -2,7 +2,7 @@
 real processes (toy jobs, simulated clock, fake nvidia-smi). CPU only."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import fcntl
 import json
 import os
@@ -38,6 +38,20 @@ def test_fit_check_uses_elapsed_time_across_dst():
     assert gw.next_stop(autumn).timestamp() - autumn.timestamp() == 530 * 60  # wall clock says 470
     assert gw.launch_blocker({**job, "est_minutes": 420}, [], spring) is not None
     assert gw.launch_blocker({**job, "est_minutes": 520}, [], autumn) is None
+
+
+def test_window_ends_are_the_launch_windows_0650_and_0700_across_dst():
+    """The wrapper's own deadlines: the 06:50 / 07:00 that end the launch's window, as absolute instants."""
+    spring_stop, spring_kill = gw.window_ends(at("2026-10-03T23:00"))  # 02:00 -> 03:00 that night
+    assert spring_stop.isoformat() == "2026-10-04T06:50:00+11:00" and spring_kill.isoformat() == "2026-10-04T07:00:00+11:00"
+    assert spring_stop.timestamp() - at("2026-10-03T23:00").timestamp() == 410 * 60
+    autumn_stop, _ = gw.window_ends(at("2027-04-03T23:00"))  # 03:00 -> 02:00 that night
+    assert autumn_stop.isoformat() == "2027-04-04T06:50:00+10:00"
+    assert autumn_stop.timestamp() - at("2027-04-03T23:00").timestamp() == 530 * 60
+    assert [t.isoformat() for t in gw.window_ends(at("2026-10-20T03:00"))] == [
+        "2026-10-20T06:50:00+11:00", "2026-10-20T07:00:00+11:00"]
+    stop, kill = gw.window_ends(at("2026-10-20T06:55"))  # a late launch is stopped at once and killed at 07:00
+    assert stop < at("2026-10-20T06:55") < kill == at("2026-10-20T07:00")
 
 
 def test_launch_rules():
@@ -78,6 +92,20 @@ TOY = textwrap.dedent("""
         child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(600)"])
         marker.write_text(str(child.pid))
         time.sleep(600)
+    if mode == "slowstop":           # counts SIGTERMs; checkpoints 3 s after the first one, exit 75
+        terms = []
+        signal.signal(signal.SIGTERM, lambda s, f: terms.append(time.monotonic()))
+        marker.with_suffix(".started").write_text("x")
+        while not terms or time.monotonic() - terms[0] < 3:
+            time.sleep(0.05)
+        marker.write_text(str(len(terms)))
+        sys.exit(75)
+    if mode == "leaky":              # first run leaves a tagged process (own session) behind, exit 75; then exit 0
+        if marker.exists():
+            sys.exit(0)
+        stray = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(600)"], start_new_session=True)
+        marker.write_text(str(stray.pid))
+        sys.exit(75)
 """)
 
 FAKE_SMI = textwrap.dedent("""\
@@ -101,15 +129,18 @@ def sched(tmp_path, monkeypatch):
     monkeypatch.setattr(gw, "NVIDIA_SMI", str(smi))
     toy = tmp_path / "toy.py"
     toy.write_text(TOY)
+    # the wrapper's own 06:50 / 07:00 deadlines are real instants: keep them out of the simulated-clock tests
+    far = datetime.now(Z) + timedelta(days=2)
+    monkeypatch.setattr(gw, "window_ends", lambda now: (far, far))
 
     def job(job_id, mode, **spec):
         return {"id": job_id, "command": [sys.executable, str(toy), mode, str(tmp_path / f"{job_id}.marker")],
                 "resumable": True, **spec}
 
-    def enqueue(*jobs):
+    def enqueue(*jobs, update_deps=False):
         spec = tmp_path / "spec.json"
         spec.write_text(json.dumps({"jobs": list(jobs)}))
-        gw.enqueue(spec, None, at("2026-10-19T12:00"))
+        gw.enqueue(spec, None, at("2026-10-19T12:00"), update_deps)
 
     yield type("S", (), {"home": home, "apps": apps, "job": staticmethod(job), "enqueue": staticmethod(enqueue),
                          "tmp": tmp_path})
@@ -269,6 +300,108 @@ def test_dry_run_in_daytime_launches_nothing(sched, capsys):
     assert not jobs()["t-a"]["runs"] and not (gw.HOME / "events.jsonl").read_text().count('"launch"')
 
 
+def stray_of(sched, job_id):
+    """Run 1 of a leaky job: wait until its wrapper is gone and only the stray it left carries the run's tag."""
+    run = jobs()[job_id]["runs"][0]
+    wait_for(lambda: os.path.exists(run["exit_file"]) and (sched.tmp / f"{job_id}.marker").exists())
+    stray = int((sched.tmp / f"{job_id}.marker").read_text())
+    wait_for(lambda: gw.members(run["tag"]) == [stray])
+    return stray
+
+
+def test_strays_of_a_finished_run_are_killed_before_relaunch(sched):
+    sched.enqueue(sched.job("t-leaky", "leaky", gpu=0))
+    gw.tick(at("2026-10-19T19:00"))
+    stray = stray_of(sched, "t-leaky")
+    gw.tick(at("2026-10-19T19:05"))  # run 1 ends (exit 75, paused) with its stray alive; killed, then relaunched
+    assert events("ended")[0]["stray_pids"] == [stray]
+    killed = events("stray_killed")
+    assert len(killed) == 1 and killed[0]["job"] == "t-leaky" and killed[0]["pids"] == [stray] and killed[0]["gone"]
+    assert stray not in gw.members("t-leaky#", exact=False) and not events("launch_skipped")
+    job = jobs()["t-leaky"]
+    assert len(job["runs"]) == 2 and job["runs"][0]["outcome"] == "paused"
+    wait_for(lambda: os.path.exists(jobs()["t-leaky"]["runs"][1]["exit_file"]))
+    gw.tick(at("2026-10-19T19:10"))
+    assert jobs()["t-leaky"]["state"] == "completed"
+
+
+def test_day_tick_kills_strays_of_finished_runs(sched):
+    sched.enqueue(sched.job("t-leaky", "leaky", gpu=0))
+    gw.tick(at("2026-10-19T23:00"))
+    stray = stray_of(sched, "t-leaky")
+    gw.tick(at("2026-10-20T06:55"))
+    assert jobs()["t-leaky"]["state"] == "paused"
+    gw.tick(at("2026-10-20T07:00"))
+    killed = events("stray_killed")
+    assert [(e["job"], e["state"], e["pids"], e["reason"]) for e in killed] == [
+        ("t-leaky", "paused", [stray], "overrun_killed")]
+    wait_for(lambda: not gw.members("t-leaky#", exact=False))
+    job = jobs()["t-leaky"]
+    assert not events("overrun_killed") and job["state"] == "paused" and len(job["runs"]) == 1
+    assert job["runs"][0]["killed_at"] is None and job["runs"][0]["exit_code"] == 75  # killed_* only for running jobs
+
+
+def test_wrapper_enforces_the_window_without_ticks(sched, monkeypatch):
+    """Cron-independent safety: no tick runs between the launch and the end of both runs. The wrapper SIGTERMs its
+    command at the launch window's 06:50 and SIGKILLs every process of the run at 07:00, by its own clock, and logs
+    both; a scheduler SIGTERM after its own is not forwarded a second time."""
+    start = datetime.now(Z)
+    stop_at, kill_at = start + timedelta(seconds=6), start + timedelta(seconds=12)
+    monkeypatch.setattr(gw, "window_ends", lambda now: (stop_at, kill_at))
+    sched.enqueue(sched.job("t-slow", "slowstop", gpu=0), sched.job("t-stubborn", "stubborn", gpu=1))
+    gw.tick(at("2026-10-19T19:00"))
+    runs = {job_id: job["runs"][0] for job_id, job in jobs().items()}
+    assert runs["t-slow"]["window_stop_at"] == gw.stamp(stop_at) and runs["t-slow"]["window_kill_at"] == gw.stamp(kill_at)
+    marker = sched.tmp / "t-stubborn.marker"
+    wait_for(lambda: marker.exists() and marker.read_text(), 60)
+    grandchild = int(marker.read_text())
+    wait_for(lambda: len(events("window_stop")) == 2, 60)
+    assert datetime.now(Z) >= stop_at
+    os.kill(runs["t-slow"]["pid"], signal.SIGTERM)  # a late scheduler stop: deduplicated by the wrapper
+    wait_for(lambda: os.path.exists(runs["t-slow"]["exit_file"]), 60)
+    assert (sched.tmp / "t-slow.marker").read_text() == "1"
+    wait_for(lambda: os.path.exists(runs["t-stubborn"]["exit_file"]), 60)
+    assert datetime.now(Z) >= kill_at
+    kills = events("window_kill")
+    assert [(e["job"], e["run"], e["signal"]) for e in kills] == [("t-stubborn", 1, "SIGKILL")]
+    assert grandchild in kills[0]["pids"] and runs["t-stubborn"]["pid"] not in kills[0]["pids"]
+    wait_for(lambda: not gw.members(runs["t-stubborn"]["tag"]))
+    assert '"window_kill"' in open(runs["t-stubborn"]["log"]).read()  # logged in the job log too
+    assert '"window_stop"' in open(runs["t-slow"]["log"]).read()
+    gw.tick(at("2026-10-20T06:55"))  # reconcile only (stop phase; nothing running is left to stop)
+    state = jobs()
+    slow, stubborn = state["t-slow"]["runs"][0], state["t-stubborn"]["runs"][0]
+    assert state["t-slow"]["state"] == "paused" and slow["exit_code"] == 75 and slow["window_killed_at"] is None
+    assert state["t-stubborn"]["state"] == "paused" and stubborn["exit_code"] == -signal.SIGKILL
+    assert stubborn["stop_sent_at"] is None and stubborn["killed_at"] is None  # paused by the wrapper's stop alone
+    assert stubborn["window_stop_sent_at"] and stubborn["window_killed_at"]
+
+
+def test_update_deps_changes_dependencies_under_the_lock(sched):
+    sched.enqueue(sched.job("t-a", "resumable", gpu=0), sched.job("t-b", "fail", gpu=1, depends_on=["t-a"]))
+    new = [sched.job("t-a", "resumable", gpu=0), sched.job("t-c", "fail", gpu=2),
+           sched.job("t-b", "fail", gpu=1, depends_on=["t-a", "t-c"])]
+    with pytest.raises(ValueError, match=r"different spec \(depends_on\)"):
+        sched.enqueue(*new)
+    spec = sched.tmp / "update.json"
+    spec.write_text(json.dumps({"jobs": new}))
+    assert gw.main(["--now", "2026-10-19T12:00", "enqueue", str(spec), "--update-deps"]) == 0
+    assert list(jobs()) == ["t-a", "t-b", "t-c"] and jobs()["t-b"]["depends_on"] == ["t-a", "t-c"]
+    update = events("depends_updated")
+    assert [(e["job"], e["old"], e["new"]) for e in update] == [("t-b", ["t-a"], ["t-a", "t-c"])]
+    sched.enqueue(*new)  # the queue now matches the spec: a no-op
+    assert gw.launch_blocker(jobs()["t-b"], list(jobs().values()), at("2026-10-19T19:00")) == "waits for t-a, t-c"
+    with pytest.raises(ValueError, match="dependency cycle: t-a -> t-b -> t-a"):
+        sched.enqueue(sched.job("t-a", "resumable", gpu=0, depends_on=["t-b"]), update_deps=True)
+    with pytest.raises(ValueError, match=r"different spec \(gpu, depends_on\)"):
+        sched.enqueue(sched.job("t-b", "fail", gpu=3, depends_on=["t-a"]), update_deps=True)
+    assert jobs()["t-a"]["depends_on"] == [] and jobs()["t-b"]["depends_on"] == ["t-a", "t-c"]
+    gw.tick(at("2026-10-19T19:00"))  # t-a runs: its dependencies are no longer changed
+    with pytest.raises(ValueError, match="dependencies change only on queued or paused jobs"):
+        sched.enqueue(sched.job("t-a", "resumable", gpu=0, depends_on=["t-c"]), update_deps=True)
+    assert len(events("depends_updated")) == 1
+
+
 def test_issue_123_spec_is_valid():
     spec = json.loads((gw.ROOT / "scripts/gpu_window_issue_123.json").read_text())["jobs"]
     known = {}
@@ -276,3 +409,6 @@ def test_issue_123_spec_is_valid():
         known[entry["id"]] = gw.validate_spec(entry, known)
     assert [j for j in known if j.startswith("123-train")] == [f"123-train-q{g}" for g in range(4)]
     assert known["123-validate"]["depends_on"] == ["123-publish"]
+    # #125's trigger (fit split only) must finish before #123's first evaluation read
+    assert known["123-score"]["depends_on"] == ["123-freeze-readouts", "125-trigger"]
+    assert known["125-trigger"]["depends_on"] == [f"123-train-q{g}" for g in range(4)]
