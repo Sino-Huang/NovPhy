@@ -172,3 +172,11 @@ model through the real launcher, and the real `main_hjepa.py` at tiny scale, on 
 - If the resume file is from a finished run, Lightning skips its train-end hooks. The launcher then calls the
   skipped hooks once (`fit_loop.on_run_end`): the final object dump, then the planning eval, which resumes from
   its chunks.
+
+## Incident 2026-10-21: open-file limit under cron
+
+cron starts jobs with a soft `RLIMIT_NOFILE` of 1024. Interactive shells on this host run at the hard limit, 1,048,576.
+
+The first `123-score` run (06:25 AEDT) crashed after 26 s in `build_eval_cache`. PyTorch passes tensors returned by pool workers as file descriptors, the 1024 limit ran out, and the pool broke: `RuntimeError: received 0 items of ancdata`, then `BrokenProcessPool`. No score was computed, and the cache file (written atomically) was never created.
+
+Fix: `gpu_window_cron.sh` now raises the soft limit to the hard limit (`ulimit -Sn "$(ulimit -Hn)"`) before each tick, so every scheduled job inherits it. No runner code changed. The job was requeued for the next window with `enqueue --requeue 123-score`.

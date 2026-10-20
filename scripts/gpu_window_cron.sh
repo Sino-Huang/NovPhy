@@ -6,6 +6,10 @@
 set -eo pipefail  # no -u: conda's activate scripts read unset variables
 cd "$(dirname "$0")/.."
 export TZ=Australia/Melbourne
+# cron starts with a 1024 open-file soft limit; interactive shells here run at the hard limit (1048576).
+# PyTorch shares tensors returned by worker processes as file descriptors, so a 1024 limit breaks process pools.
+# The first #123 --score attempt (2026-10-21 06:25) died that way in build_eval_cache before any score.
+ulimit -Sn "$(ulimit -Hn)"
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate novphy
 source env.sh
