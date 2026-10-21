@@ -10,12 +10,12 @@ submission.
 | Runner | `scripts/run_hjepa_comparison.py` (data / G-port / selection / smoke / freeze / train / readouts / score / publish / validate) |
 | Modules | `world_model/hjepa/novphy.py` (NovPhy adapter); `world_model/hjepa/vendor/` (official code vendored at `97054ec`, per-file upstream and vendored sha256 in `VENDOR.json`; only the top-level imports are made package-relative) |
 | Fidelity | `scripts/run_hjepa_fidelity.py` (Tier E / Tier T queues, `--table`), `scripts/hjepa_train_ckpt.py` (Tier-T launcher), `scripts/hjepa_port_reference.py` (G-port reference) |
-| Tests | `tests/test_issue_123_hjepa_comparison.py` (18 tests), `tests/test_issue_123_training_resume.py` (3), `tests/test_gpu_window.py` (scheduler) |
-| Artifacts | `.local-artifacts/issue-123-hjepa-comparison-v1/`: `plan.json`, `smoke.json`, `decisions.md`, `findings.md` (every table), `summary.json`, `compute.json`, `records-manifest.json`, `validation.json`, `readouts-manifest.json`, `fidelity/gfid.{json,md}`, `fidelity/ledger.jsonl`, `gport/gport.json`, `gport/a2/gport.json`, `ledger/`, `logs/` (including copies of the scheduler's #123 run logs, `logs/scheduler-123-{score,publish,validate}.log`, and events, `logs/scheduler-123-events.jsonl`). Checkpoints, pixel stores, carriers, the evaluation cache, the 51 records, `fidelity/logs/` and the fidelity failure archives (`fidelity/infrastructure-failures/`, `fidelity/setup-failures/`) stay local; records and readouts are hashed in `records-manifest.json` and `readouts-manifest.json` |
-| Freeze | `plan.json` frozen 2026-10-18T12:24:06Z, commit `b06e7397`, after a passed smoke and before any main-arm training or evaluation-split read. Post-freeze amendments A1 (`73298595`) and A2 (`c9b8ad6c`), registered in `scripts/post_freeze_amendments.py` |
+| Tests | `tests/test_issue_123_hjepa_comparison.py` (18 tests), `tests/test_issue_123_training_resume.py` (3), `tests/test_issue_123_compute_ledger.py` (4, A3), `tests/test_gpu_window.py` (scheduler) |
+| Artifacts | `.local-artifacts/issue-123-hjepa-comparison-v1/`: `plan.json`, `smoke.json`, `decisions.md`, `findings.md` (every table), `summary.json`, `compute.json`, `records-manifest.json`, `validation.json`, `readouts-manifest.json`, `fidelity/gfid.{json,md}`, `fidelity/ledger.jsonl`, `gport/gport.json`, `gport/a2/gport.json`, `ledger/`, `logs/` (including copies of the scheduler's #123 run logs, `logs/scheduler-123-{score,publish,validate,publish-a3,validate-a3}.log`, and events, `logs/scheduler-123-events.jsonl`). Checkpoints, pixel stores, carriers, the evaluation cache, the 51 records, `fidelity/logs/` and the fidelity failure archives (`fidelity/infrastructure-failures/`, `fidelity/setup-failures/`) stay local; records and readouts are hashed in `records-manifest.json` and `readouts-manifest.json` |
+| Freeze | `plan.json` frozen 2026-10-18T12:24:06Z, commit `b06e7397`, after a passed smoke and before any main-arm training or evaluation-split read. Post-freeze amendments A1 (`73298595`), A2 (`c9b8ad6c`) and A3 (`aa8e702f`, compute accounting only, after publication), registered in `scripts/post_freeze_amendments.py` |
 | Readout freeze | `readouts-manifest.json` frozen 2026-10-20T19:20:16Z (06:20 AEDT, 21 Oct; sha256 `853c114e…`), before any evaluation anchor was encoded |
 | Scoring | once, in a fresh process: scheduler run `123-score#2`, 2026-10-21 18:00:08–18:10:04 AEDT, exit 0 (33 arm-seeds) |
-| Validation | `python -u -m scripts.run_hjepa_comparison --validate`, scheduler run `123-validate#1`, 2026-10-21 18:15:06 AEDT, **exit 0**: 51 records hash-checked, every table re-derived and byte-compared, HJ-car-m seed 20260908 re-scored on 311 grid cells, max delta 0.0 (tie-free, pig presence, pig displacement). `validation.json` binds `records-manifest.json` sha256 `e67af31c…f2f988` |
+| Validation | `python -u -m scripts.run_hjepa_comparison --validate`, scheduler run `123-validate#1`, 2026-10-21 18:15:06 AEDT, **exit 0**: 51 records hash-checked, every table re-derived and byte-compared, HJ-car-m seed 20260908 re-scored on 311 grid cells, max delta 0.0 (tie-free, pig presence, pig displacement). `validation.json` binds `records-manifest.json` sha256 `e67af31c…f2f988`. After A3: re-published by `123-publish-a3#1` (18:50:05, exit 0) and re-validated by `123-validate-a3#1` (18:55:07–19:04:04 AEDT, GPU 0, **exit 0**, the same checks, max delta 0.0); only the compute sections of `compute.json` / `findings.md` and `validation.json`'s `validated_at` changed |
 
 Engine time is zero seconds: no conditional arm ran. The primary metric is the Gate-B pooled grid AUC over the 311 mixed
 grid cells × 3 seeds of the #104 sealed #109 evaluation split, tie-free cost, under `deterministic_scoring()`. Intervals
@@ -426,23 +426,36 @@ Frozen disposition 3 applies: **per-contrast tokens only; outcome branch: no sco
    #123's first evaluation read (06:25); `123-score` depended on it (`f7809a21`). #125's `plan.json` was frozen at
    2026-10-21T07:26:34Z, after #123's scoring but before the #125 implementer read any #123 result (disclosed in
    `c9d0b64c`).
-8. **Compute ledger double count** (found at publication; see Compute). The published `compute.json` / `findings.md`
-   total counts four training arm-seeds twice. The publication files are left as validated; the corrected figure is below.
+8. **Compute ledger double count; amendment A3** (found at publication; see Compute). The first publication
+   (`c5883f55`) printed 310.3 GPU-h because the ledger counted four training arm-seeds twice. A3 (`aa8e702f`, compute
+   accounting only; registered, `run_hjepa_comparison.py` `045530a9…` → `86e8ee9e…`) fixes `train()` (an arm-seed is
+   marked only if its `model.pt` did not exist before the call) and makes `ledger_totals` count each arm-seed's
+   training once. The publication was re-derived and re-validated through the scheduler (exit 0). Records, tokens,
+   contrasts, guards, dispositions and `summary.json` are byte-identical to `c5883f55`.
 
 ## Compute
 
 Caps count active compute time (GPU seconds = each process's wall time on its GPU; daytime pauses do not count). Cap:
 260 GPU-h and 72 h wall on 4 × RTX 5090.
 
-**As published** (`compute.json`): #123 788 488 GPU-s (219.0 GPU-h) + fidelity 328 671 GPU-s (91.3 GPU-h: Tier E 20.8,
-Tier T 70.5) = **310.3 GPU-h**, which reads as over the cap.
+**First publication** (`c5883f55`): #123 788 488 GPU-s (219.0 GPU-h) + fidelity 328 671 GPU-s (91.3 GPU-h) =
+**310.3 GPU-h**, which read as over the cap.
 
-**Correction.** The training queue's ledger (`mark()` in `run_hjepa_comparison.py::train`) adds the arm-seed's
-`report.json` seconds every time the queue reaches that arm-seed. `train_run` returns the existing report when
+**The double count.** The training queue's ledger (`mark()` in `run_hjepa_comparison.py::train`) added the arm-seed's
+`report.json` seconds every time the queue reached that arm-seed. `train_run` returns the existing report when
 `model.pt` exists, so an arm-seed that finished in one night and was passed over when its queue relaunched the next
 night was counted twice. This hit exactly four arm-seeds, whose ledger is 2.000 × their `report.json`: HJ-px 20260908
 (61 231 s), HJ-px 20260909 (78 610 s), HJ-px 20260910 (77 610 s) and HWM-px 20260908 (68 147 s). The other 29 training
 ledgers equal their reports. The overcount is 285 598 GPU-s (79.3 GPU-h).
+
+**Rule (A3, `ledger_totals`).** Each arm-seed's main training counts once: a `train-<arm>-seed<s>` phase counts its
+`models/<arm>/seed-<s>/report.json` seconds, the elapsed time `train_run` carries across resumes, which is exactly what
+one completion marks. An entry whose ledger seconds differ keeps them in `compute.json` as `ledger_gpu_seconds` /
+`ledger_wall_seconds`, not counted; `ledger_overcount_gpu_seconds` lists the four. Every other phase counts its ledger
+seconds. The training total, 480 557 GPU-s, equals the sum of the 33 `report.json` files.
+
+**As re-published under A3** (`compute.json`, `findings.md`): #123 502 890 GPU-s (139.7 GPU-h) + fidelity 328 671 GPU-s
+= **231.0 GPU-h** recorded.
 
 | item | GPU-h |
 | --- | --- |
@@ -451,14 +464,15 @@ ledgers equal their reports. The overcount is 285 598 GPU-s (79.3 GPU-h).
 | readouts (33 arm-seeds) | 1.2 |
 | CLEVRER / Physion benchmarks | 1.4 |
 | smoke, scoring (incl. S10), position cache | 0.1 |
-| **#123 recorded, corrected** | **139.7** |
+| **#123 recorded** | **139.7** |
 | fidelity Tier E / Tier T (ledger) | 20.8 / 70.5 |
-| **recorded total, corrected** | **231.0** |
+| **recorded total** (`compute.json` `total_gpu_hours`) | **231.0** |
 | unrecorded: H-JEPA-3 segments killed at 10:38 (≈ 2.9), training steps recomputed after 10:38 (≈ 0.5), first training launch, first smoke, first `--score` (≈ 0.2) | ≈ 3.6 |
-| **active compute total** | **≈ 234.6 (cap 260)** |
+| unrecorded: scheduler `--publish` / `--validate` runs, which write no ledger line (first pair 714 s, A3 pair 785 s) | ≈ 0.4 |
+| **active compute total** | **≈ 235.0 (cap 260)** |
 
 Active wall time with any #123 GPU process running was about 42 h over four windows (10-18 18:37 → 10-19 10:38; 10-19
-18:00 → 10-20 06:50; 10-20 18:00 → 10-21 06:26; 10-21 18:00 → 18:23), against the 72 h cap. HJ-px trained at 0.48–0.61
+18:00 → 10-20 06:50; 10-20 18:00 → 10-21 06:26; 10-21 18:00 → 18:23, plus the A3 runs 18:50 → 19:04), against the 72 h cap. HJ-px trained at 0.48–0.61
 s/step (17.0–21.8 GPU-h per seed) against the smoke's 0.442 s/step (15.7 GPU-h projected), because the GPUs were shared
 with Tier T. Engine seconds: 0. No scope was cut.
 

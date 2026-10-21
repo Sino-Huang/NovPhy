@@ -140,7 +140,7 @@
     },
     "fidelity_gpu_seconds": 328671.26495647733,
     "hardware": "4 x RTX 5090 (32 GB)",
-    "issue_123_gpu_seconds": 788487.8638463595,
+    "issue_123_gpu_seconds": 502890.43298303033,
     "issue_123_phases": {
       "bench-train-clevrer-HJ-bench-seed20260908": {
         "gpu_seconds": 499.4137209521141,
@@ -674,19 +674,25 @@
         "wall_seconds": 1881.675145023968
       },
       "train-HJ-px-seed20260908": {
-        "gpu_seconds": 122462.39450438414,
+        "gpu_seconds": 61231.19725219207,
         "last_at": "2026-10-20T07:00:20Z",
-        "wall_seconds": 122462.39450438414
+        "ledger_gpu_seconds": 122462.39450438414,
+        "ledger_wall_seconds": 122462.39450438414,
+        "wall_seconds": 61231.19725219207
       },
       "train-HJ-px-seed20260909": {
-        "gpu_seconds": 157219.20114820823,
+        "gpu_seconds": 78609.60057410412,
         "last_at": "2026-10-20T07:00:20Z",
-        "wall_seconds": 157219.20114820823
+        "ledger_gpu_seconds": 157219.20114820823,
+        "ledger_wall_seconds": 157219.20114820823,
+        "wall_seconds": 78609.60057410412
       },
       "train-HJ-px-seed20260910": {
-        "gpu_seconds": 155219.13017687993,
+        "gpu_seconds": 77609.56508843997,
         "last_at": "2026-10-20T07:00:20Z",
-        "wall_seconds": 155219.13017687993
+        "ledger_gpu_seconds": 155219.13017687993,
+        "ledger_wall_seconds": 155219.13017687993,
+        "wall_seconds": 77609.56508843997
       },
       "train-HWM-car-m-seed20260908": {
         "gpu_seconds": 164.19738086406142,
@@ -704,9 +710,11 @@
         "wall_seconds": 189.18045365600847
       },
       "train-HWM-px-seed20260908": {
-        "gpu_seconds": 136294.13589718612,
+        "gpu_seconds": 68147.06794859306,
         "last_at": "2026-10-20T07:00:20Z",
-        "wall_seconds": 136294.13589718612
+        "ledger_gpu_seconds": 136294.13589718612,
+        "ledger_wall_seconds": 136294.13589718612,
+        "wall_seconds": 68147.06794859306
       },
       "train-HWM-px-seed20260909": {
         "gpu_seconds": 49422.699072008254,
@@ -749,8 +757,16 @@
         "wall_seconds": 23111.16580570396
       }
     },
-    "issue_123_wall_seconds": 788691.8456684218,
-    "total_gpu_hours": 310.32198022301026
+    "issue_123_wall_seconds": 503094.4148050926,
+    "ledger_overcount_gpu_seconds": {
+      "train-HJ-px-seed20260908": 61231.19725219207,
+      "train-HJ-px-seed20260909": 78609.60057410412,
+      "train-HJ-px-seed20260910": 77609.56508843997,
+      "train-HWM-px-seed20260908": 68147.06794859306
+    },
+    "total_gpu_hours": 230.98936053875212,
+    "training_gpu_seconds": 480556.67381396075,
+    "training_rule": "A3: each arm-seed's training counts once, its report.json seconds; ledger seconds a relaunch re-added over a finished model.pt are not counted"
   },
   "disposition": {
     "branch": "no scoped ranking claim",

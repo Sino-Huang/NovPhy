@@ -1,0 +1,14 @@
+{
+  "jobs": [
+    {"id": "123-publish-a3", "gpu": 0, "resumable": false, "est_minutes": 30, "shares_gpu": true,
+     "depends_on": ["123-validate"],
+     "command": ["python", "-u", "-m", "scripts.run_hjepa_comparison", "--publish"],
+     "env": {"CUDA_VISIBLE_DEVICES": "0"},
+     "note": "#123 A3 re-publication (compute accounting only); shares GPU 0 with 125-train-q0"},
+    {"id": "123-validate-a3", "gpu": 0, "resumable": false, "est_minutes": 60, "shares_gpu": true,
+     "depends_on": ["123-publish-a3"],
+     "command": ["python", "-u", "-m", "scripts.run_hjepa_comparison", "--validate"],
+     "env": {"CUDA_VISIBLE_DEVICES": "0"},
+     "note": "must exit 0; re-scores one record on GPU 0; then the A3 publication commit and comment (manual, CPU)"}
+  ]
+}

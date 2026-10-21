@@ -253,4 +253,5 @@ S10 wrong-anchor control (right - wrong, 480 fit anchors):
 
 ## Compute
 
-- issue-123 GPU seconds 788488; fidelity 328671; total 310.3 GPU-h (cap 260); engine seconds 0.
+- issue-123 GPU seconds 502890; fidelity 328671; total 231.0 GPU-h (cap 260); engine seconds 0.
+- Training 133.5 GPU-h, each arm-seed counted once (its report.json seconds; post-freeze amendment A3). Not counted: ledger seconds that relaunched queues re-added over a finished model.pt (train-HJ-px-seed20260908 17.0, train-HJ-px-seed20260909 21.8, train-HJ-px-seed20260910 21.6, train-HWM-px-seed20260908 18.9 GPU-h).

@@ -173,3 +173,53 @@ No evaluation feature (anchor, frame, carrier) or label (verdict, engine label) 
   - `tests/test_issue_104_heldout_contrasts.py`: 7 passed.
 - `load_plan` accepts the amended files.
 - `python scripts/gpu_window.py dry-run` is unchanged: at 18:00 it launches the four training queues and the three Tier-T jobs, and every job ends by 22 October at 05:00.
+
+## Post-freeze amendment A3: compute accounting (2026-10-21, after publication `c5883f55`)
+The first publication printed 310.3 GPU-h. Its `train()` ledger had counted four arm-seeds twice: HJ-px 20260908 / 09 / 10 and HWM-px 20260908, each exactly 2 × its `report.json`, +285 598 GPU-s (79.3 GPU-h). A relaunched training queue re-visits finished arm-seeds, `train_run` returns their stored report, and `train()` marked it again. A3 is registered in `scripts/post_freeze_amendments.py`; the chain of `scripts/run_hjepa_comparison.py` is `db7f87ae…` (frozen) → `b3390059…` (A1) → `045530a9…` (A2) → `86e8ee9e…` (A3), commit `aa8e702f`.
+
+- **`train()`.** An arm-seed's training seconds are marked only if its `model.pt` did not exist before the call.
+- **`ledger_totals` (rule).** Each arm-seed's main training counts once. A `train-<arm>-seed<s>` phase whose `models/<arm>/seed-<s>/report.json` exists counts that report's seconds. That is the elapsed time `train_run` carries across resumes, exactly what one completion marks. A ledger entry that differs keeps its raw seconds as `ledger_gpu_seconds` / `ledger_wall_seconds` and is not counted. Every other phase counts its ledger seconds. The ledger files themselves are left as written.
+- **Publication.** `compute.json` adds `training_gpu_seconds`, `training_rule` and `ledger_overcount_gpu_seconds`, and `findings.md` gets one training line under Compute.
+- **#125.** #125 aggregates through the same `ledger_totals`. Its plan pins the A2 bytes `045530a9…`, which are in A3's `replaces`.
+- **Unchanged.** Training math, resume, RNG, data, readouts, scoring, records, tokens, contrasts, guards and dispositions.
+
+**Re-publication and re-validation.** Both ran through the night-window scheduler on GPU 0, sharing it with `125-train-q0` (`scripts/gpu_window_issue_123_a3.json`):
+- `123-publish-a3#1` ran 18:50:05–18:54:14 AEDT and exited 0.
+- `123-validate-a3#1` ran 18:55:07–19:04:04 AEDT and **exited 0**:
+  - 51 records hash-checked;
+  - every table re-derived and byte-compared;
+  - HJ-car-m seed 20260908 re-scored on 311 grid cells, max delta 0.0.
+- Both exit codes come from the scheduler's `ended` events (`logs/scheduler-123-events.jsonl`).
+
+**Diff against `c5883f55`.**
+- **Unchanged.** `summary.json`, `records-manifest.json` and `readouts-manifest.json` are byte-identical. Every `compute.json` key other than `compute` is identical. `findings.md` is identical up to its `## Compute` section.
+- **`compute.json` → `compute`:**
+  - `issue_123_gpu_seconds`: 788 488 → 502 890;
+  - `issue_123_wall_seconds`: 788 692 → 503 094;
+  - `total_gpu_hours`: 310.32 → 230.99;
+  - the four doubled phase entries now count their report seconds;
+  - three keys were added.
+- **`validation.json`.** Only `validated_at` changed.
+
+**Corrected compute.**
+- Training (33 `report.json`): 133.5 GPU-h.
+- #123 recorded: 139.7.
+- Fidelity: 91.3.
+- **Recorded total: 231.0.**
+- Unrecorded:
+  - ≈ 3.6 (H-JEPA-3 segments killed at 10:38, recomputed steps, first launches);
+  - ≈ 0.4 (scheduler `--publish` / `--validate` runs, which write no ledger line).
+- **Active total: ≈ 235.0 GPU-h, against the 260 cap.**
+
+**Tests (CPU, `CUDA_VISIBLE_DEVICES=""`).**
+- `tests/test_issue_123_compute_ledger.py`: 4 passed:
+  - a relaunch over a finished arm-seed adds no ledger seconds;
+  - once-per-arm-seed aggregation on both the #123 and #125 layouts;
+  - the #123 training total equals the `report.json` sum.
+- `tests/test_issue_123_hjepa_comparison.py`: 18 passed.
+- `tests/test_issue_123_training_resume.py` (resume exactness): 3 passed.
+- `tests/test_issue_125_hjepa_idm.py`: 18 passed.
+- `tests/test_issue_125_amendments.py`: 1 passed.
+- `tests/test_issue_101_decision_aware_policy.py` (registry, incl. `test_issue_123_a3_is_accepted_by_both_plans`): 20 passed.
+- `tests/test_issue_104_heldout_contrasts.py`: 7 passed.
+- `tests/test_gpu_window.py`: 22 passed.
