@@ -1,0 +1,152 @@
+{
+  "G_fid": true,
+  "commit": "97054ec",
+  "compute": {
+    "tier-e": {
+      "gpu_seconds": 74737.19993825932,
+      "runs": 9
+    },
+    "tier-t": {
+      "gpu_seconds": 253934.065018218,
+      "runs": 12
+    }
+  },
+  "env_freeze_sha256": "b3da99cfb46eaeaedef82d3c06c47ee26468149854f884fa3352bc172e057908",
+  "environment": "FourRoom Distractors, 50 released tasks",
+  "rules": "- Tier E passes iff every 3-seed mean lies in mean_paper +- 2 max(SE_paper, sqrt(p(1-p)/150)),\n  LeWM < H-JEPA-2 < H-JEPA-3 holds on the means, and H-JEPA-3 - LeWM >= +30 pp on every seed.\n- Tier T passes iff every 3-seed mean lies in mean_paper +- 2 sqrt(SE_paper^2 + SE_ours^2), and\n  H-JEPA-3 - LeWM paired by seed has mean >= +30 pp with every seed positive.\n- G-fid passes iff Tier E and Tier T both pass.",
+  "schema": "issue_123_gfid_v1",
+  "tiers": {
+    "tier-e": {
+      "complete": true,
+      "gain_every_seed_ge_30": true,
+      "hjepa3_minus_lewm": {
+        "mean": 56.0,
+        "per_seed": {
+          "42": 60.0,
+          "43": 42.0,
+          "44": 66.0
+        }
+      },
+      "models": {
+        "hjepa_l2": {
+          "band": [
+            67.89999999999999,
+            94.7
+          ],
+          "in_band": true,
+          "mean": 83.33333333333333,
+          "paper_mean": 81.3,
+          "paper_se": 6.7,
+          "per_seed": {
+            "42": 86.0,
+            "43": 72.0,
+            "44": 92.0
+          },
+          "se": 5.92546294487706
+        },
+        "hjepa_l3": {
+          "band": [
+            92.8,
+            99.2
+          ],
+          "in_band": true,
+          "mean": 96.0,
+          "paper_mean": 96.0,
+          "paper_se": 1.1,
+          "per_seed": {
+            "42": 100.0,
+            "43": 92.0,
+            "44": 96.0
+          },
+          "se": 2.3094010767585034
+        },
+        "lewm": {
+          "band": [
+            27.1,
+            54.300000000000004
+          ],
+          "in_band": true,
+          "mean": 40.0,
+          "paper_mean": 40.7,
+          "paper_se": 6.8,
+          "per_seed": {
+            "42": 40.0,
+            "43": 50.0,
+            "44": 30.0
+          },
+          "se": 5.773502691896258
+        }
+      },
+      "ordering": true,
+      "pass": true
+    },
+    "tier-t": {
+      "complete": true,
+      "gain_mean_ge_30_all_positive": true,
+      "hjepa3_minus_lewm": {
+        "mean": 58.666666666666664,
+        "per_seed": {
+          "42": 60.0,
+          "43": 76.0,
+          "44": 40.00000000000001
+        }
+      },
+      "models": {
+        "hjepa_l2": {
+          "band": [
+            65.52364638665406,
+            97.07635361334593
+          ],
+          "in_band": true,
+          "mean": 82.0,
+          "paper_mean": 81.3,
+          "paper_se": 6.7,
+          "per_seed": {
+            "42": 84.0,
+            "43": 88.0,
+            "44": 74.0
+          },
+          "se": 4.163331998932265
+        },
+        "hjepa_l3": {
+          "band": [
+            91.84254351262163,
+            100.15745648737837
+          ],
+          "in_band": true,
+          "mean": 95.33333333333333,
+          "paper_mean": 96.0,
+          "paper_se": 1.1,
+          "per_seed": {
+            "42": 92.0,
+            "43": 96.0,
+            "44": 98.0
+          },
+          "se": 1.763834207376394
+        },
+        "lewm": {
+          "band": [
+            14.468890394969737,
+            66.93110960503027
+          ],
+          "in_band": true,
+          "mean": 36.666666666666664,
+          "paper_mean": 40.7,
+          "paper_se": 6.8,
+          "per_seed": {
+            "42": 32.0,
+            "43": 20.0,
+            "44": 57.99999999999999
+          },
+          "se": 11.215069227507147
+        }
+      },
+      "pass": true
+    }
+  },
+  "train_overrides": [
+    "final_probing_decoding_eval.enabled=false",
+    "num_workers=8",
+    "loader.prefetch_factor=2"
+  ]
+}

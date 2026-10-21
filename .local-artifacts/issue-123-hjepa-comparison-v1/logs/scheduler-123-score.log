@@ -1,0 +1,93 @@
+
+=== gpu-window 123-score#1 launched 2026-10-21T06:25:06+11:00 on GPU 0: python -u -m scripts.run_hjepa_comparison --score ===
+concurrent.futures.process._RemoteTraceback: 
+'''
+Traceback (most recent call last):
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/concurrent/futures/process.py", line 424, in wait_result_broken_or_wakeup
+    result_item = result_reader.recv()
+                  ^^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/multiprocessing/connection.py", line 251, in recv
+    return _ForkingPickler.loads(buf.getbuffer())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/multiprocessing/reductions.py", line 538, in rebuild_storage_fd
+    fd = df.detach()
+         ^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/multiprocessing/resource_sharer.py", line 58, in detach
+    return reduction.recv_handle(conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/multiprocessing/reduction.py", line 189, in recv_handle
+    return recvfds(s, 1)[0]
+           ^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/multiprocessing/reduction.py", line 164, in recvfds
+    raise RuntimeError('received %d items of ancdata' %
+RuntimeError: received 0 items of ancdata
+'''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_hjepa_comparison.py", line 2748, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_hjepa_comparison.py", line 2743, in main
+    return fn(OUTPUT)
+           ^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_hjepa_comparison.py", line 1984, in score
+    build_eval_cache(output, cells)
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_hjepa_comparison.py", line 1808, in build_eval_cache
+    entries = dict(pool.map(_position_entry, keys, chunksize=8))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/concurrent/futures/process.py", line 620, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/concurrent/futures/_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+concurrent.futures.process.BrokenProcessPool: A process in the process pool was terminated abruptly while the future was running or pending.
+
+=== gpu-window 123-score#2 launched 2026-10-21T18:00:08+11:00 on GPU 0: python -u -m scripts.run_hjepa_comparison --score ===
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-123] scored HJ-car-m seed 20260908 (5s)
+[issue-123] scored HJ-car-m seed 20260909 (2s)
+[issue-123] scored HJ-car-m seed 20260910 (2s)
+[issue-123] scored HJ-car-m-fs5 seed 20260908 (2s)
+[issue-123] scored HJ-car-m-fs5 seed 20260909 (2s)
+[issue-123] scored HJ-car-m-fs5 seed 20260910 (2s)
+[issue-123] scored HJ-car-m-persist seed 20260908 (2s)
+[issue-123] scored HJ-car-m-persist seed 20260909 (2s)
+[issue-123] scored HJ-car-m-persist seed 20260910 (2s)
+[issue-123] scored HJ-car-m-uniform seed 20260908 (2s)
+[issue-123] scored HJ-car-m-uniform seed 20260909 (2s)
+[issue-123] scored HJ-car-m-uniform seed 20260910 (2s)
+[issue-123] scored HJ-car-native seed 20260908 (4s)
+[issue-123] scored HJ-car-native seed 20260909 (4s)
+[issue-123] scored HJ-car-native seed 20260910 (4s)
+[issue-123] scored HJ-px seed 20260908 (13s)
+[issue-123] scored HJ-px seed 20260909 (11s)
+[issue-123] scored HJ-px seed 20260910 (11s)
+[issue-123] scored HJ-px-B1 seed 20260908 (11s)
+[issue-123] scored HJ-px-B1 seed 20260909 (11s)
+[issue-123] scored HJ-px-B1 seed 20260910 (11s)
+[issue-123] scored HWM-car-m seed 20260908 (2s)
+[issue-123] scored HWM-car-m seed 20260909 (2s)
+[issue-123] scored HWM-car-m seed 20260910 (2s)
+[issue-123] scored HWM-px seed 20260908 (10s)
+[issue-123] scored HWM-px seed 20260909 (10s)
+[issue-123] scored HWM-px seed 20260910 (11s)
+[issue-123] scored LeWM-car-m seed 20260908 (5s)
+[issue-123] scored LeWM-car-m seed 20260909 (5s)
+[issue-123] scored LeWM-car-m seed 20260910 (5s)
+[issue-123] scored LeWM-px seed 20260908 (14s)
+[issue-123] scored LeWM-px seed 20260909 (15s)
+[issue-123] scored LeWM-px seed 20260910 (15s)
+[issue-123] scoring complete (425s)

@@ -1,0 +1,5 @@
+
+=== gpu-window 123-validate#1 launched 2026-10-21T18:15:06+11:00 on GPU 0: python -u -m scripts.run_hjepa_comparison --validate ===
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-123] validation passed (476s): 51 records hash-checked, every table re-derived and byte-compared, HJ-car-m seed 20260908 re-scored on 311 grid cells (max delta {'pig_presence': 0.0, 'pig_displacement': 0.0, 'tie_free': 0.0}); validation.json binds records-manifest.json and the publication is re-derived with G-records passing: disposition 3
