@@ -44,6 +44,7 @@ import gzip
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import time
 
@@ -1351,8 +1352,26 @@ def mark(output, phase, wall, gpu, **extra):
                       "last_at": utc_now(), **extra})
 
 
+TRAIN_PHASE = re.compile(r"train-(?P<arm>.+)-seed(?P<seed>\d+)")  # main training ledger phases (train())
+
+
 def ledger_totals(output):
-    entries = {p.stem: read_json(p) for p in sorted(ledger_dir(output).glob("*.json"))} if ledger_dir(output).is_dir() else {}
+    """Ledger phases with their GPU / wall seconds, and the two totals. Each arm-seed's main training counts once
+    (A3): a train-<arm>-seed<seed> phase whose run_dir(...)/report.json exists counts that report's seconds, the
+    elapsed time train_run carries across resumes and exactly what one completion marks. Before A3 a relaunched
+    queue re-added a finished arm-seed's report, so its ledger entry could be a multiple of it; such an entry keeps
+    its raw ledger seconds as ledger_gpu_seconds / ledger_wall_seconds. Every other phase counts its ledger seconds."""
+    entries = {}
+    for path in sorted(ledger_dir(output).glob("*.json")) if ledger_dir(output).is_dir() else ():
+        entry = read_json(path)
+        match = TRAIN_PHASE.fullmatch(path.stem)
+        report = run_dir(output, match["arm"], int(match["seed"])) / "report.json" if match else None
+        if report is not None and report.is_file():
+            once = read_json(report)
+            if (once["gpu_seconds"], once["wall_seconds"]) != (entry["gpu_seconds"], entry["wall_seconds"]):
+                entry = {**entry, "gpu_seconds": once["gpu_seconds"], "wall_seconds": once["wall_seconds"],
+                         "ledger_gpu_seconds": entry["gpu_seconds"], "ledger_wall_seconds": entry["wall_seconds"]}
+        entries[path.stem] = entry
     return entries, sum(e["gpu_seconds"] for e in entries.values()), sum(e["wall_seconds"] for e in entries.values())
 
 
@@ -1694,13 +1713,14 @@ def train(output, gpu):
             return EXIT_PAUSED
         arm, seed = name.split("/")
         spec = plan["arms"][arm]
+        run = run_dir(output, arm, int(seed))
+        finished_before = (run / "model.pt").is_file()  # A3: a relaunch must not add a finished run's seconds again
         try:
-            report = train_run(output, arm, int(seed), spec["lambda"], spec["steps"], spec["batch"],
-                               run_dir(output, arm, int(seed)))
+            report = train_run(output, arm, int(seed), spec["lambda"], spec["steps"], spec["batch"], run)
         except TrainingPaused as paused:
             log(f"queue {gpu}: {paused}")
             return EXIT_PAUSED
-        if not report.get("partial"):
+        if not report.get("partial") and not finished_before:
             mark(output, f"train-{arm}-seed{seed}", report["wall_seconds"], report["gpu_seconds"])
     return 0
 
@@ -2421,6 +2441,7 @@ def compute_tables(output, plan):
     positions = position_table(output, plan, records, cells)
     disposition = dispositions(tables["grid"])
     entries, gpu, wall = ledger_totals(output)
+    overcounted = {p: e["ledger_gpu_seconds"] - e["gpu_seconds"] for p, e in entries.items() if "ledger_gpu_seconds" in e}
     fid_ledger = fid.compute_ledger()
     fid_gpu = sum(b["gpu_seconds"] for b in fid_ledger.values())
     return {
@@ -2431,6 +2452,10 @@ def compute_tables(output, plan):
         "records": {"arm_seeds": len(records), "typed_failures": {f"{a}/{s}": r["typed_failure"]
                                                                  for (a, s), r in records.items() if r["typed_failure"]}},
         "compute": {"issue_123_phases": entries, "issue_123_gpu_seconds": gpu, "issue_123_wall_seconds": wall,
+                    "training_gpu_seconds": sum(e["gpu_seconds"] for p, e in entries.items() if TRAIN_PHASE.fullmatch(p)),
+                    "training_rule": ("A3: each arm-seed's training counts once, its report.json seconds; ledger "
+                                      "seconds a relaunch re-added over a finished model.pt are not counted"),
+                    "ledger_overcount_gpu_seconds": overcounted,
                     "fidelity": fid_ledger, "fidelity_gpu_seconds": fid_gpu, "total_gpu_hours": (gpu + fid_gpu) / 3600.0,
                     "engine_seconds": 0, "hardware": "4 x RTX 5090 (32 GB)", "cap_gpu_hours": CAP_GPU_HOURS},
         "primary_cost": harness.PRIMARY_COST,
@@ -2577,7 +2602,12 @@ def findings_md(plan, compute):
               f"{d['conditional_triggers']}.", f"- {d['note_unit_not_best']}.", "",
               "## Compute", "", f"- issue-123 GPU seconds {compute['compute']['issue_123_gpu_seconds']:.0f}; fidelity "
               f"{compute['compute']['fidelity_gpu_seconds']:.0f}; total {compute['compute']['total_gpu_hours']:.1f} GPU-h "
-              f"(cap {CAP_GPU_HOURS:.0f}); engine seconds 0."]
+              f"(cap {CAP_GPU_HOURS:.0f}); engine seconds 0.",
+              f"- Training {compute['compute']['training_gpu_seconds'] / 3600.0:.1f} GPU-h, each arm-seed counted once "
+              "(its report.json seconds; post-freeze amendment A3). Not counted: ledger seconds that relaunched queues "
+              "re-added over a finished model.pt ("
+              + (", ".join(f"{p} {s / 3600.0:.1f}" for p, s in compute["compute"]["ledger_overcount_gpu_seconds"].items())
+                 or "none") + " GPU-h)."]
     return "\n".join(lines) + "\n"
 
 

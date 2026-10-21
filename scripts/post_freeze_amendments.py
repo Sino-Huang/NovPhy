@@ -101,8 +101,9 @@ AMENDMENTS = {
                    "intervals unchanged")},
     "scripts/run_hjepa_comparison.py": {
         "issue": 123, "replaces": ("sha256:db7f87ae101bd3ab3c3c23243b05cd814db06b443029fbd1dfacd8e488426177",
-                                   "sha256:b3390059a7d83c8433c5dc13fc211c25c6522d466cc11baf56f75268dfe4f6f4"),
-        "sha256": "sha256:045530a99823ae3402ee48087db763ed09caa9f0b00543303f822921641f5cab",
+                                   "sha256:b3390059a7d83c8433c5dc13fc211c25c6522d466cc11baf56f75268dfe4f6f4",
+                                   "sha256:045530a99823ae3402ee48087db763ed09caa9f0b00543303f822921641f5cab"),
+        "sha256": "sha256:86e8ee9ecf35776200e16144f07dff8b578a7c197e7a87cae5af6e717eb8378e",
         "change": ("A1 (scheduling only; owner GPU-window rule 2026-10-19, during main training, before any readout "
                    "or any evaluation feature / label read): --train handles SIGTERM / SIGUSR1: the running arm-seed "
                    "writes resume.pt (atomic tmp + os.replace, as the 2000-step checkpoints) after its current "
@@ -119,7 +120,15 @@ AMENDMENTS = {
                    "kept as numbers); G-nonfinite counts the actual R1 and R2 cost values separately and either "
                    "share above 10 % fails the arm (S9 included); G-port also requires gport/a2/gport.json, whose "
                    "check adds a positive-LR step (AdamW state, updated parameters, movement); training, resume, "
-                   "RNG, data, readouts and scoring unchanged")},
+                   "RNG, data, readouts and scoring unchanged. A3 (compute accounting only; after publication "
+                   "c5883f55, which printed 310.3 GPU-h): --train marks an arm-seed's training seconds in the ledger "
+                   "only if its model.pt did not exist before the call (a relaunched queue re-visits finished "
+                   "arm-seeds, whose report.json the earlier code added again: HJ-px x 3 and HWM-px 20260908 were "
+                   "counted twice, +79.3 GPU-h); ledger_totals counts each arm-seed's main training once, as its "
+                   "report.json seconds (raw ledger seconds kept as ledger_gpu_seconds / ledger_wall_seconds); "
+                   "compute.json adds training_gpu_seconds, training_rule and ledger_overcount_gpu_seconds and "
+                   "findings.md a training line; #125 (which pins the A2 bytes 045530a9) aggregates through the same "
+                   "ledger_totals; training math, resume, RNG, data, readouts, scoring, records and tokens unchanged")},
     "scripts/hjepa_train_ckpt.py": {
         "issue": 123, "replaces": ("sha256:ae6c27b830b8bd4bde08d852de8b27db8d5f7ac5384178984bd730baf0e74543",),
         "sha256": "sha256:f07eed6a3f03aea47561ae1a9153697cb7e239c2fe643a49b7c1eabd89e585be",

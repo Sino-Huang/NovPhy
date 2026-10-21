@@ -339,8 +339,9 @@ def test_issue_123_gpu_window_amendments_are_registered():
 
 
 def test_issue_123_prescore_amendments_are_registered():
-    """#123 A2 (pre-scoring fidelity review): the runner's second link (frozen -> A1 -> A2), and the G-port reference
-    and the #123 tests, each replacing exactly the bytes frozen in the #123 plan; load_plan accepts all three."""
+    """#123 A2 (pre-scoring fidelity review) and A3 (compute accounting): the runner's chain (frozen -> A1 -> A2 ->
+    A3), and the G-port reference and the #123 tests, each replacing exactly the bytes frozen in the #123 plan;
+    load_plan accepts all three."""
     import hashlib
     import json
     from scripts import post_freeze_amendments as pfa
@@ -349,7 +350,8 @@ def test_issue_123_prescore_amendments_are_registered():
     runner = "scripts/run_hjepa_comparison.py"
     assert pfa.AMENDMENTS[runner]["issue"] == 123
     assert pfa.AMENDMENTS[runner]["replaces"] == (
-        frozen[runner], "sha256:b3390059a7d83c8433c5dc13fc211c25c6522d466cc11baf56f75268dfe4f6f4")
+        frozen[runner], "sha256:b3390059a7d83c8433c5dc13fc211c25c6522d466cc11baf56f75268dfe4f6f4",
+        "sha256:045530a99823ae3402ee48087db763ed09caa9f0b00543303f822921641f5cab")
     for path in ("scripts/hjepa_port_reference.py", "tests/test_issue_123_hjepa_comparison.py"):
         assert pfa.AMENDMENTS[path]["issue"] == 123
         assert pfa.AMENDMENTS[path]["replaces"] == (frozen[path],)
@@ -373,4 +375,23 @@ def test_issue_125_ledger_amendment_is_registered():
     current = "sha256:" + hashlib.sha256(open(runner, "rb").read()).hexdigest()
     assert pfa.matches(runner, frozen[runner], current)
     assert ri.REGISTRY in frozen
+    assert ri.load_plan(ri.OUTPUT)["identity"] == ri.IDENTITY
+
+
+def test_issue_123_a3_is_accepted_by_both_plans():
+    """#123 A3 (compute accounting): the #123 plan (frozen bytes) and the #125 plan (which pins the A2 bytes
+    045530a9 of the #123 runner) both accept the amended runner."""
+    import hashlib
+    import json
+    from scripts import post_freeze_amendments as pfa
+    from scripts import run_hjepa_comparison as rc
+    from scripts import run_hjepa_idm as ri
+    runner = "scripts/run_hjepa_comparison.py"
+    current = "sha256:" + hashlib.sha256(open(runner, "rb").read()).hexdigest()
+    assert pfa.AMENDMENTS[runner]["sha256"] == current
+    for path in (".local-artifacts/issue-123-hjepa-comparison-v1/plan.json",
+                 ".local-artifacts/issue-125-hjepa-idm-v1/plan.json"):
+        frozen = {entry["artifact"]: entry["sha256"] for entry in json.load(open(path))["inputs"]}
+        assert pfa.matches(runner, frozen[runner], current), path
+    assert rc.load_plan(rc.OUTPUT)["identity"] == rc.IDENTITY
     assert ri.load_plan(ri.OUTPUT)["identity"] == ri.IDENTITY
