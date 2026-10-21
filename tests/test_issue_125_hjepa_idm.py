@@ -452,7 +452,11 @@ def test_scheduler_jobs_wait_for_123_training_and_avoid_its_gpu():
         gw.validate_spec(job, known)
         known[job["id"]] = job
     by_id = {j["id"]: j for j in spec}
-    assert set(by_id) == {"125-select-q0", "125-select-q1", "125-select-q2", "125-smoke"}
+    pre_freeze = ("125-select-q0", "125-select-q1", "125-select-q2", "125-smoke")
+    trains = tuple(f"125-train-q{q}" for q in range(4))
+    readout_jobs = tuple(f"125-readouts-g{g}" for g in range(4))
+    assert set(by_id) == {*pre_freeze, *trains, *readout_jobs, "125-freeze-readouts", "125-score", "125-publish",
+                          "125-validate"}
     # the trigger is in the #123 queue: #123 scoring (its first evaluation read) waits for it
     trigger = issue_123["125-trigger"]
     assert trigger["depends_on"] == [f"123-train-q{g}" for g in range(4)]
@@ -463,7 +467,22 @@ def test_scheduler_jobs_wait_for_123_training_and_avoid_its_gpu():
         assert job["depends_on"] == ["125-trigger"]
         assert job["command"][-4:] == ["--gpu", str(q), "--workers", "3"]
     assert by_id["125-smoke"]["depends_on"] == ["125-select-q0", "125-select-q1", "125-select-q2"]
-    # #123 scores, publishes and validates on GPU 0: no #125 job there; every job pins its GPU
-    for job in (*spec, trigger):
-        assert job["gpu"] != 0 and job["env"]["CUDA_VISIBLE_DEVICES"] == str(job["gpu"])
+    # pre-freeze jobs avoid GPU 0 (where #123 scores, publishes and validates); every GPU job pins its GPU
+    for job in (*[by_id[j] for j in pre_freeze], trigger):
+        assert job["gpu"] != 0
         assert not any(mode in job["command"] for mode in ("--train", "--readouts", "--score", "--prepare"))
+    for job in spec:
+        if job["gpu"] is not None:
+            assert job["env"]["CUDA_VISIBLE_DEVICES"] == str(job["gpu"])
+    # main jobs (enqueued after the freeze): one resumable training queue per frozen queue index and GPU
+    assert sorted(int(by_id[t]["command"][-1]) for t in trains) == [0, 1, 2, 3]
+    assert sorted(by_id[t]["gpu"] for t in trains) == [0, 1, 2, 3]
+    assert all(by_id[t]["resumable"] and by_id[t]["depends_on"] == ["125-smoke"] for t in trains)
+    for g, name in enumerate(readout_jobs):
+        assert by_id[name]["command"][-3:] == ["--readouts", "--gpu", str(g)]
+        assert sorted(by_id[name]["depends_on"]) == sorted(trains)
+    assert sorted(by_id["125-freeze-readouts"]["depends_on"]) == sorted(readout_jobs)
+    # SI1 / SI2 read #123's validated publication: #125 scoring waits for 123-validate
+    assert set(by_id["125-score"]["depends_on"]) == {"125-freeze-readouts", "123-validate"}
+    assert by_id["125-publish"]["depends_on"] == ["125-score"]
+    assert by_id["125-validate"]["depends_on"] == ["125-publish"]

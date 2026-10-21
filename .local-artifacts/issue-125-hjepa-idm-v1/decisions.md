@@ -43,3 +43,67 @@ Runner `scripts/run_hjepa_idm.py`; IDM module `world_model/hjepa/idm.py`; offici
 
 ### Budget
 - Cap 120 GPU-h of active compute (ledger in `ledger/`). Expected: trigger ≈ 1 GPU-h, selection ≈ 2, smoke < 1, HJ-px-IDM ≈ 3 × 16, LeWM-px-IDM ≈ 3 × 7, carriers < 1, readouts ≈ 4, scoring ≈ 3. The smoke re-projects from measured throughput and stops at > 120 GPU-h or > 48 h wall on 4 GPUs.
+
+## Freeze (plan.json frozen 2026-10-21T07:26:34Z = 18:26:34 AEDT)
+
+### Chronology disclosure
+- `plan.json` was frozen **after #123's evaluation scoring** (#123 scored 18:03–18:10 AEDT and published at 18:15 on 2026-10-21; its `--validate` was running at the freeze). It was frozen **before any #123 result was read by the #125 implementer**: no #123 record, `summary.json`, `compute.json`, `findings.md`, `validation.json` or publication table was opened, and the #123 issue comments were not refreshed between #123's scoring and the push of this freeze commit.
+- Every frozen #125 choice comes from three sources only:
+  1. the ticket, pre-registered 2026-10-19 before any #123 evaluation read (arms, γ₂/γ₃ = 50, action-SIGReg 0.005, the γ₁ grid {100, 225} and its rule, contrasts, guards, dispositions, cap);
+  2. the policy-split γ₁ selection;
+  3. the fit-split trigger and the smoke (fit / policy data and timing only).
+- `prepare` reads only #125's own `trigger.json`, `smoke.json` and `selection/*/readouts.json`, plus #123's pre-evaluation `plan.json` (the frozen λ and data manifest). It hashes #123's runner, module and plan.
+- **Trigger.** It was evaluated 2026-10-20T18:59:24Z (05:59 AEDT on 21 Oct), before #123's first evaluation read. Its recorded #123 state, both at start and at end: 0 records, no evaluation anchors read, no position cache.
+- **Smoke.** It wrote `smoke.json` at 2026-10-21T07:10:51Z (18:10 AEDT), while #123 was scoring. It read only fit / policy data, the #125 selection readouts and the throughput of scratch runs, and no #123 output.
+
+### Trigger (fit split): triggered
+All six #123 primary arm-seeds fail both G-collapse and G-action:
+
+| arm | seeds | erank / D | χ | sensitivity |
+| --- | --- | --- | --- | --- |
+| HJ-car-m | 20260908 / 09 / 10 | 14.22 / 13.81 / 14.07 of 112 (threshold 11.2) | 0.0167 / 0.0167 / 0.0161 | 1.7e-7 |
+| HJ-px | 20260908 / 09 / 10 | 111.7 / 112.7 / 113.0 of 192 | 0.0014 / 0.0015 / 0.0015 | 1.1e-6 |
+
+- HJ-car-m passes the effective-rank half of G-collapse but fails χ < 0.05.
+- HJ-px passes the effective-rank half (threshold 19.2) and fails χ.
+
+### γ₁ selection (policy split, B1, seed 20260908, R1, 94 mixed grid cells; ties at 4 d.p. → 100)
+
+| arm | γ₁ = 100 | γ₁ = 225 | selected |
+| --- | --- | --- | --- |
+| HJ-px-IDM | 0.4830 | **0.5170** | **225** (pixels) |
+| HJ-car-m-IDM | 0.4275 | **0.4406** | **225** (carriers) |
+
+- There is no tie. γ₁ = 225 applies to every IDM arm of both input types (HJ and LeWM).
+- The selected AUCs are near or below chance. This is the pre-declared rule, not a quality claim.
+- **Selection-run diagnostics** (fit / policy only, for information; nothing changed in response):
+  - top-level erank: HJ-px-IDM 42 / 192, HJ-car-m-IDM 14 / 112;
+  - χ: 0.0024 and 0.016;
+  - endpoint launch sensitivity: 1e-4 to 2e-4 (HJ-px-IDM) and 2e-5 to 5e-5 (HJ-car-m-IDM), against #123's 2–5e-7 at B1;
+  - the policy readout ceiling: 0.81–0.83 (px) and 0.57–0.60 (car).
+- The ticket's guard thresholds stay unchanged.
+
+### Plan
+- **Arms** (λ 0.18, γ₁ 225; γ₂ = γ₃ = 50 and action-SIGReg 0.005 for the HJ arms):
+
+  | arm | steps × batch | parameters |
+  | --- | --- | --- |
+  | HJ-px-IDM | 128 045 × 128 | 35 860 884 |
+  | HJ-car-m-IDM | 9000 × 64 | 1 836 500 |
+  | LeWM-px-IDM | 150 880 × 128 | 11 563 900 |
+  | LeWM-car-m-IDM | 9000 × 64 | 1 835 196 |
+
+- **Training queues.** LPT over the smoke throughput:
+
+  | queue | contents | GPU-h |
+  | --- | --- | --- |
+  | q0 / q1 / q2 | HJ-px-IDM, HJ-car-m-IDM, LeWM-car-m-IDM of seed 20260908 / 09 / 10 | 13.1 each |
+  | q3 | LeWM-px-IDM × 3 | 18.1 |
+
+- **Projection.** 62.1 GPU-h in total against the 120 GPU-h cap: 57.4 training, 0.5 readouts, 2.8 scoring, 1.4 already spent. Wall time is 18.9 h, which is 2 nights.
+
+### Main jobs (`scripts/gpu_window_issue_125.json`, enqueued after the freeze push)
+- `125-train-q3` → GPU 1, `125-train-q1` → GPU 2, `125-train-q2` → GPU 3, `125-train-q0` → GPU 0 (once `123-validate` frees it). All are resumable: SIGTERM writes `resume.pt` at the next optimizer step and the job exits 75.
+- `125-readouts-g0..g3` run after all four training queues. `125-freeze-readouts` runs after them.
+- `125-score` runs after `125-freeze-readouts` **and** `123-validate`, because SI1 / SI2 read #123's validated publication. `125-publish` and `125-validate` follow on GPU 1.
+- **Post-smoke edit to a frozen input.** `tests/test_issue_125_hjepa_idm.py` changed after the smoke: only its scheduler-job test, which now covers the main jobs. 18 / 18 tests pass on CPU at the freeze, and the frozen hash is of that file.

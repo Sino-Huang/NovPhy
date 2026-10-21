@@ -1,0 +1,139 @@
+{
+  "arms": {
+    "HJ-car-m": {
+      "20260908": {
+        "G_action": false,
+        "G_collapse": false,
+        "action_sensitivity": 1.7122812600389504e-07,
+        "dim": 112,
+        "effective_rank": 14.223348821866866,
+        "effective_rank_threshold": 11.200000000000001,
+        "pass": false,
+        "within_episode_share": 0.016723848099451606
+      },
+      "20260909": {
+        "G_action": false,
+        "G_collapse": false,
+        "action_sensitivity": 1.6591359960670473e-07,
+        "dim": 112,
+        "effective_rank": 13.812826417624438,
+        "effective_rank_threshold": 11.200000000000001,
+        "pass": false,
+        "within_episode_share": 0.016674555460437696
+      },
+      "20260910": {
+        "G_action": false,
+        "G_collapse": false,
+        "action_sensitivity": 1.6714699818282105e-07,
+        "dim": 112,
+        "effective_rank": 14.067715556387938,
+        "effective_rank_threshold": 11.200000000000001,
+        "pass": false,
+        "within_episode_share": 0.016067369476327868
+      }
+    },
+    "HJ-px": {
+      "20260908": {
+        "G_action": false,
+        "G_collapse": false,
+        "action_sensitivity": 1.135711512935086e-06,
+        "dim": 192,
+        "effective_rank": 111.7302774658243,
+        "effective_rank_threshold": 19.200000000000003,
+        "pass": false,
+        "within_episode_share": 0.0013562078188972917
+      },
+      "20260909": {
+        "G_action": false,
+        "G_collapse": false,
+        "action_sensitivity": 1.1421183534276235e-06,
+        "dim": 192,
+        "effective_rank": 112.73143840541664,
+        "effective_rank_threshold": 19.200000000000003,
+        "pass": false,
+        "within_episode_share": 0.001495250931530501
+      },
+      "20260910": {
+        "G_action": false,
+        "G_collapse": false,
+        "action_sensitivity": 1.1428984597232445e-06,
+        "dim": 192,
+        "effective_rank": 113.00867981675545,
+        "effective_rank_threshold": 19.200000000000003,
+        "pass": false,
+        "within_episode_share": 0.0015306222940891024
+      }
+    }
+  },
+  "data": {
+    "anchors": "the 480 #112 retrain fit anchors (frame 0 of each level's first complete candidate)",
+    "evaluation_files_read": 0,
+    "frames": "every 15th position 0..min(last, 285) of every fit shot",
+    "launches": "the 16 grid candidates of the frozen training candidate set",
+    "split": "fit (issue109-fit)"
+  },
+  "evaluated_at": "2026-10-20T18:59:24Z",
+  "failing": [
+    "HJ-px/20260908",
+    "HJ-px/20260909",
+    "HJ-px/20260910",
+    "HJ-car-m/20260908",
+    "HJ-car-m/20260909",
+    "HJ-car-m/20260910"
+  ],
+  "identity": "issue-125-hjepa-idm-v1",
+  "issue_123_state_at_end": {
+    "before_123_evaluation_read": true,
+    "evaluation_pixel_anchors_read": false,
+    "evaluation_position_cache_built": false,
+    "readouts_frozen": false,
+    "records_scored": 0
+  },
+  "issue_123_state_at_start": {
+    "before_123_evaluation_read": true,
+    "evaluation_pixel_anchors_read": false,
+    "evaluation_position_cache_built": false,
+    "readouts_frozen": false,
+    "records_scored": 0
+  },
+  "parts": {
+    "HJ-car-m/20260908": {
+      "model": ".local-artifacts/issue-123-hjepa-comparison-v1/models/HJ-car-m/seed-20260908/model.pt",
+      "model_sha256": "sha256:e5edea9164cac6dcc1662bdbd9dea86c247cfc74445dd2bb39d500ceb93f577b",
+      "sha256": "sha256:93d4302d4387838cdb3fa222d8bd384e1688cd9247857f57318fd5a3d355753f"
+    },
+    "HJ-car-m/20260909": {
+      "model": ".local-artifacts/issue-123-hjepa-comparison-v1/models/HJ-car-m/seed-20260909/model.pt",
+      "model_sha256": "sha256:744bce79b7f3a766839285c2e50082e6473f01b707997bd9d54b360899b944f0",
+      "sha256": "sha256:23395f3348475afe9fd3110a0bee4fd5814f410fc2851972832ef26c0590b9e9"
+    },
+    "HJ-car-m/20260910": {
+      "model": ".local-artifacts/issue-123-hjepa-comparison-v1/models/HJ-car-m/seed-20260910/model.pt",
+      "model_sha256": "sha256:2bca5c8c804d18da24a6bf8bc6a8778cd245409ea6e19a25c81e6acbf95308c9",
+      "sha256": "sha256:7e313e0112678adc1d546612c1d5d3801d92dbf2bfcfa94e1db93bdda3b99770"
+    },
+    "HJ-px/20260908": {
+      "model": ".local-artifacts/issue-123-hjepa-comparison-v1/models/HJ-px/seed-20260908/model.pt",
+      "model_sha256": "sha256:0a63483def0633f343a75b167456e3a6fff86ee459b86d9e2bb8ef782eadcc65",
+      "sha256": "sha256:9674a6c01c066ad51efb4e630ff9d278ff6a7a471a4a5769475bda62771c7570"
+    },
+    "HJ-px/20260909": {
+      "model": ".local-artifacts/issue-123-hjepa-comparison-v1/models/HJ-px/seed-20260909/model.pt",
+      "model_sha256": "sha256:e2a21523eef956ac6be0f0f21d6df84c1fb192e7da6e76037e645c37e6e8a216",
+      "sha256": "sha256:e14c9185a887fae951c4c61289f0759e7912349b7a379bda5828f02c1c87caf5"
+    },
+    "HJ-px/20260910": {
+      "model": ".local-artifacts/issue-123-hjepa-comparison-v1/models/HJ-px/seed-20260910/model.pt",
+      "model_sha256": "sha256:e8457b5124d956ac77f4e1078dd20a87225b1427eb9051b59fffbaa4da37df86",
+      "sha256": "sha256:31cdbabd9ef5dd064a0d60a46849203605d85e7cb9450467b67f0479fd041997"
+    }
+  },
+  "rule": "triggered iff at least one #123 primary H-JEPA arm (HJ-px, HJ-car-m) fails G-collapse (top-level effective rank < 0.1 D or within-episode variance share < 0.05) or G-action (endpoint launch sensitivity < 0.05) in any seed; #123's readout code and guard expressions (rc.fit_readouts, rc.arm_guards, rc.GUARD_THRESHOLDS) on the trained model.pt; fit probe frames and fit anchors only; a typed training failure fails both guards (rc.arm_guards)",
+  "schema": "issue_125_trigger_v1",
+  "thresholds": {
+    "action_sensitivity": 0.05,
+    "effective_rank_fraction": 0.1,
+    "within_episode_share": 0.05
+  },
+  "triggered": true
+}

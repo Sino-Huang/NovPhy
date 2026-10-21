@@ -1,0 +1,1243 @@
+{
+  "arms": {
+    "HJ-car-m-IDM": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "coefficients": {
+        "1": [
+          225.0,
+          0.0
+        ],
+        "2": [
+          50.0,
+          0.005
+        ],
+        "3": [
+          50.0,
+          0.005
+        ]
+      },
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 225.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 96,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "action_sigreg_coeff": 0.005,
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 50.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 96,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 112,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "action_sigreg_coeff": 0.005,
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 224,
+            "input_dim": 112,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 50.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 2,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 96,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "extends": "HJ-car-m",
+      "gamma1": 225.0,
+      "input": "carriers",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameter_counts": {
+        "backbone": 1379972,
+        "idm_heads": 456528,
+        "total": 1836500
+      },
+      "parameters": 1836500,
+      "projected_gpu_hours_per_seed": 0.048306703683920205,
+      "role": "primary, controlled + remedy",
+      "sampler": "mixture",
+      "size": "matched-idm",
+      "steps": 9000,
+      "valid_clips": 3277954
+    },
+    "HJ-px-IDM": {
+      "action": "sparse",
+      "batch": 128,
+      "budget": "B3",
+      "coefficients": {
+        "1": [
+          225.0,
+          0.0
+        ],
+        "2": [
+          50.0,
+          0.005
+        ],
+        "3": [
+          50.0,
+          0.005
+        ]
+      },
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "projector": {
+              "type": "mlp"
+            },
+            "scale": "tiny",
+            "type": "vit"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 225.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 4,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 8,
+            "hidden_dim": 192,
+            "mlp_dim": 1024,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level2": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 6,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "action_sigreg_coeff": 0.005,
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 50.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 5,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "level3": {
+          "action_embed": {
+            "input_dim": 4,
+            "patch_embed": false
+          },
+          "action_encoder": {
+            "input_dim": 192,
+            "max_chunk": 4,
+            "output_dim": 4,
+            "queue_size": 4000
+          },
+          "action_sigreg_coeff": 0.005,
+          "encoder": {
+            "final_ln": false,
+            "hidden_dim": 384,
+            "input_dim": 192,
+            "output_dim": 192,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "latent_mlp"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 50.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 1e-05,
+          "predictor": {
+            "depth": 6,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 16,
+            "hidden_dim": 192,
+            "mlp_dim": 2048,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "stride": 3,
+          "window_size": 1,
+          "wm": {
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 3,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "extends": "HJ-px",
+      "gamma1": 225.0,
+      "input": "pixels",
+      "kind": "hjepa",
+      "lambda": 0.18,
+      "layout": "H3",
+      "parameter_counts": {
+        "backbone": 35219796,
+        "idm_heads": 641088,
+        "total": 35860884
+      },
+      "parameters": 35860884,
+      "projected_gpu_hours_per_seed": 13.018782367307965,
+      "role": "primary, faithful + remedy",
+      "sampler": "mixture",
+      "size": "paper",
+      "steps": 128045,
+      "valid_clips": 3277954
+    },
+    "LeWM-car-m-IDM": {
+      "action": "sparse",
+      "batch": 64,
+      "budget": "B1",
+      "coefficients": {
+        "1": [
+          225.0,
+          0.0
+        ]
+      },
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "hidden_dim": 384,
+            "input_dim": 236,
+            "output_dim": 112,
+            "projector": {
+              "type": "identity"
+            },
+            "type": "mlp"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 225.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 7,
+            "dim_head": 28,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 4,
+            "hidden_dim": 112,
+            "mlp_dim": 384,
+            "projector": {
+              "type": "identity"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 112,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 1,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "extends": "LeWM-car-m",
+      "gamma1": 225.0,
+      "input": "carriers",
+      "kind": "lewm",
+      "lambda": 0.18,
+      "layout": "L1",
+      "parameter_counts": {
+        "backbone": 1683020,
+        "idm_heads": 152176,
+        "total": 1835196
+      },
+      "parameters": 1835196,
+      "projected_gpu_hours_per_seed": 0.03567489766282961,
+      "role": "temporal lever under the remedy (carriers)",
+      "sampler": "mixture",
+      "size": "matched-lewm-idm",
+      "steps": 9000,
+      "valid_clips": 3862552
+    },
+    "LeWM-px-IDM": {
+      "action": "sparse",
+      "batch": 128,
+      "budget": "B3",
+      "coefficients": {
+        "1": [
+          225.0,
+          0.0
+        ]
+      },
+      "config": {
+        "data": {
+          "dataset": {
+            "level1": {
+              "frameskip": 1
+            }
+          }
+        },
+        "img_size": 320,
+        "level1": {
+          "encoder": {
+            "projector": {
+              "type": "mlp"
+            },
+            "scale": "tiny",
+            "type": "vit"
+          },
+          "idm": {
+            "hidden_dim": 256
+          },
+          "idm_coeff": 225.0,
+          "loss": {
+            "embed": {
+              "sigreg": {
+                "enabled": true,
+                "weight": 0.18
+              }
+            }
+          },
+          "lr": 5e-05,
+          "predictor": {
+            "depth": 4,
+            "dim_head": 64,
+            "dropout": 0.1,
+            "emb_dropout": 0.0,
+            "heads": 8,
+            "hidden_dim": 192,
+            "mlp_dim": 1024,
+            "projector": {
+              "type": "mlp"
+            }
+          },
+          "wm": {
+            "action_dim": 5,
+            "embed_dim": 192,
+            "history_size": 3,
+            "rollout_n": 1,
+            "use_proprio": false
+          }
+        },
+        "num_levels": 1,
+        "optimizer": {
+          "lr": 5e-05,
+          "type": "AdamW",
+          "weight_decay": 0.001
+        },
+        "patch_size": 16
+      },
+      "extends": "LeWM-px",
+      "gamma1": 225.0,
+      "input": "pixels",
+      "kind": "lewm",
+      "lambda": 0.18,
+      "layout": "L1",
+      "parameter_counts": {
+        "backbone": 11350204,
+        "idm_heads": 213696,
+        "total": 11563900
+      },
+      "parameters": 11563900,
+      "projected_gpu_hours_per_seed": 6.023703273872121,
+      "role": "temporal lever under the remedy (pixels)",
+      "sampler": "mixture",
+      "size": "paper",
+      "steps": 150880,
+      "valid_clips": 3862552
+    }
+  },
+  "caps": {
+    "gpu_hours": 120.0,
+    "stop": "over the cap: stop and report",
+    "stop_wall_hours": 48.0
+  },
+  "contrasts": {
+    "PI1": {
+      "first": "HJ-px-IDM",
+      "second": "U"
+    },
+    "PI2": {
+      "first": "HJ-car-m-IDM",
+      "second": "U"
+    },
+    "SI1": {
+      "first": "HJ-px-IDM",
+      "second": "HJ-px"
+    },
+    "SI2": {
+      "first": "HJ-car-m-IDM",
+      "second": "HJ-car-m"
+    },
+    "SI3": {
+      "first": "HJ-px-IDM",
+      "second": "LeWM-px-IDM"
+    },
+    "SI4": {
+      "first": "HJ-car-m-IDM",
+      "second": "LeWM-car-m-IDM"
+    },
+    "SI5_carriers": {
+      "first": "HJ-car-m-IDM",
+      "second": "C*"
+    },
+    "SI5_pixels": {
+      "first": "HJ-px-IDM",
+      "second": "C*"
+    },
+    "SI6_carriers": {
+      "first": "HJ-car-m-IDM",
+      "second": "P"
+    },
+    "SI6_pixels": {
+      "first": "HJ-px-IDM",
+      "second": "P"
+    },
+    "SI7_carriers_J": {
+      "first": "HJ-car-m-IDM",
+      "second": "J"
+    },
+    "SI7_carriers_J_dec": {
+      "first": "HJ-car-m-IDM",
+      "second": "J_dec"
+    },
+    "SI7_pixels_J": {
+      "first": "HJ-px-IDM",
+      "second": "J"
+    },
+    "SI7_pixels_J_dec": {
+      "first": "HJ-px-IDM",
+      "second": "J_dec"
+    }
+  },
+  "data_manifest": [
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/index.npz",
+      "bytes": 60682311,
+      "sha256": "sha256:335644909ce4f116a85f1ef637385931172524595d70072576e4c6b380baffcc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/MANIFEST.json",
+      "bytes": 2710,
+      "sha256": "sha256:4f6c1789e8b6d9069b9742222267d48948e5145417bad29a4c7829b30badb5e5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/index.npz",
+      "bytes": 1598393,
+      "sha256": "sha256:c4804d354996c127a71d8a63a00068a795089617b93a11c351ac3067c0df117f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/MANIFEST.json",
+      "bytes": 375,
+      "sha256": "sha256:411594dd5f7465738fa0761f0e1846573891736ddbea314d4f331c8336103f82"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-00.jsonl",
+      "bytes": 5151848,
+      "sha256": "sha256:34f03197af457d7533d24a79378e038c7e591dcbc8bfa1b78a37d89681d9439f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-01.jsonl",
+      "bytes": 5196432,
+      "sha256": "sha256:7aca28c7d421993468994b83534ef2d57cd10c7d27925d42e6f6d1129c8a7113"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-02.jsonl",
+      "bytes": 5171726,
+      "sha256": "sha256:3bbe4f993cadbccedd4d11ec380c4a7c20d69ff06cae220183618d39df9f4560"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-03.jsonl",
+      "bytes": 5137299,
+      "sha256": "sha256:6fb22448b1dc7217255ac803c733d9d47d2f8ac6ebad0dc95d3f894d2d16c018"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-04.jsonl",
+      "bytes": 5172562,
+      "sha256": "sha256:d952082332dd2e72c704ea8245d9ecea07e9b0e4ca4a4869f0c8cdc069cb5746"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-05.jsonl",
+      "bytes": 5149146,
+      "sha256": "sha256:c7b4a79903b580c65b226c6abc485aa772777a4f6b477e692382bb164c8bc8ee"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-06.jsonl",
+      "bytes": 5136805,
+      "sha256": "sha256:fa8c80ecdf6bac2474a305563fd085f824187fadf585d87deab89672d5eb154a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-07.jsonl",
+      "bytes": 5138486,
+      "sha256": "sha256:dc3b2476812eada174cfaef61538dfef0100eacd40f2e0c99bce70c90a972bf0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-08.jsonl",
+      "bytes": 5163830,
+      "sha256": "sha256:05af8f78a212cffedb82db759f808cc2d7e40566f57c0be5dd2eba9381dbf133"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-09.jsonl",
+      "bytes": 5146621,
+      "sha256": "sha256:3c316b0c654db9c5bc00dbfe6d8073e42aa9d541d548673624ce193a3ef64e7f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-10.jsonl",
+      "bytes": 5137976,
+      "sha256": "sha256:18da30b8bee2b2847e0bc9799d4a930d4161428de9a5fb93add438bfc67c147a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-11.jsonl",
+      "bytes": 5138125,
+      "sha256": "sha256:e9f7a75b06acb2ea151289d8d094caa4691f33579b07bf66972ca42eacbb4dc5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-12.jsonl",
+      "bytes": 5136160,
+      "sha256": "sha256:619ca3c1a583f85ad5d9a133ef41e79533215df5c19a29d1218b3d0b4197adea"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-13.jsonl",
+      "bytes": 5145415,
+      "sha256": "sha256:a72284a7ce8086c763176358c70e226e86ac5fc87e1148555c86bffb9b2abf64"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-14.jsonl",
+      "bytes": 5138446,
+      "sha256": "sha256:41a8d45b156dc73a709fcbfc71fba071cf373ba38b0c1127534d3783583550f6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-15.jsonl",
+      "bytes": 5147837,
+      "sha256": "sha256:21cc83344e9aa5eed4003a1f5d70ce3ead7cbe6d5166a5b33c8d3d1415d46c0d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-16.jsonl",
+      "bytes": 5139622,
+      "sha256": "sha256:2fd6a2ec6419e3cfc48fb57bf05c5fdff543ca63dce96fef89cc8247a43e2c4a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-17.jsonl",
+      "bytes": 5181694,
+      "sha256": "sha256:cf640100ca8c37ef1f18d2f7260ebdcb4247ba6aac0973dbc97a8072a15b2165"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/shard-00.jsonl",
+      "bytes": 979792,
+      "sha256": "sha256:3ee8361d44bf6a9e19c55c0b97eb28052516805bc80c036a32435867ead818af"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/shard-01.jsonl",
+      "bytes": 980732,
+      "sha256": "sha256:ee50ef0cf3ea8ddceecc09ae07433ee5010af2feceb9aa247cc3d369a19ccea5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/fit-index.npz",
+      "bytes": 4093430,
+      "sha256": "sha256:acee6381ca2cf784d861f4cf9d0ca3801a20bf256c6dcfa42a572cae3ff3e43c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/fit-carriers.bin",
+      "bytes": 3685667696,
+      "sha256": "sha256:7f2c2a7026db91aeea39f9657de9388576189a74c693d4d01e68238db299ecd8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/policy.pt",
+      "bytes": 68233811,
+      "sha256": "sha256:2c4019df2f36b48793b840c82a3394b0f06c6f81a83ff841876514c58260000b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-00.pt",
+      "bytes": 5778037,
+      "sha256": "sha256:d6eebfb8592870e7904a4e9451792d25359249d5806676a6d71a41bd8391fe22"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-01.pt",
+      "bytes": 5784437,
+      "sha256": "sha256:0c3e08ceb99f781a45e6e69b7238ebb8f5dc7b2cbd703b541225751623ee089f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-02.pt",
+      "bytes": 5777141,
+      "sha256": "sha256:2fd6ed6ebb6979cf79811d539abae9290a73e39e17d7b892f9832bea8c1c7861"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-03.pt",
+      "bytes": 5769077,
+      "sha256": "sha256:090a2f113ddfd3235d02852df0ecc1a7933d406d8171d6731510774ecd2f8904"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-04.pt",
+      "bytes": 5778677,
+      "sha256": "sha256:cc18f71a53f4cd86e0f58fa0f774ff6cd12598fca1a586bcbed247c756dbebb8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-05.pt",
+      "bytes": 5758773,
+      "sha256": "sha256:27118c3d0112fabfe8d08e3f5dfd32724b2af314aab3190876b850501e76c8f7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-06.pt",
+      "bytes": 5772853,
+      "sha256": "sha256:5c811d8a575b7cab9fd25170b3476cfed0737ee6d30a7fcbd397eb409041b0f8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-07.pt",
+      "bytes": 5786421,
+      "sha256": "sha256:d7d690bb32a60ebf8176d737e450058bf9307cc479bce6d0a3d28af8e8dc8fcf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-08.pt",
+      "bytes": 5766197,
+      "sha256": "sha256:eb7454ae0711d3797643ff547b9c5b8432a96f09ec31720ed52e57ed8c51dac4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/labels/fit/labels-09.pt",
+      "bytes": 5785961,
+      "sha256": "sha256:78d27f46117bdeb247c8498c66dd8466c494fa0e6bf206883214ef709b1d084c"
+    }
+  ],
+  "dispositions": {
+    "1": "H-JEPA with its inverse-dynamics remedy ranks better than our Gate-B model (scoped) iff PI1 or PI2 is supported in the HJ - U direction, G-fid, G-port-IDM and the arm's guards pass, and SI8 is supported for that arm; triggers the HJ-LC follow-up of #123",
+    "2": "our Gate-B model ranks better than H-JEPA with its remedy (scoped) iff U - HJ-px-IDM and U - HJ-car-m-IDM are both supported and every guard passes; scope: #123's plus 'with the paper's IDM + action-SIGReg remedy, gamma_1 selected on the policy split'",
+    "3": "otherwise per-contrast tokens only (delta-rule wording)",
+    "4": "if the IDM arms still fail G-collapse / G-action: the paper's own remedy does not prevent collapse on single-launch, action-sparse data (reported with the diagnostics)"
+  },
+  "engine_seconds": 0,
+  "existing_arms": {
+    "C*": "LC : C-F-15, published Gate-B records",
+    "HJ-px / HJ-car-m": "#123's published records (SI1 / SI2), read at publication, never re-scored",
+    "J": "#101 J-pe-1e-04 records",
+    "J_dec": "#101 J-dec-1e-01 records",
+    "P": "the Gate-B no-model action prior",
+    "U": "Gate-B unit LC : F-15-macro, published Gate-B records"
+  },
+  "frozen_at": "2026-10-21T07:26:34Z",
+  "frozen_before_training_and_evaluation": true,
+  "guards": {
+    "G_port_IDM": "gport-idm.json pass",
+    "failure": "a failed guard turns every token involving the arm into readiness_or_precision_insufficient",
+    "inherited": "every #123 guard per arm (G-collapse, G-action, G-readout, G-nonfinite, G-trained) with #123's thresholds; global G-fid (#123 fidelity/gfid.json), G-port (#123), G-isolation, G-chronology, G-scoring-policy, G-records",
+    "issue_123_arms": "SI1 / SI2 also need #123's published guard pass of HJ-px / HJ-car-m, #123's G-records (validated publication) and every global guard #123 published (G-isolation, G-chronology, G-scoring-policy and G-records required)",
+    "thresholds": {
+      "action_sensitivity": 0.05,
+      "effective_rank_fraction": 0.1,
+      "nonfinite_share": 0.1,
+      "readout_ceiling_auc": 0.65,
+      "within_episode_share": 0.05
+    }
+  },
+  "identity": "issue-125-hjepa-idm-v1",
+  "inherited_from_123": {
+    "frozen_at": "2026-10-18T12:24:06Z",
+    "plan_identity": "issue-123-hjepa-comparison-v1",
+    "selected_lambda": {
+      "carriers": 0.18,
+      "pixels": 0.18
+    },
+    "unchanged": [
+      "data and splits",
+      "H3-Delta layout",
+      "anchor-mixture sampler",
+      "launch encoding",
+      "lambda 0.18",
+      "optimizer and schedule",
+      "readouts",
+      "cost",
+      "cells",
+      "bootstrap",
+      "guards"
+    ]
+  },
+  "inputs": [
+    {
+      "artifact": "scripts/run_hjepa_idm.py",
+      "name": "runner",
+      "sha256": "sha256:5e533591c02d471e02bd8178cf9e0415e8f2009ccc69a94f97d8c5cd0647dd7b"
+    },
+    {
+      "artifact": "world_model/hjepa/idm.py",
+      "name": "module",
+      "sha256": "sha256:71cb8bfcb240e08b6c37143b78fb864d149e7c41f69e80e2c69f3b3ab66c22c5"
+    },
+    {
+      "artifact": "tests/test_issue_125_hjepa_idm.py",
+      "name": "tests",
+      "sha256": "sha256:3cfe816a7ca5cba81508dcda796bb9dc48d6b577f5da8f94d5dc150f0f40f867"
+    },
+    {
+      "artifact": "scripts/hjepa_idm_port_reference.py",
+      "name": "port_reference",
+      "sha256": "sha256:c32b087d80b431512412e9441a695ea2f0ed5155be3c141af5d6fd29f8e3c8b8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-125-hjepa-idm-v1/gport-idm.json",
+      "name": "gport_idm",
+      "sha256": "sha256:8de05081592ff47fb865297746687235b4488070a7111140222d00efcf8f20d7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-125-hjepa-idm-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:3e12c7dc46e85fffb497500ad955337f3a5f83aefb33431fe82a5573c1297238"
+    },
+    {
+      "artifact": ".local-artifacts/issue-125-hjepa-idm-v1/trigger.json",
+      "name": "trigger",
+      "sha256": "sha256:de83519419720d4a016b6c1d22efe854ba68da74de2d8898ad77210a075883b6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/plan.json",
+      "name": "issue_123_plan",
+      "sha256": "sha256:2a2d33b347e74ffad28a3d426458620a68a1e5f23015b6ce57b7da8ce34dfbd2"
+    },
+    {
+      "artifact": "scripts/run_hjepa_comparison.py",
+      "name": "issue_123_runner",
+      "sha256": "sha256:045530a99823ae3402ee48087db763ed09caa9f0b00543303f822921641f5cab"
+    },
+    {
+      "artifact": "world_model/hjepa/novphy.py",
+      "name": "issue_123_module",
+      "sha256": "sha256:6a2a6670cf231a3c1f2d9c102f2d26a641deaffd477cc9b11a97d5d7aa1f1173"
+    },
+    {
+      "artifact": "world_model/hjepa/__init__.py",
+      "name": "package_init",
+      "sha256": "sha256:4bd5b3bb5624b27026bd7605ab980ef98c84643d4a7b0a140d26d043c6405676"
+    },
+    {
+      "artifact": "scripts/post_freeze_amendments.py",
+      "name": "amendments_registry",
+      "sha256": "sha256:0b36b4566c25184cff7f3e42852cdfe83bda55deaa70a4b87978035108561067"
+    },
+    {
+      "artifact": ".local-artifacts/issue-125-hjepa-idm-v1/selection/HJ-px-IDM/gamma1-100/seed-20260908/readouts.json",
+      "name": "selection_HJ-px-IDM_100",
+      "sha256": "sha256:9dcc5d8aabec574d82d2d75c81b76c9f77a1323ab2fb8cc72c5f5d6ef98286ea"
+    },
+    {
+      "artifact": ".local-artifacts/issue-125-hjepa-idm-v1/selection/HJ-px-IDM/gamma1-225/seed-20260908/readouts.json",
+      "name": "selection_HJ-px-IDM_225",
+      "sha256": "sha256:786246b920d664453877db089d4aba56e630d56769f99476cfac67cd0f16ecc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-125-hjepa-idm-v1/selection/HJ-car-m-IDM/gamma1-100/seed-20260908/readouts.json",
+      "name": "selection_HJ-car-m-IDM_100",
+      "sha256": "sha256:339d36cff7df0fd1cf938be50edfdb25d1c7d2b604eb0afa35d148edb90fe1af"
+    },
+    {
+      "artifact": ".local-artifacts/issue-125-hjepa-idm-v1/selection/HJ-car-m-IDM/gamma1-225/seed-20260908/readouts.json",
+      "name": "selection_HJ-car-m-IDM_225",
+      "sha256": "sha256:633aedd1df3a316c1d90198060616225835236d5615f4392b026a81fe50fb1b0"
+    }
+  ],
+  "issue": 125,
+  "question": "does H-JEPA with its own inverse-dynamics remedy (IDM + action-SIGReg), reproduced on NovPhy, rank the Gate-B grid candidates of the sealed #109 evaluation split better or worse than the Gate-B unit?",
+  "readouts": "#123's fit_readouts unchanged (R1 / R2 / R3 / R4 / P_c, collapse / action diagnostics, policy AUCs)",
+  "related_issues": [
+    108,
+    123,
+    109,
+    112,
+    101
+  ],
+  "remedy": {
+    "action_sigreg": "official loss.SIGReg() on the macro-action embeddings of levels >= 2, weight 0.005",
+    "gamma": {
+      "level1": "selected from {100, 225} per input type",
+      "upper": 50.0
+    },
+    "idm_head": "official loss.InverseDynamicsModel MLP(2D -> 256 -> 256 -> D), ReLU, trunc-normal init",
+    "idm_loss": "official loss.InverseDynamicsLoss: mean ||I(z_t, z_t+1) - sg[a_t]||^2 over the level crop",
+    "lewm": "one level: IDM at level 1 only (DROID LeWM+IDM), no action-SIGReg",
+    "targets": "level 1: the embedded launch on the launch transition, the embedded no-op elsewhere; level >= 2: the pooled macro-action embedding (detached)"
+  },
+  "runner": "scripts/run_hjepa_idm.py",
+  "schema": "issue_125_plan_v1",
+  "scoring": "#123's score_arm_seed unchanged on the Gate-B mixed cells; the wrong-anchor control of HJ-px-IDM and HJ-car-m-IDM with the 480 fit anchors; U / C* position curves; one process, deterministic_scoring()",
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "selected_gamma1": {
+    "carriers": 225.0,
+    "pixels": 225.0
+  },
+  "selection": {
+    "carriers": {
+      "arm": "HJ-car-m-IDM",
+      "policy_grid_auc_R1": {
+        "100": 0.42748032109734235,
+        "225": 0.44058919803600666
+      },
+      "rule": "largest policy-split pooled grid AUC under R1 at B1, seed 20260908; ties (4 d.p.) -> 100 (the DROID value); applies to every IDM arm of the input type",
+      "selected_gamma1": 225.0
+    },
+    "pixels": {
+      "arm": "HJ-px-IDM",
+      "policy_grid_auc_R1": {
+        "100": 0.48298846543527396,
+        "225": 0.5169959473150962
+      },
+      "rule": "largest policy-split pooled grid AUC under R1 at B1, seed 20260908; ties (4 d.p.) -> 100 (the DROID value); applies to every IDM arm of the input type",
+      "selected_gamma1": 225.0
+    }
+  },
+  "smoke_evidence": {
+    "accounting": {
+      "gate_b_unit_parameters": 1837690,
+      "matched": {
+        "HJ-car-m-IDM": true,
+        "LeWM-car-m-IDM": true
+      },
+      "parameters": {
+        "HJ-car-m-IDM": {
+          "backbone": 1379972,
+          "idm_heads": 456528,
+          "total": 1836500
+        },
+        "HJ-px-IDM": {
+          "backbone": 35219796,
+          "idm_heads": 641088,
+          "total": 35860884
+        },
+        "LeWM-car-m-IDM": {
+          "backbone": 1683020,
+          "idm_heads": 152176,
+          "total": 1835196
+        },
+        "LeWM-px-IDM": {
+          "backbone": 11350204,
+          "idm_heads": 213696,
+          "total": 11563900
+        }
+      },
+      "rule": "carrier IDM arms: total parameters incl. the IDM heads within +-2 % of the Gate-B unit; #123's matched sizes with only the predictor MLP width reduced (uniformly over levels) to the value whose total is nearest the unit"
+    },
+    "at": "2026-10-21T07:10:51Z",
+    "gport_idm": {
+      "arms": {
+        "HJ-car-m-IDM": true,
+        "HJ-px-IDM": true,
+        "LeWM-car-m-IDM": true,
+        "LeWM-px-IDM": true
+      },
+      "pass": true
+    },
+    "ok": true,
+    "projection": {
+      "cap_gpu_hours": 120.0,
+      "night_hours": 12.833333333333334,
+      "projected_nights": 2,
+      "projected_wall_hours": 18.896547779636407,
+      "readout_gpu_hours": 0.50175183208019,
+      "scoring_gpu_hours": 2.8,
+      "spent_issue125_gpu_hours": 1.4228743147078462,
+      "stop_wall_hours": 48.0,
+      "total_gpu_hours": 62.10402787436855,
+      "training_gpu_hours": 57.379401727580515,
+      "training_queue_hours": [
+        13.102763968654715,
+        13.102763968654715,
+        13.102763968654715,
+        18.07110982161636
+      ],
+      "training_queues": [
+        [
+          "HJ-px-IDM/20260908",
+          "HJ-car-m-IDM/20260908",
+          "LeWM-car-m-IDM/20260908"
+        ],
+        [
+          "HJ-px-IDM/20260909",
+          "HJ-car-m-IDM/20260909",
+          "LeWM-car-m-IDM/20260909"
+        ],
+        [
+          "HJ-px-IDM/20260910",
+          "HJ-car-m-IDM/20260910",
+          "LeWM-car-m-IDM/20260910"
+        ],
+        [
+          "LeWM-px-IDM/20260908",
+          "LeWM-px-IDM/20260909",
+          "LeWM-px-IDM/20260910"
+        ]
+      ],
+      "within_cap": true
+    },
+    "tests": {
+      "command": "CUDA_VISIBLE_DEVICES=\"\" pytest -q tests/test_issue_125_hjepa_idm.py",
+      "exit_code": 0,
+      "tail": "18 passed, 7 warnings in 7.41s"
+    }
+  },
+  "token_rule": "supported iff mean >= 0.02 and lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient; primary contrasts in both directions",
+  "training": {
+    "checkpoint_every": 2000,
+    "queue_projected_hours": [
+      13.102763968654715,
+      13.102763968654715,
+      13.102763968654715,
+      18.07110982161636
+    ],
+    "queues": [
+      [
+        "HJ-px-IDM/20260908",
+        "HJ-car-m-IDM/20260908",
+        "LeWM-car-m-IDM/20260908"
+      ],
+      [
+        "HJ-px-IDM/20260909",
+        "HJ-car-m-IDM/20260909",
+        "LeWM-car-m-IDM/20260909"
+      ],
+      [
+        "HJ-px-IDM/20260910",
+        "HJ-car-m-IDM/20260910",
+        "LeWM-car-m-IDM/20260910"
+      ],
+      [
+        "LeWM-px-IDM/20260908",
+        "LeWM-px-IDM/20260909",
+        "LeWM-px-IDM/20260910"
+      ]
+    ],
+    "recipe": "#123's frozen recipe; objective = vendored hjepa_forward with the IDM keys",
+    "stop": "SIGTERM / SIGUSR1 -> resume.pt after the current optimizer step, exit 75 (#123 A1)",
+    "typed_failure": "a NaN / nonfinite loss ends the run (model.pt complete False); never retried"
+  },
+  "trigger": {
+    "arms": {
+      "HJ-car-m": {
+        "20260908": {
+          "G_action": false,
+          "G_collapse": false,
+          "action_sensitivity": 1.7122812600389504e-07,
+          "dim": 112,
+          "effective_rank": 14.223348821866866,
+          "effective_rank_threshold": 11.200000000000001,
+          "pass": false,
+          "within_episode_share": 0.016723848099451606
+        },
+        "20260909": {
+          "G_action": false,
+          "G_collapse": false,
+          "action_sensitivity": 1.6591359960670473e-07,
+          "dim": 112,
+          "effective_rank": 13.812826417624438,
+          "effective_rank_threshold": 11.200000000000001,
+          "pass": false,
+          "within_episode_share": 0.016674555460437696
+        },
+        "20260910": {
+          "G_action": false,
+          "G_collapse": false,
+          "action_sensitivity": 1.6714699818282105e-07,
+          "dim": 112,
+          "effective_rank": 14.067715556387938,
+          "effective_rank_threshold": 11.200000000000001,
+          "pass": false,
+          "within_episode_share": 0.016067369476327868
+        }
+      },
+      "HJ-px": {
+        "20260908": {
+          "G_action": false,
+          "G_collapse": false,
+          "action_sensitivity": 1.135711512935086e-06,
+          "dim": 192,
+          "effective_rank": 111.7302774658243,
+          "effective_rank_threshold": 19.200000000000003,
+          "pass": false,
+          "within_episode_share": 0.0013562078188972917
+        },
+        "20260909": {
+          "G_action": false,
+          "G_collapse": false,
+          "action_sensitivity": 1.1421183534276235e-06,
+          "dim": 192,
+          "effective_rank": 112.73143840541664,
+          "effective_rank_threshold": 19.200000000000003,
+          "pass": false,
+          "within_episode_share": 0.001495250931530501
+        },
+        "20260910": {
+          "G_action": false,
+          "G_collapse": false,
+          "action_sensitivity": 1.1428984597232445e-06,
+          "dim": 192,
+          "effective_rank": 113.00867981675545,
+          "effective_rank_threshold": 19.200000000000003,
+          "pass": false,
+          "within_episode_share": 0.0015306222940891024
+        }
+      }
+    },
+    "evaluated_at": "2026-10-20T18:59:24Z",
+    "failing": [
+      "HJ-px/20260908",
+      "HJ-px/20260909",
+      "HJ-px/20260910",
+      "HJ-car-m/20260908",
+      "HJ-car-m/20260909",
+      "HJ-car-m/20260910"
+    ],
+    "triggered": true
+  },
+  "validation_command": "python -u -m scripts.run_hjepa_idm --validate",
+  "wrong_anchor": {
+    "arms": [
+      "HJ-px-IDM",
+      "HJ-car-m-IDM"
+    ],
+    "token": "SI8 right - wrong, delta rule"
+  }
+}

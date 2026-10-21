@@ -1,8 +1,8 @@
 # Issue #125: H-JEPA with its inverse-dynamics remedy on NovPhy
 
-Status (2026-10-19): **pre-trigger.** Code, CPU tests and G-port-IDM are in; the trigger, the γ₁ selection and the
-smoke are queued for the night window after #123's training. Nothing has run on a GPU. This document is completed
-at publication.
+Status (2026-10-21): **frozen.** The trigger fired: all six #123 primary arm-seeds fail G-collapse and G-action
+on fit data. γ₁ = 225 was selected for both input types on the policy split. `plan.json` was frozen at
+2026-10-21T07:26:34Z. Main training runs in the night window. This document is completed at publication.
 
 Pre-registered follow-up to #123 (ticket: `round2/issues/125.md`). It tests H-JEPA with the paper's own anti-collapse
 remedy: an inverse-dynamics (IDM) term and action-SIGReg (§4.3 Eq. 8, App. K, the DROID recipe). Only the IDM terms
@@ -76,8 +76,23 @@ Night window only (18:00–07:00 Australia/Melbourne), through `scripts/gpu_wind
 2. `125-select-q0/q1/q2` run on GPUs 1, 2 and 3.
 3. `125-smoke` runs on GPU 1.
 
-#123's jobs keep priority, and no #125 job uses GPU 0. Training, readouts and scoring are enqueued only after the
-#125 freeze (`--prepare`, an agent commit).
+Before the freeze, #123's jobs kept priority and no #125 job used GPU 0. After the freeze (`--prepare`, an agent
+commit), the main jobs were enqueued:
+4. `125-train-q3` (LeWM-px-IDM × 3, 18.1 GPU-h) runs on GPU 1, `125-train-q1` on GPU 2, `125-train-q2` on GPU 3 and
+   `125-train-q0` on GPU 0, once `123-validate` frees it. Each is resumable: SIGTERM writes `resume.pt` and the
+   job exits 75.
+5. `125-readouts-g0..g3` run after all four training queues, then `125-freeze-readouts`.
+6. `125-score` runs after `125-freeze-readouts` and `123-validate`, because SI1 and SI2 read #123's validated
+   publication. `125-publish` and `125-validate` follow.
+
+Projection: 62.1 GPU-h against the 120 GPU-h cap, 18.9 h wall, 2 nights.
+
+### Chronology
+
+`plan.json` was frozen after #123's evaluation scoring (18:03–18:10 AEDT on 21 Oct) but before the #125
+implementer read any #123 result. Every frozen choice comes from the ticket (pre-registered 2026-10-19), the
+policy-split γ₁ selection, or the fit-split trigger and smoke. The trigger was evaluated before #123's first
+evaluation read. Details are in `decisions.md`.
 
 ## Commands
 
