@@ -103,6 +103,14 @@ evaluation read. Details are in `decisions.md`.
 
 A1 is registered in that registry and covered by tests. Nothing that produces evidence changed (`decisions.md`).
 
+### Compute aggregation (inherited from #123 A3, `aa8e702f`; no #125 runner change)
+
+`compute_tables` sums `rc.ledger_totals` from the pinned #123 runner. #123's amendment A3 (`045530a9…` → `86e8ee9e…`,
+registered; the #125 plan's pinned hash is in its `replaces`) makes it count each arm-seed's training once: a
+`train-<arm>-seed<s>` phase counts its `models/<arm>/seed-<s>/report.json` seconds (the elapsed time carried across
+resumes, exactly what one completion marks). A ledger entry that differs keeps its raw seconds as
+`ledger_gpu_seconds` / `ledger_wall_seconds` and is not counted. Other phases count their ledger seconds.
+
 ## Commands
 
 ```
