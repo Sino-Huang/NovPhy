@@ -94,6 +94,15 @@ implementer read any #123 result. Every frozen choice comes from the ticket (pre
 policy-split γ₁ selection, or the fit-split trigger and smoke. The trigger was evaluated before #123's first
 evaluation read. Details are in `decisions.md`.
 
+### Post-freeze amendment A1 (night 1, before any #125 readout or evaluation read)
+
+- **Ledger.** `--train` now adds an arm-seed's seconds to the compute ledger only if its `model.pt` did not exist
+  before the call. The frozen code counted a finished run again whenever its queue relaunched.
+- **Plan loading.** `load_plan` no longer hash-checks the shared registry `scripts/post_freeze_amendments.py`, which
+  the frozen plan had pinned.
+
+A1 is registered in that registry and covered by tests. Nothing that produces evidence changed (`decisions.md`).
+
 ## Commands
 
 ```

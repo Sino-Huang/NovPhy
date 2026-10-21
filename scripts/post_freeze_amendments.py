@@ -151,6 +151,16 @@ AMENDMENTS = {
         "change": ("A2 (pre-scoring fidelity review): tests of the G-records gate and failed validation, failed-arm "
                    "publication with empty estimates, per-readout G-nonfinite with S9 gating, the positive-LR G-port "
                    "record and its sensitivity to a wrong gradient clip; the frozen tests unchanged")},
+    "scripts/run_hjepa_idm.py": {
+        "issue": 125, "replaces": ("sha256:5e533591c02d471e02bd8178cf9e0415e8f2009ccc69a94f97d8c5cd0647dd7b",),
+        "sha256": "sha256:56e7cc6588a430fb63f69ea31ac6011f8b7c3372ae2500f6a0241e785f82dba7",
+        "change": ("A1 (compute ledger and plan loading only; during main training night 1, before any #125 readout "
+                   "or evaluation read): --train marks an arm-seed's training seconds in the ledger only if its "
+                   "model.pt did not exist before the call (a relaunched queue re-visits finished arm-seeds, whose "
+                   "report.json the frozen code added a second time; the bug reported by #123's publication); "
+                   "load_plan no longer hash-checks this shared registry (pinned in the frozen #125 plan, but it is "
+                   "the append-only file matches() reads, so any later registration by any ticket would have made "
+                   "#125's relaunch refuse); objective, training, resume, data, readouts and scoring unchanged")},
 }
 
 

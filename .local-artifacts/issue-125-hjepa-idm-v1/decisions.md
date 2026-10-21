@@ -107,3 +107,13 @@ All six #123 primary arm-seeds fail both G-collapse and G-action:
 - `125-readouts-g0..g3` run after all four training queues. `125-freeze-readouts` runs after them.
 - `125-score` runs after `125-freeze-readouts` **and** `123-validate`, because SI1 / SI2 read #123's validated publication. `125-publish` and `125-validate` follow on GPU 1.
 - **Post-smoke edit to a frozen input.** `tests/test_issue_125_hjepa_idm.py` changed after the smoke: only its scheduler-job test, which now covers the main jobs. 18 / 18 tests pass on CPU at the freeze, and the frozen hash is of that file.
+
+## Post-freeze amendment A1 (2026-10-21, night 1 of main training; compute ledger and plan loading only)
+This amendment was made before any #125 readout or evaluation read, and after #123's publication agent reported the same bug in #123's `train()`. It is registered in `scripts/post_freeze_amendments.py`: `scripts/run_hjepa_idm.py` sha256 5e533591… → 56e7cc65….
+
+- **Ledger double count.** A relaunched training queue re-visits arm-seeds that are already finished. `train_run` then returns their stored `report.json`, and the frozen `train()` added those seconds to `ledger/train-<arm>-seed<s>.json` a second time. With A1, `train()` marks an arm-seed only if its `model.pt` did not exist before the call.
+  - The four queues running tonight loaded the frozen code. They mark only arm-seeds they train to completion, so night 1 cannot double count.
+  - The first relaunch (night 2) runs the amended code, so no ledger correction is needed.
+  - Test: `tests/test_issue_125_amendments.py` (night 1 / pause / night 2 / extra relaunch adds each arm-seed's seconds exactly once).
+- **Registry pin.** The frozen plan pinned `scripts/post_freeze_amendments.py` by hash. That is the shared, append-only registry `matches()` reads, so any later registration by any ticket, including this one, would have made `load_plan` refuse at #125's relaunch, readouts and scoring. With A1, `load_plan` skips the hash check of that one file. Its frozen hash stays in `plan.json` as a record. Every other pinned input is still checked.
+- Unchanged: objective, training, resume, RNG, data, readouts, scoring, tokens and dispositions. Registry test: `test_issue_125_ledger_amendment_is_registered` in `tests/test_issue_101_decision_aware_policy.py`.

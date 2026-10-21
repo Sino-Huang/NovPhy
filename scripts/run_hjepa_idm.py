@@ -88,6 +88,7 @@ CONTRASTS = {
 }
 ISSUE_123_ARMS = ("HJ-px", "HJ-car-m")  # SI1 / SI2 read #123's published records of these arms
 ISSUE_123_GLOBAL_GUARDS = ("G_isolation", "G_chronology", "G_scoring_policy", "G_records")  # required in compute.json
+REGISTRY = "scripts/post_freeze_amendments.py"  # shared amendment registry (see load_plan, A1)
 
 read_json = rc.read_json
 write_json = rc.write_json
@@ -838,6 +839,8 @@ def load_plan(output):
         raise ValueError("plan.json is not the issue-125 protocol with a passed smoke")
     from scripts import post_freeze_amendments as amendments
     for entry in plan["inputs"] + plan["data_manifest"]:
+        if entry["artifact"] == REGISTRY:
+            continue  # A1: the shared append-only registry that matches() reads; its frozen hash stays in plan.json
         if not amendments.matches(entry["artifact"], entry["sha256"], sha256_of(ROOT / entry["artifact"])):
             raise ValueError(f"frozen input {entry['artifact']} changed after the freeze")
     return plan
@@ -873,13 +876,14 @@ def train(output, gpu):
             return rc.EXIT_PAUSED
         arm, seed = name.split("/")
         spec = plan["arms"][arm]
+        run = run_dir(output, arm, int(seed))
+        finished_before = (run / "model.pt").is_file()  # A1: a relaunch must not add a finished run's seconds again
         try:
-            report = train_run(output, arm, int(seed), spec["lambda"], spec["gamma1"], spec["steps"], spec["batch"],
-                               run_dir(output, arm, int(seed)))
+            report = train_run(output, arm, int(seed), spec["lambda"], spec["gamma1"], spec["steps"], spec["batch"], run)
         except rc.TrainingPaused as paused:
             log(f"queue {gpu}: {paused}")
             return rc.EXIT_PAUSED
-        if not report.get("partial"):
+        if not report.get("partial") and not finished_before:
             mark(output, f"train-{arm}-seed{seed}", report["wall_seconds"], report["gpu_seconds"])
     return 0
 
