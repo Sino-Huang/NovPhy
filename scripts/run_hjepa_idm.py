@@ -690,8 +690,11 @@ def accounting():
 
 
 def smoke(output):
-    """Pre-freeze smoke (fit / policy only). not_triggered -> exit 0 at once. Writes smoke.json."""
+    """Pre-freeze smoke (fit / policy only). not_triggered -> exit 0 at once. Writes smoke.json. Refuses once plan.json
+    exists (A2): smoke.json is a frozen input, and a re-run would add its seconds to the smoke ledger phase again."""
     output = Path(output)
+    if (output / "plan.json").is_file():
+        raise ValueError("plan.json is frozen; the smoke does not run again")
     if not triggered(output):
         return record_not_triggered(output, "smoke")
     began = time.monotonic()
@@ -843,6 +846,7 @@ def load_plan(output):
             continue  # A1: the shared append-only registry that matches() reads; its frozen hash stays in plan.json
         if not amendments.matches(entry["artifact"], entry["sha256"], sha256_of(ROOT / entry["artifact"])):
             raise ValueError(f"frozen input {entry['artifact']} changed after the freeze")
+    rc.load_plan(SOURCE)  # A2: #123's own pins (harness, vendor, anchors, verdicts, reference records) and amendments
     return plan
 
 
@@ -932,6 +936,17 @@ def freeze_readouts(output):
     return 0
 
 
+def load_manifest(output):
+    """#123's load_manifest (every model.pt / readouts.pt hash) and, A2, every frozen readouts.json report hash
+    (report_sha256), from which arm_guards derives G-collapse / G-action / G-readout."""
+    manifest = rc.load_manifest(output)
+    for name, entry in manifest["entries"].items():
+        arm, seed = name.split("/")
+        if sha256_of(run_dir(output, arm, int(seed)) / "readouts.json") != entry["report_sha256"]:
+            raise ValueError(f"{name}: frozen readouts report changed")
+    return manifest
+
+
 # ---------------------------------------------------------------------------
 # scoring: once, after the readout freeze, under deterministic_scoring()
 # ---------------------------------------------------------------------------
@@ -978,7 +993,7 @@ def score(output):
     from scripts import run_lookahead_control as wlc
     output = Path(output)
     plan = load_plan(output)
-    manifest = rc.load_manifest(output)
+    manifest = load_manifest(output)
     began = time.monotonic()
     _, cells = rc.evaluation_set()
     if not rc.eval_cache_path(output).is_file():
@@ -1187,7 +1202,7 @@ def compute_tables(output, plan):
     from scripts import run_decision_relevant_dynamics as v1
     from world_model.planning import scoring_harness as harness
     output = Path(output)
-    manifest = rc.load_manifest(output)
+    manifest = load_manifest(output)
     _, cells = rc.evaluation_set()
     records = {(arm, seed): read_json(rc.record_path(output, arm, seed)) for arm in plan["arms"] for seed in SEEDS}
     for (arm, seed), record in records.items():
@@ -1350,7 +1365,7 @@ def spot_check(output, plan):
     wrong-anchor rows."""
     from world_model.planning import scoring_harness as harness
     from scripts import run_lookahead_control as wlc
-    manifest = rc.load_manifest(output)
+    manifest = load_manifest(output)
     _, cells = rc.evaluation_set()
     cache = torch.load(rc.eval_cache_path(output), map_location="cpu", weights_only=False)
     carriers = torch.load(rc.GATE_B / "data" / "anchors-evaluation.pt", map_location="cpu", weights_only=True)

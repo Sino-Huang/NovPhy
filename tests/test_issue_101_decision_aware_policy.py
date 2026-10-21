@@ -361,8 +361,9 @@ def test_issue_123_prescore_amendments_are_registered():
 
 
 def test_issue_125_ledger_amendment_is_registered():
-    """#125 A1: the runner replaces exactly the bytes frozen in the #125 plan; load_plan accepts it and the plan
-    still loads although this registry (pinned in that plan) has changed since the freeze."""
+    """#125 A1 and A2: the runner's chain (frozen -> A1 56e7cc65 -> A2) replaces exactly the bytes frozen in the #125
+    plan; load_plan accepts it and the plan still loads although this registry (pinned in that plan) has changed since
+    the freeze; A2's load_plan also loads #123's plan (inherited pins), which pins no registry."""
     import hashlib
     import json
     from scripts import post_freeze_amendments as pfa
@@ -371,10 +372,13 @@ def test_issue_125_ledger_amendment_is_registered():
     frozen = {entry["artifact"]: entry["sha256"] for entry in plan["inputs"]}
     runner = "scripts/run_hjepa_idm.py"
     assert pfa.AMENDMENTS[runner]["issue"] == 125
-    assert pfa.AMENDMENTS[runner]["replaces"] == (frozen[runner],)
+    assert pfa.AMENDMENTS[runner]["replaces"] == (
+        frozen[runner], "sha256:56e7cc6588a430fb63f69ea31ac6011f8b7c3372ae2500f6a0241e785f82dba7")
     current = "sha256:" + hashlib.sha256(open(runner, "rb").read()).hexdigest()
     assert pfa.matches(runner, frozen[runner], current)
     assert ri.REGISTRY in frozen
+    source = json.load(open(".local-artifacts/issue-123-hjepa-comparison-v1/plan.json"))
+    assert ri.REGISTRY not in {entry["artifact"] for entry in source["inputs"] + source["data_manifest"]}
     assert ri.load_plan(ri.OUTPUT)["identity"] == ri.IDENTITY
 
 

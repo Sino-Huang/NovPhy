@@ -111,6 +111,24 @@ registered; the #125 plan's pinned hash is in its `replaces`) makes it count eac
 resumes, exactly what one completion marks). A ledger entry that differs keeps its raw seconds as
 `ledger_gpu_seconds` / `ledger_wall_seconds` and is not counted. Other phases count their ledger seconds.
 
+### Post-freeze amendment A2 (pre-scoring review, 2026-10-22; validation only, before any #125 readout or evaluation read)
+
+- **Inherited pins.** `load_plan` hashed #123's `plan.json` but never ran #123's `load_plan`, so the inputs that
+  plan pins (scoring harness, vendored H-JEPA code, fit anchors and verdicts, Gate-B and #101 reference records)
+  were not checked. After #125's own pins, `load_plan` now runs `rc.load_plan` on #123's output. It accepts #123's
+  registered amendments (A1–A3) and nothing else, so every `--train`, `--readouts`, `--freeze-readouts`, `--score`,
+  `--publish` and `--validate` refuses if an inherited input drifts.
+- **Frozen guard reports.** `--freeze-readouts` records each arm-seed's `readouts.json` hash (`report_sha256`), but
+  nothing checked it, and `arm_guards` reads the live reports. A #125 `load_manifest` now wraps #123's (`model.pt` /
+  `readouts.pt` hashes) and also verifies every report hash, typed failures included. `--score`, `compute_tables`
+  (`--publish` / `--validate`) and the spot check use it. A report-only change therefore stops scoring and
+  publication. In `--validate` it withdraws the publication and writes a failed receipt, and the job exits non-zero.
+- **Smoke.** `--smoke` refuses once `plan.json` exists. `smoke.json` is a frozen input, and a re-run would add its
+  seconds to the smoke ledger phase again. A pre-freeze re-run would add the seconds it really spends.
+
+A2 is registered (`run_hjepa_idm.py` `56e7cc65…` → `d53e44d0…`) and tested in `tests/test_issue_125_amendments.py`.
+Training, resume, RNG, data, readout fitting, scoring math and tokens are unchanged (`decisions.md`).
+
 ## Commands
 
 ```
