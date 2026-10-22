@@ -1,6 +1,6 @@
 # Issue #125: H-JEPA with its inverse-dynamics remedy on NovPhy
 
-Parent: #108. Ticket: [#125](https://github.com/Sino-Huang/NovPhy/issues/125) (dump: `round2/issues/125.md`),
+Parent: #108. Ticket: [#125](https://github.com/Sino-Huang/NovPhy/issues/125),
 pre-registered 2026-10-19 before any #123 evaluation-split read, as the follow-up to
 [#123](https://github.com/Sino-Huang/NovPhy/issues/123) (`docs/issue-123-hjepa-comparison.md`). The #85 rules and the
 round-2 conventions apply. Nothing here edits #123 or the ICLR 2026 submission.
@@ -246,7 +246,7 @@ Per-seed diagnostics (top level; G-collapse needs both the rank and the χ thres
 | arm | seed | erank / D (≥ 0.1·D) | χ within-episode share (≥ 0.05) | endpoint launch sensitivity (≥ 0.05) | G-collapse | G-action | policy R1 AUC | policy ceiling AUC |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | HJ-px-IDM | 20260908 | 110.8 / 192 | 0.0014 | 1.67e-06 | fail | fail | 0.4871 | 0.8711 |
-| HJ-px-IDM | 20260909 | 109.0 / 192 | 0.0018 | 1.75e-05 | fail | fail | 0.4891 | 0.8613 |
+| HJ-px-IDM | 20260909 | 109.0 / 192 | 0.0018 | 1.74e-05 | fail | fail | 0.4891 | 0.8613 |
 | HJ-px-IDM | 20260910 | 110.9 / 192 | 0.0018 | 2.65e-06 | fail | fail | 0.5246 | 0.8362 |
 | HJ-car-m-IDM | 20260908 | 13.9 / 112 | 0.0162 | 1.92e-05 | fail | fail | 0.4406 | 0.5749 |
 | HJ-car-m-IDM | 20260909 | 13.6 / 112 | 0.0140 | 5.03e-04 | fail | fail | 0.4652 | 0.5813 |
@@ -378,9 +378,9 @@ Result:
 - **Disposition 1 does not apply.** PI1 and PI2 are `readiness_or_precision_insufficient` in the HJ − U direction,
   and so is SI8.
 - **Disposition 2 does not apply.** U − HJ-px-IDM and U − HJ-car-m-IDM are `readiness_or_precision_insufficient`,
-  because both primary arms fail G-collapse and G-action (HJ-car-m-IDM also G-readout). The manuscript may not state,
-  on this experiment, that our model beats or is better than H-JEPA (with or without its remedy), LeWM + IDM, and may
-  not use "state of the art" against them.
+  because both primary arms fail G-collapse and G-action (HJ-car-m-IDM also G-readout). No scoped ranking claim is
+  licensed: on this experiment the manuscript may not rank our model above H-JEPA (with or without its remedy) or
+  LeWM + IDM, and may not use "state of the art" against them.
 - **Disposition 3 applies: per-contrast tokens only; outcome branch: no scoped ranking claim.** Every token in the
   contrast table is `readiness_or_precision_insufficient`; the estimates are DESCRIPTIVE numbers, not effects.
 - **Disposition 4 holds** (`disposition_4_remedy_does_not_prevent_collapse: true`): HJ-px-IDM and HJ-car-m-IDM fail

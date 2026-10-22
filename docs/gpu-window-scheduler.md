@@ -180,3 +180,9 @@ cron starts jobs with a soft `RLIMIT_NOFILE` of 1024. Interactive shells on this
 The first `123-score` run (06:25 AEDT) crashed after 26 s in `build_eval_cache`. PyTorch passes tensors returned by pool workers as file descriptors, the 1024 limit ran out, and the pool broke: `RuntimeError: received 0 items of ancdata`, then `BrokenProcessPool`. No score was computed, and the cache file (written atomically) was never created.
 
 Fix: `gpu_window_cron.sh` now raises the soft limit to the hard limit (`ulimit -Sn "$(ulimit -Hn)"`) before each tick, so every scheduled job inherits it. No runner code changed. The job was requeued for the next window with `enqueue --requeue 123-score`.
+
+## Incident 2026-10-23: SIGSEGV in the first #125 publish
+
+The first `125-publish` run (launched 01:15:07 AEDT) died with SIGSEGV (exit −11) after 25 s, during table derivation, after `records-manifest.json` was written. It left no Python traceback, so the native cause is unknown. This was an infrastructure crash, not a typed experimental failure: scoring had already finished, and publishing only derives tables from the frozen records, so no record was touched.
+
+Fix: `gpu_window_cron.sh` now exports `PYTHONFAULTHANDLER=1` before each tick (`ed5acdd3`), so a fatal signal in any scheduled job dumps a Python stack into the job log. No runner code changed. The job was requeued once (`enqueue --requeue 125-publish`, 01:25:25). `125-publish#2` (01:30:08–01:32:10) exited 0, and `125-validate#1` re-derived and byte-compared every table (exit 0). Disclosed in `docs/issue-125-hjepa-idm.md` (Deviations 3).

@@ -244,7 +244,7 @@ disposition 4 requires.
 
 For HJ-px, HJ-car-m and HJ-car-native, right − wrong is about zero with an interval that contains zero. For HJ-px-B1 it
 is −0.0246 [−0.0423, −0.0062]: the right anchor ranks slightly *below* a wrong one. No HJ arm shows evidence that its cost
-uses the anchor. Every S10 token is `readiness_or_precision_insufficient` (arm guards).
+benefits from the correct anchor. Every S10 token is `readiness_or_precision_insufficient` (arm guards).
 
 ### Descriptive inventories (no tokens)
 
@@ -287,8 +287,19 @@ P is seed-free and constant on offset and power (0.5000 by construction).
 | HWM-px | 0.5001 [0.4835, 0.5165] | 0.5105 [0.4939, 0.5270] | 0.5582 [0.5406, 0.5762] | 0.5018 [0.4849, 0.5192] |
 | HWM-car-m | 0.5033 [0.4852, 0.5217] | 0.4996 [0.4842, 0.5147] | 0.4992 [0.4823, 0.5164] | 0.4955 [0.4796, 0.5110] |
 
-No readout variant lifts an H-JEPA-family arm off chance except HJ-car-native:R4 (0.6420), the exploratory readout that
-adds a ranking loss on fit mixed cells; it is still below every one of our rankers, and HJ-car-native fails G-collapse.
+DESCRIPTIVE only: these per-variant AUCs carry no token. Seven R2–R4 grid variants have a pooled interval that excludes
+0.5, all above it: HJ-car-native:R4 0.6420 [0.6190, 0.6657] (the largest; the exploratory readout that adds a ranking
+loss on fit mixed cells), HWM-px:R3 0.5582 [0.5406, 0.5762], HJ-car-native:R3 0.5453 [0.5201, 0.5706], HJ-car-native:R2
+0.5397 [0.5167, 0.5624], HJ-car-m-fs5:R2 0.5233 [0.5090, 0.5374], HJ-px-B1:R3 0.5188 [0.5019, 0.5357] and
+LeWM-car-m:R4 0.5165 [0.5036, 0.5300]. Every other R2–R4 grid interval contains 0.5. Each of the seven is below every one
+of our rankers (lowest: J 0.7057). In the offset / angle / power inventories (`findings.md`), the variants whose interval
+excludes 0.5 are HJ-car-native:R3 (offset 0.5709, angle 0.5661), HJ-car-native:R4 (0.6210 / 0.6765 / 0.5996),
+LeWM-car-m:R2 (angle 0.5617), LeWM-car-m:R4 (offset 0.5493, angle 0.5469), HJ-px:R4 (power 0.5503 [0.5006, 0.5981]),
+HWM-car-m:R2 (power 0.5430) and, below chance, HJ-car-m-fs5:R4 (angle 0.4562). HWM-px:R3 is above chance on the grid
+(0.5582) and power (0.5889) but below it on offset (0.4621) and angle (0.4485). None of these licenses a ranking claim:
+every arm involved fails at least one guard (HJ-car-native G-collapse; HWM-px, HJ-px and HJ-px-B1 G-collapse and
+G-action; HJ-car-m-fs5, LeWM-car-m and HWM-car-m G-collapse, G-action and G-readout), so every token that involves them
+is `readiness_or_precision_insufficient`.
 S9 (R2 versions of PC1 / PC2) is in the contrast table above.
 
 ### Engine position error (#100 metric; DESCRIPTIVE)
@@ -361,8 +372,8 @@ nothing.
 - **The temporal and representational levers do not change it.** S1–S4 are all within ±0.014 of zero (HJ − LeWM, HJ −
   HWM), and every lever arm fails its guards too. Flat LeWM-px keeps χ ≥ 0.05 and a sensitivity of 0.034–0.052 but loses
   the outcome (ceiling 0.5587).
-- **HJ-car-native is the only H-JEPA arm with non-zero action sensitivity** (0.145–0.161 per seed; G-action passes and
-  G-readout passes at 0.7182). Its χ is 0.011 on every seed, so it still fails G-collapse. Its grid AUC is 0.5407 under R1.
+- **HJ-car-native is the only H-JEPA arm that passes G-action** (sensitivity 0.145–0.161 per seed; G-readout also
+  passes, at 0.7182). Its χ is 0.011 on every seed, so it still fails G-collapse. Its grid AUC is 0.5407 under R1.
 
 ## Disposition (δ rule)
 
@@ -372,8 +383,9 @@ Frozen disposition 3 applies: **per-contrast tokens only; outcome branch: no sco
   directions, are `readiness_or_precision_insufficient`, because HJ-px and HJ-car-m fail G-collapse and G-action (and
   HJ-car-m G-readout).
 - Disposition 1 does not apply: no PC1 / PC2 is `supported` in the H-JEPA − U direction, and S10 is not `supported`.
-- Disposition 2 does not apply: it needs both primary arms to pass every guard. The manuscript may not state that our
-  model beats or is better than H-JEPA, LeWM or HWM, and may not use "state of the art" against them, on this experiment.
+- Disposition 2 does not apply: it needs both primary arms to pass every guard. No scoped ranking claim is licensed: the
+  manuscript may not rank our model above H-JEPA, LeWM or HWM, and may not use "state of the art" against them, on this
+  experiment.
 - Disposition 5 (budget asymmetry) is false, so U-B3 is not run. The closed-loop secondary is not run.
 - The permitted statement is: "H-JEPA, reproduced faithfully (G-fid pass), collapses on action-sparse NovPhy: its
   predicted endpoint ignores the launch and ranks at chance; the frozen rule therefore makes no ranking claim."
@@ -480,9 +492,15 @@ with Tier T. Engine seconds: 0. No scope was cut.
 
 [#125](https://github.com/Sino-Huang/NovPhy/issues/125) (`docs/issue-125-hjepa-idm.md`) was pre-registered on
 2026-10-19, before any #123 evaluation read, as the follow-up if the primary H-JEPA arms collapse. It adds the paper's
-own anti-collapse remedy, an inverse-dynamics term with action-SIGReg (§4.3 Eq. 8, App. K), and changes nothing else in
-#123's frozen plan. Its trigger fired on fit data: all six #123 primary arm-seeds (HJ-px, HJ-car-m × 3) fail G-collapse
-and G-action. It is frozen (`c9d0b64c`) and training in the night window.
+own anti-collapse remedy, an inverse-dynamics term with action-SIGReg (§4.3 Eq. 8, App. K). Apart from that it keeps
+#123's frozen plan, with one disclosed exception: to keep the IDM heads within U's parameter budget, the matched-carrier
+arms' predictor MLP width shrinks (HJ-car-m-IDM 448 → 96, LeWM-car-m-IDM 480 → 384), so SI2 / SI4 also change the
+carrier predictor width. Its trigger fired on fit data: all six #123 primary arm-seeds (HJ-px, HJ-car-m × 3) fail
+G-collapse and G-action. It was frozen (`c9d0b64c`), published (`8dfb999e`) and validated (`--validate` exit 0); see the
+[result comment](https://github.com/Sino-Huang/NovPhy/issues/125#issuecomment-6343737592). Disposition 3 applies:
+per-contrast tokens only, every token `readiness_or_precision_insufficient`, no scoped ranking claim. Disposition 4
+holds: with the remedy (γ₁ = 225), HJ-px-IDM and HJ-car-m-IDM still fail G-collapse and G-action on every seed, so the
+paper's own remedy does not prevent the collapse on this data.
 
 ## Reproduction
 
