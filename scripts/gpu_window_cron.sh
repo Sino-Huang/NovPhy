@@ -10,6 +10,9 @@ export TZ=Australia/Melbourne
 # PyTorch shares tensors returned by worker processes as file descriptors, so a 1024 limit breaks process pools.
 # The first #123 --score attempt (2026-10-21 06:25) died that way in build_eval_cache before any score.
 ulimit -Sn "$(ulimit -Hn)"
+# Fatal signals (e.g. SIGSEGV in native code) then dump a Python stack into the job log. The first #125 --publish
+# (2026-10-23 01:15) died with exit -11 after 25 s and left no traceback.
+export PYTHONFAULTHANDLER=1
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate novphy
 source env.sh
