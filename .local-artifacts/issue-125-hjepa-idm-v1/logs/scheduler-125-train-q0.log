@@ -1,0 +1,15 @@
+
+=== gpu-window 125-train-q0#1 launched 2026-10-21T18:30:04+11:00 on GPU 0: python -u -m scripts.run_hjepa_idm --train --gpu 0 ===
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+{"already_forwarded": false, "at": "2026-10-22T06:50:00+11:00", "event": "window_stop", "job": "125-train-q0", "pid": 1081938, "reason": "wrapper clock reached 2026-10-22T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+[issue-125] HJ-px-IDM seed 20260908: stop signal; resume.pt written at step 114381
+[issue-125] queue 0: HJ-px-IDM seed 20260908 paused at step 114381 of 128045
+
+=== gpu-window 125-train-q0#2 launched 2026-10-22T18:00:09+11:00 on GPU 0: python -u -m scripts.run_hjepa_idm --train --gpu 0 ===
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-125] HJ-px-IDM seed 20260908: resumed at step 114381
+[issue-125] HJ-px-IDM seed 20260908 lam 0.18 gamma1 225.0: complete after 49652s
+[issue-125] HJ-car-m-IDM seed 20260908 lam 0.18 gamma1 225.0: complete after 257s
+[issue-125] LeWM-car-m-IDM seed 20260908 lam 0.18 gamma1 225.0: complete after 160s

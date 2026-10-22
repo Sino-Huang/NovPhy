@@ -1,0 +1,73 @@
+{"at": "2026-10-19T17:15:45+11:00", "event": "enqueued", "job": "125-trigger", "state": "queued"}
+{"at": "2026-10-19T17:15:45+11:00", "event": "enqueued", "job": "125-select-q0", "state": "queued"}
+{"at": "2026-10-19T17:15:45+11:00", "event": "enqueued", "job": "125-select-q1", "state": "queued"}
+{"at": "2026-10-19T17:15:45+11:00", "event": "enqueued", "job": "125-select-q2", "state": "queued"}
+{"at": "2026-10-19T17:15:45+11:00", "event": "enqueued", "job": "125-smoke", "state": "queued"}
+{"at": "2026-10-19T19:00:53+11:00", "event": "depends_updated", "job": "123-score", "new": ["123-freeze-readouts", "125-trigger"], "old": ["123-freeze-readouts"], "state": "queued"}
+{"at": "2026-10-21T05:55:04+11:00", "event": "launch", "gpu": 1, "job": "125-trigger", "pid": 833128, "run": 1}
+{"at": "2026-10-21T06:00:03+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-trigger", "run": 1, "seconds": 261, "state": "completed", "stray_pids": []}
+{"at": "2026-10-21T06:15:09+11:00", "event": "launch", "gpu": 1, "job": "125-select-q0", "pid": 848583, "run": 1}
+{"at": "2026-10-21T06:15:09+11:00", "event": "launch", "gpu": 2, "job": "125-select-q1", "pid": 848584, "run": 1}
+{"at": "2026-10-21T06:15:09+11:00", "event": "launch", "gpu": 3, "job": "125-select-q2", "pid": 848585, "run": 1}
+{"at": "2026-10-21T06:25:06+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-select-q2", "run": 1, "seconds": 364, "state": "completed", "stray_pids": []}
+{"already_forwarded": false, "at": "2026-10-21T06:50:00+11:00", "event": "window_stop", "job": "125-select-q0", "pid": 848586, "reason": "wrapper clock reached 2026-10-21T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+{"at": "2026-10-21T06:50:04+11:00", "event": "ended", "exit_code": 75, "interrupted": true, "job": "125-select-q0", "run": 1, "seconds": 2092, "state": "paused", "stray_pids": []}
+{"at": "2026-10-21T06:50:04+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-select-q1", "run": 1, "seconds": 2082, "state": "completed", "stray_pids": []}
+{"at": "2026-10-21T18:00:08+11:00", "event": "launch", "gpu": 1, "job": "125-select-q0", "pid": 1070637, "run": 2}
+{"at": "2026-10-21T18:10:04+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-select-q0", "run": 2, "seconds": 351, "state": "completed", "stray_pids": []}
+{"at": "2026-10-21T18:10:04+11:00", "event": "launch", "gpu": 1, "job": "125-smoke", "pid": 1074229, "run": 1}
+{"at": "2026-10-21T18:15:06+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-smoke", "run": 1, "seconds": 49, "state": "completed", "stray_pids": []}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-train-q3", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-train-q1", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-train-q2", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-train-q0", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-readouts-g0", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-readouts-g1", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-readouts-g2", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-readouts-g3", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-freeze-readouts", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-score", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-publish", "state": "queued"}
+{"at": "2026-10-21T18:27:52+11:00", "event": "enqueued", "job": "125-validate", "state": "queued"}
+{"at": "2026-10-21T18:30:04+11:00", "event": "launch", "gpu": 1, "job": "125-train-q3", "pid": 1081931, "run": 1}
+{"at": "2026-10-21T18:30:04+11:00", "event": "launch", "gpu": 2, "job": "125-train-q1", "pid": 1081932, "run": 1}
+{"at": "2026-10-21T18:30:04+11:00", "event": "launch", "gpu": 3, "job": "125-train-q2", "pid": 1081933, "run": 1}
+{"at": "2026-10-21T18:30:04+11:00", "event": "launch", "gpu": 0, "job": "125-train-q0", "pid": 1081934, "run": 1}
+{"already_forwarded": false, "at": "2026-10-22T06:50:00+11:00", "event": "window_stop", "job": "125-train-q2", "pid": 1081937, "reason": "wrapper clock reached 2026-10-22T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+{"already_forwarded": false, "at": "2026-10-22T06:50:00+11:00", "event": "window_stop", "job": "125-train-q1", "pid": 1081936, "reason": "wrapper clock reached 2026-10-22T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+{"already_forwarded": false, "at": "2026-10-22T06:50:00+11:00", "event": "window_stop", "job": "125-train-q3", "pid": 1081935, "reason": "wrapper clock reached 2026-10-22T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+{"already_forwarded": false, "at": "2026-10-22T06:50:00+11:00", "event": "window_stop", "job": "125-train-q0", "pid": 1081938, "reason": "wrapper clock reached 2026-10-22T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+{"at": "2026-10-22T06:50:04+11:00", "event": "ended", "exit_code": 75, "interrupted": true, "job": "125-train-q3", "run": 1, "seconds": 44398, "state": "paused", "stray_pids": []}
+{"at": "2026-10-22T06:50:04+11:00", "event": "stop", "job": "125-train-q1", "pid": 1081932, "reason": "window stops at 06:50", "run": 1, "signal": "SIGTERM"}
+{"at": "2026-10-22T06:50:04+11:00", "event": "stop", "job": "125-train-q2", "pid": 1081933, "reason": "window stops at 06:50", "run": 1, "signal": "SIGTERM"}
+{"at": "2026-10-22T06:50:04+11:00", "event": "stop", "job": "125-train-q0", "pid": 1081934, "reason": "window stops at 06:50", "run": 1, "signal": "SIGTERM"}
+{"at": "2026-10-22T06:55:04+11:00", "event": "ended", "exit_code": 75, "interrupted": true, "job": "125-train-q1", "run": 1, "seconds": 44400, "state": "paused", "stray_pids": []}
+{"at": "2026-10-22T06:55:04+11:00", "event": "ended", "exit_code": 75, "interrupted": true, "job": "125-train-q2", "run": 1, "seconds": 44400, "state": "paused", "stray_pids": []}
+{"at": "2026-10-22T06:55:04+11:00", "event": "ended", "exit_code": 75, "interrupted": true, "job": "125-train-q0", "run": 1, "seconds": 44400, "state": "paused", "stray_pids": []}
+{"at": "2026-10-22T18:00:09+11:00", "event": "launch", "gpu": 1, "job": "125-train-q3", "pid": 1543837, "run": 2}
+{"at": "2026-10-22T18:00:09+11:00", "event": "launch", "gpu": 2, "job": "125-train-q1", "pid": 1543838, "run": 2}
+{"at": "2026-10-22T18:00:09+11:00", "event": "launch", "gpu": 3, "job": "125-train-q2", "pid": 1543839, "run": 2}
+{"at": "2026-10-22T18:00:09+11:00", "event": "launch", "gpu": 0, "job": "125-train-q0", "pid": 1543840, "run": 2}
+{"at": "2026-10-22T19:35:08+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-train-q1", "run": 2, "seconds": 5464, "state": "completed", "stray_pids": []}
+{"at": "2026-10-22T19:40:07+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-train-q0", "run": 2, "seconds": 5699, "state": "completed", "stray_pids": []}
+{"at": "2026-10-22T19:45:07+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-train-q2", "run": 2, "seconds": 6257, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T00:50:02+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-train-q3", "run": 2, "seconds": 24415, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T00:50:02+11:00", "event": "launch", "gpu": 0, "job": "125-readouts-g0", "pid": 1676772, "run": 1}
+{"at": "2026-10-23T00:50:02+11:00", "event": "launch", "gpu": 1, "job": "125-readouts-g1", "pid": 1676773, "run": 1}
+{"at": "2026-10-23T00:50:02+11:00", "event": "launch", "gpu": 2, "job": "125-readouts-g2", "pid": 1676774, "run": 1}
+{"at": "2026-10-23T00:50:02+11:00", "event": "launch", "gpu": 3, "job": "125-readouts-g3", "pid": 1676775, "run": 1}
+{"at": "2026-10-23T01:00:05+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-readouts-g0", "run": 1, "seconds": 393, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T01:00:05+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-readouts-g1", "run": 1, "seconds": 474, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T01:00:05+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-readouts-g2", "run": 1, "seconds": 403, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T01:00:05+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-readouts-g3", "run": 1, "seconds": 472, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T01:00:05+11:00", "event": "launch", "gpu": null, "job": "125-freeze-readouts", "pid": 1682808, "run": 1}
+{"at": "2026-10-23T01:05:06+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-freeze-readouts", "run": 1, "seconds": 8, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T01:05:06+11:00", "event": "launch", "gpu": 1, "job": "125-score", "pid": 1683915, "run": 1}
+{"at": "2026-10-23T01:15:07+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-score", "run": 1, "seconds": 338, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T01:15:07+11:00", "event": "launch", "gpu": 1, "job": "125-publish", "pid": 1686180, "run": 1}
+{"at": "2026-10-23T01:20:07+11:00", "event": "ended", "exit_code": -11, "interrupted": false, "job": "125-publish", "run": 1, "seconds": 25, "state": "failed", "stray_pids": []}
+{"at": "2026-10-23T01:25:25+11:00", "event": "requeued", "job": "125-publish"}
+{"at": "2026-10-23T01:30:08+11:00", "event": "launch", "gpu": 1, "job": "125-publish", "pid": 1689787, "run": 2}
+{"at": "2026-10-23T01:35:06+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-publish", "run": 2, "seconds": 122, "state": "completed", "stray_pids": []}
+{"at": "2026-10-23T01:35:06+11:00", "event": "launch", "gpu": 1, "job": "125-validate", "pid": 1690920, "run": 1}
+{"at": "2026-10-23T01:40:04+11:00", "event": "ended", "exit_code": 0, "interrupted": false, "job": "125-validate", "run": 1, "seconds": 244, "state": "completed", "stray_pids": []}

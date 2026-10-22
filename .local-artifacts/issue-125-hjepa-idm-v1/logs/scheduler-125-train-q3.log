@@ -1,0 +1,12 @@
+
+=== gpu-window 125-train-q3#1 launched 2026-10-21T18:30:04+11:00 on GPU 1: python -u -m scripts.run_hjepa_idm --train --gpu 3 ===
+[issue-125] LeWM-px-IDM seed 20260908 lam 0.18 gamma1 225.0: complete after 23354s
+{"already_forwarded": false, "at": "2026-10-22T06:50:00+11:00", "event": "window_stop", "job": "125-train-q3", "pid": 1081935, "reason": "wrapper clock reached 2026-10-22T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+[issue-125] LeWM-px-IDM seed 20260909: stop signal; resume.pt written at step 139314
+[issue-125] queue 3: LeWM-px-IDM seed 20260909 paused at step 139314 of 150880
+
+=== gpu-window 125-train-q3#2 launched 2026-10-22T18:00:09+11:00 on GPU 1: python -u -m scripts.run_hjepa_idm --train --gpu 3 ===
+[issue-125] LeWM-px-IDM seed 20260908: model.pt exists; skipped
+[issue-125] LeWM-px-IDM seed 20260909: resumed at step 139314
+[issue-125] LeWM-px-IDM seed 20260909 lam 0.18 gamma1 225.0: complete after 22799s
+[issue-125] LeWM-px-IDM seed 20260910 lam 0.18 gamma1 225.0: complete after 22634s

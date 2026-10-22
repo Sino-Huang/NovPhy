@@ -1,0 +1,11 @@
+
+=== gpu-window 125-trigger#1 launched 2026-10-21T05:55:04+11:00 on GPU 1: python -u -m scripts.run_hjepa_idm --trigger ===
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-125] trigger HJ-px seed 20260908: {'effective_rank': 111.7302774658243, 'dim': 192, 'effective_rank_threshold': 19.200000000000003, 'within_episode_share': 0.0013562078188972917, 'action_sensitivity': 1.135711512935086e-06, 'G_collapse': False, 'G_action': False, 'pass': False}
+[issue-125] trigger HJ-px seed 20260909: {'effective_rank': 112.73143840541664, 'dim': 192, 'effective_rank_threshold': 19.200000000000003, 'within_episode_share': 0.001495250931530501, 'action_sensitivity': 1.1421183534276235e-06, 'G_collapse': False, 'G_action': False, 'pass': False}
+[issue-125] trigger HJ-px seed 20260910: {'effective_rank': 113.00867981675545, 'dim': 192, 'effective_rank_threshold': 19.200000000000003, 'within_episode_share': 0.0015306222940891024, 'action_sensitivity': 1.1428984597232445e-06, 'G_collapse': False, 'G_action': False, 'pass': False}
+[issue-125] trigger HJ-car-m seed 20260908: {'effective_rank': 14.223348821866866, 'dim': 112, 'effective_rank_threshold': 11.200000000000001, 'within_episode_share': 0.016723848099451606, 'action_sensitivity': 1.7122812600389504e-07, 'G_collapse': False, 'G_action': False, 'pass': False}
+[issue-125] trigger HJ-car-m seed 20260909: {'effective_rank': 13.812826417624438, 'dim': 112, 'effective_rank_threshold': 11.200000000000001, 'within_episode_share': 0.016674555460437696, 'action_sensitivity': 1.6591359960670473e-07, 'G_collapse': False, 'G_action': False, 'pass': False}
+[issue-125] trigger HJ-car-m seed 20260910: {'effective_rank': 14.067715556387938, 'dim': 112, 'effective_rank_threshold': 11.200000000000001, 'within_episode_share': 0.016067369476327868, 'action_sensitivity': 1.6714699818282105e-07, 'G_collapse': False, 'G_action': False, 'pass': False}
+[issue-125] trigger: triggered = True (failing ['HJ-px/20260908', 'HJ-px/20260909', 'HJ-px/20260910', 'HJ-car-m/20260908', 'HJ-car-m/20260909', 'HJ-car-m/20260910'])

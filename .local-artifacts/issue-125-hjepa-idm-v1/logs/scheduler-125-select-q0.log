@@ -1,0 +1,17 @@
+
+=== gpu-window 125-select-q0#1 launched 2026-10-21T06:15:09+11:00 on GPU 1: python -u -m scripts.run_hjepa_idm --selection --gpu 0 --workers 3 ===
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-125] HJ-px-IDM seed 20260908 lam 0.18 gamma1 100.0: complete after 1877s
+[issue-123] readouts HJ-px-IDM seed 20260908: policy R1 AUC 0.48298846543527396, ceiling 0.825333177460837, erank 42.5/192, chi 0.002, sensitivity 0.000 (200s)
+{"already_forwarded": false, "at": "2026-10-21T06:50:00+11:00", "event": "window_stop", "job": "125-select-q0", "pid": 848586, "reason": "wrapper clock reached 2026-10-21T06:50:00+11:00", "run": 1, "signal": "SIGTERM"}
+[issue-125] HJ-car-m-IDM seed 20260908: stop signal; resume.pt written at step 331
+[issue-125] selection slot 0: HJ-car-m-IDM seed 20260908 paused at step 331 of 9000
+
+=== gpu-window 125-select-q0#2 launched 2026-10-21T18:00:08+11:00 on GPU 1: python -u -m scripts.run_hjepa_idm --selection --gpu 0 --workers 3 ===
+[issue-125] HJ-px-IDM seed 20260908: model.pt exists; skipped
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-125] HJ-car-m-IDM seed 20260908: resumed at step 331
+[issue-125] HJ-car-m-IDM seed 20260908 lam 0.18 gamma1 225.0: complete after 257s
+[issue-123] readouts HJ-car-m-IDM seed 20260908: policy R1 AUC 0.44058919803600666, ceiling 0.5749025796898137, erank 13.9/112, chi 0.016, sensitivity 0.000 (97s)

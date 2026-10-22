@@ -1,0 +1,7 @@
+
+=== gpu-window 125-readouts-g3#1 launched 2026-10-23T00:50:02+11:00 on GPU 3: python -u -m scripts.run_hjepa_idm --readouts --gpu 3 ===
+/mnt/array/sukaih/Project/NovPhy/world_model/hjepa/vendor/models/encoders/seq_encoder.py:73: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
+[issue-123] readouts HJ-px-IDM seed 20260908: policy R1 AUC 0.4870752474475879, ceiling 0.8710720130932899, erank 110.8/192, chi 0.001, sensitivity 0.000 (182s)
+[issue-123] readouts LeWM-car-m-IDM seed 20260909: policy R1 AUC 0.46063342685683106, ceiling 0.6510891590678825, erank 25.5/112, chi 0.045, sensitivity 0.013 (100s)
+[issue-123] readouts LeWM-px-IDM seed 20260910: policy R1 AUC 0.4562953004442366, ceiling 0.5689794248304886, erank 159.4/192, chi 0.055, sensitivity 1.074 (177s)
