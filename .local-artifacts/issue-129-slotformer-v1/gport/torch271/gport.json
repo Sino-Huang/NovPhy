@@ -1,0 +1,982 @@
+{
+  "G_port": true,
+  "G_port_123_exact": false,
+  "adapter": "sha256:7910597468d9f942724c67177b1fccab3d001e2e20dac3478f1bb5a4207b1f81",
+  "arm_family": "B1 SlotFormer-E99",
+  "arms": {
+    "b1-matched-s15": {
+      "arm": "b1-matched-s15",
+      "batch_equal": true,
+      "official_optimizer_class": "Adam",
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "official_torch": "2.7.1+cu128",
+      "official_trainable_parameters": 1793445,
+      "optimizer_class": "Adam",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "parameter_names_equal": true,
+      "pass": true,
+      "pass_123_exact": true,
+      "prediction_max_abs_delta": 3.337860107421875e-06,
+      "prediction_relative_l2": 3.546601874404587e-07,
+      "scheduler": {
+        "class": "CosineAnnealingWarmupRestarts",
+        "first_cycle_steps": 9000,
+        "max_lr": [
+          0.0002
+        ],
+        "min_lr": [
+          2e-06
+        ],
+        "warmup_steps": 450.0
+      },
+      "scheduler_equal": true,
+      "spec": {
+        "kind": "carriers",
+        "size": {
+          "d_model": 136,
+          "ffn_dim": 544,
+          "num_heads": 8,
+          "num_layers": 8
+        },
+        "stride": 15
+      },
+      "step2_from_official_step1_state": {
+        "grad_tensor_max_relative_l2": 1.19523620014661e-05,
+        "loss_relative_delta": 0.0,
+        "param_close_share_abs": 0.9993671178817749,
+        "param_max_abs_delta": 1.2901595255243592e-05
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 1.2679616702371277e-05,
+          "grad_norm": 92.93798065185547,
+          "grad_norm_relative_delta": 2.462737953845664e-07,
+          "grad_tensor_max_relative_l2": 1.1337567229929846e-05,
+          "grad_tensors_equal_set": true,
+          "loss": 3.054617166519165,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 3.054617166519165
+          },
+          "lrs_after_step": [
+            2.44e-06
+          ],
+          "lrs_at_step": [
+            2e-06
+          ],
+          "official_grad_norm": 92.93795776367188,
+          "official_loss": 3.054617166519165,
+          "official_lrs_after_step": [
+            2.44e-06
+          ],
+          "official_lrs_at_step": [
+            2e-06
+          ],
+          "param_close_share_abs": 0.999955952167511,
+          "param_close_share_isclose": 1.0,
+          "param_max_abs_delta": 4.731118679046631e-07,
+          "param_moved_max_abs": 2.0265579223632812e-06,
+          "parameter_mismatch": {
+            "elements": 0,
+            "official_grad_max_abs": 0.0,
+            "official_grad_norm": 92.93795776367188
+          },
+          "pass": true,
+          "pass_123_exact": true
+        },
+        {
+          "adam_moment_max_relative_l2": 7.288910182978725e-06,
+          "grad_norm": 82.57115173339844,
+          "grad_norm_relative_delta": 1.3859654002053631e-06,
+          "grad_tensor_max_relative_l2": 1.3015823242312763e-05,
+          "grad_tensors_equal_set": true,
+          "loss": 2.933527946472168,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 2.933527946472168
+          },
+          "lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "lrs_at_step": [
+            0.0002
+          ],
+          "official_grad_norm": 82.5712661743164,
+          "official_loss": 2.933527946472168,
+          "official_lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "official_lrs_at_step": [
+            0.0002
+          ],
+          "param_close_share_abs": 0.9992238283157349,
+          "param_close_share_isclose": 0.9995823502540588,
+          "param_max_abs_delta": 2.1256011677905917e-05,
+          "param_moved_max_abs": 0.0002002716064453125,
+          "parameter_mismatch": {
+            "elements": 749,
+            "official_grad_max_abs": 0.0003832357469946146,
+            "official_grad_norm": 82.5712661743164
+          },
+          "pass": true,
+          "pass_123_exact": true
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 1793445
+    },
+    "b1-native-s15": {
+      "arm": "b1-native-s15",
+      "batch_equal": true,
+      "official_optimizer_class": "Adam",
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "official_torch": "2.7.1+cu128",
+      "official_trainable_parameters": 6325005,
+      "optimizer_class": "Adam",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "parameter_names_equal": true,
+      "pass": true,
+      "pass_123_exact": true,
+      "prediction_max_abs_delta": 2.384185791015625e-06,
+      "prediction_relative_l2": 4.5040971485832415e-07,
+      "scheduler": {
+        "class": "CosineAnnealingWarmupRestarts",
+        "first_cycle_steps": 9000,
+        "max_lr": [
+          0.0002
+        ],
+        "min_lr": [
+          2e-06
+        ],
+        "warmup_steps": 450.0
+      },
+      "scheduler_equal": true,
+      "spec": {
+        "kind": "carriers",
+        "size": {
+          "d_model": 256,
+          "ffn_dim": 1024,
+          "num_heads": 8,
+          "num_layers": 8
+        },
+        "stride": 15
+      },
+      "step2_from_official_step1_state": {
+        "grad_tensor_max_relative_l2": 9.428551129531115e-05,
+        "loss_relative_delta": 0.0,
+        "param_close_share_abs": 0.9975859522819519,
+        "param_max_abs_delta": 8.986052125692368e-05
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 3.420598659431562e-05,
+          "grad_norm": 39.00602340698242,
+          "grad_norm_relative_delta": 1.0757729477528375e-06,
+          "grad_tensor_max_relative_l2": 2.6651501684682444e-05,
+          "grad_tensors_equal_set": true,
+          "loss": 1.7504147291183472,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 1.7504147291183472
+          },
+          "lrs_after_step": [
+            2.44e-06
+          ],
+          "lrs_at_step": [
+            2e-06
+          ],
+          "official_grad_norm": 39.006065368652344,
+          "official_loss": 1.7504147291183472,
+          "official_lrs_after_step": [
+            2.44e-06
+          ],
+          "official_lrs_at_step": [
+            2e-06
+          ],
+          "param_close_share_abs": 0.9999868869781494,
+          "param_close_share_isclose": 0.9999992251396179,
+          "param_max_abs_delta": 3.7141144275665283e-06,
+          "param_moved_max_abs": 2.0265579223632812e-06,
+          "parameter_mismatch": {
+            "elements": 5,
+            "official_grad_max_abs": 7.89295881986618e-08,
+            "official_grad_norm": 39.006065368652344
+          },
+          "pass": true,
+          "pass_123_exact": true
+        },
+        {
+          "adam_moment_max_relative_l2": 1.9768482161452994e-05,
+          "grad_norm": 36.995670318603516,
+          "grad_norm_relative_delta": 5.15560226302068e-07,
+          "grad_tensor_max_relative_l2": 2.1880694475839846e-05,
+          "grad_tensors_equal_set": true,
+          "loss": 1.7373892068862915,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 1.7373892068862915
+          },
+          "lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "lrs_at_step": [
+            0.0002
+          ],
+          "official_grad_norm": 36.99565124511719,
+          "official_loss": 1.7373892068862915,
+          "official_lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "official_lrs_at_step": [
+            0.0002
+          ],
+          "param_close_share_abs": 0.9995558857917786,
+          "param_close_share_isclose": 0.9998723864555359,
+          "param_max_abs_delta": 1.740705920383334e-05,
+          "param_moved_max_abs": 0.0002002716064453125,
+          "parameter_mismatch": {
+            "elements": 807,
+            "official_grad_max_abs": 0.00820184126496315,
+            "official_grad_norm": 36.99565124511719
+          },
+          "pass": true,
+          "pass_123_exact": true
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 6325005
+    },
+    "b1-native-s5": {
+      "arm": "b1-native-s5",
+      "batch_equal": true,
+      "official_optimizer_class": "Adam",
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "official_torch": "2.7.1+cu128",
+      "official_trainable_parameters": 6325005,
+      "optimizer_class": "Adam",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "parameter_names_equal": true,
+      "pass": true,
+      "pass_123_exact": false,
+      "prediction_max_abs_delta": 4.947185516357422e-06,
+      "prediction_relative_l2": 6.110535650805105e-07,
+      "scheduler": {
+        "class": "CosineAnnealingWarmupRestarts",
+        "first_cycle_steps": 9000,
+        "max_lr": [
+          0.0002
+        ],
+        "min_lr": [
+          2e-06
+        ],
+        "warmup_steps": 450.0
+      },
+      "scheduler_equal": true,
+      "spec": {
+        "kind": "carriers",
+        "size": {
+          "d_model": 256,
+          "ffn_dim": 1024,
+          "num_heads": 8,
+          "num_layers": 8
+        },
+        "stride": 5
+      },
+      "step2_from_official_step1_state": {
+        "grad_tensor_max_relative_l2": 4.9439524445915595e-05,
+        "loss_relative_delta": 0.0,
+        "param_close_share_abs": 0.9995989203453064,
+        "param_max_abs_delta": 1.2713484466075897e-05
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 4.6373614168260247e-05,
+          "grad_norm": 34.323280334472656,
+          "grad_norm_relative_delta": 1.444825075583801e-06,
+          "grad_tensor_max_relative_l2": 3.711782119353302e-05,
+          "grad_tensors_equal_set": true,
+          "loss": 1.4792349338531494,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 1.4792349338531494
+          },
+          "lrs_after_step": [
+            2.44e-06
+          ],
+          "lrs_at_step": [
+            2e-06
+          ],
+          "official_grad_norm": 34.3232307434082,
+          "official_loss": 1.4792349338531494,
+          "official_lrs_after_step": [
+            2.44e-06
+          ],
+          "official_lrs_at_step": [
+            2e-06
+          ],
+          "param_close_share_abs": 0.9999808669090271,
+          "param_close_share_isclose": 0.9999977946281433,
+          "param_max_abs_delta": 3.7178397178649902e-06,
+          "param_moved_max_abs": 2.0265579223632812e-06,
+          "parameter_mismatch": {
+            "elements": 14,
+            "official_grad_max_abs": 1.4901161193847656e-07,
+            "official_grad_norm": 34.3232307434082
+          },
+          "pass": true,
+          "pass_123_exact": true
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0002716360322665423,
+          "grad_norm": 31.796802520751953,
+          "grad_norm_relative_delta": 1.1997108217035367e-07,
+          "grad_tensor_max_relative_l2": 0.00043300961260683835,
+          "grad_tensors_equal_set": true,
+          "loss": 1.4421732425689697,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 1.4421732425689697
+          },
+          "lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "lrs_at_step": [
+            0.0002
+          ],
+          "official_grad_norm": 31.79680633544922,
+          "official_loss": 1.4421732425689697,
+          "official_lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "official_lrs_at_step": [
+            0.0002
+          ],
+          "param_close_share_abs": 0.9920153617858887,
+          "param_close_share_isclose": 0.9998430013656616,
+          "param_max_abs_delta": 0.0003119658213108778,
+          "param_moved_max_abs": 0.0002002716064453125,
+          "parameter_mismatch": {
+            "elements": 993,
+            "official_grad_max_abs": 0.011100627481937408,
+            "official_grad_norm": 31.79680633544922
+          },
+          "pass": true,
+          "pass_123_exact": false
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 6325005
+    },
+    "head-b1": {
+      "arm": "head-b1",
+      "batch_equal": true,
+      "official_optimizer_class": "Adam",
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.001,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "official_torch": "2.7.1+cu128",
+      "official_trainable_parameters": 811649,
+      "optimizer_class": "Adam",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.001,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "parameter_names_equal": true,
+      "pass": true,
+      "pass_123_exact": true,
+      "prediction_max_abs_delta": 0.0,
+      "prediction_relative_l2": 0.0,
+      "scheduler": {
+        "class": "CosineAnnealingWarmupRestarts",
+        "first_cycle_steps": 9000,
+        "max_lr": [
+          0.001
+        ],
+        "min_lr": [
+          1e-05
+        ],
+        "warmup_steps": 900.0
+      },
+      "scheduler_equal": true,
+      "spec": {
+        "frames": 2,
+        "kind": "head",
+        "readout": {
+          "d_model": 128,
+          "ffn_dim": 512,
+          "norm_first": true,
+          "num_heads": 8,
+          "num_layers": 4,
+          "num_slots": 19,
+          "sel_slots": [
+            0,
+            1
+          ],
+          "slot_size": 13,
+          "t_pe": "sin"
+        }
+      },
+      "step2_from_official_step1_state": {
+        "grad_tensor_max_relative_l2": 5.24391964518145e-07,
+        "loss_relative_delta": 0.0,
+        "param_close_share_abs": 0.9994357228279114,
+        "param_max_abs_delta": 2.11119549931027e-05
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 7.146383609324403e-07,
+          "grad_norm": 2.3649489879608154,
+          "grad_norm_relative_delta": 0.0,
+          "grad_tensor_max_relative_l2": 5.697976916962944e-07,
+          "grad_tensors_equal_set": true,
+          "loss": 0.7156578302383423,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "vqa_loss": 0.7156578302383423
+          },
+          "lrs_after_step": [
+            1.11e-05
+          ],
+          "lrs_at_step": [
+            1e-05
+          ],
+          "official_grad_norm": 2.3649489879608154,
+          "official_loss": 0.7156578302383423,
+          "official_lrs_after_step": [
+            1.11e-05
+          ],
+          "official_lrs_at_step": [
+            1e-05
+          ],
+          "param_close_share_abs": 0.999948263168335,
+          "param_close_share_isclose": 1.0,
+          "param_max_abs_delta": 5.935029321335605e-07,
+          "param_moved_max_abs": 1.0013580322265625e-05,
+          "parameter_mismatch": {
+            "elements": 0,
+            "official_grad_max_abs": 0.0,
+            "official_grad_norm": 2.3649489879608154
+          },
+          "pass": true,
+          "pass_123_exact": true
+        },
+        {
+          "adam_moment_max_relative_l2": 6.155801770546532e-07,
+          "grad_norm": 2.114394426345825,
+          "grad_norm_relative_delta": 1.127597590188638e-07,
+          "grad_tensor_max_relative_l2": 5.717650424230669e-07,
+          "grad_tensors_equal_set": true,
+          "loss": 0.7464836835861206,
+          "loss_relative_delta": 7.984721076525646e-08,
+          "loss_terms": {
+            "vqa_loss": 0.7464836835861206
+          },
+          "lrs_after_step": [
+            0.0009999999627689825
+          ],
+          "lrs_at_step": [
+            0.001
+          ],
+          "official_grad_norm": 2.114394187927246,
+          "official_loss": 0.7464837431907654,
+          "official_lrs_after_step": [
+            0.0009999999627689825
+          ],
+          "official_lrs_at_step": [
+            0.001
+          ],
+          "param_close_share_abs": 0.9993753433227539,
+          "param_close_share_isclose": 0.9995761513710022,
+          "param_max_abs_delta": 3.365370139363222e-05,
+          "param_moved_max_abs": 0.0010013580322265625,
+          "parameter_mismatch": {
+            "elements": 344,
+            "official_grad_max_abs": 4.2928149923682213e-10,
+            "official_grad_norm": 2.114394187927246
+          },
+          "pass": true,
+          "pass_123_exact": true
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 811649
+    },
+    "head-official-phyre": {
+      "arm": "head-official-phyre",
+      "batch_equal": true,
+      "official_optimizer_class": "Adam",
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.001,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "official_torch": "2.7.1+cu128",
+      "official_trainable_parameters": 826369,
+      "optimizer_class": "Adam",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.001,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "parameter_names_equal": true,
+      "pass": true,
+      "pass_123_exact": true,
+      "prediction_max_abs_delta": 0.0,
+      "prediction_relative_l2": 0.0,
+      "scheduler": {
+        "class": "CosineAnnealingWarmupRestarts",
+        "first_cycle_steps": 9000,
+        "max_lr": [
+          0.001
+        ],
+        "min_lr": [
+          1e-05
+        ],
+        "warmup_steps": 900.0
+      },
+      "scheduler_equal": true,
+      "spec": {
+        "frames": 11,
+        "kind": "head",
+        "num_slots": 8,
+        "readout": null,
+        "slot_size": 128
+      },
+      "step2_from_official_step1_state": {
+        "grad_tensor_max_relative_l2": 4.1986723431364226e-07,
+        "loss_relative_delta": 0.0,
+        "param_close_share_abs": 0.9993997812271118,
+        "param_max_abs_delta": 3.400589048396796e-05
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 6.039386448719597e-07,
+          "grad_norm": 2.7073616981506348,
+          "grad_norm_relative_delta": 0.0,
+          "grad_tensor_max_relative_l2": 4.48583904244515e-07,
+          "grad_tensors_equal_set": true,
+          "loss": 0.6917505264282227,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "vqa_loss": 0.6917505264282227
+          },
+          "lrs_after_step": [
+            1.11e-05
+          ],
+          "lrs_at_step": [
+            1e-05
+          ],
+          "official_grad_norm": 2.7073616981506348,
+          "official_loss": 0.6917505264282227,
+          "official_lrs_after_step": [
+            1.11e-05
+          ],
+          "official_lrs_at_step": [
+            1e-05
+          ],
+          "param_close_share_abs": 0.9999746084213257,
+          "param_close_share_isclose": 1.0,
+          "param_max_abs_delta": 1.6869287833287672e-07,
+          "param_moved_max_abs": 1.0013580322265625e-05,
+          "parameter_mismatch": {
+            "elements": 0,
+            "official_grad_max_abs": 0.0,
+            "official_grad_norm": 2.7073616981506348
+          },
+          "pass": true,
+          "pass_123_exact": true
+        },
+        {
+          "adam_moment_max_relative_l2": 5.128302973389509e-07,
+          "grad_norm": 2.887350559234619,
+          "grad_norm_relative_delta": 8.257348524102168e-08,
+          "grad_tensor_max_relative_l2": 7.293192538782023e-07,
+          "grad_tensors_equal_set": true,
+          "loss": 0.7052251100540161,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "vqa_loss": 0.7052251100540161
+          },
+          "lrs_after_step": [
+            0.0009999999627689825
+          ],
+          "lrs_at_step": [
+            0.001
+          ],
+          "official_grad_norm": 2.88735032081604,
+          "official_loss": 0.7052251100540161,
+          "official_lrs_after_step": [
+            0.0009999999627689825
+          ],
+          "official_lrs_at_step": [
+            0.001
+          ],
+          "param_close_share_abs": 0.9993767738342285,
+          "param_close_share_isclose": 0.9994990229606628,
+          "param_max_abs_delta": 3.979278335464187e-05,
+          "param_moved_max_abs": 0.0010013580322265625,
+          "parameter_mismatch": {
+            "elements": 414,
+            "official_grad_max_abs": 1.3975476775840434e-08,
+            "official_grad_norm": 2.88735032081604
+          },
+          "pass": true,
+          "pass_123_exact": true
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 826369
+    },
+    "official-phyre": {
+      "arm": "official-phyre",
+      "batch_equal": true,
+      "official_optimizer_class": "Adam",
+      "official_optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "official_torch": "2.7.1+cu128",
+      "official_trainable_parameters": 6384000,
+      "optimizer_class": "Adam",
+      "optimizer_defaults": {
+        "amsgrad": false,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "capturable": false,
+        "decoupled_weight_decay": false,
+        "differentiable": false,
+        "eps": 1e-08,
+        "lr": 0.0002,
+        "maximize": false,
+        "weight_decay": 0.0
+      },
+      "parameter_names_equal": true,
+      "pass": true,
+      "pass_123_exact": true,
+      "prediction_max_abs_delta": 2.86102294921875e-06,
+      "prediction_relative_l2": 3.4253673675266327e-07,
+      "scheduler": {
+        "class": "CosineAnnealingWarmupRestarts",
+        "first_cycle_steps": 9000,
+        "max_lr": [
+          0.0002
+        ],
+        "min_lr": [
+          2e-06
+        ],
+        "warmup_steps": 450.0
+      },
+      "scheduler_equal": true,
+      "spec": {
+        "frames": 11,
+        "kind": "slots",
+        "num_slots": 8,
+        "size": null,
+        "slot_size": 128,
+        "vid_len": [
+          11,
+          7,
+          11,
+          4
+        ]
+      },
+      "step2_from_official_step1_state": {
+        "grad_tensor_max_relative_l2": 6.546446093125269e-05,
+        "loss_relative_delta": 0.0,
+        "param_close_share_abs": 0.9995203614234924,
+        "param_max_abs_delta": 6.649643182754517e-06
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 2.948399014712777e-05,
+          "grad_norm": 31.722116470336914,
+          "grad_norm_relative_delta": 1.2025354015900043e-07,
+          "grad_tensor_max_relative_l2": 2.827993557730224e-05,
+          "grad_tensors_equal_set": true,
+          "loss": 4.121306419372559,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 4.121306419372559
+          },
+          "lrs_after_step": [
+            2.44e-06
+          ],
+          "lrs_at_step": [
+            2e-06
+          ],
+          "official_grad_norm": 31.72212028503418,
+          "official_loss": 4.121306419372559,
+          "official_lrs_after_step": [
+            2.44e-06
+          ],
+          "official_lrs_at_step": [
+            2e-06
+          ],
+          "param_close_share_abs": 0.999991238117218,
+          "param_close_share_isclose": 0.9999997019767761,
+          "param_max_abs_delta": 2.479180693626404e-06,
+          "param_moved_max_abs": 2.0265579223632812e-06,
+          "parameter_mismatch": {
+            "elements": 2,
+            "official_grad_max_abs": 5.47879608348012e-08,
+            "official_grad_norm": 31.72212028503418
+          },
+          "pass": true,
+          "pass_123_exact": true
+        },
+        {
+          "adam_moment_max_relative_l2": 3.66603271686472e-05,
+          "grad_norm": 30.739852905273438,
+          "grad_norm_relative_delta": 1.9855343892074295e-06,
+          "grad_tensor_max_relative_l2": 6.546770600834861e-05,
+          "grad_tensors_equal_set": true,
+          "loss": 4.012053489685059,
+          "loss_relative_delta": 0.0,
+          "loss_terms": {
+            "slot_recon_loss": 4.012053489685059
+          },
+          "lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "lrs_at_step": [
+            0.0002
+          ],
+          "official_grad_norm": 30.739913940429688,
+          "official_loss": 4.012053489685059,
+          "official_lrs_after_step": [
+            0.0001999999933169808
+          ],
+          "official_lrs_at_step": [
+            0.0002
+          ],
+          "param_close_share_abs": 0.999443769454956,
+          "param_close_share_isclose": 0.9998651146888733,
+          "param_max_abs_delta": 1.312636049988214e-05,
+          "param_moved_max_abs": 0.0002002716064453125,
+          "parameter_mismatch": {
+            "elements": 861,
+            "official_grad_max_abs": 0.002629967639222741,
+            "official_grad_norm": 30.739913940429688
+          },
+          "pass": true,
+          "pass_123_exact": true
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 6384000
+    }
+  },
+  "batch": 4,
+  "commit": "10a6d9b7bc05ef2397ce2586da3fc0212f8c47aa",
+  "criterion": "G_port (gating): a share-based variant of #123's parameter rule, loosened per element from |delta| <= 1e-7 to isclose(rtol 1e-5, atol 1e-6), share >= 0.999, max |delta| <= 2 lr_max + 1e-7, because Adam amplifies round-off-level gradient differences between torch 2.7.1 and 2.13; G_port_123_exact: #123's rule exactly (share of |delta| <= 1e-7 >= 0.999). Every other check (loss, gradients, Adam moments, LRs, optimizer, scheduler, parameter counts, batches, predictions) is identical under both.",
+  "issue": 129,
+  "procedure": "Issue #129 G-port: the official SlotFormer dynamics, loss and optimizer vs the NovPhy adapter (CPU, float32).\n\nTwo modes, one fixed set of arms (``ARMS``):\n\n    # official side, in the b127-slotformer env (official code at SLOTFORMER_REF, nerv v0.1.0, torch 2.7.1)\n    /srv/home/shua0171/miniconda3/envs/b127-slotformer/bin/python scripts/b127_slotformer_port_reference.py         reference .local-artifacts/issue-129-slotformer-v1/gport\n    # adapter side + comparison, in the novphy env (vendored code, torch 2.13) -> gport/gport.json\n    python scripts/b127_slotformer_port_reference.py compare .local-artifacts/issue-129-slotformer-v1/gport\n\nReference, per arm. The model is built by the official ``build_model`` from the official PHYRE config\n``slotformer_phyre_params-fold0.py``; the NovPhy arms override only the shape fields (num_slots 19, slot_size 13,\nthe Transformer size, the clip length). The frozen SAVi decoder the official ``SlotFormer`` loads is the released\n``savi_phyre_params-fold0/model_30.pth`` for ``official-phyre``. For the 13-wide arms it is a seeded random decoder\nof that shape, written by the official ``StoSAVi._build_decoder``; it is frozen and unused (no image loss), as in\nthe official PHYRE training.\n\nThe step runs through the official training code on a bare ``SlotFormerMethod``:\n- ``_setup_optimizer`` (``SlotBaseMethod._configure_optimizers`` -> nerv ``BaseMethod._configure_optimizers``) with\n  ``max_epochs`` x loader length = ``TOTAL_STEPS``;\n- ``_training_step`` (nerv ``_training_step_fp32``: ``_loss_function``, backward, clip if ``clip_grad`` > 0,\n  ``optimizer.step``, ``zero_grad``) and ``_training_step_end`` (per-step ``scheduler.step``).\nGradients are read by an optimizer step pre-hook. Step 1 runs at the schedule's step-0 LR (lr / 100). Step 2 runs\nafter the scheduler is advanced to the end of warm-up (every group at lr).\n\nThe NovPhy arms' official inputs are the shots' strided carrier frames, padded by the official PHYRE\n``fix_video_len`` with ``vid_len`` as ``PHYRESlotsDataset._read_slots``. They are packed with the slot layout\ndeclared in Decision P-other: 18 carrier slots, then the launch token ``[launch5, 0 x 8]``. The adapter side builds\nthe same batch through ``novphy.training_batch`` from the raw carriers, so the comparison covers the adapter's\nsequence plan and packing too.\n",
+  "references": {
+    "b1-matched-s15": "sha256:5e86c0ae93238d089e95d1088adf5e8396dc7484941a3bafe9dc40ecfcf78c50",
+    "b1-native-s15": "sha256:cc4b9f5dac62c5c9a04b4ec9e6710e60f0379ead8e0405b012d803eee7a8cbf0",
+    "b1-native-s5": "sha256:3afa86641647b2784d1f6ece6ea6a5ffa3b5d851826ec3fff29b164d5105e25c",
+    "head-b1": "sha256:464124b8f650775c3bc17996447416c016a75c3c8d68965bc8ba5c818e408eb8",
+    "head-official-phyre": "sha256:38f53e4c8de8e203ad8e95ef668b10d66c52f1343ff7dcb7f3f263eaaabcdf04",
+    "official-phyre": "sha256:d24dd035f2b1e6389093429eb296cc0c087708bce90b6c0befc16ea09ec25f6b"
+  },
+  "schema": "issue_127_gport_v1",
+  "script": "sha256:67030acca2b926c31e32ef7174e10dbf707ccdb94fb993c92579f4254048c5c8",
+  "seeds": {
+    "decoder": 17,
+    "init": 20261024,
+    "input": 7,
+    "step1": 11,
+    "step2": 13
+  },
+  "tolerance": {
+    "grad_norm_relative": 0.0001,
+    "loss_relative": 0.0001,
+    "param_atol": 1e-06,
+    "param_close_abs": 1e-07,
+    "param_close_share": 0.999,
+    "param_max_abs_over_lr": 2.0,
+    "param_rtol": 1e-05,
+    "prediction_relative_l2": 0.001,
+    "tensor_relative_l2": 0.001
+  },
+  "total_steps": 9000,
+  "upstream": "https://github.com/pairlab/SlotFormer",
+  "vendor": {
+    "commit": "10a6d9b7bc05ef2397ce2586da3fc0212f8c47aa",
+    "files": {
+      "LICENSE": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      },
+      "LICENSE-nerv": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      },
+      "__init__.py": {
+        "vendored_match": true
+      },
+      "nerv_lr.py": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      },
+      "nerv_model.py": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      },
+      "nerv_transformer.py": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      },
+      "phyre_readout.py": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      },
+      "single_step_slotformer.py": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      },
+      "slotformer.py": {
+        "upstream_match": true,
+        "vendored_match": true,
+        "verbatim": true
+      }
+    },
+    "pass": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "issue_127_gfid_band_v1",
+  "issue": 129,
+  "arm": "B1 SlotFormer-E99",
+  "tier": "tier-e",
+  "paper": 49.42,
+  "band": [48.92, 49.92],
+  "half_width": 0.5,
+  "band_source": "#127 frozen arm matrix / #129 ticket: 'the released pretrained weights give CLEVRER mIoU 49.42 +- 0.5 (one evaluation run)'",
+  "paper_source": "pairlab/SlotFormer README @ 10a6d9b, Update 2023.9.20: 'BC-breaking change! We fix an error in the mIoU calculation code ... The updated mIoU of SlotFormer on CLEVRER is **49.42** (using the provided pre-trained weight)'; the fix is PR #7 (commit fb1c39b, union = |A| + |B| - |A and B| in vp_utils.hungarian_miou), the number PR #8 (commit 7aee375). The ICLR 2023 paper's Table 2 mIoU predates the fix and is not the target.",
+  "metric": "CLEVRER video-prediction mIoU (%) printed by the official slotformer/video_prediction/test_vp.py ('miou: {v.mean():.4f}', x 100): for each of the 42 rollout steps the clip-weighted mean (nerv AverageMeter) over the validation clips of vp_utils.miou_metric = per clip the Hungarian-matched (scipy linear_sum_assignment, maximise) IoU between the ground-truth foreground object masks (CLEVRER derender_proposals, background index 0 excluded, nearest-resized to 64 x 64) and SlotFormer's predicted per-slot masks (vp_utils.postproc_mask: argmax over 7 slots with the least-peaked slot set to background where every slot is below 0.5), averaged over the ground-truth objects (unmatched objects count 0); then the mean over the 42 steps.",
+  "protocol": "official config slotformer/video_prediction/configs/slotformer_clevrer_params.py adjusted by test_vp.adjust_params (n_sample_frames 48 = 6 burn-in + 42 rollout, frame_offset 2, load_mask, image decoding on); CLEVRER validation videos 10000-14999 (10800 skipped by the loader), filter_enter clips (at most one clip per video, the first start in 0..33 with no object entering the prediction window); burn-in slots from the released clevrer_slots.pkl; weights pretrained/slotformer_clevrer_params/model_80.pth with the frozen SAVi decoder pretrained/stosavi_clevrer_params/model_12.pth; val_batch_size 8; one evaluation run",
+  "rule": "Tier E passes iff 48.92 <= ours <= 49.92 (ours = 100 x the mean of test_vp.py's per-step miou array from one run). G-fid (B1) = Tier E; the optional Tier T (PHYRE planning AUCCESS 82.0 +- 1.1) is not run in Phase 0. A fail follows P-fid: at most two logged repair attempts, each fixing a diagnosed port defect, never this band; then drop with fidelity_not_reproduced.",
+  "tier_t": "optional (#127: PHYRE planning AUCCESS 82.0 +- 1.1); not run in Phase 0",
+  "written_at": "2026-10-24T09:25:00Z"
+}

@@ -1,0 +1,139 @@
+{
+ "jobs": [
+  {
+   "id": "129-gfid-tier-e",
+   "gpu": 1,
+   "resumable": false,
+   "est_minutes": 60,
+   "shares_gpu": true,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/b127-slotformer/bin/python",
+    "-u",
+    "scripts/b127_slotformer_fidelity.py"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "SLOTFORMER_REF": "/mnt/array/sukaih/novphy-baselines-src/SlotFormer@10a6d9b"
+   },
+   "note": "#129 B1 Tier-E G-fid: one run of the official SlotFormer test_vp.py (CLEVRER video prediction, released model_80.pth) in env b127-slotformer; frozen band [48.92, 49.92] (fidelity/band.json sha256 02ff5b00..., Decision P-fid on #129); writes .local-artifacts/issue-129-slotformer-v1/fidelity/gfid.json; ~4 GB GPU memory (LPIPS VGG + SlotFormer, batch 8); SIGTERM -> exit 75, no number recorded, the evaluation reruns from the start"
+  },
+  {
+   "id": "129-select-c1",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": true,
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--selection",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 selection C1-s15 (native, stride 15, lr 2e-4, 50 epochs = 10 850 x 64, seed 20260908; fp16); < 4 GB; SIGTERM -> resume.pt, exit 75 (Decision P-other issuecomment-6382590719)"
+  },
+  {
+   "id": "129-select-c2",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 180,
+   "shares_gpu": true,
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--selection",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 selection C2-s5 (native, stride 5 = 45 rollout steps, lr 2e-4, 50 epochs = 10 850 x 64, seed 20260908); < 8 GB; resumable",
+   "depends_on": [
+    "129-select-c1",
+    "129-select-c3"
+   ]
+  },
+  {
+   "id": "129-select-c3",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 240,
+   "shares_gpu": true,
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--selection",
+    "--gpu",
+    "2"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 selection C3-s15-long (native, stride 15, lr 2e-4, 250 epochs = 54 250 x 64, seed 20260908); < 4 GB; resumable"
+  },
+  {
+   "id": "129-selection-readouts",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 20,
+   "shares_gpu": true,
+   "depends_on": [
+    "129-select-c1",
+    "129-select-c2",
+    "129-select-c3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--selection-readouts"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1"
+   },
+   "note": "#129 policy-split pooled grid AUC (tie-free cost of the predicted frame-225 carrier) per configuration under deterministic_scoring; writes selection.json (eb.select_configuration); fit/policy data only; rerun from the start is deterministic"
+  },
+  {
+   "id": "129-smoke",
+   "gpu": 1,
+   "resumable": false,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "depends_on": [
+    "129-selection-readouts"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--smoke"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 smoke: data accounting, G-port record check (adapter hash current), CPU tests (subprocess, CUDA_VISIBLE_DEVICES=''), measured throughput (selection reports + a 220-step B1-m timing run), selection result, projection vs the child cap / 20 GPU-h per seed / 48 h on 4 GPUs; writes smoke.json; exit 1 if not passed (no freeze)"
+  }
+ ]
+}

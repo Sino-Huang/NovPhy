@@ -1,0 +1,367 @@
+{
+ "jobs": [
+  {
+   "id": "129-train-q0",
+   "gpu": 0,
+   "resumable": true,
+   "est_minutes": 120,
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--train",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 frozen training queue 0 (plan.json queues.train, LPT from smoke); SIGTERM -> resume.pt, exit 75; the reused selection run is not retrained"
+  },
+  {
+   "id": "129-train-q1",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 120,
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--train",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 frozen training queue 1 (plan.json queues.train, LPT from smoke); SIGTERM -> resume.pt, exit 75; the reused selection run is not retrained"
+  },
+  {
+   "id": "129-train-q2",
+   "gpu": 2,
+   "resumable": true,
+   "est_minutes": 120,
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--train",
+    "--gpu",
+    "2"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 frozen training queue 2 (plan.json queues.train, LPT from smoke); SIGTERM -> resume.pt, exit 75; the reused selection run is not retrained"
+  },
+  {
+   "id": "129-train-q3",
+   "gpu": 3,
+   "resumable": true,
+   "est_minutes": 120,
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--train",
+    "--gpu",
+    "3"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 frozen training queue 3 (plan.json queues.train, LPT from smoke); SIGTERM -> resume.pt, exit 75; the reused selection run is not retrained"
+  },
+  {
+   "id": "129-bench-train-q0",
+   "gpu": 0,
+   "resumable": true,
+   "est_minutes": 90,
+   "shares_gpu": true,
+   "depends_on": [
+    "129-train-q0",
+    "129-train-q1",
+    "129-train-q2",
+    "129-train-q3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--bench-train",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 EXPLORATORY CLEVRER / Physion-Dominoes: action-free B1 (selected configuration, 9 000 x 64, null launch) on the #117 item-5 carriers; 3 of the 6 bench runs per queue; resumable"
+  },
+  {
+   "id": "129-bench-train-q1",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 90,
+   "shares_gpu": true,
+   "depends_on": [
+    "129-train-q0",
+    "129-train-q1",
+    "129-train-q2",
+    "129-train-q3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--bench-train",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 EXPLORATORY CLEVRER / Physion-Dominoes: action-free B1 (selected configuration, 9 000 x 64, null launch) on the #117 item-5 carriers; 3 of the 6 bench runs per queue; resumable"
+  },
+  {
+   "id": "129-readouts-g0",
+   "gpu": 0,
+   "resumable": true,
+   "est_minutes": 60,
+   "depends_on": [
+    "129-train-q0",
+    "129-train-q1",
+    "129-train-q2",
+    "129-train-q3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--readouts",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 readouts (fit / policy only): G-rank, G-action, policy AUCs, MACs, B1 native head, U + head; readouts.json per arm-seed written last; rerun per arm-seed is deterministic"
+  },
+  {
+   "id": "129-readouts-g1",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 60,
+   "depends_on": [
+    "129-train-q0",
+    "129-train-q1",
+    "129-train-q2",
+    "129-train-q3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--readouts",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 readouts (fit / policy only): G-rank, G-action, policy AUCs, MACs, B1 native head, U + head; readouts.json per arm-seed written last; rerun per arm-seed is deterministic"
+  },
+  {
+   "id": "129-readouts-g2",
+   "gpu": 2,
+   "resumable": true,
+   "est_minutes": 60,
+   "depends_on": [
+    "129-train-q0",
+    "129-train-q1",
+    "129-train-q2",
+    "129-train-q3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--readouts",
+    "--gpu",
+    "2"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 readouts (fit / policy only): G-rank, G-action, policy AUCs, MACs, B1 native head, U + head; readouts.json per arm-seed written last; rerun per arm-seed is deterministic"
+  },
+  {
+   "id": "129-readouts-g3",
+   "gpu": 3,
+   "resumable": true,
+   "est_minutes": 60,
+   "depends_on": [
+    "129-train-q0",
+    "129-train-q1",
+    "129-train-q2",
+    "129-train-q3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--readouts",
+    "--gpu",
+    "3"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 readouts (fit / policy only): G-rank, G-action, policy AUCs, MACs, B1 native head, U + head; readouts.json per arm-seed written last; rerun per arm-seed is deterministic"
+  },
+  {
+   "id": "129-freeze-readouts",
+   "gpu": null,
+   "resumable": false,
+   "est_minutes": 10,
+   "depends_on": [
+    "129-readouts-g0",
+    "129-readouts-g1",
+    "129-readouts-g2",
+    "129-readouts-g3"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--freeze-readouts"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": ""
+   },
+   "note": "#129 readouts-manifest.json (sha256 of model.pt, head.pt, readouts.json) before any evaluation anchor is read"
+  },
+  {
+   "id": "129-score",
+   "gpu": 0,
+   "resumable": true,
+   "est_minutes": 120,
+   "depends_on": [
+    "129-freeze-readouts"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--score"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 the single scoring pass (process that did not train): evaluation anchors, every arm-seed record, wrong anchors, positions; resumable per record"
+  },
+  {
+   "id": "129-bench-score",
+   "gpu": 1,
+   "resumable": true,
+   "est_minutes": 15,
+   "shares_gpu": true,
+   "depends_on": [
+    "129-bench-train-q0",
+    "129-bench-train-q1"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--bench-score"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 EXPLORATORY bench scoring (#79 position_mse from contexts 0-3); resumable per record"
+  },
+  {
+   "id": "129-publish",
+   "gpu": 0,
+   "resumable": false,
+   "est_minutes": 45,
+   "depends_on": [
+    "129-score",
+    "129-bench-score"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--publish"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 records-manifest.json, compute.json, summary.json (eb.child_summary), findings.md; tokens are the stop token until G-records passes"
+  },
+  {
+   "id": "129-validate",
+   "gpu": 0,
+   "resumable": false,
+   "est_minutes": 60,
+   "depends_on": [
+    "129-publish"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--validate"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 validate: hash-check records, re-score B1 seed 20260908 (exact rows), receipt, re-derive the publication twice (byte-identical)"
+  }
+ ]
+}

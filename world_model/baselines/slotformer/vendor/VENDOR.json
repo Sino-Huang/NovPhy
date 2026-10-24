@@ -1,0 +1,99 @@
+{
+  "additional_upstreams": {
+    "nerv": {
+      "commit": "e83ac66c6ce30e1ca3d0a287df9d3699ed9ec499",
+      "files": [
+        "nerv_model.py",
+        "nerv_lr.py",
+        "nerv_transformer.py"
+      ],
+      "license": "MIT (Copyright (c) 2022 Ziyi Wu)",
+      "license_file": "LICENSE-nerv",
+      "tag": "v0.1.0",
+      "upstream": "https://github.com/Wuziyi616/nerv",
+      "why": "SlotFormer docs/install.md pins nerv v0.1.0 for BaseModel and the LR scheduler"
+    }
+  },
+  "commit": "10a6d9b7bc05ef2397ce2586da3fc0212f8c47aa",
+  "decisions": [
+    "https://github.com/Sino-Huang/NovPhy/issues/129#issuecomment-6382274253",
+    "https://github.com/Sino-Huang/NovPhy/issues/129#issuecomment-6382590719 (PHYRE readout added for the native success head)"
+  ],
+  "files": {
+    "LICENSE": {
+      "edits": [],
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:1ddc76632bc1d6daecf1240e457e69d424f6251e8667b3d8fb69a7b98fdc2317",
+      "vendored_sha256": "sha256:1ddc76632bc1d6daecf1240e457e69d424f6251e8667b3d8fb69a7b98fdc2317"
+    },
+    "LICENSE-nerv": {
+      "commit": "e83ac66c6ce30e1ca3d0a287df9d3699ed9ec499",
+      "edits": [],
+      "upstream": "https://github.com/Wuziyi616/nerv",
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:1ddc76632bc1d6daecf1240e457e69d424f6251e8667b3d8fb69a7b98fdc2317",
+      "vendored_sha256": "sha256:1ddc76632bc1d6daecf1240e457e69d424f6251e8667b3d8fb69a7b98fdc2317"
+    },
+    "__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:6ab6327d40c41f499419fc2120482966d181dd1bd9d06b00e7a2586ecdbdcf9d"
+    },
+    "nerv_lr.py": {
+      "commit": "e83ac66c6ce30e1ca3d0a287df9d3699ed9ec499",
+      "edits": [],
+      "upstream": "https://github.com/Wuziyi616/nerv",
+      "upstream_path": "nerv/training/lr.py",
+      "upstream_sha256": "sha256:b3cd4dbcef9daaa3796a3e7df3c033c19ccd0bbb38efd0118ca59c638d9632c4",
+      "vendored_sha256": "sha256:b3cd4dbcef9daaa3796a3e7df3c033c19ccd0bbb38efd0118ca59c638d9632c4"
+    },
+    "nerv_model.py": {
+      "commit": "e83ac66c6ce30e1ca3d0a287df9d3699ed9ec499",
+      "edits": [],
+      "upstream": "https://github.com/Wuziyi616/nerv",
+      "upstream_path": "nerv/training/model.py",
+      "upstream_sha256": "sha256:6552c5d6c3e7031b4c33c8dcca4238a012612d9b05fc56dcd17144725cd5fc0c",
+      "vendored_sha256": "sha256:6552c5d6c3e7031b4c33c8dcca4238a012612d9b05fc56dcd17144725cd5fc0c"
+    },
+    "nerv_transformer.py": {
+      "commit": "e83ac66c6ce30e1ca3d0a287df9d3699ed9ec499",
+      "edits": [],
+      "upstream": "https://github.com/Wuziyi616/nerv",
+      "upstream_path": "nerv/models/transformer.py",
+      "upstream_sha256": "sha256:90059a6994254961dcbe3ee2e443c0950611160f06df7f5d2371cafa84b36b22",
+      "vendored_sha256": "sha256:90059a6994254961dcbe3ee2e443c0950611160f06df7f5d2371cafa84b36b22"
+    },
+    "phyre_readout.py": {
+      "edits": [
+        "from nerv.training import BaseModel -> from .nerv_model import BaseModel (package-relative)",
+        "from nerv.models.transformer import build_pos_enc -> from .nerv_transformer import build_pos_enc (package-relative; nerv/models/transformer.py vendored verbatim as nerv_transformer.py)"
+      ],
+      "upstream_path": "slotformer/phyre_planning/models/readout.py",
+      "upstream_sha256": "sha256:7f0a0622d3cb74e92d5bc42057ffc2b0d7db8d20fba457a4ca0c8668718cc01c",
+      "vendored_sha256": "sha256:08425fedf9ef7d1999738b4302a8a8422c6d2dff1b4e080d49addd13152a1d41"
+    },
+    "single_step_slotformer.py": {
+      "edits": [],
+      "upstream_path": "slotformer/video_prediction/models/single_step_slotformer.py",
+      "upstream_sha256": "sha256:dfbb6cae91eee2d8c7c7a2f6296c0f9c50c157f09a6655002b688f1c6e67e04f",
+      "vendored_sha256": "sha256:dfbb6cae91eee2d8c7c7a2f6296c0f9c50c157f09a6655002b688f1c6e67e04f"
+    },
+    "slotformer.py": {
+      "edits": [
+        "from nerv.training import BaseModel -> from .nerv_model import BaseModel (package-relative; nerv/training/model.py vendored verbatim as nerv_model.py)",
+        "from slotformer.base_slots.models import StoSAVi -> StoSAVi = None. Reason: StoSAVi is referenced only by SlotFormer._build_decoder / SlotFormer.decode (the frozen SAVi pixel decoder for the optional image loss); the NovPhy adapter has no pixel decoder (E99 slots are the state) and overrides both methods, so SAVi and its nerv.models dependency tree are not vendored"
+      ],
+      "upstream_path": "slotformer/video_prediction/models/slotformer.py",
+      "upstream_sha256": "sha256:430a8bbec124c8fefc516bd52c8a13024ed6efde6635905bf393d5c39433a2c7",
+      "vendored_sha256": "sha256:3546810cfb907481a39c4e7eeb18d21448a4379757c6faf89eba32111dc969c6"
+    }
+  },
+  "license": "MIT (Copyright (c) 2022 Ziyi Wu); nerv files: MIT (Copyright (c) 2022 Ziyi Wu), nerv v0.1.0",
+  "license_file": "LICENSE",
+  "policy": "verbatim copies; edits only as listed per file (package-relative imports; one unused-import stub with its reason)",
+  "schema": "issue_127_vendor_v1",
+  "upstream": "https://github.com/pairlab/SlotFormer"
+}
