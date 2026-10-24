@@ -346,3 +346,73 @@ def test_bench_spec_windows_and_scoring_path(tmp_path):
     assert pred.shape == (1, 8, sf.CARRIER_DIM)
     errors = rib.unit_errors(pred[0, 120 // 15 - 1], data.clips[scene][120])
     assert errors is not None and errors[rib.METRIC] is not None
+
+
+def _novelty_fixture(tmp_path, monkeypatch, runner):
+    """A tiny CPU stand-in for --score-novelty: fit-split anchors as 'novelty levels' (no evaluation data read)."""
+    from scripts import external_baselines as eb
+    out = tmp_path / "out"
+    (out / "records").mkdir(parents=True)
+    (out / "readouts-manifest.json").write_text("{}")
+    monkeypatch.setattr(runner, "load_plan", lambda output: {"selected": "C1-s15"})
+    monkeypatch.setattr(runner, "load_manifest", lambda output: None)
+    guards = {"G_rank": True, "G_action": True, "G_nonfinite": True, "G_trained": True, "pass": True}
+    monkeypatch.setattr(runner, "arm_guards", lambda output, records: (
+        {"B1": dict(guards), "B1-m": {**guards, "G_action": False, "pass": False}}, {"G_port": True, "G_fid": True}))
+    fit = eb.fit_anchors()["carriers"]
+    members = sorted(fit)[:3]
+    items = [{**it, "key": f"k{it['ordinal']}"} for it in eb.grid_items()]
+    levels = {f"lv{i}": {"inventory": items, "verdicts": {it["ordinal"]: it["ordinal"] % 2 == 0 for it in items}}
+              for i in range(3)}
+    cells = {"levels": levels, "mixed": ["lv0", "lv2"], "in_scope_cells": []}
+    carriers = {f"lv{i}": fit[m] for i, m in enumerate(members)}
+    monkeypatch.setattr(eb, "novelty_cells", lambda: cells)
+    monkeypatch.setattr(eb, "novelty_anchors_path", lambda output: Path(output) / "data" / "anchors-novelty.pt")
+    monkeypatch.setattr(eb, "read_novelty_anchors", lambda output, policy, cells=None: {
+        "carriers": carriers, "read_at": "2026-10-25T00:00:00Z", "scoring_policy": policy})
+    monkeypatch.setattr(eb, "novelty_reference_records", lambda *a, **k: {})
+    return out, cells, carriers
+
+
+def test_score_novelty_refuses_before_primary_records(tmp_path, monkeypatch):
+    runner = _runner()
+    out, _, _ = _novelty_fixture(tmp_path, monkeypatch, runner)
+    with pytest.raises(SystemExit, match="primary records missing"):
+        runner.score_novelty(out, "cpu")
+    (out / "readouts-manifest.json").unlink()
+    with pytest.raises(SystemExit, match="not frozen"):
+        runner.score_novelty(out, "cpu")
+    assert not (out / "novelty").exists()
+
+
+def test_score_novelty_records_match_the_primary_cell_rows(tmp_path, monkeypatch):
+    runner = _runner()
+    from scripts import external_baselines as eb
+    out, cells, carriers = _novelty_fixture(tmp_path, monkeypatch, runner)
+    for arm in (*runner.ARMS, "U+head"):
+        for seed in eb.SEEDS:
+            (out / "records" / f"{arm}--seed{seed}.json").write_text(json.dumps({"scored_at": "2026-10-24T00:00:00Z"}))
+    spec = {**_tiny_spec(steps=2), "name": "C1-s15"}
+    for seed in eb.SEEDS:  # B1: the selection dir for seed 20260908, models/B1 otherwise
+        runner.train_run(runner.model_dir(out, "B1", seed, "C1-s15"), spec, seed, _tiny_data(), "cpu")
+    runner.score_novelty(out, "cpu")
+    status = json.loads((out / "novelty/arms.json").read_text())["arms"]
+    assert status["B1"]["scored"] and not status["B1-m"]["scored"] and status["B1-m"]["failed_guards"] == ["G_action"]
+    assert not status["U+head"]["scored"]
+    assert not (out / "novelty/records/B1-m--seed20260908.json").exists()
+    costs = runner.objective_costs()
+    for seed in eb.SEEDS:
+        record = json.loads(runner.novelty_record_path(out, "B1", seed).read_text())
+        assert record["schema"] == "issue_129_novelty_record_v1" and record["arm"] == "B1"
+        assert sorted(record["inventories"]["grid"]) == ["lv0", "lv2"]
+        assert record["model_sha256"] == eb.sha256_of(runner.model_dir(out, "B1", seed, "C1-s15") / "model.pt")
+        predict, head, _, failure = runner.arm_predictor(out, {"selected": "C1-s15"}, "B1", seed, "cpu")
+        assert failure is None
+        for level in ("lv0", "lv2"):
+            rows = runner.cell_rows("B1", predict, head, cells["levels"][level]["inventory"], carriers[level], costs)
+            assert json.loads(eb.json_text(rows)) == record["inventories"]["grid"][level]["rows"]
+            assert len(rows) == 16
+    # resumable per record: a second call rewrites nothing
+    before = runner.novelty_record_path(out, "B1", 20260909).read_bytes()
+    runner.score_novelty(out, "cpu")
+    assert runner.novelty_record_path(out, "B1", 20260909).read_bytes() == before

@@ -1,0 +1,167 @@
+{
+  "accounting": {
+    "fit_anchors": 480,
+    "fit_levels": 480,
+    "fit_positive": 838,
+    "fit_shots": 13919,
+    "policy_grid_mixed_cells": 94,
+    "stride_15": {
+      "frames": 16,
+      "masked_target_share": 0.01142802368849516,
+      "short_shots": 601
+    },
+    "stride_5": {
+      "frames": 46,
+      "masked_target_share": 0.010446152649819851,
+      "short_shots": 601
+    }
+  },
+  "device": "cuda",
+  "gport": {
+    "G_port": true,
+    "G_port_rule": "issue_123_exact",
+    "adapter_current": true,
+    "arms": [
+      "b1-matched-s15",
+      "b1-native-s15",
+      "b1-native-s5",
+      "head-b1",
+      "head-official-phyre",
+      "official-phyre"
+    ],
+    "pass": true,
+    "reference_torch": [
+      "2.13.0+cu130"
+    ]
+  },
+  "pass": true,
+  "plan_identity": "issue-129-slotformer-v1",
+  "projection": {
+    "benchmarks_gpu_h_estimate": 3.913505761554988,
+    "child_cap_gpu_h": 88.0,
+    "native_per_seed_gpu_h": 7.371794707095768,
+    "readouts_gpu_h_estimate": 3.0,
+    "score_gpu_h_estimate": 2.0,
+    "seed_cap_gpu_h": 20.0,
+    "selection_gpu_h": 8.857546505993103,
+    "total_gpu_h": 33.49366069489162,
+    "training_gpu_h": 15.722608427343529,
+    "training_queue_loads_h": [
+      7.371794707095768,
+      7.371794707095768,
+      0.652679342101328,
+      0.326339671050664
+    ],
+    "training_queues": {
+      "0": [
+        "B1--seed20260909"
+      ],
+      "1": [
+        "B1--seed20260910"
+      ],
+      "2": [
+        "B1-m--seed20260908",
+        "B1-m--seed20260910"
+      ],
+      "3": [
+        "B1-m--seed20260909"
+      ]
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus": 12.078547587873262,
+    "within_caps": true
+  },
+  "schema": "issue_129_smoke_v1",
+  "selected": "C3-s15-long",
+  "selection": {
+    "configs": {
+      "C1-s15": {
+        "epochs": 50,
+        "lr": 0.0002,
+        "stride": 15
+      },
+      "C2-s5": {
+        "epochs": 50,
+        "lr": 0.0002,
+        "stride": 5
+      },
+      "C3-s15-long": {
+        "epochs": 250,
+        "lr": 0.0002,
+        "stride": 15
+      }
+    },
+    "details": {
+      "C1-s15": {
+        "cells": 94,
+        "model_sha256": "sha256:d8dcd6d804f6ebdd9fa929c9064a78b70dcfb73e6e76e89e2063b2076909432c",
+        "typed_failure": null
+      },
+      "C2-s5": {
+        "cells": 94,
+        "model_sha256": "sha256:9e5b854dd4c02268eba1cd6ddc555cc2c5e96a4aaf116153ec2545ad34c268c2",
+        "typed_failure": null
+      },
+      "C3-s15-long": {
+        "cells": 94,
+        "model_sha256": "sha256:89832c5d027f22ed3cb17a6d8472c26e019a104246dc4611169b49c643d64013",
+        "typed_failure": null
+      }
+    },
+    "plan_identity": "issue-129-slotformer-v1",
+    "policy_cells": 94,
+    "results": {
+      "C1-s15": {
+        "auc": 0.4361448834853091,
+        "parameters": 6325005
+      },
+      "C2-s5": {
+        "auc": 0.4743959940768451,
+        "parameters": 6325005
+      },
+      "C3-s15-long": {
+        "auc": 0.5505377601122281,
+        "parameters": 6325005
+      }
+    },
+    "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+    "schema": "issue_129_selection_v1",
+    "scoring_policy": {
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false
+    },
+    "selected": "C3-s15-long",
+    "written_at": "2026-10-24T18:20:37Z"
+  },
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES= python -m pytest -q tests/test_issue_129_slotformer.py",
+    "exit_code": 0,
+    "tail": [
+      "20 passed, 12 warnings in 43.54s"
+    ]
+  },
+  "throughput": {
+    "B1-m": {
+      "seconds_per_step": 0.13053586842026563,
+      "steps": 9000
+    },
+    "C1-s15": {
+      "gpu_seconds": 1729.7350950492546,
+      "seconds_per_step": 0.15942258940546125,
+      "steps": 10850
+    },
+    "C2-s5": {
+      "gpu_seconds": 3618.971380981151,
+      "seconds_per_step": 0.3335457493991844,
+      "steps": 10850
+    },
+    "C3-s15-long": {
+      "gpu_seconds": 26538.460945544764,
+      "seconds_per_step": 0.4891882201943735,
+      "steps": 54250
+    }
+  },
+  "written_at": "2026-10-24T18:26:51Z"
+}

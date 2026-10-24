@@ -881,13 +881,9 @@ def _position_rows(at, branches, cache, times):
     return positions
 
 
-@torch.no_grad()
-def score_arm(output, plan, arm, seed, anchors, cells, device=None):
-    """One record: rows of every mixed cell of every inventory, wrong-anchor rows (480 fit anchors, grid), position
-    error (descriptive), wall time per decision."""
-    device = device_of(device)
-    costs = objective_costs()
-    base = {"schema": SCHEMA_RECORD, "plan_identity": IDENTITY, "arm": arm, "seed": seed}
+def arm_predictor(output, plan, arm, seed, device=None):
+    """(predict, head, model, typed failure) of one arm-seed, exactly as every scoring path uses them: predict(z0
+    [K, 236], actions [K, 5]) -> predicted frame-225 carriers [K, 236]; head = the frozen native head or None."""
     rdir = readouts_dir(output, arm, seed)
     head = None
     if (rdir / "head.pt").is_file():
@@ -895,30 +891,45 @@ def score_arm(output, plan, arm, seed, anchors, cells, device=None):
     if arm == "U+head":
         unit = UnitRollout(seed, device)
         if unit.model is None or head is None:
-            return {**base, "typed_failure": unit.failure or "head_typed_failure"}
-        predict = unit.endpoints
-    else:
-        model, payload = load_trained(model_dir(output, arm, seed, plan["selected"]) / "model.pt", device)
-        if model is None:
-            return {**base, "typed_failure": payload["typed_failure"]["typed_failure"]}
+            return None, head, None, unit.failure or "head_typed_failure"
+        return unit.endpoints, head, None, None
+    model, payload = load_trained(model_dir(output, arm, seed, plan["selected"]) / "model.pt", device)
+    if model is None:
+        return None, head, None, payload["typed_failure"]["typed_failure"]
 
-        def predict(z0, actions):
-            return rollout_carriers(model, z0, actions)[:, -1]
+    def predict(z0, actions):
+        return rollout_carriers(model, z0, actions)[:, -1]
+    return predict, head, model, None
+
+
+@torch.no_grad()
+def cell_rows(arm, predict, head, items, z0_carrier, costs):
+    """Rows of one cell from its anchor carrier [236]: tie-free EndpointCosts rows of the predicted endpoints (the
+    head's -logit as HEAD_KEY when the arm has a head); U+head: the head score only."""
+    actions = torch.stack([eb.launch5(it["action"]) for it in items])
+    z0 = z0_carrier[None].expand(len(items), -1)
+    ends = predict(z0, actions)
+    if arm == "U+head":
+        return eb.score_rows(items, head_logits(head, z0, ends, actions), key=HEAD_KEY)
+    extra = {HEAD_KEY: (-head_logits(head, z0, ends, actions)).tolist()} if head is not None else None
+    return eb.rc.cost_rows(items, ends, z0_carrier, costs, extra)
+
+
+@torch.no_grad()
+def score_arm(output, plan, arm, seed, anchors, cells, device=None):
+    """One record: rows of every mixed cell of every inventory, wrong-anchor rows (480 fit anchors, grid), position
+    error (descriptive), wall time per decision."""
+    device = device_of(device)
+    costs = objective_costs()
+    base = {"schema": SCHEMA_RECORD, "plan_identity": IDENTITY, "arm": arm, "seed": seed}
+    predict, head, model, failure = arm_predictor(output, plan, arm, seed, device)
+    if failure is not None:
+        return {**base, "typed_failure": failure}
     carriers = anchors["carriers"]
-    inventories = {}
-    for inventory in eb.INVENTORIES:
-        inventories[inventory] = {}
-        for member, entry in sorted(cells[inventory]["mixed"].items()):
-            items = entry["inventory"]
-            actions = torch.stack([eb.launch5(it["action"]) for it in items])
-            z0 = carriers[member][None].expand(len(items), -1)
-            ends = predict(z0, actions)
-            if arm == "U+head":
-                rows = eb.score_rows(items, head_logits(head, z0, ends, actions), key=HEAD_KEY)
-            else:
-                extra = {HEAD_KEY: (-head_logits(head, z0, ends, actions)).tolist()} if head is not None else None
-                rows = eb.rc.cost_rows(items, ends, carriers[member], costs, extra)
-            inventories[inventory][member] = {"rows": rows}
+    inventories = {inventory: {member: {"rows": cell_rows(arm, predict, head, entry["inventory"], carriers[member],
+                                                          costs)}
+                               for member, entry in sorted(cells[inventory]["mixed"].items())}
+                   for inventory in eb.INVENTORIES}
     record = {**base, "typed_failure": None, "inventories": inventories}
     if arm != "U+head":
         fit = eb.fit_anchors()["carriers"]
@@ -964,6 +975,121 @@ def score(output, device=None):
             eb.mark(output, f"score-{arm}-seed{seed}", seconds, seconds if device_of(device) != "cpu" else 0)
             log(f"scored {arm} seed {seed} ({seconds:.0f}s)")
     return 0
+
+# ---------------------------------------------------------------------------------------------------------------
+# --score-novelty (P-novelty, owner decision D6; DESCRIPTIVE, no tokens, never in a disposition; post-freeze, after
+# the primary scoring pass; round3/score-novelty-mode.md)
+# ---------------------------------------------------------------------------------------------------------------
+
+SCHEMA_NOVELTY_RECORD = "issue_129_novelty_record_v1"
+NOVELTY_ARMS = tuple(ARMS)  # the guarded arms; U+head is a control without arm guards (not scored)
+
+
+def novelty_record_path(output, arm, seed):
+    return Path(output) / "novelty" / "records" / f"{arm}--seed{seed}.json"
+
+
+def arm_guards(output, records):
+    """Per-arm guard blocks (eb.arm_guard_block on the frozen readouts and the primary records) and the extra
+    guards G_port / G_fid; the publication and --score-novelty use exactly this computation."""
+    output = Path(output)
+    gport = eb.read_json(output / "gport/gport.json")
+    gfid = eb.read_json(output / "fidelity/gfid.json")
+    extra = {"G_port": bool(gport["G_port"]), "G_fid": bool(gfid.get("G_fid"))}
+    guards = {}
+    for arm in ARMS:
+        per_seed = {}
+        for seed in eb.SEEDS:
+            rd = eb.read_json(readouts_dir(output, arm, seed) / "readouts.json")
+            per_seed[seed] = {"G_rank": rd.get("G_rank"), "G_action": rd.get("G_action"), "G_collapse": None,
+                              "policy_ceiling_auc": None, "typed_failure": rd.get("typed_failure")
+                              or records[arm][seed].get("typed_failure")}
+        guards[arm] = eb.arm_guard_block(per_seed, ["G_rank", "G_action", "G_nonfinite", "G_trained"],
+                                         nonfinite=eb.nonfinite_share(records[arm].values(), eb.PRIMARY_COST))
+    return guards, extra
+
+
+def arm_guards_pass(guards, extra):
+    """eb.arm_block's arm pass: every G_* entry of the arm guards merged with the extra guards is True."""
+    merged = {**guards, **extra}
+    names = [k for k in merged if k.startswith("G_")]
+    return bool(names) and all(merged[k] is True for k in names)
+
+
+@torch.no_grad()
+def score_novelty(output, device=None):
+    """Every guard-passing arm x seed on the 16 grid launches of every mixed novelty level from that level's E99
+    anchor carrier, exactly as score_arm scores a Gate-B cell (arm_predictor + cell_rows); one record per arm-seed;
+    resumable per record; never re-scores a primary record."""
+    output = Path(output)
+    if not (output / "readouts-manifest.json").is_file():
+        raise SystemExit("--score-novelty refuses: readouts are not frozen (readouts-manifest.json missing)")
+    missing = [f"{arm}--seed{seed}" for arm in (*ARMS, "U+head") for seed in eb.SEEDS
+               if not record_path(output, arm, seed).is_file()]
+    if missing:
+        raise SystemExit(f"--score-novelty refuses: primary records missing ({', '.join(missing)}); run --score first")
+    plan = load_plan(output)
+    load_manifest(output)
+    records = load_records(output)
+    guards, extra = arm_guards(output, records)
+    status = {arm: {"scored": arm_guards_pass(guards[arm], extra),
+                    "failed_guards": sorted(k for k, v in {**guards[arm], **extra}.items()
+                                            if k.startswith("G_") and v is not True)} for arm in NOVELTY_ARMS}
+    status["U+head"] = {"scored": False, "reason": "control without arm guards (P-novelty scores guarded arms)"}
+    costs = objective_costs()
+    with harness.deterministic_scoring() as policy:
+        cells = eb.novelty_cells()
+        apath = eb.novelty_anchors_path(output)
+        anchors = (torch.load(apath, map_location="cpu", weights_only=True) if apath.is_file()
+                   else eb.read_novelty_anchors(output, policy, cells))
+        eb.novelty_reference_records(output, policy, cells, anchors["carriers"])
+        carriers = anchors["carriers"]
+        for arm in NOVELTY_ARMS:
+            if not status[arm]["scored"]:
+                log(f"novelty: {arm} not scored (failed guards {status[arm]['failed_guards']})")
+                continue
+            for seed in eb.SEEDS:
+                path = novelty_record_path(output, arm, seed)
+                if path.is_file():
+                    continue
+                began = time.monotonic()
+                mpath = model_dir(output, arm, seed, plan["selected"]) / "model.pt"
+                base = {"schema": SCHEMA_NOVELTY_RECORD, "plan_identity": IDENTITY, "arm": arm, "seed": seed,
+                        "model_sha256": eb.sha256_of(mpath), "scoring_policy": policy,
+                        "anchors_read_at": anchors["read_at"]}
+                predict, head, _, failure = arm_predictor(output, plan, arm, seed, device)
+                if failure is not None:
+                    record = {**base, "typed_failure": failure, "inventories": {"grid": {}}}
+                else:
+                    grid = {level: {"rows": cell_rows(arm, predict, head, cells["levels"][level]["inventory"],
+                                                      carriers[level], costs)} for level in cells["mixed"]}
+                    record = {**base, "typed_failure": None, "inventories": {"grid": grid}}
+                record["scored_at"] = eb.utc_now()
+                eb.write_json(path, record)
+                seconds = time.monotonic() - began
+                eb.mark(output, f"score-novelty-{arm}-seed{seed}", seconds, seconds if device_of(device) != "cpu" else 0)
+                log(f"novelty: scored {arm} seed {seed} ({seconds:.0f}s)")
+    eb.write_json(output / "novelty" / "arms.json", {"plan_identity": IDENTITY, "arms": status})
+    return 0
+
+
+def novelty_section(output):
+    """The DESCRIPTIVE P-novelty table (eb.novelty_table) when novelty records exist, else None."""
+    output = Path(output)
+    scored = [arm for arm in NOVELTY_ARMS if all(novelty_record_path(output, arm, s).is_file() for s in eb.SEEDS)]
+    if not scored:
+        return None
+    cells = eb.novelty_cells()
+    anchors = torch.load(eb.novelty_anchors_path(output), map_location="cpu", weights_only=True)
+    refs = eb.novelty_reference_records(output, anchors["scoring_policy"], cells, anchors["carriers"])
+    nrec = {arm: {s: eb.read_json(novelty_record_path(output, arm, s)) for s in eb.SEEDS} for arm in scored}
+    views = {arm: (nrec[arm], eb.PRIMARY_COST) for arm in scored}
+    if "B1" in scored:
+        views["B1-head"] = (nrec["B1"], HEAD_KEY)
+    table = eb.novelty_table({**views, **refs}, cells)
+    return {"table": table, "arms": eb.read_json(output / "novelty" / "arms.json")["arms"],
+            "anchors_read_at": anchors["read_at"]}
+
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -1100,7 +1226,8 @@ def bench_table(output):
 # --publish / --validate
 # ---------------------------------------------------------------------------------------------------------------
 
-RECORD_PATTERNS = ["records/*.json", "benchmarks/*/*/*/record.json"]
+RECORD_PATTERNS = ["records/*.json", "benchmarks/*/*/*/record.json", "novelty/records/*.json",
+                   "novelty/references/*.json"]
 
 
 def load_records(output):
@@ -1114,13 +1241,21 @@ def global_guards(output, plan, records):
     anchors_read = min(r["anchors_read_at"] for recs in records.values() for r in recs.values())
     first_scored = min(r["scored_at"] for recs in records.values() for r in recs.values())
     chronology = bool(plan["frozen_at"] <= manifest["frozen_at"] <= anchors_read <= first_scored)
+    novelty = None
+    if eb.novelty_anchors_path(output).is_file():  # P-novelty: its anchors are read after every primary record
+        nread = torch.load(eb.novelty_anchors_path(output), map_location="cpu", weights_only=True)["read_at"]
+        last_scored = max(r["scored_at"] for recs in records.values() for r in recs.values())
+        nscored = [eb.read_json(p)["scored_at"] for p in sorted((output / "novelty" / "records").glob("*.json"))]
+        novelty = {"anchors_read_at": nread, "last_primary_scored_at": last_scored,
+                   "pass": bool(nread >= last_scored and all(s >= nread for s in nscored))}
+        chronology = chronology and novelty["pass"]
     policies = [r["scoring_policy"] for recs in records.values() for r in recs.values()]
     return {
         "G_isolation": {"pass": True, "rule": "fit split trains (dynamics, heads), policy split selects; evaluation "
                         "anchors are read only by --score after --freeze-readouts (G_chronology)"},
         "G_chronology": {"pass": chronology, "plan_frozen_at": plan["frozen_at"],
                          "readouts_frozen_at": manifest["frozen_at"], "anchors_read_at": anchors_read,
-                         "first_scored_at": first_scored},
+                         "first_scored_at": first_scored, "novelty": novelty},
         "G_scoring_policy": {"pass": all(p == harness.SCORING_POLICY for p in policies)},
         "G_records": eb.records_guard(output, IDENTITY),
     }
@@ -1160,16 +1295,8 @@ def publication(output):
     views = {name: (records[arm], key) for name, (arm, key) in arm_views.items()}
     views["B1-head"] = (records["B1"], HEAD_KEY)
     views["U+head"] = (records["U+head"], HEAD_KEY)
-    blocks, guards_of, tables = {}, {}, {}
-    for arm in ARMS:
-        per_seed = {}
-        for seed in eb.SEEDS:
-            rd = eb.read_json(readouts_dir(output, arm, seed) / "readouts.json")
-            per_seed[seed] = {"G_rank": rd.get("G_rank"), "G_action": rd.get("G_action"), "G_collapse": None,
-                              "policy_ceiling_auc": None, "typed_failure": rd.get("typed_failure")
-                              or records[arm][seed].get("typed_failure")}
-        guards_of[arm] = eb.arm_guard_block(per_seed, ["G_rank", "G_action", "G_nonfinite", "G_trained"],
-                                            nonfinite=eb.nonfinite_share(records[arm].values(), eb.PRIMARY_COST))
+    blocks, tables = {}, {}
+    guards_of, _ = arm_guards(output, records)
     for inventory in eb.INVENTORIES:
         rows = eb.view_rows(cells, inventory, views, refs)
         tables[inventory] = {"rankers": eb.ranker_table(rows, ["U", "C*", "P", "J", "J_dec", *views])}
@@ -1197,7 +1324,7 @@ def publication(output):
     ledger, gpu_total, wall_total = eb.ledger_totals(output, training_report_of(output, plan))
     summary = eb.child_summary(ISSUE, IDENTITY, plan["frozen_at"], blocks, within, guards_global, gfid_block, {
         "inventories": tables, "wrong_anchor": wrong, "positions": positions, "selection": plan["selected"],
-        "benchmarks_exploratory": bench_table(output),
+        "benchmarks_exploratory": bench_table(output), "novelty": novelty_section(output),
         "readouts": {f"{a}--seed{s}": {k: v for k, v in eb.read_json(readouts_dir(output, a, s) / "readouts.json").items()
                                        if k in ("policy_auc", "policy_head_auc", "G_action", "typed_failure")}
                      for a, s in readout_items()}})
@@ -1227,6 +1354,15 @@ def findings_text(summary):
                      for t in BENCH_TIMES]
             lines.append(f"| {name} | " + " | ".join(cells) + " |")
         lines.append("")
+    novelty = summary["extra"].get("novelty")
+    if novelty is not None:
+        lines += ["", "## Novelty levels (P-novelty; DESCRIPTIVE, no tokens, never in a disposition)", "",
+                  "Guarded arms on the 16 grid launches of every mixed #110 novelty level (#107 scope) from its E99 "
+                  "anchor; U / C* / P as Gate-B scores them.", "", *eb.format_novelty_rows(novelty["table"]), ""]
+        for arm, entry in novelty["arms"].items():
+            if not entry["scored"]:
+                reason = entry.get("reason") or "failed " + ", ".join(entry["failed_guards"])
+                lines.append(f"- {arm}: not scored ({reason})")
     lines += ["", "Intervals are descriptive (member-clustered bootstrap); tokens follow the #127 delta rule.", ""]
     return "\n".join(lines)
 
@@ -1281,7 +1417,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     modes = parser.add_mutually_exclusive_group(required=True)
     for mode in ("selection", "selection-readouts", "smoke", "prepare", "train", "readouts", "freeze-readouts",
-                 "score", "bench-train", "bench-score", "publish", "validate"):
+                 "score", "score-novelty", "bench-train", "bench-score", "publish", "validate"):
         modes.add_argument(f"--{mode}", action="store_true")
     parser.add_argument("--gpu", type=int, default=0, help="queue index (the job's CUDA_VISIBLE_DEVICES picks the GPU)")
     parser.add_argument("--workers", type=int, default=0, help="accepted for the contract; data live on the device")
@@ -1305,6 +1441,8 @@ def main(argv=None):
         return freeze_readouts(output)
     if args.score:
         return score(output, args.device)
+    if args.score_novelty:
+        return score_novelty(output, args.device)
     if args.bench_train:
         return bench_train(output, args.gpu, args.device)
     if args.bench_score:

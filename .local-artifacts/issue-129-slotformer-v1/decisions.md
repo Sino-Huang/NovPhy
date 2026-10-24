@@ -316,3 +316,17 @@ and A4 got Δ = 0 because their official sources ran on the adapter's torch.
   1.000000, and max |Δparam| = 0.
 - Predictions are identical, and so is the step-2-from-official-state diagnostic.
 
+
+## Decision P-novelty (2026-10-25): the descriptive #110 novelty scoring pass (owner decision D6)
+
+**Rule.** #127 P-novelty: every arm of this child that passes its guards is scored on the #110 novelty evaluation pairs after its primary scoring pass. Descriptive only: no token, never part of a disposition or the program claim. Fixed now, before any arm of the program has an evaluation score.
+
+**Population.** The `issue110-evaluation` levels of the 29 in-scope cells under #107's frozen rule (`run_granularity_under_novelty.in_scope_cells`: #110-supported, has mixed-verdict evaluation levels, not rollout-error-only), on both sides of every pair: the novel side at novelty level k = 1–7 and its paired level-0 normal side. Grid inventory (16 launches; the level-5 slingshot cells use #110's mirrored grid). Engine verdicts from the #110 handoff (`handoff_107.json`). AUC on mixed-verdict levels only.
+
+**Inputs.** #107's anchor rule: the level's first complete grid candidate in suffix order, shot frame 0 (pre-launch). Pixel arms read that frame; carrier arms read its E99 v1 batch-1 parse (`rt.anchor_carrier` with the frozen E99 encoder, under `deterministic_scoring()`, the #102 N2 pattern); A3-sym builds its state from the level's `decision-physics-v1.json`. The E99 v1 carrier does not represent most novelty entities (#110: v1 fully supports 2 of 45 cells); carrier arms therefore see the novel levels through that limited contract, which is part of the descriptive result. No input contract is changed for this pass.
+
+**Scoring.** Each guard-passing arm, all three seeds, its primary score (logit / Q for direct predictors; tie-free cost of the predicted endpoint carrier for world models), once, in a process that did not train, under `deterministic_scoring()`, after the arm's primary scoring pass. References on the same cells and anchors: U and C* (the Gate-B checkpoints rolled out as Gate-B scores them) and P (the Gate-B prior rule over the fit verdicts).
+
+**Numbers (DESCRIPTIVE).** Per ranker: pooled grid AUC per novelty level on the novel side, on the paired normal sides, pooled over novelty levels 1–7, and the paired contrast novel − paired normal (one row per (pair, seed) where both sides are mixed); level-clustered (pair-clustered for the paired contrast) percentile bootstrap, 10 000 draws, PCG64 7201. Records are hashed into this child's records manifest and re-derived by `--validate`.
+
+Shared implementation: `scripts/external_baselines.py` (`novelty_cells`, `read_novelty_anchors`, `novelty_reference_records`, `novelty_table`), pinned by every child plan; each child runner gets a `--score-novelty` mode before its freeze.

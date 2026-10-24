@@ -295,6 +295,28 @@
    "note": "#129 the single scoring pass (process that did not train): evaluation anchors, every arm-seed record, wrong anchors, positions; resumable per record"
   },
   {
+   "id": "129-score-novelty",
+   "gpu": 0,
+   "resumable": true,
+   "est_minutes": 45,
+   "depends_on": [
+    "129-score"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_129_slotformer",
+    "--score-novelty"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#129 P-novelty (DESCRIPTIVE, no tokens; decision issuecomment-6386830857): after the primary scoring pass; reads the #110 novelty anchors once (anchors-novelty.pt), U / C* / P novelty references, then every guard-passing arm-seed (B1, B1-m) on the 16 grid launches of every mixed novelty level; refuses before the primary records exist; resumable per record"
+  },
+  {
    "id": "129-bench-score",
    "gpu": 1,
    "resumable": true,
@@ -325,6 +347,7 @@
    "est_minutes": 45,
    "depends_on": [
     "129-score",
+    "129-score-novelty",
     "129-bench-score"
    ],
    "command": [
