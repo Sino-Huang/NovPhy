@@ -331,6 +331,9 @@ def test_pins():
     entries = eb.shared_inputs()
     names = [e["name"] for e in entries]
     assert len(names) == len(set(names)) and "module" in names and "shared_MANIFEST.json" in names
+    assert {"issue_110_handoff_107", "issue_107_runner", "issue_110_runner", "issue_110_novelty_contract",
+            "issue_110_novelty_labels_v2", "issue_110_design_plan", "issue_110_label_failures",
+            "issue_123_eval_positions"} <= set(names)
     eb.verify_pins(entries)
     drifted = [{**entries[0], "sha256": "sha256:" + "0" * 64}]
     with pytest.raises(ValueError):
@@ -566,3 +569,151 @@ def test_position_table_reproduces_123(published):
                                       published["cells"]))
     for name in ("U", "C*", "HJ-px"):
         assert got[name] == expected[name], name
+
+
+# ---------------------------------------------------------------------------
+# P-novelty: population structure (membership metadata only; no verdict value is read), reference records on a
+# fit-split stand-in (CPU), the table on synthetic rows, the formatter
+# ---------------------------------------------------------------------------
+
+def test_novelty_population_structure():
+    from pathlib import Path
+    cells = eb.novelty_cells()
+    levels = cells["levels"]
+    assert len(cells["in_scope_cells"]) == 29 and {m["cell"] for m in levels.values()} == set(cells["in_scope_cells"])
+    sides = {(m["side"], m["novelty_level"]) for m in levels.values()}
+    assert {k for side, k in sides if side == "novel"} == set(range(1, 8)) and ("normal", 0) in sides
+    assert len(levels) == 455 and sum(m["side"] == "novel" for m in levels.values()) == 199
+    normal_units = {(m["pair"], m["pair_ordinal"]) for m in levels.values() if m["side"] == "normal"}
+    for m in levels.values():
+        if m["side"] == "novel":
+            assert (m["pair"], m["pair_ordinal"]) in normal_units and m["pair_level"] == m["novelty_level"]
+    grid = {i["ordinal"]: i["action"] for i in eb.grid_items()}
+    for level, m in levels.items():
+        assert m["anchor_key"] in {i["key"] for i in m["inventory"]} and m["anchor_key"].startswith(level)
+        assert Path(m["attempt"]).name == m["anchor_key"] and len(m["inventory"]) in (15, 16)
+        for item in m["inventory"]:
+            expected = dict(grid[item["ordinal"]])
+            if m["side"] == "novel" and m["novelty_level"] == 5:
+                expected["drag_x"] = -expected["drag_x"]  # right slingshot: mirrored launches
+            assert item["action"] == expected
+    assert set(cells["mixed"]) <= set(levels)
+    assert (Path(levels[sorted(levels)[0]]["attempt"]) / "decision-physics-v1.json").is_file()
+
+
+def test_novelty_prior_rows_mirror():
+    stats = eb.gb.prior_stats(eb.read_json(eb.rt.verdicts_path(eb.RETRAIN))["branches"], "grid")
+    items = eb.grid_items()
+    mirrored = {"inventory": [{**i, "action": {**i["action"], "drag_x": -i["action"]["drag_x"]}} for i in items]}
+    plain = {"inventory": items}
+    assert eb.novelty_prior_rows(mirrored, stats) == eb.novelty_prior_rows(plain, stats) == eb.gb.prior_rows(plain,
+                                                                                                             stats)
+    assert len({r["tie_free"] for r in eb.novelty_prior_rows(mirrored, stats)}) > 1
+
+
+@pytest.fixture()
+def cpu_scoring(monkeypatch):
+    from scripts import run_decision_chain_attribution as m99
+    monkeypatch.setattr(m99, "DEVICE", "cpu")
+    monkeypatch.setattr(eb.gb, "DEVICE", "cpu")
+    monkeypatch.setattr(torch.cuda, "synchronize", lambda *a, **k: None)
+
+
+def fit_stand_in():
+    """Two mixed fit levels as one novel / normal level pair (fit data only)."""
+    entries = eb.gb.inventory_entries(eb.rt.fit_levels(), eb.rt.complete_branches(), eb.rt.fit_verdicts(), "grid")
+    chosen = [m for m, e in entries.items() if set(e["verdicts"].values()) == {True, False}][:2]
+    levels = {}
+    for member, side in zip(chosen, ("novel", "normal")):
+        levels[member] = {"cell": f"{1 if side == 'novel' else 0}/stand-in", "pair": "pair-stand-in",
+                          "pair_ordinal": 1, "side": side, "novelty_level": 1 if side == "novel" else 0,
+                          "pair_level": 1, "inventory": entries[member]["inventory"],
+                          "verdicts": entries[member]["verdicts"], "anchor_key": None, "attempt": None}
+    return {"levels": levels, "in_scope_cells": ["0/stand-in", "1/stand-in"], "mixed": sorted(chosen)}
+
+
+def test_novelty_reference_records_deterministic(cpu_scoring, tmp_path):
+    from world_model.planning import scoring_harness as harness
+    cells = fit_stand_in()
+    anchors = eb.fit_anchors()["carriers"]
+    load = lambda name, seed: (eb._reference_predictor(name, seed), None)  # noqa: E731
+    outs = []
+    for run in ("a", "b"):
+        with harness.deterministic_scoring() as policy:
+            outs.append(eb.novelty_reference_records(tmp_path / run, policy, cells=cells, anchors=anchors, load=load))
+    files = sorted(p.name for p in eb.novelty_reference_dir(tmp_path / "a").glob("*.json"))
+    assert len(files) == 7
+    for name in files:
+        assert (eb.novelty_reference_dir(tmp_path / "a") / name).read_bytes() == (
+            eb.novelty_reference_dir(tmp_path / "b") / name).read_bytes(), name
+    # Gate-B's request_block equals the fixed-pair rollout + EndpointCosts rows of the same checkpoint
+    from scripts import run_lookahead_control as wlc
+    from scripts import run_tau_ad_within_checkpoint as t96
+    from world_model.training.matched_dynamics import pairs_for
+    model = eb._reference_predictor("unit", eb.SELECTION_SEED)
+    pair = pairs_for(model)[t96.arm_spec("F-15-macro")["pair_index"]]
+    level = cells["mixed"][0]
+    items = cells["levels"][level]["inventory"]
+    z_end = eb._reference_rollout(model, pair, anchors[level], torch.stack([eb.launch5(i["action"]) for i in items]))
+    expected = eb.endpoint_rows(items, z_end, anchors[level], harness.EndpointCosts(wlc.load_objective()))
+    assert outs[0]["U"][0][eb.SELECTION_SEED]["inventories"]["grid"][level]["rows"] == canonical(expected)
+    assert outs[0]["P"][0][eb.SEEDS[0]] is outs[0]["P"][0][eb.SEEDS[2]]
+    table = eb.novelty_table(outs[0], cells)
+    assert set(table["rankers"]) == {"U", "C*", "P"} and table["population"]["paired_units"] == {"1": 1}
+
+
+def synthetic_novelty():
+    """Level pairs u0..u5 at novelty levels 1 / 2; u5's novel side is not mixed; one unpaired normal side."""
+    rng = np.random.default_rng(11)
+    levels, mixed = {}, []
+    spec = [(u, 1 if u < 3 else 2) for u in range(6)]
+    for u, k in spec:
+        for side in ("novel", "normal"):
+            name = f"{side}-{u}"
+            is_mixed = not (u == 5 and side == "novel")
+            levels[name] = {"cell": f"{k if side == 'novel' else 0}/s", "pair": f"pair-{u % 2}", "pair_ordinal": u,
+                            "side": side, "novelty_level": k if side == "novel" else 0, "pair_level": k,
+                            "inventory": [{"ordinal": o, "action": None, "key": f"{name}-{o}"} for o in range(16)],
+                            "verdicts": {o: (o < 4) and is_mixed for o in range(16)}}
+            mixed += [name] if is_mixed else []
+    levels["normal-x"] = {**levels["normal-0"], "pair_ordinal": 99, "pair_level": 8,
+                          "inventory": levels["normal-0"]["inventory"]}
+    mixed.append("normal-x")
+    records = {}
+    for name in ("A", "B"):
+        records[name] = ({seed: {"typed_failure": None, "inventories": {"grid": {
+            lv: {"rows": [{"ordinal": o, "excluded": False, "c": float(rng.normal() - (o < 4) * (1.0 if name == "A"
+                                                                                                   else 0.2))}
+                          for o in range(16)]} for lv in levels}}} for seed in eb.SEEDS}, "c")
+    return {"levels": levels, "in_scope_cells": ["0/s", "1/s", "2/s"], "mixed": sorted(mixed)}, records
+
+
+def test_novelty_table_blocks_and_pairing():
+    from scripts import run_decision_chain_attribution as m99
+    cells, records = synthetic_novelty()
+    table = eb.novelty_table(records, cells)
+    assert table["novelty_levels"] == [1, 2] and table["population"]["paired_units"] == {"1": 3, "2": 2}
+    a = table["rankers"]["A"]
+
+    def auc(lv, seed):
+        meta = cells["levels"][lv]
+        return m99.view({"inventory": meta["inventory"], "verdicts": meta["verdicts"]},
+                        records["A"][0][seed]["inventories"]["grid"][lv]["rows"], "c")["auc"]
+
+    assert a["novel"]["1"]["clusters"] == 3 and a["novel"]["1"]["units"] == 9
+    assert a["novel"]["2"]["clusters"] == 2  # novel-5 is not mixed
+    assert a["normal_paired"]["2"]["clusters"] == 3  # its normal side still counts as paired normal
+    assert a["normal_all"]["clusters"] == 7 and a["normal_paired_pooled"]["clusters"] == 6
+    assert a["novel_pooled"]["mean"] == pytest.approx(np.mean([np.mean([auc(f"novel-{u}", s) for s in eb.SEEDS])
+                                                               for u in range(5)]))
+    diffs = [np.mean([auc(f"novel-{u}", s) - auc(f"normal-{u}", s) for s in eb.SEEDS]) for u in range(5)]
+    pooled = a["paired_pooled"]
+    assert pooled["cells"] == 15 and pooled["members"] == 5  # clustered by level pair (pair/pair_ordinal)
+    assert pooled["estimate"]["mean"] == pytest.approx(np.mean(diffs))
+    assert a["paired"]["1"]["estimate"]["mean"] == pytest.approx(np.mean(diffs[:3]))
+    assert table["rankers"]["B"]["novel_pooled"]["mean"] < a["novel_pooled"]["mean"]
+    lines = eb.format_novelty_rows(table)
+    assert len(lines) == 2 + 2 * 4 and all(line.count("|") == 7 for line in lines)
+    assert lines[2].startswith("| A | 1 | ") and lines[4].startswith("| A | 1–2 pooled | ") and lines[4].endswith("| 5 |")
+    assert lines[5].startswith("| A | 0 (all normal sides) | n/a | ")
+

@@ -474,6 +474,223 @@ def position_table(records_by_name, cells):
 
 
 # ---------------------------------------------------------------------------
+# P-novelty (owner decision D6; DESCRIPTIVE only, never in a disposition; evaluation data: post-freeze only).
+# Population: the #110 issue110-evaluation levels of #107's frozen in-scope cells (both sides of every level pair),
+# grid inventory (16 launches, mirrored on level 5 as #110 captured it), AUC on mixed-verdict levels only.
+# ---------------------------------------------------------------------------
+
+SCHEMA_NOVELTY_ANCHORS = "issue_127_novelty_anchors_v1"
+SCHEMA_NOVELTY_REFERENCE = "issue_127_novelty_reference_v1"
+NOVELTY_REFERENCES = (("U", "unit"), ("C*", "c_star"))
+
+
+def _g107():
+    from scripts import run_granularity_under_novelty as g107
+    return g107
+
+
+def novelty_cells():
+    """POST-FREEZE ONLY (reads evaluation verdicts). {"levels": {level: {"cell", "pair", "pair_ordinal", "side",
+    "novelty_level", "pair_level", "inventory": [{ordinal, action, key}], "verdicts": {ordinal: bool}, "anchor_key",
+    "attempt"}}, "in_scope_cells": [...], "mixed": [levels]}: #107's frozen scope (in_scope_cells, levels_of over its
+    groups L0, L1..L7; usable #110 branches), its anchor rule (the level's first usable grid candidate in suffix
+    order) and its mixed rule. pair_level = the novelty level of the pair's novel side (also on the normal side)."""
+    from scripts import run_novelty_coverage as nc
+    g107 = _g107()
+    scope = g107.in_scope_cells()
+    levels = {}
+    for group in g107.groups():
+        if group == "n1":
+            continue
+        for level, meta in g107.levels_of(group, frozenset(scope)).items():
+            levels[level] = {"cell": meta["cell"], "pair": meta["pair"], "pair_ordinal": meta["ordinal"],
+                             "side": meta["side"], "novelty_level": meta["novelty_level"],
+                             "pair_level": meta["pair_level"],
+                             "inventory": [{"ordinal": i["ordinal"], "action": i["action"], "key": i["key"]}
+                                           for i in meta["items"]],
+                             "verdicts": dict(meta["verdicts"]), "anchor_key": meta["anchor_key"],
+                             "attempt": str(nc.CAMPAIGN / nc.STREAM_EVAL / "attempts" / meta["anchor_key"])}
+    return {"levels": levels, "in_scope_cells": list(scope),
+            "mixed": sorted(level for level, meta in levels.items() if g107.mixed(meta))}
+
+
+def novelty_anchors_path(output):
+    return Path(output) / "data" / "anchors-novelty.pt"
+
+
+def read_novelty_anchors(output, scoring_policy, cells=None):
+    """POST-FREEZE ONLY; call inside harness.deterministic_scoring() (scoring_policy = its yielded policy). Recomputes
+    every novelty anchor (no reuse of the #102 anchors-n2.pt subset, for uniformity): carriers = the E99 batch-1
+    parse rt.anchor_carrier(s99.load_adapter(s99.OUTPUT, "E"), attempt) (the #102 parse_anchors pattern), frames =
+    s99.image_tensor of the same shot frame 0, physics_paths = the attempt's decision-physics-v1.json. Writes
+    output/data/anchors-novelty.pt; G-chronology reads read_at."""
+    cells = novelty_cells() if cells is None else cells
+    adapter = s99.load_adapter(s99.OUTPUT, "E")
+    carriers, frames, physics, keys = {}, {}, {}, {}
+    for level, meta in sorted(cells["levels"].items()):
+        _, observation_root, shot, _ = s99.shot_frames(meta["attempt"])
+        carriers[level] = rt.anchor_carrier(adapter, meta["attempt"])
+        frames[level] = s99.image_tensor(observation_root / shot[0]["agent_observation"]["relative_path"])
+        physics[level] = str(Path(meta["attempt"]) / "decision-physics-v1.json")
+        keys[level] = meta["anchor_key"]
+    payload = {"schema": SCHEMA_NOVELTY_ANCHORS, "carriers": carriers, "frames": frames, "physics_paths": physics,
+               "keys": keys, "read_at": utc_now(), "scoring_policy": scoring_policy}
+    atomic_torch(novelty_anchors_path(output), payload)
+    return payload
+
+
+def novelty_prior_rows(entry, stats):
+    """P on a novelty level: gb.prior_rows with each candidate's launch replaced by the #109 grid launch of the same
+    grid ordinal (identical to gb.prior_rows on unmirrored levels; on the mirrored level-5 grid the fit split never
+    executed the mirrored launch, so the rule is applied to the launch of the same grid position)."""
+    canonical = {item["ordinal"]: item["action"] for item in grid_items()}
+    return gb.prior_rows({"inventory": [{**item, "action": canonical[item["ordinal"]]} for item in entry["inventory"]]},
+                         stats)
+
+
+def novelty_reference_dir(output):
+    return Path(output) / "novelty" / "references"
+
+
+def _novelty_reference_record(name, seed, request, scoring_policy, levels, anchors, costs, load):
+    base = {"schema": SCHEMA_NOVELTY_REFERENCE, "reference": name, "seed": seed, "request": request,
+            "scoring_policy": scoring_policy, "engine_seconds": 0}
+    model, failure = load(name, seed)
+    if model is None:
+        return {**base, "typed_failure": failure, "checkpoint_sha256": None, "inventories": {"grid": {}}}
+    grid = {level: {"rows": gb.request_block(model, request, anchors[level], meta["inventory"], costs)["rows"]}
+            for level, meta in levels}
+    return {**base, "typed_failure": None, "checkpoint_sha256": sha256_of(gb.member_path(name, seed)),
+            "inventories": {"grid": grid}}
+
+
+def novelty_reference_records(output, scoring_policy, cells=None, anchors=None, load=None):
+    """POST-FREEZE ONLY; inside harness.deterministic_scoring(). U / C* per seed (the Gate-B handoff checkpoints via
+    gb.load_model, rolled out exactly as Gate-B scores: gb.request_block from the E99 novelty anchor, tie-free cost)
+    and P (novelty_prior_rows over gb.prior_stats of the retrain fit verdicts) on the mixed novelty levels. Written
+    once to output/novelty/references/ (existing files are read back, never rewritten); no timestamps, so every
+    child's files are byte-identical. Returns {"U" / "C*" / "P": ({seed: record}, "tie_free")} for novelty_table
+    (P is seed-free: the same record per seed, the Gate-B cell weighting)."""
+    from scripts import run_lookahead_control as wlc
+    root = novelty_reference_dir(output)
+    cells = novelty_cells() if cells is None else cells
+    levels = [(level, cells["levels"][level]) for level in cells["mixed"]]
+    if anchors is None:
+        anchors = torch.load(novelty_anchors_path(output), map_location="cpu", weights_only=True)["carriers"]
+    load = gb.load_model if load is None else load
+    costs = harness.EndpointCosts(wlc.load_objective())
+    out = {}
+    for label, name in NOVELTY_REFERENCES:
+        records = {}
+        for seed in SEEDS:
+            path = root / f"{name}--seed{seed}.json"
+            if not path.is_file():
+                write_json(path, _novelty_reference_record(name, seed, gb.UNITS[name]["request"], scoring_policy,
+                                                           levels, anchors, costs, load))
+            records[seed] = read_json(path)
+        out[label] = (records, PRIMARY_COST)
+    path = root / "prior.json"
+    if not path.is_file():
+        stats = gb.prior_stats(read_json(rt.verdicts_path(RETRAIN))["branches"], "grid")
+        write_json(path, {"schema": SCHEMA_NOVELTY_REFERENCE, "reference": "prior", "typed_failure": None,
+                          "inventories": {"grid": {level: {"rows": novelty_prior_rows(meta, stats)}
+                                                   for level, meta in levels}}})
+    prior = read_json(path)
+    out["P"] = ({seed: prior for seed in SEEDS}, PRIMARY_COST)
+    return out
+
+
+def _unit(meta):
+    return f"{meta['pair']}/{meta['pair_ordinal']}"
+
+
+def novelty_table(records_by_name, cells):
+    """POST-FREEZE ONLY; DESCRIPTIVE, no tokens. records_by_name: {name: ({seed: record}, row key)} (records hold
+    "inventories": {"grid": {level: {"rows"}}}). Per ranker, over mixed levels x seeds (v1.cost_view):
+    novel[k] (novel sides at novelty level k), normal_paired[k] (the normal sides paired with an in-population level-k
+    novel side), novel_pooled (1-7), normal_paired_pooled, normal_all (every in-scope normal side, #107 L0) - each
+    level-clustered (m99.block_of); paired[k] / paired_pooled: novel - paired normal AUC, one row per (level pair,
+    seed) with both sides mixed, clustered by level pair (m99.paired). Bootstrap 10 000 draws, PCG64 7201."""
+    levels = cells["levels"]
+    novel_of = {_unit(m): level for level, m in levels.items() if m["side"] == "novel"}
+    normal_of = {_unit(m): level for level, m in levels.items() if m["side"] == "normal"}
+    mixed = set(cells["mixed"])
+    ks = sorted({m["novelty_level"] for m in levels.values() if m["side"] == "novel"})
+    views = {}
+    for level in sorted(mixed):
+        meta = levels[level]
+        entry = {"inventory": meta["inventory"], "verdicts": meta["verdicts"]}
+        for seed in SEEDS:
+            views[(level, seed)] = {name: v1.cost_view(entry, _found(records[seed], "grid", level), key)
+                                    for name, (records, key) in records_by_name.items()}
+
+    def rows_of(selected):
+        return [{"member": level, "seed": seed, "views": views[(level, seed)]}
+                for level in sorted(selected & mixed) for seed in SEEDS]
+
+    novel = {k: {lv for lv, m in levels.items() if m["side"] == "novel" and m["novelty_level"] == k} for k in ks}
+    paired_normal = {k: {normal_of[_unit(levels[lv])] for lv in novel[k] if _unit(levels[lv]) in normal_of} for k in ks}
+    all_normal = {lv for lv, m in levels.items() if m["side"] == "normal"}
+
+    def pair_rows(selected):
+        out = []
+        for lv in sorted(selected):
+            unit = _unit(levels[lv])
+            partner = normal_of.get(unit)
+            if lv not in mixed or partner not in mixed:
+                continue
+            for seed in SEEDS:
+                out.append({"member": unit, "seed": seed,
+                            "views": {(name, side): views[(level, seed)][name] for name in records_by_name
+                                      for side, level in (("novel", lv), ("normal", partner))}})
+        return out
+
+    pooled_novel = set().union(*novel.values()) if ks else set()
+    pooled_normal = set().union(*paired_normal.values()) if ks else set()
+    groups = {"novel": {str(k): rows_of(novel[k]) for k in ks}, "normal_paired": {str(k): rows_of(paired_normal[k])
+                                                                                 for k in ks}}
+    pooled = {"novel_pooled": rows_of(pooled_novel), "normal_paired_pooled": rows_of(pooled_normal),
+              "normal_all": rows_of(all_normal)}
+    prows = {str(k): pair_rows(novel[k]) for k in ks}
+    prows_pooled = pair_rows(pooled_novel)
+    rankers = {}
+    for name in records_by_name:
+        block = {section: {k: m99.block_of(rows, name) for k, rows in by_k.items()} for section, by_k in groups.items()}
+        block.update({section: m99.block_of(rows, name) for section, rows in pooled.items()})
+        block["paired"] = {k: m99.paired(rows, [(1, (name, "novel")), (-1, (name, "normal"))])
+                           for k, rows in prows.items()}
+        block["paired_pooled"] = m99.paired(prows_pooled, [(1, (name, "novel")), (-1, (name, "normal"))])
+        rankers[name] = block
+    return {"label": "DESCRIPTIVE (P-novelty; no tokens, never in a disposition)", "novelty_levels": ks,
+            "population": {"levels": len(levels), "mixed_levels": len(mixed), "in_scope_cells": len(cells["in_scope_cells"]),
+                           "level_pairs": len(novel_of), "novel_mixed": {str(k): len(novel[k] & mixed) for k in ks},
+                           "paired_units": {k: len(rows) // len(SEEDS) for k, rows in prows.items()}},
+            "rankers": rankers}
+
+
+NOVELTY_TABLE_HEADER = ("ranker", "novelty level", "novel AUC [CI]", "paired normal AUC [CI]",
+                        "novel − normal [CI]", "paired level pairs")
+
+
+def format_novelty_rows(table):
+    """Markdown lines of the P-novelty table: per ranker one row per novelty level, the pooled 1-7 row and the
+    all-normal (L0) row (rc.fmt_auc / rc.fmt_block)."""
+    lines = ["| " + " | ".join(NOVELTY_TABLE_HEADER) + " |",
+             "| " + " | ".join("---" for _ in NOVELTY_TABLE_HEADER) + " |"]
+    for name, block in table["rankers"].items():
+        entries = [(str(k), block["novel"][str(k)], block["normal_paired"][str(k)], block["paired"][str(k)])
+                   for k in table["novelty_levels"]]
+        entries.append((f"{table['novelty_levels'][0]}–{table['novelty_levels'][-1]} pooled" if table["novelty_levels"]
+                        else "pooled", block["novel_pooled"], block["normal_paired_pooled"], block["paired_pooled"]))
+        for label, novel, normal, paired in entries:
+            lines.append("| " + " | ".join((name, label, rc.fmt_auc(novel), rc.fmt_auc(normal),
+                                            rc.fmt_block(paired["estimate"]), str(paired["members"]))) + " |")
+        lines.append("| " + " | ".join((name, "0 (all normal sides)", "n/a", rc.fmt_auc(block["normal_all"]), "n/a",
+                                        "n/a")) + " |")
+    return lines
+
+
+# ---------------------------------------------------------------------------
 # statistics, tokens, contrasts, dispositions
 # ---------------------------------------------------------------------------
 
@@ -941,6 +1158,15 @@ def _input_paths():
     for name in ("unit", "c_star"):
         for seed in SEEDS:
             names[f"issue_123_curves_{name}_{seed}"] = rc.curve_path(HJ123, name, seed)
+    from scripts import run_novelty_coverage as nc
+    g107 = _g107()
+    names.update({
+        "issue_107_runner": ROOT / g107.RUNNER, "issue_110_runner": ROOT / "scripts/run_novelty_coverage.py",
+        "issue_110_novelty_contract": ROOT / "world_model/data/novelty_contract.py",
+        "issue_110_novelty_labels_v2": ROOT / "world_model/data/novelty_labels_v2.py",
+        "issue_110_handoff_107": g107.HANDOFF, "issue_110_design_plan": nc.DESIGN / "plan.json",
+        "issue_110_label_failures": nc.OUTPUT / "labels" / "failures.json",
+    })
     for product in ("fit-anchor-frames.pt", "policy-anchor-frames.pt", "MANIFEST.json"):
         names[f"shared_{product}"] = SHARED / product
     return names
