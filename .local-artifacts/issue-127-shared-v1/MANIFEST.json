@@ -1,0 +1,77 @@
+{
+  "builder": "scripts/external_baselines.py",
+  "builder_sha256": "sha256:2e36fbba7dcbceec38158024379f21de6a35b171d10bf5e7574e2443bff1580d",
+  "built_at": "2026-10-24T09:32:40Z",
+  "products": [
+    {
+      "anchors": 480,
+      "artifact": ".local-artifacts/issue-127-shared-v1/fit-anchor-frames.pt",
+      "bytes": 110782701,
+      "dtype": "uint8",
+      "sha256": "sha256:fab36af2ed55a2f6d4500bc371c35abf36d023ebc7a1367d81d490709a2cb37e",
+      "shape": [
+        3,
+        240,
+        320
+      ]
+    },
+    {
+      "anchors": 120,
+      "artifact": ".local-artifacts/issue-127-shared-v1/policy-anchor-frames.pt",
+      "bytes": 27695215,
+      "dtype": "uint8",
+      "sha256": "sha256:5a7c0592f1dbf82122c6f62dfb400a7534945059f406abfaf62ae9a859b33b09",
+      "shape": [
+        3,
+        240,
+        320
+      ]
+    }
+  ],
+  "rule": "frame 0 of each anchor branch (fit: rt.anchors_path frames; policy: #123 policy.pt anchor_frames) from the #123 pixel stores; every saved frame equals a fresh rc.FitData / rc.PixelStore read",
+  "schema": "issue_127_shared_manifest_v1",
+  "sources": [
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "bytes": 603401,
+      "name": "retrain_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/policy.pt",
+      "bytes": 68233811,
+      "name": "issue_123_policy_data",
+      "sha256": "sha256:2c4019df2f36b48793b840c82a3394b0f06c6f81a83ff841876514c58260000b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/fit-index.npz",
+      "bytes": 4093430,
+      "name": "issue_123_fit_index",
+      "sha256": "sha256:acee6381ca2cf784d861f4cf9d0ca3801a20bf256c6dcfa42a572cae3ff3e43c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/index.npz",
+      "bytes": 60682311,
+      "name": "issue_123_pixels_fit_index",
+      "sha256": "sha256:335644909ce4f116a85f1ef637385931172524595d70072576e4c6b380baffcc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/MANIFEST.json",
+      "bytes": 2710,
+      "name": "issue_123_pixels_fit_manifest",
+      "sha256": "sha256:4f6c1789e8b6d9069b9742222267d48948e5145417bad29a4c7829b30badb5e5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/index.npz",
+      "bytes": 1598393,
+      "name": "issue_123_pixels_policy_index",
+      "sha256": "sha256:c4804d354996c127a71d8a63a00068a795089617b93a11c351ac3067c0df117f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/MANIFEST.json",
+      "bytes": 375,
+      "name": "issue_123_pixels_policy_manifest",
+      "sha256": "sha256:411594dd5f7465738fa0761f0e1846573891736ddbea314d4f331c8336103f82"
+    }
+  ]
+}
