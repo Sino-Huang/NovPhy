@@ -170,7 +170,7 @@
     },
     {
       "id": "131-gfid-dreamer-s20260908",
-      "gpu": 3,
+      "gpu": 1,
       "resumable": true,
       "est_minutes": 420,
       "shares_gpu": false,
@@ -192,13 +192,13 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "3"
+        "CUDA_VISIBLE_DEVICES": "1"
       },
-      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260908, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260908, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM. [moved to GPU 1 by the orchestrator 2026-10-25: DreamerV2 runs beside the THICK runs on GPU 3]"
     },
     {
       "id": "131-gfid-dreamer-s20260909",
-      "gpu": 3,
+      "gpu": 1,
       "resumable": true,
       "est_minutes": 420,
       "shares_gpu": false,
@@ -220,13 +220,13 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "3"
+        "CUDA_VISIBLE_DEVICES": "1"
       },
-      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260909, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260909, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM. [moved to GPU 1 by the orchestrator 2026-10-25: DreamerV2 runs beside the THICK runs on GPU 3]"
     },
     {
       "id": "131-gfid-dreamer-s20260910",
-      "gpu": 3,
+      "gpu": 1,
       "resumable": true,
       "est_minutes": 420,
       "shares_gpu": false,
@@ -248,9 +248,9 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "3"
+        "CUDA_VISIBLE_DEVICES": "1"
       },
-      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260910, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260910, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM. [moved to GPU 1 by the orchestrator 2026-10-25: DreamerV2 runs beside the THICK runs on GPU 3]"
     },
     {
       "id": "131-gfid-record",
