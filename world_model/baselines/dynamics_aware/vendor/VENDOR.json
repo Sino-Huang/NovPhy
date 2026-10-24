@@ -1,0 +1,313 @@
+{
+  "branch": "main (hand-crafted loss; README: 'This branch trains models that use the hand crafted loss')",
+  "commit": "eb65576d8a9e9b1f74c64518b5dd68af9d0a7eff",
+  "files": {
+    "LICENSE": {
+      "edits": [],
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+      "vendored_sha256": "sha256:50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+    },
+    "__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:b97c5cd7bf90ad63aa2c02e859a29d98bb3db48a95ee5f2be7ff2f2031a91cd6"
+    },
+    "agents/__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:b7981f6437c4963e9e2eedbb5da26618444d1dbaafa07e8b15990c86ebcb26f2"
+    },
+    "agents/experiments/hand_crafted_experiments/06_hand_crafted_test_run_table_1.conf": {
+      "edits": [],
+      "upstream_path": "agents/experiments/hand_crafted_experiments/06_hand_crafted_test_run_table_1.conf",
+      "upstream_sha256": "sha256:e7b3a85357c373cca64750ccc52c78ec2fdbb71d648ba890d72d9fa92eb95d5d",
+      "vendored_sha256": "sha256:e7b3a85357c373cca64750ccc52c78ec2fdbb71d648ba890d72d9fa92eb95d5d"
+    },
+    "agents/extended_evaluation.py": {
+      "edits": [],
+      "upstream_path": "agents/extended_evaluation.py",
+      "upstream_sha256": "sha256:07cb5ad03bd54af49dfd16b5140136be2223e51b2edb81bfdace8cd8d7e17622",
+      "vendored_sha256": "sha256:07cb5ad03bd54af49dfd16b5140136be2223e51b2edb81bfdace8cd8d7e17622"
+    },
+    "agents/nets.py": {
+      "edits": [
+        {
+          "new": "from .. import torchvision",
+          "old": "import torchvision",
+          "reason": "E1: novphy env has no torchvision; the vendored torchvision v0.4.0 ResNet (vendor/torchvision, BSD-3) is used in both envs",
+          "upstream_lines": [
+            17,
+            17
+          ]
+        },
+        {
+          "new": "from .. import phyre_constants as phyre",
+          "old": "import phyre",
+          "reason": "E1: nets.py reads only phyre.NUM_COLORS (= 7 at the pin); vendor/phyre_constants.py lets the adapter load without a PHYRE build",
+          "upstream_lines": [
+            19,
+            19
+          ]
+        }
+      ],
+      "upstream_path": "agents/nets.py",
+      "upstream_sha256": "sha256:187748f4c6930cd958aca55c466e3eeeb826131a63a4233101653581dd8653ad",
+      "vendored_sha256": "sha256:95646c52476eef12164d7c62e186f712b3a44d33c9036e34d393580b8f587684"
+    },
+    "agents/neural_agent.py": {
+      "edits": [
+        {
+          "new": "from . import nets",
+          "old": "import nets",
+          "reason": "package-relative import (allowed)",
+          "upstream_lines": [
+            27,
+            27
+          ]
+        },
+        {
+          "new": "from .psim import ParallelPhyreSimulator, standardize_img_rollout_shape, standardize_features_shape\nfrom . import rollout_dist\nimport threading  # [vendor edit E3] night-window resumability (VENDOR.json)\n\nSTOP_REQUESTED = threading.Event()  # [vendor edit E3] set by the SIGTERM handler of the #128 fidelity runner\n\n\nclass TrainingPaused(Exception):  # [vendor edit E3] raised after the stop checkpoint is written\n    pass",
+          "old": "from psim import ParallelPhyreSimulator, standardize_img_rollout_shape, standardize_features_shape\nimport rollout_dist",
+          "reason": "package-relative imports of psim and rollout_dist (allowed) + E3: night-window resumability: SIGTERM sets STOP_REQUESTED; after the current optimizer step the official checkpoint dict is written atomically (tmp + os.replace) and TrainingPaused is raised (runner exits 75); resume uses the official ckpt.* resume path",
+          "upstream_lines": [
+            29,
+            30
+          ]
+        },
+        {
+          "new": "    last_checkpoint = torch.load(last_checkpoint, weights_only=False)  # [vendor edit E2] torch>=2.6 default",
+          "old": "    last_checkpoint = torch.load(last_checkpoint)",
+          "reason": "E2: torch >= 2.6 defaults to weights_only=True, which rejects the official checkpoint dict (numpy RNG state)",
+          "upstream_lines": [
+            231,
+            231
+          ]
+        },
+        {
+          "new": "        last_checkpoint = torch.load(last_checkpoint, weights_only=False)  # [vendor edit E2] torch>=2.6 default",
+          "old": "        last_checkpoint = torch.load(last_checkpoint)",
+          "reason": "E2: torch >= 2.6 defaults to weights_only=True, which rejects the official checkpoint dict (numpy RNG state)",
+          "upstream_lines": [
+            537,
+            537
+          ]
+        },
+        {
+          "new": "        if STOP_REQUESTED.is_set() and (batch_id + 1) < updates:  # [vendor edit E3] stop checkpoint, same dict\n            fpath = os.path.join(checkpoint_dir, 'ckpt.%08d' % (batch_id + 1))\n            logging.info('Stop requested; saving: %s', fpath)\n            torch.save(\n                dict(\n                    model_kwargs=model_kwargs,\n                    model=model.state_dict(),\n                    optim=optimizer.state_dict(),\n                    done_batches=batch_id + 1,\n                    rng=rng.get_state(),\n                    scheduler=scheduler and scheduler.state_dict(),\n                ), fpath + '.tmp')\n            os.replace(fpath + '.tmp', fpath)\n            raise TrainingPaused(batch_id + 1)",
+          "old": "",
+          "reason": "E3: night-window resumability: SIGTERM sets STOP_REQUESTED; after the current optimizer step the official checkpoint dict is written atomically (tmp + os.replace) and TrainingPaused is raised (runner exits 75); resume uses the official ckpt.* resume path",
+          "upstream_lines": [
+            674,
+            673
+          ]
+        }
+      ],
+      "upstream_path": "agents/neural_agent.py",
+      "upstream_sha256": "sha256:036513e3bc18c61053f15939e9d1dfdf4a4b22af3e2bee3772490e5d50807d42",
+      "vendored_sha256": "sha256:33d2aef77769853b3e29a1052d6c1ba383a87e2f40da9b42580252e3341ae544"
+    },
+    "agents/neural_agent_contrastive.py": {
+      "edits": [
+        {
+          "new": "from . import nets",
+          "old": "import nets",
+          "reason": "package-relative import (allowed)",
+          "upstream_lines": [
+            28,
+            28
+          ]
+        },
+        {
+          "new": "from .psim import ParallelPhyreSimulator, standardize_img_rollout_shape, standardize_features_shape\nfrom . import rollout_dist",
+          "old": "from psim import ParallelPhyreSimulator, standardize_img_rollout_shape, standardize_features_shape\nimport rollout_dist",
+          "reason": "package-relative import (allowed)",
+          "upstream_lines": [
+            30,
+            31
+          ]
+        }
+      ],
+      "upstream_path": "agents/neural_agent_contrastive.py",
+      "upstream_sha256": "sha256:fa70e6a86113d99ec0d0b79728d20e5b2208897631ce3601422a866a0a52fe16",
+      "vendored_sha256": "sha256:42ae0bd527c5468aae0718abafd278e30a7bf4808e9e761e56565d8587635ff1"
+    },
+    "agents/offline_agents.py": {
+      "edits": [
+        {
+          "new": "from . import neural_agent\nfrom . import neural_agent_contrastive\nfrom .psim import ParallelPhyreSimulator",
+          "old": "import neural_agent\nimport neural_agent_contrastive\nfrom psim import ParallelPhyreSimulator",
+          "reason": "package-relative import (allowed)",
+          "upstream_lines": [
+            42,
+            44
+          ]
+        },
+        {
+          "new": "from .extended_evaluation import DetailedEvaluator\nfrom . import nets\nfrom .nets import DEVICE",
+          "old": "from extended_evaluation import DetailedEvaluator\nimport nets\nfrom nets import DEVICE",
+          "reason": "package-relative import (allowed)",
+          "upstream_lines": [
+            46,
+            48
+          ]
+        }
+      ],
+      "upstream_path": "agents/offline_agents.py",
+      "upstream_sha256": "sha256:af4cd38c48ef4291d8af6fc9b28cb5c763d7f72ca81d9f27214dfccc5d926fdb",
+      "vendored_sha256": "sha256:4137d0796e28a5bb7c32d159282343625cecc2bfb5483bf4b50fd7be990385bb"
+    },
+    "agents/psim.py": {
+      "edits": [
+        {
+          "new": "            self.scene_array = np.frombuffer(scene_buffer, dtype=np.int64,",
+          "old": "            self.scene_array = np.frombuffer(scene_buffer, dtype=np.long,",
+          "reason": "E4: np.long was removed in NumPy 1.24; np.int64 is the same dtype as ctypes.c_long on Linux x86-64 (the shared buffers are c_long)",
+          "upstream_lines": [
+            115,
+            115
+          ]
+        },
+        {
+          "new": "                                             dtype=np.int64,",
+          "old": "                                             dtype=np.long,",
+          "reason": "E4: np.long was removed in NumPy 1.24; np.int64 is the same dtype as ctypes.c_long on Linux x86-64 (the shared buffers are c_long)",
+          "upstream_lines": [
+            139,
+            139
+          ]
+        },
+        {
+          "new": "            self.img_array = np.frombuffer(img_buffer, dtype=np.int64,",
+          "old": "            self.img_array = np.frombuffer(img_buffer, dtype=np.long,",
+          "reason": "E4: np.long was removed in NumPy 1.24; np.int64 is the same dtype as ctypes.c_long on Linux x86-64 (the shared buffers are c_long)",
+          "upstream_lines": [
+            250,
+            250
+          ]
+        },
+        {
+          "new": "                                            dtype=np.int64,",
+          "old": "                                            dtype=np.long,",
+          "reason": "E4: np.long was removed in NumPy 1.24; np.int64 is the same dtype as ctypes.c_long on Linux x86-64 (the shared buffers are c_long)",
+          "upstream_lines": [
+            292,
+            292
+          ]
+        },
+        {
+          "new": "                batch_task_inds.dtype == np.int64):\n            batch_task_inds = np.array(batch_task_inds, dtype=np.int64)",
+          "old": "                batch_task_inds.dtype == np.long):\n            batch_task_inds = np.array(batch_task_inds, dtype=np.long)",
+          "reason": "E4: np.long was removed in NumPy 1.24; np.int64 is the same dtype as ctypes.c_long on Linux x86-64 (the shared buffers are c_long)",
+          "upstream_lines": [
+            333,
+            334
+          ]
+        }
+      ],
+      "upstream_path": "agents/psim.py",
+      "upstream_sha256": "sha256:bdb9746a6816757706f5e24082018b254188d9d618d06773e06c287506c08c7f",
+      "vendored_sha256": "sha256:0b5f47aaf47f53c21eb233da64d26dd45fe046078501daeb5081379dbbc849f1"
+    },
+    "agents/rollout_dist.py": {
+      "edits": [],
+      "upstream_path": "agents/rollout_dist.py",
+      "upstream_sha256": "sha256:77043cd83922bec2baf9907ff3a6c37d44ae82885b3ba507e61c6462a93c0ade",
+      "vendored_sha256": "sha256:77043cd83922bec2baf9907ff3a6c37d44ae82885b3ba507e61c6462a93c0ade"
+    },
+    "agents/train.py": {
+      "edits": [
+        {
+          "new": "from . import offline_agents",
+          "old": "import offline_agents",
+          "reason": "package-relative import (allowed)",
+          "upstream_lines": [
+            42,
+            42
+          ]
+        }
+      ],
+      "upstream_path": "agents/train.py",
+      "upstream_sha256": "sha256:c6a4abac9814ea745ac1ecce4b84488678c9e464de01ae64f7888d6f564a54b6",
+      "vendored_sha256": "sha256:f822684050874c8f96eb70fd533cc08aaa52bf145b5a249c4944f2f01998c64a"
+    },
+    "phyre_constants.py": {
+      "edits": [
+        "NUM_COLORS = 7 = phyre.creator.constants.NUM_COLORS at the pin (len(ROLE_TO_COLOR_ID)) (new; E1)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:a6d25edafb9a5f3c09b22d75a236e41ae4b68511a5b52710c92c08b4e3dcabab"
+    },
+    "torchvision/LICENSE": {
+      "commit": "d31eafa9c59cd59533dd0b89a36d371e55337a48 (tag v0.4.0)",
+      "edits": [],
+      "license": "BSD-3-Clause, Soumith Chintala 2016 (torchvision contributors)",
+      "upstream": "https://github.com/pytorch/vision",
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d",
+      "vendored_sha256": "sha256:6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d"
+    },
+    "torchvision/__init__.py": {
+      "edits": [
+        "shim exposing torchvision.models (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:db636461ae0807ded3b8a5b0364490694747b40b0bb0ecd3b536cd041b77040b"
+    },
+    "torchvision/models/__init__.py": {
+      "edits": [
+        "shim exposing resnet18/resnet50 from the vendored resnet.py (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:717924d2b54d4c2a3ea4c9bb716fca3625fc47e3c4d0a89f6377b426cb4da2cd"
+    },
+    "torchvision/models/resnet.py": {
+      "commit": "d31eafa9c59cd59533dd0b89a36d371e55337a48 (tag v0.4.0)",
+      "edits": [
+        {
+          "new": "from torch.hub import load_state_dict_from_url  # [vendor edit] torchvision 0.4.0 utils.py re-exports exactly this",
+          "old": "from .utils import load_state_dict_from_url",
+          "reason": "E1: novphy env has no torchvision; the vendored torchvision v0.4.0 ResNet (vendor/torchvision, BSD-3) is used in both envs",
+          "upstream_lines": [
+            3,
+            3
+          ]
+        }
+      ],
+      "license": "BSD-3-Clause, Soumith Chintala 2016 (torchvision contributors)",
+      "upstream": "https://github.com/pytorch/vision",
+      "upstream_path": "torchvision/models/resnet.py",
+      "upstream_sha256": "sha256:e41ff540cd5ae3e5b5612370dd572c64039f13090deec16198a3be2286c4289a",
+      "vendored_sha256": "sha256:dcc566153c25057ff517ef658029305338696bd075d946d3717b214932d7d775"
+    }
+  },
+  "license": "Apache-2.0, Facebook, Inc. and its affiliates",
+  "license_file": "LICENSE",
+  "not_vendored": {
+    "PHYRE engine": "built into conda env b127-dynaware (clone of b127-phyre: upstream phyre d0765dd2f6d6cf41b933a3a57173c63d21fbfa6a, whose engine sources equal DynamicsAware's bundled src/ except the self-supervised-only get_random_images option and pybind11 bytes bindings; Box2D tree identical apart from a testbed imgui.ini)",
+    "agents/run_sweep_file.py": "launcher only (imports submitit); its base command + conf 06 are reproduced and tested in scripts/b127_dynamics_aware_fidelity.py"
+  },
+  "policy": "verbatim copy at the pinned commit; edits = package-relative imports plus the listed compatibility/resumability edits E1-E4 (each with its reason); the hand-crafted path's numerics are unchanged (G-port: gport/a4/gport.json)",
+  "schema": "issue_127_vendor_v1",
+  "secondary_upstreams": {
+    "torchvision": {
+      "commit": "d31eafa9c59cd59533dd0b89a36d371e55337a48 (tag v0.4.0)",
+      "files": [
+        "torchvision/models/resnet.py"
+      ],
+      "license": "BSD-3-Clause, Soumith Chintala 2016 (torchvision contributors)",
+      "license_file": "torchvision/LICENSE",
+      "upstream": "https://github.com/pytorch/vision"
+    }
+  },
+  "upstream": "https://github.com/facebookresearch/DynamicsAware"
+}

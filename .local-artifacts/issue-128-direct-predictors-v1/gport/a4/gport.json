@@ -1,0 +1,190 @@
+{
+ "arm": "A4",
+ "distances": {
+  "pass": true,
+  "per_task": [
+   {
+    "bins_equal": true,
+    "max_abs": 2.9802322387695312e-08
+   },
+   {
+    "bins_equal": true,
+    "max_abs": 2.9802322387695312e-08
+   }
+  ]
+ },
+ "family": "dynamics_aware",
+ "init_identical_from_seed": true,
+ "inputs": {
+  "batch": 16,
+  "device": "cpu",
+  "n_samples_per_task": 8,
+  "precision": "float32",
+  "tasks": [
+   "00000:001",
+   "00000:002"
+  ]
+ },
+ "issue": 128,
+ "lr_schedule": {
+  "1": {
+   "match": true,
+   "ours": 0.0002999999999259779,
+   "ref": 0.0002999999999259779
+  },
+  "1000": {
+   "match": true,
+   "ours": 0.00029992598405485956,
+   "ref": 0.00029992598405485956
+  },
+  "100000": {
+   "match": true,
+   "ours": 0.0,
+   "ref": 0.0
+  },
+  "2": {
+   "match": true,
+   "ours": 0.00029999999970391184,
+   "ref": 0.00029999999970391184
+  },
+  "3": {
+   "match": true,
+   "ours": 0.0002999999993338017,
+   "ref": 0.0002999999993338017
+  },
+  "50000": {
+   "match": true,
+   "ours": 0.00015000000000000405,
+   "ref": 0.00015000000000000405
+  },
+  "99999": {
+   "match": true,
+   "ours": 7.402203849871315e-14,
+   "ref": 7.402203849871315e-14
+  }
+ },
+ "official": {
+  "commit": "eb65576d8a9e9b1f74c64518b5dd68af9d0a7eff",
+  "entry": "agents/neural_agent.py train() loop body, sample_distance_loss, rollout_dist.measure_all_distances, nets.ResNetFilmAction",
+  "env": "b127-dynaware",
+  "meta": {
+   "clone": "/mnt/array/sukaih/novphy-baselines-src/DynamicsAware@eb65576",
+   "commit": "eb65576d8a9e9b1f74c64518b5dd68af9d0a7eff",
+   "files": {
+    "nets.py": "sha256:187748f4c6930cd958aca55c466e3eeeb826131a63a4233101653581dd8653ad",
+    "neural_agent.py": "sha256:036513e3bc18c61053f15939e9d1dfdf4a4b22af3e2bee3772490e5d50807d42",
+    "psim.py": "sha256:bdb9746a6816757706f5e24082018b254188d9d618d06773e06c287506c08c7f",
+    "rollout_dist.py": "sha256:77043cd83922bec2baf9907ff3a6c37d44ae82885b3ba507e61c6462a93c0ade"
+   },
+   "hp": {
+    "distance_cutoff": 1.414,
+    "embedding_dim": 256,
+    "embeddor_type": "linear",
+    "n_regression_bins": 20,
+    "regression_type": "binned",
+    "repr_merging_method": "outer",
+    "time_slice": 0,
+    "weight": 1.0
+   },
+   "lr": 0.0003,
+   "seed_init": 20261024,
+   "seed_input": 7,
+   "tasks": [
+    "00000:001",
+    "00000:002"
+   ],
+   "updates": 100000,
+   "versions": {
+    "numpy": "2.4.6",
+    "phyre": "/mnt/array/sukaih/novphy-baselines-src/_build/phyre@d0765dd/src/python/phyre",
+    "python": "3.11.17",
+    "torch": "2.13.0+cu130",
+    "torchvision": "0.28.0+cu130"
+   }
+  },
+  "upstream": "https://github.com/facebookresearch/DynamicsAware"
+ },
+ "ours": {
+  "configuration": "A4Net(in_channels=7, action_size=3) = the official configuration; novphy.phyre_trajectories; novphy.train_step; novphy.make_optimizer",
+  "env": "novphy",
+  "module": "world_model/baselines/dynamics_aware/novphy.py",
+  "sha256": "sha256:12aabc37bb571eee79a9ce0e46b26594e133ef7dd38f2c76c79d0fd30d2f7c9c",
+  "torch": "2.13.0+cu130",
+  "vendor_json_sha256": "sha256:2e5e1e9950cfe542398cf87d30a889e2d2836c6ee53b49459d9d9e6fc76811f9"
+ },
+ "pass": true,
+ "schema": "issue_127_gport_v1",
+ "steps": [
+  {
+   "aux_rel": 0.0,
+   "ce_rel": 0.0,
+   "embeddings_rel_l2": 0.0,
+   "grad_norm_rel": 0.0,
+   "grad_rel_l2_argmax": "stem.0.weight",
+   "grad_rel_l2_max": 0.0,
+   "grad_tensors": 70,
+   "logits_rel_l2": 0.0,
+   "loss_rel": 0.0,
+   "losses": {
+    "aux": 6.98847770690918,
+    "ce": 1.0226080417633057,
+    "loss": 8.011085510253906,
+    "ref": [
+     1.0226080417633057,
+     6.98847770690918,
+     8.011085510253906
+    ]
+   },
+   "lr": 0.0002999999999259779,
+   "lr_before_step": 0.0003,
+   "lr_ref": 0.0002999999999259779,
+   "lr_rel": 0.0,
+   "param_max_abs_diff": 0.0,
+   "params_buffers_checked": 135,
+   "params_not_allclose": [],
+   "pass": true,
+   "zero_grad_tensors_ref": [],
+   "zero_grads_match": true
+  },
+  {
+   "aux_rel": 0.0,
+   "ce_rel": 0.0,
+   "embeddings_rel_l2": 0.0,
+   "grad_norm_rel": 0.0,
+   "grad_rel_l2_argmax": "stem.0.weight",
+   "grad_rel_l2_max": 0.0,
+   "grad_tensors": 70,
+   "logits_rel_l2": 0.0,
+   "loss_rel": 0.0,
+   "losses": {
+    "aux": 37.360374450683594,
+    "ce": 1.368375301361084,
+    "loss": 38.7287483215332,
+    "ref": [
+     1.368375301361084,
+     37.360374450683594,
+     38.7287483215332
+    ]
+   },
+   "lr": 0.00029999999970391184,
+   "lr_before_step": 0.0002999999999259779,
+   "lr_ref": 0.00029999999970391184,
+   "lr_rel": 0.0,
+   "param_max_abs_diff": 0.0,
+   "params_buffers_checked": 135,
+   "params_not_allclose": [],
+   "pass": true,
+   "zero_grad_tensors_ref": [],
+   "zero_grads_match": true
+  }
+ ],
+ "tolerance": {
+  "distance_atol": 1e-06,
+  "grad_norm_rel": 0.0001,
+  "loss_rel": 0.0001,
+  "lr_rel": 1e-12,
+  "param_atol": 1e-06,
+  "param_rtol": 1e-05,
+  "tensor_rel_l2": 0.001
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "aux_label_s_per_update": 0.05499530490487814,
+ "batches": 5,
+ "cpu_fwd_bwd_s_per_update": 14.279868790647015,
+ "flops_per_update": 7572835794944,
+ "note": "the official loop is synchronous: update time = PHYRE rollouts (20 CPU workers) + aux labels (CPU) + GPU step; in-training evals (every 5000 updates) and the final test eval are extra (measured by --probe-gpu)",
+ "projection": {
+  "25_tflops": {
+   "gpu_compute_s_per_update": 0.30291343179776,
+   "three_folds_h": 35.80308643655746,
+   "train_h_per_fold": 11.934362145519152,
+   "update_s": 0.4296370372386895
+  },
+  "50_tflops": {
+   "gpu_compute_s_per_update": 0.15145671589888,
+   "three_folds_h": 23.181693444984127,
+   "train_h_per_fold": 7.727231148328042,
+   "update_s": 0.2781803213398095
+  }
+ },
+ "schema": "issue_128_a4_probe_cpu_v1",
+ "sim_s_per_update": 0.07172830053605139,
+ "sim_workers": 20,
+ "threads": 16
+}

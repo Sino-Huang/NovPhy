@@ -1,0 +1,195 @@
+{
+  "schema": "issue_127_gfid_band_v1",
+  "issue": 128,
+  "arm": "A1",
+  "tier": "E",
+  "written_at": "2026-10-24T09:13:23+00:00",
+  "benchmark": "PHYRE-B (ball tier), within-template generalisation: eval setup ball_within_template, folds 0-9, use_test_split=1 (trained on train+dev, evaluated on the fold's test tasks)",
+  "metric": "AUCCESS (x100) on each fold's test tasks as agents/train.py computes it: results['target_metric'] = phyre.Evaluator.compute_all_metrics()['independent_solved_by_aucs'][100]; the arm's number is the mean over the 10 folds",
+  "paper": {
+    "source": "Bakhtin et al. 2019, PHYRE, arXiv 1908.05656, Table 1a, DQN, PHYRE-B within",
+    "mean": 77.6,
+    "sd": 1.1,
+    "sd_over": "10 folds"
+  },
+  "band": [
+    75.4,
+    79.8
+  ],
+  "band_rule": "paper mean +- 2 SD",
+  "pass_rule": "mean over the 10 folds of our AUCCESS lies inside the band (inclusive)",
+  "procedure": {
+    "code": "unmodified official agents/train.py -> offline_agents.DQNAgent (dqn_load_from = the shipped checkpoint folder of the fold) -> DQNAgent.eval/real_eval, run from the pinned clone facebookresearch/phyre @ d0765dd2f6d6cf41b933a3a57173c63d21fbfa6a in conda env b127-phyre (simulator built from source)",
+    "argv": "agents/train.py --use-test-split=1 --eval-setup-name=ball_within_template --fold-id=<k> --agent-type=dqn --dqn-load-from=<ckpt dir k> --dqn-rank-size=10000 --dqn-eval-batch-size=128 --dqn-finetune-iterations=0 --dqn-refine-iterations=0 --max-test-attempts-per-task=100 --output-dir=<fidelity/runs/fold-k>",
+    "ranked_actions": "the first 10 000 actions of the shipped 100k ball simulation cache (dqn_rank_size=10000, as run_experiment.DQN_BASE_ARGS); statuses from the cache, as the official eval",
+    "checkpoints": "shipped dqn_10k ball_within_template seed k = fold k, ckpt.00100000 (agents/download_dqn_ckps.sh URLs)",
+    "torch_load": "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 (torch >= 2.6 defaults to weights_only=True; the 2020 checkpoints pickle the numpy sampler state); no code change",
+    "device": "one GPU (DQNAgent.real_eval calls model.cuda())"
+  },
+  "inputs": [
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/0/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/0/ckpt.00100000",
+      "bytes": 135953421,
+      "sha256": "sha256:38ff82cac8e436ade3fb11e443452d8d4883169ccc4bcb748ec2f10f83320ea7",
+      "downloaded_at": "2026-10-24T08:52:52+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/0/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/0/results.json",
+      "bytes": 4475,
+      "sha256": "sha256:bd1cc9665bc6736e0bdcdd158a3d789f1b65aaa8de97a39b5ea040eb1b289e5f",
+      "downloaded_at": "2026-10-24T08:52:52+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/1/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/1/ckpt.00100000",
+      "bytes": 135953412,
+      "sha256": "sha256:a4d274db24ca5f3fcb178607c3fda2faad8d0190442bf69c7393c9c2d0c783f8",
+      "downloaded_at": "2026-10-24T08:52:59+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/1/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/1/results.json",
+      "bytes": 4450,
+      "sha256": "sha256:4026f95c4772293df5925ecb4bacfb133e3f7c4b9a5079ccb00c98bf2c83b911",
+      "downloaded_at": "2026-10-24T08:53:00+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/2/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/2/ckpt.00100000",
+      "bytes": 135953485,
+      "sha256": "sha256:367396882d9a304377969c12450bfbb0125352ed60210aab19ac693eb55060fe",
+      "downloaded_at": "2026-10-24T08:53:06+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/2/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/2/results.json",
+      "bytes": 4452,
+      "sha256": "sha256:26bb58f23189108198716f9304e7ae205e704def06855dbdb22ac3f483507036",
+      "downloaded_at": "2026-10-24T08:53:07+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/3/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/3/ckpt.00100000",
+      "bytes": 135953452,
+      "sha256": "sha256:13856d997c942788407a82d87e1b9d3675441b56786f6b134f4040e01a4cb5a5",
+      "downloaded_at": "2026-10-24T08:53:14+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/3/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/3/results.json",
+      "bytes": 4459,
+      "sha256": "sha256:f6563e7e06c1f82cb952859b705cc35ac71a96a5f8d90e4e58e6ffaa358b67ef",
+      "downloaded_at": "2026-10-24T08:53:14+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/4/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/4/ckpt.00100000",
+      "bytes": 135953394,
+      "sha256": "sha256:b3822f51c949d2d9a7800866f36781dc3526fc933f0f3a0e07119b3e2a048a9a",
+      "downloaded_at": "2026-10-24T08:53:21+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/4/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/4/results.json",
+      "bytes": 4449,
+      "sha256": "sha256:b024db46824b47b162bbcc788f8b484afe1aafc021f3a93e73c9a5ef182b225e",
+      "downloaded_at": "2026-10-24T08:53:22+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/5/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/5/ckpt.00100000",
+      "bytes": 135953478,
+      "sha256": "sha256:d6a151cce28098fd15a57b30ed30d54227a709a271fcaac0fcfd699083db44bf",
+      "downloaded_at": "2026-10-24T08:53:28+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/5/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/5/results.json",
+      "bytes": 4458,
+      "sha256": "sha256:4bc7f2af9ea98d8477e72a846c0dd5890a9624d850504eff595f84051bbc2bed",
+      "downloaded_at": "2026-10-24T08:53:29+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/6/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/6/ckpt.00100000",
+      "bytes": 135953440,
+      "sha256": "sha256:c7ebacf6987e9dac7ee515554f27822b66751b9bed91cb15e07a9a54f883d93c",
+      "downloaded_at": "2026-10-24T08:53:35+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/6/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/6/results.json",
+      "bytes": 4456,
+      "sha256": "sha256:5befecc0af48216d1d8648d1e45f4574351b35d069c55c97ae58a0b0253b5331",
+      "downloaded_at": "2026-10-24T08:53:36+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/7/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/7/ckpt.00100000",
+      "bytes": 135953464,
+      "sha256": "sha256:b66d7e78f13983ba8072c9c508469729147eed92b18bee777c3adaf82302a2ba",
+      "downloaded_at": "2026-10-24T08:53:42+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/7/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/7/results.json",
+      "bytes": 4449,
+      "sha256": "sha256:eda99a369ffc4aad5222ed54fc4a45e574ebb72f3bf1cf6dd051096ccfc6bb68",
+      "downloaded_at": "2026-10-24T08:53:43+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/8/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/8/ckpt.00100000",
+      "bytes": 135953422,
+      "sha256": "sha256:54836bdbb9b1a91d88c306844e8b5bc246ae7a65d2426a633f29d12cd1288173",
+      "downloaded_at": "2026-10-24T08:53:49+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/8/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/8/results.json",
+      "bytes": 4459,
+      "sha256": "sha256:7a248aec2fc22362eeebae85691046703c4b50757676583aa5f4d31cadd681b4",
+      "downloaded_at": "2026-10-24T08:53:50+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/9/ckpt.00100000",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/9/ckpt.00100000",
+      "bytes": 135953473,
+      "sha256": "sha256:e98a79b6bb323f077b48fe5f6ca17a5a988a98383e3e84603b55a0a6275b58a4",
+      "downloaded_at": "2026-10-24T08:53:57+00:00"
+    },
+    {
+      "path": "results/finals/dqn_10k/ball_within_template/9/results.json",
+      "url": "https://dl.fbaipublicfiles.com/phyre/results/finals/dqn_10k/ball_within_template/9/results.json",
+      "bytes": 4462,
+      "sha256": "sha256:b6331f5997ca86c3a61d844c7d9f4e5f41697f32c087b202c29d8262bbc31175",
+      "downloaded_at": "2026-10-24T08:53:57+00:00"
+    },
+    {
+      "path": "phyre_cache/offline_simulation/100000/ball/simulation_cache.gz",
+      "url": "https://dl.fbaipublicfiles.com/phyre/simulation_cache/v1/100000/ball/simulation_cache.gz",
+      "bytes": 71053781,
+      "sha256": "sha256:14c516c13836461a06bfa5bd83392f7d77432bf64cc430338eaa20c50236ba0a",
+      "downloaded_at": "2026-10-24T08:59:25+00:00"
+    }
+  ],
+  "diagnostic_not_band": {
+    "note": "the AUCCESS@100 the authors recorded for these checkpoints (shipped results.json target_metric, x100); reported next to ours for drift diagnosis only; the band is the paper's",
+    "per_fold": {
+      "0": 76.8156,
+      "1": 79.7243,
+      "2": 78.2218,
+      "3": 75.8578,
+      "4": 77.0318,
+      "5": 78.4203,
+      "6": 78.0111,
+      "7": 77.3378,
+      "8": 78.0441,
+      "9": 76.8734
+    },
+    "mean": 77.6338
+  },
+  "repairs_allowed": "at most two logged repair attempts, each fixing a diagnosed port defect, never the band; then drop with fidelity_not_reproduced"
+}

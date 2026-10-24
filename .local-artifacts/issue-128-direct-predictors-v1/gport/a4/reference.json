@@ -1,0 +1,35 @@
+{
+ "clone": "/mnt/array/sukaih/novphy-baselines-src/DynamicsAware@eb65576",
+ "commit": "eb65576d8a9e9b1f74c64518b5dd68af9d0a7eff",
+ "files": {
+  "nets.py": "sha256:187748f4c6930cd958aca55c466e3eeeb826131a63a4233101653581dd8653ad",
+  "neural_agent.py": "sha256:036513e3bc18c61053f15939e9d1dfdf4a4b22af3e2bee3772490e5d50807d42",
+  "psim.py": "sha256:bdb9746a6816757706f5e24082018b254188d9d618d06773e06c287506c08c7f",
+  "rollout_dist.py": "sha256:77043cd83922bec2baf9907ff3a6c37d44ae82885b3ba507e61c6462a93c0ade"
+ },
+ "hp": {
+  "distance_cutoff": 1.414,
+  "embedding_dim": 256,
+  "embeddor_type": "linear",
+  "n_regression_bins": 20,
+  "regression_type": "binned",
+  "repr_merging_method": "outer",
+  "time_slice": 0,
+  "weight": 1.0
+ },
+ "lr": 0.0003,
+ "seed_init": 20261024,
+ "seed_input": 7,
+ "tasks": [
+  "00000:001",
+  "00000:002"
+ ],
+ "updates": 100000,
+ "versions": {
+  "numpy": "2.4.6",
+  "phyre": "/mnt/array/sukaih/novphy-baselines-src/_build/phyre@d0765dd/src/python/phyre",
+  "python": "3.11.17",
+  "torch": "2.13.0+cu130",
+  "torchvision": "0.28.0+cu130"
+ }
+}

@@ -1,0 +1,113 @@
+{
+  "schema": "issue_127_gfid_v1",
+  "issue": 128,
+  "arm": "A1",
+  "tier": "E",
+  "written_at": "2026-10-24T09:29:35+00:00",
+  "band_file": "fidelity/band.json",
+  "band_sha256": "sha256:def37bb43436e786387d55966b675f11437fb8f7afa89510ff61c22f3ec7f426",
+  "band": [
+    75.4,
+    79.8
+  ],
+  "paper": {
+    "source": "Bakhtin et al. 2019, PHYRE, arXiv 1908.05656, Table 1a, DQN, PHYRE-B within",
+    "mean": 77.6,
+    "sd": 1.1,
+    "sd_over": "10 folds"
+  },
+  "metric": "AUCCESS (x100) on each fold's test tasks as agents/train.py computes it: results['target_metric'] = phyre.Evaluator.compute_all_metrics()['independent_solved_by_aucs'][100]; the arm's number is the mean over the 10 folds",
+  "per_fold": {
+    "0": {
+      "auccess": 76.81591369824828,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 76.8156395325502,
+      "delta_vs_shipped": 0.00027416569808869085,
+      "checkpoint_sha256": "sha256:38ff82cac8e436ade3fb11e443452d8d4883169ccc4bcb748ec2f10f83320ea7",
+      "wall_s": 83.69820261001587
+    },
+    "1": {
+      "auccess": 79.71180729586223,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 79.72427423237677,
+      "delta_vs_shipped": -0.012466936514543558,
+      "checkpoint_sha256": "sha256:a4d274db24ca5f3fcb178607c3fda2faad8d0190442bf69c7393c9c2d0c783f8",
+      "wall_s": 85.454514503479
+    },
+    "2": {
+      "auccess": 78.20567173522602,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 78.22181866326954,
+      "delta_vs_shipped": -0.016146928043525577,
+      "checkpoint_sha256": "sha256:367396882d9a304377969c12450bfbb0125352ed60210aab19ac693eb55060fe",
+      "wall_s": 87.52724480628967
+    },
+    "3": {
+      "auccess": 75.85776836341402,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 75.85776836341402,
+      "delta_vs_shipped": 0.0,
+      "checkpoint_sha256": "sha256:13856d997c942788407a82d87e1b9d3675441b56786f6b134f4040e01a4cb5a5",
+      "wall_s": 86.13850522041321
+    },
+    "4": {
+      "auccess": 77.03179635858307,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 77.03179635858307,
+      "delta_vs_shipped": 0.0,
+      "checkpoint_sha256": "sha256:b3822f51c949d2d9a7800866f36781dc3526fc933f0f3a0e07119b3e2a048a9a",
+      "wall_s": 101.39669752120972
+    },
+    "5": {
+      "auccess": 78.42268748221771,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 78.42034443522368,
+      "delta_vs_shipped": 0.0023430469940244336,
+      "checkpoint_sha256": "sha256:d6a151cce28098fd15a57b30ed30d54227a709a271fcaac0fcfd699083db44bf",
+      "wall_s": 84.2425045967102
+    },
+    "6": {
+      "auccess": 78.01385994342492,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 78.01106311413729,
+      "delta_vs_shipped": 0.002796829287632363,
+      "checkpoint_sha256": "sha256:c7ebacf6987e9dac7ee515554f27822b66751b9bed91cb15e07a9a54f883d93c",
+      "wall_s": 83.34506964683533
+    },
+    "7": {
+      "auccess": 77.342405567268,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 77.3378396836568,
+      "delta_vs_shipped": 0.004565883611207244,
+      "checkpoint_sha256": "sha256:b66d7e78f13983ba8072c9c508469729147eed92b18bee777c3adaf82302a2ba",
+      "wall_s": 82.0216178894043
+    },
+    "8": {
+      "auccess": 78.0560863335505,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 78.0441446860501,
+      "delta_vs_shipped": 0.011941647500379737,
+      "checkpoint_sha256": "sha256:54836bdbb9b1a91d88c306844e8b5bc246ae7a65d2426a633f29d12cd1288173",
+      "wall_s": 84.4946768283844
+    },
+    "9": {
+      "auccess": 76.87494194882245,
+      "num_eval_tasks": 500,
+      "shipped_results_json_auccess": 76.87336592739297,
+      "delta_vs_shipped": 0.0015760214294835428,
+      "checkpoint_sha256": "sha256:e98a79b6bb323f077b48fe5f6ca17a5a988a98383e3e84603b55a0a6275b58a4",
+      "wall_s": 81.79018068313599
+    }
+  },
+  "mean": 77.63329387266172,
+  "sd": 1.0768614285943572,
+  "shipped_mean": 77.63380549966544,
+  "pass": true,
+  "repair_attempts": 0,
+  "env": {
+    "python": "3.11.17",
+    "torch": "2.13.0+cu130",
+    "cuda_device": "NVIDIA GeForce RTX 5090",
+    "phyre_ref": "/mnt/array/sukaih/novphy-baselines-src/phyre@d0765dd"
+  }
+}

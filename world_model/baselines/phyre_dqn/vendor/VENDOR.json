@@ -1,0 +1,110 @@
+{
+  "schema": "issue_127_vendor_v1",
+  "upstream": "https://github.com/facebookresearch/phyre",
+  "commit": "d0765dd2f6d6cf41b933a3a57173c63d21fbfa6a",
+  "commit_note": "the sha in #127/#128 (d0765dd6f6d6...) does not exist upstream; it is a one-character typo of this HEAD (same short sha d0765dd)",
+  "license": "Apache-2.0 (vendor/LICENSE, Copyright (c) Facebook, Inc. and its affiliates)",
+  "license_file": "LICENSE",
+  "additional_upstreams": [
+    {
+      "upstream_repo": "https://github.com/pytorch/vision",
+      "upstream_commit": "d31eafa9c59cd59533dd0b89a36d371e55337a48",
+      "upstream_ref": "v0.4.0",
+      "license": "BSD-3-Clause (Copyright (c) Soumith Chintala 2016; vendor/torchvision/LICENSE)",
+      "files": [
+        "torchvision/models/resnet.py",
+        "torchvision/models/utils.py",
+        "torchvision/LICENSE"
+      ],
+      "license_file": "torchvision/LICENSE"
+    }
+  ],
+  "policy": "verbatim copies; the only edits make sibling imports package-relative and route nets.py's `torchvision`/`phyre` imports to the vendored ResNet and a NUM_COLORS constant (listed per file); neural_agent.py is vendored for provenance and is not imported in novphy (it imports the phyre simulator package)",
+  "files": {
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+      "vendored_sha256": "sha256:50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+      "edits": []
+    },
+    "__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:7dfa44413b39dcc6825c901547d07c264d6722c32185a9ed4dc69a7d675b6748",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "nets.py": {
+      "upstream_path": "agents/nets.py",
+      "upstream_sha256": "sha256:f893deaa4d69970c1ed965db7939e676f95b070e32b7107e4a28c69535ccc5d3",
+      "vendored_sha256": "sha256:b6ad7ac14fa47ad8150f6a93b13765d006a9dc0b264c04dbe2932cf8dd19b28e",
+      "edits": [
+        "import torchvision -> from . import torchvision (vendored torchvision v0.4.0 ResNet; novphy has no torchvision)",
+        "import phyre -> from . import phyre_constants as phyre (only phyre.NUM_COLORS is used; the simulator package is not importable in novphy)"
+      ]
+    },
+    "neural_agent.py": {
+      "upstream_path": "agents/neural_agent.py",
+      "upstream_sha256": "sha256:f4d52d38d3e6d2a96cbdafbeea7de2fd2f9c8fe86cae2f0237997b135ea30b4d",
+      "vendored_sha256": "sha256:8796fb56a9897630718e9ff142bce1ac938541e5a358ab938a6bcf1d607519e5",
+      "edits": [
+        "import nets -> from . import nets"
+      ]
+    },
+    "phyre_constants.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:42905f9c5bae63c3ae92d14055a04204a95279ebfe5c1295e1711b2f81b333a7",
+      "edits": [
+        "new: NUM_COLORS = 7 copied from src/python/phyre/creator/constants.py (len(ROLE_TO_COLOR_ID)); asserted against phyre.NUM_COLORS in the G-port reference"
+      ]
+    },
+    "torchvision/LICENSE": {
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d",
+      "vendored_sha256": "sha256:6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d",
+      "edits": [],
+      "upstream_repo": "https://github.com/pytorch/vision",
+      "upstream_commit": "d31eafa9c59cd59533dd0b89a36d371e55337a48",
+      "upstream_ref": "v0.4.0",
+      "license": "BSD-3-Clause (Copyright (c) Soumith Chintala 2016; vendor/torchvision/LICENSE)"
+    },
+    "torchvision/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:39763594e6258bb32fc3e9c7caffc269b62356ed9cd0642ffcb6766e40ce19c6",
+      "edits": [
+        "package shim (new): exposes models"
+      ]
+    },
+    "torchvision/models/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:753240363e04ef7d017816d3f7bd9f798b0be33e0c2ecf5a5c6c713519723c61",
+      "edits": [
+        "package shim (new): re-exports BasicBlock, ResNet, resnet18 from resnet.py"
+      ]
+    },
+    "torchvision/models/resnet.py": {
+      "upstream_path": "torchvision/models/resnet.py",
+      "upstream_sha256": "sha256:e41ff540cd5ae3e5b5612370dd572c64039f13090deec16198a3be2286c4289a",
+      "vendored_sha256": "sha256:e41ff540cd5ae3e5b5612370dd572c64039f13090deec16198a3be2286c4289a",
+      "edits": [],
+      "upstream_repo": "https://github.com/pytorch/vision",
+      "upstream_commit": "d31eafa9c59cd59533dd0b89a36d371e55337a48",
+      "upstream_ref": "v0.4.0",
+      "license": "BSD-3-Clause (Copyright (c) Soumith Chintala 2016; vendor/torchvision/LICENSE)"
+    },
+    "torchvision/models/utils.py": {
+      "upstream_path": "torchvision/models/utils.py",
+      "upstream_sha256": "sha256:cf60594ea5662e1c679307f11b3fb99e5243cf20a247e6f3cc686cad000c9fee",
+      "vendored_sha256": "sha256:cf60594ea5662e1c679307f11b3fb99e5243cf20a247e6f3cc686cad000c9fee",
+      "edits": [],
+      "upstream_repo": "https://github.com/pytorch/vision",
+      "upstream_commit": "d31eafa9c59cd59533dd0b89a36d371e55337a48",
+      "upstream_ref": "v0.4.0",
+      "license": "BSD-3-Clause (Copyright (c) Soumith Chintala 2016; vendor/torchvision/LICENSE)"
+    }
+  }
+}

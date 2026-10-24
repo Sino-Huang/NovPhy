@@ -1,0 +1,46 @@
+{
+ "arm": "A4",
+ "band": [
+  82.8,
+  87.2
+ ],
+ "declared_deviations": [
+  "Modern stack instead of Python 3.6 / CUDA 10.2 PyTorch: vendor edits E1-E4 (VENDOR.json); G-port (gport/a4/gport.json) shows bitwise-equal forward, losses, gradients, two Adam steps and the cosine LR schedule vs the unmodified official code on CPU.",
+  "PHYRE engine: upstream phyre d0765dd built from source (b127-phyre recipe) instead of the copy bundled in DynamicsAware; the C++ engine sources and the Box2D tree are identical except the self-supervised-only get_random_images option and the pybind11 bytes bindings; 100k cache sha256 14c516c1... (1000 cached actions re-simulated without mismatch by A1).",
+  "One RTX 5090 instead of the authors' hardware: run_sweep_file.py submits with --n-gpu 4 by default (DataParallel over 4 GPUs, so BatchNorm statistics per 128-sample shard) [INFERENCE: the paper does not state the GPU count]; here one GPU, BatchNorm over the full 512-sample batch. cuDNN kernels are not bitwise deterministic.",
+  "The official code never seeds torch (random initialisation per run) and uses RandomState(42) for batch sampling; kept as is."
+ ],
+ "frozen_at": "2026-10-24T09:11:29+00:00",
+ "issue": 128,
+ "paper": {
+  "citation": "Ahmed, Bakhtin, van der Maaten, Girdhar. Physical Reasoning Using Dynamics-Aware Models. arXiv 2102.10336v2 (ICML Workshop 2021)",
+  "mean": 85.0,
+  "pdf": "data/external/dynamics_aware/arxiv-2102.10336v2.pdf",
+  "pdf_sha256": "sha256:d0b5c830545db9dee424a0ae8923ab3510c6c4f730f04300847470b12b8de282",
+  "quote_caption": "Table 1: AUCCESS of dynamics-aware DQNs compared to state-of-the-art models on the PHYRE-1B and 2B tiers in the within-template and cross-template generalization settings. Results reported are averaged over 10 test folds.",
+  "quote_row": "Ours (Hand-crafted) 85.0\u00b11.1 38.6\u00b18.4 74.0\u00b11.5 23.3\u00b18.8",
+  "spread": 1.1,
+  "spread_statistic": "standard deviation of the per-fold AUCCESS over the 10 test folds (population SD, numpy.std ddof=0)",
+  "spread_statistic_source": "The paper prints '\u00b11.1' without naming the statistic. The official repo's summary for exactly this run (agents/experiments/hand_crafted_experiments/06_hand_crafted_test_run_table_1.conf, 'fmt EVALSETUP->MEAN\u00b1STD') is agents/run_sweep_file.py, which replaces STD with np.std over the per-fold results.json scores (seed = fold id, folds 0-9). PHYRE (Bakhtin et al. 2019) reports its DQN row the same way (77.6\u00b11.1).",
+  "table": "Table 1, row 'Ours (Hand-crafted)', column PHYRE-1B Within"
+ },
+ "part": "band",
+ "protocol": {
+  "code": "vendored facebookresearch/DynamicsAware @ eb65576d8a9e9b1f74c64518b5dd68af9d0a7eff (world_model/baselines/dynamics_aware/vendor, VENDOR.json), official entry point agents/train.py",
+  "command": "the run_sweep_file.py command for conf 06 at EVALSETUP=ball_within_template, SEED=fold: --use-test-split=1 --dqn-updates=100000 --dqn-train-batch-size=512 --dqn-n-samples-per-task=8 --dqn-balance-classes=1 --dqn-cosine-scheduler=1 --dqn-learning-rate=3e-4 --dqn-network-type=resnet18 --dqn-use-sample-distance-aux-loss=1 --dqn-lhp-n-regression-bins=20 --dqn-lhp-distance-cutoff=1.414 --dqn-lhp-regression-type=binned --dqn-lhp-repr-merging-method=outer --dqn-lhp-embeddor-type=linear --dqn-lhp-time-slice=0 --dqn-rank-size=10000 --dqn-num-auccess-actions=10000 --dqn-eval-every=5000 --dqn-save-checkpoints-every=5000 --dqn-eval-batch-size=1024 (scripts/b127_dynamics_aware_fidelity.py official_argv)",
+  "env": "b127-dynaware (Python 3.11, torch 2.13.0+cu130, numpy 2.4.6, upstream PHYRE d0765dd built from source; envs/b127-dynaware.txt)",
+  "eval_setup": "ball_within_template",
+  "folds": [
+   0,
+   1,
+   2
+  ],
+  "metric": "results.json target_metric = metrics['independent_solved_by_aucs'][100] (AUCCESS@100), x 100",
+  "runner": "scripts/b127_dynamics_aware_fidelity.py --fold k (GPU 3, scheduler jobs 128-gfid-a4-fold<k>, resumable); --table writes gfid.json",
+  "runs_per_fold": 1
+ },
+ "repairs": "at most two logged repair attempts, each fixing a diagnosed port defect, never this band (P-fid); otherwise A4 is dropped with fidelity_not_reproduced",
+ "rule": "G-fid Tier T passes iff the mean AUCCESS x 100 over folds 0, 1, 2 (one training run per fold, test split, trained on train + dev) lies in [85.0 - 2 x 1.1, 85.0 + 2 x 1.1] = [82.8, 87.2]. +-2 SD of single folds is wider than +-2 SE of a three-fold mean (2 x 1.1 / sqrt 3 = 1.27); the per-fold SD also covers the systematic difference between the folds 0-2 mean and the 10-fold mean.",
+ "schema": "issue_127_gfid_v1",
+ "tier": "T"
+}
