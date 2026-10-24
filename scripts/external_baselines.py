@@ -905,6 +905,11 @@ def _input_paths():
         "controls_runner": ROOT / "scripts/run_decision_dynamics_controls.py",
         "slot_encoder_fix_runner": ROOT / "scripts/run_slot_encoder_fix.py",
         "hjepa_module": ROOT / "world_model/hjepa/novphy.py",
+        # the modules that define the pre-registered cell AUC and bootstrap (p94.cell_auc / p94.bootstrap,
+        # 10 000 draws, PCG64 7201, reached through t96 -> m99 / v1 / c2) and U / C*'s reference rollout
+        "bootstrap_runner": ROOT / "scripts/run_launch_power_probe.py",
+        "tau_runner": ROOT / "scripts/run_tau_ad_within_checkpoint.py",
+        "matched_dynamics_module": ROOT / "world_model/training/matched_dynamics.py",
     }
     for split, base in pixels.items():
         names[f"issue_123_pixels_{split}_index"] = base / "index.npz"
