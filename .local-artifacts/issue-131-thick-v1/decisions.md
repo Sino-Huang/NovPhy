@@ -218,3 +218,9 @@ Shared implementation: `scripts/external_baselines.py` (`novelty_cells`, `read_n
 
 ## Note (2026-10-25, orchestrator): runner hash in the precision correction
 The precision-correction entry above records the runner sha256 `b7a5940e…` as it was right after the TF32 change. The runner changed afterwards (the `--score-novelty` mode, P-novelty issuecomment-6386831318), so `b7a5940e…` matches no committed file; the TF32 behaviour it describes is unchanged. The frozen `plan.json` pins the final runner bytes.
+
+## Decision P-other (2026-10-25): the G-fid runs may share their GPU again (supersedes the shares_gpu part of the P-crash decision for every run after the timing run)
+
+**Trigger.** The P-crash decision (issuecomment-6386806922) asked for `shares_gpu: false` on every `131-gfid-*` job so that the timing rerun would be clean. That timing run (run 3) is finished and recorded (`fidelity/gfid-timing.json`; P2E 0.142 s/update, THICK 0.317, DreamerV2 0.091). The remaining G-fid runs measure returns, not speed: sharing a GPU changes only their wall time, never their results (seeded, checkpointed, no time-dependent logic). P2E alone used about 45 % of its GPU, and the program budget counts device time (Decision P-budget on #127), so serialising six under-utilising runs on one GPU wastes budget and calendar time.
+
+**Decision.** `shares_gpu: true` on `131-gfid-p2e`, the three `131-gfid-thick-*` and the three `131-gfid-dreamer-*` jobs (THICK on GPU 3, DreamerV2 on GPU 1). Their per-run ledgers keep the recorded process seconds; the program summary flags them as shared. The frozen band, pass rule, seeds, precision and window are unchanged.
