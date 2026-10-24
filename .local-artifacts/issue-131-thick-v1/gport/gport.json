@@ -1,0 +1,1494 @@
+{
+ "schema": "issue_127_gport_v1",
+ "issue": 131,
+ "arm": "D1 THICK",
+ "checked_at": "2026-10-24T10:45:09Z",
+ "device": "cpu float32",
+ "torch": "2.13.0+cu130",
+ "upstream": "https://github.com/CognitiveModeling/THICK",
+ "commit": "934980a4a25d2b6baa357fe234b6e841cd3cd101",
+ "tolerance": {
+  "loss_relative": 0.0001,
+  "grad_norm_relative": 0.0001,
+  "grad_tensor_relative_l2": 0.001,
+  "grad_floor_of_global_norm": 1e-06,
+  "forward_relative_l2": 0.001,
+  "forward_max_abs": 0.0001,
+  "param_close_abs": 1e-07,
+  "param_close_share": 0.999,
+  "param_max_abs_over_lr": 2.0,
+  "update_relative_l2": 0.001
+ },
+ "vendor_hashes_match": {
+  "LICENSE": true,
+  "thick/agent.py": true,
+  "thick/cem_agent.py": true,
+  "thick/common/__init__.py": true,
+  "thick/common/config.py": true,
+  "thick/common/counter.py": true,
+  "thick/common/dists.py": true,
+  "thick/common/driver.py": true,
+  "thick/common/env_register.py": true,
+  "thick/common/envs.py": true,
+  "thick/common/flags.py": true,
+  "thick/common/logger.py": true,
+  "thick/common/nets.py": true,
+  "thick/common/other.py": true,
+  "thick/common/pinpad_env.py": true,
+  "thick/common/replay.py": true,
+  "thick/common/tfutils.py": true,
+  "thick/common/thick_utils.py": true,
+  "thick/common/when.py": true,
+  "thick/configs.yaml": true,
+  "thick/expl.py": true,
+  "thick/hl_mcts.py": true,
+  "thick/train.py": true,
+  "thick/train_from_replay.py": true,
+  "thick/train_only_on_replay.py": true
+ },
+ "reference_script_sha256": "sha256:437bf8b61c6dafe8bee822f4ad3bdfb0f5ce3c5a11e80ba70066782f845a48fb",
+ "port_sha256": "sha256:cfa75535c8304c6de3b4cd13d93df3e5a0b2b8890e4b400f7eebbf4a36a6f372",
+ "arms": {
+  "novphy-carrier": {
+   "reference": {
+    "npz": ".local-artifacts/issue-131-thick-v1/gport/reference-novphy-carrier.npz",
+    "npz_sha256": "sha256:c497944d2e6091eaf6ac64b5a1dcba927893647a5d92c50f91432160a8df53a7",
+    "meta_sha256": "sha256:82df88c3d8012d7bc3796cff9d951445ca88b6bb2f0a82f8ada73c635216e0b3",
+    "tf": "2.4.2"
+   },
+   "parameter_names_equal": true,
+   "model_parameters": {
+    "port": 7064730,
+    "official": 7064730
+   },
+   "thick_parameters": {
+    "port": 14787607,
+    "official": 14787607
+   },
+   "config_differences": {},
+   "modules": {
+    "encoder": {
+     "relative_l2": 5.401143046240395e-07,
+     "max_abs": 1.430511474609375e-06,
+     "pass": true
+    },
+    "gru_cell": {
+     "relative_l2": 1.0761616809813528e-07,
+     "max_abs": 4.76837158203125e-07,
+     "pass": true
+    },
+    "gatel0rd_sample0_state": {
+     "relative_l2": 1.7955755143866284e-07,
+     "max_abs": 3.8743019104003906e-07,
+     "pass": true
+    },
+    "gatel0rd_sample0_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "gatel0rd_sample1_state": {
+     "relative_l2": 1.6878330697678067e-07,
+     "max_abs": 3.5762786865234375e-07,
+     "pass": true
+    },
+    "gatel0rd_sample1_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_deter": {
+     "relative_l2": 3.4334524589734975e-07,
+     "max_abs": 5.21540641784668e-08,
+     "pass": true
+    },
+    "observe_post_context": {
+     "relative_l2": 4.363511373381234e-07,
+     "max_abs": 1.9371509552001953e-07,
+     "pass": true
+    },
+    "observe_post_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_prev_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_prev_action": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_logit": {
+     "relative_l2": 6.820205791902693e-07,
+     "max_abs": 6.556510925292969e-07,
+     "pass": true
+    },
+    "observe_post_ctxt_logit": {
+     "relative_l2": 6.820205791902693e-07,
+     "max_abs": 6.556510925292969e-07,
+     "pass": true
+    },
+    "observe_post_ctxt_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_deter": {
+     "relative_l2": 3.4334524589734975e-07,
+     "max_abs": 5.21540641784668e-08,
+     "pass": true
+    },
+    "observe_prior_context": {
+     "relative_l2": 4.363511373381234e-07,
+     "max_abs": 1.9371509552001953e-07,
+     "pass": true
+    },
+    "observe_prior_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_logit": {
+     "relative_l2": 6.275269398846754e-07,
+     "max_abs": 6.426125764846802e-08,
+     "pass": true
+    },
+    "observe_prior_ctxt_logit": {
+     "relative_l2": 4.228487072343836e-07,
+     "max_abs": 2.5331974029541016e-07,
+     "pass": true
+    },
+    "observe_prior_ctxt_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_prev_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_prev_action": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_deter": {
+     "relative_l2": 3.706095107669282e-07,
+     "max_abs": 4.470348358154297e-08,
+     "pass": true
+    },
+    "imagine_context": {
+     "relative_l2": 4.3037015446738583e-07,
+     "max_abs": 1.7136335372924805e-07,
+     "pass": true
+    },
+    "imagine_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_logit": {
+     "relative_l2": 6.218943331773101e-07,
+     "max_abs": 5.960464477539063e-08,
+     "pass": true
+    },
+    "imagine_ctxt_logit": {
+     "relative_l2": 4.23727705435169e-07,
+     "max_abs": 2.384185791015625e-07,
+     "pass": true
+    },
+    "imagine_ctxt_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_prev_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_prev_action": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "decoder_carrier": {
+     "relative_l2": 6.313497922985276e-07,
+     "max_abs": 1.3709068298339844e-06,
+     "pass": true
+    },
+    "ctxt_decoder_carrier": {
+     "relative_l2": 6.324802325238116e-07,
+     "max_abs": 1.430511474609375e-06,
+     "pass": true
+    },
+    "reward_head": {
+     "relative_l2": 7.054076373622419e-07,
+     "max_abs": 7.674098014831543e-07,
+     "pass": true
+    },
+    "ctxt_reward_head": {
+     "relative_l2": 4.511898417114429e-07,
+     "max_abs": 5.960464477539062e-07,
+     "pass": true
+    },
+    "thick_body": {
+     "relative_l2": 6.107726655955802e-07,
+     "max_abs": 1.6093254089355469e-06,
+     "pass": true
+    },
+    "thick_logit": {
+     "relative_l2": 8.188511664474516e-07,
+     "max_abs": 1.6093254089355469e-06,
+     "pass": true
+    },
+    "thick_hl_prior_logit": {
+     "relative_l2": 7.549807087307442e-07,
+     "max_abs": 1.3113021850585938e-06,
+     "pass": true
+    }
+   },
+   "modules_noise_fully_replayed": true,
+   "steps": {
+    "step1": {
+     "lr": {
+      "model": 9.999999747378752e-05,
+      "thick": 9.999999747378752e-05,
+      "port": [
+       0.0001,
+       0.0001
+      ]
+     },
+     "forward": {
+      "embed": {
+       "relative_l2": 5.401143046240395e-07,
+       "max_abs": 1.430511474609375e-06
+      },
+      "feat": {
+       "relative_l2": 3.458473377798428e-08,
+       "max_abs": 1.7881393432617188e-07
+      },
+      "kl": {
+       "relative_l2": 8.981988332094927e-07,
+       "max_abs": 1.3113021850585938e-06
+      },
+      "ctxt_kl": {
+       "relative_l2": 8.816554542291136e-07,
+       "max_abs": 1.9669532775878906e-06
+      },
+      "post_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_deter": {
+       "relative_l2": 3.614059080026969e-07,
+       "max_abs": 4.470348358154297e-08
+      },
+      "post_context": {
+       "relative_l2": 4.3150391317727026e-07,
+       "max_abs": 1.7881393432617188e-07
+      },
+      "post_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_logit": {
+       "relative_l2": 6.828548100284556e-07,
+       "max_abs": 7.003545761108398e-07
+      },
+      "post_ctxt_logit": {
+       "relative_l2": 6.828548100284556e-07,
+       "max_abs": 7.003545761108398e-07
+      },
+      "post_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_deter": {
+       "relative_l2": 3.614059080026969e-07,
+       "max_abs": 4.470348358154297e-08
+      },
+      "prior_context": {
+       "relative_l2": 4.3150391317727026e-07,
+       "max_abs": 1.7881393432617188e-07
+      },
+      "prior_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_logit": {
+       "relative_l2": 6.457761476925167e-07,
+       "max_abs": 5.8673322200775146e-08
+      },
+      "prior_ctxt_logit": {
+       "relative_l2": 4.214369994571874e-07,
+       "max_abs": 2.60770320892334e-07
+      },
+      "prior_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      }
+     },
+     "forward_pass": true,
+     "loss_terms": {
+      "kl": {
+       "port": 0.7721470594406128,
+       "official": 0.7721471190452576
+      },
+      "gate_activity": {
+       "port": 0.4729166626930237,
+       "official": 0.4729166626930237
+      },
+      "ctxt_sparsity": {
+       "port": 0.4729166626930237,
+       "official": 0.4729166626930237
+      },
+      "ctxt_kl": {
+       "port": 1.0082221031188965,
+       "official": 1.0082218647003174
+      },
+      "carrier": {
+       "port": 339.0224304199219,
+       "official": 339.02239990234375
+      },
+      "reward": {
+       "port": 0.9419534802436829,
+       "official": 0.9419534802436829
+      },
+      "ctxt_carrier": {
+       "port": 338.8137512207031,
+       "official": 338.8137512207031
+      },
+      "ctxt_reward": {
+       "port": 0.9593745470046997,
+       "official": 0.9593746066093445
+      },
+      "model": {
+       "port": 682.4636840820312,
+       "official": 682.463623046875
+      }
+     },
+     "loss_max_relative_delta": 2.364743192436416e-07,
+     "model_grad_norm": 36.134376525878906,
+     "official_model_grad_norm": 36.134376525878906,
+     "model_grad_norm_relative_delta": 0.0,
+     "model_gradients": {
+      "max_relative_l2": 1.1138994134863497e-06,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 3.6134376525878906e-05,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "thick_data_relative_l2": {
+      "inps": 2.9749901684330177e-08,
+      "target_thick_tar_states": 7.449345066116964e-07,
+      "target_thick_act": 0.0,
+      "target_thick_time": 0.0,
+      "target_thick_latent": 4.47639820274618e-07,
+      "target_thick_inter_returns": 0.0,
+      "target_thick_stoch": 0.0,
+      "target_thick_logit": 7.449345066116964e-07,
+      "mask_state": 0.0,
+      "mask_action": 0.0,
+      "mask_time": 0.0
+     },
+     "thick_loss_terms": {
+      "thick_hl_act_kl": {
+       "port": 0.04262156784534454,
+       "official": 0.04262161999940872
+      },
+      "thick_kl": {
+       "port": 1.0668364763259888,
+       "official": 1.0668359994888306
+      },
+      "thick_act": {
+       "port": 2.925305128097534,
+       "official": 2.925305128097534
+      },
+      "thick_time": {
+       "port": 1.0260287523269653,
+       "official": 1.0260287523269653
+      },
+      "thick_reward": {
+       "port": 0.9322414994239807,
+       "official": 0.9322415590286255
+      },
+      "thick_total": {
+       "port": 2.436832904815674,
+       "official": 2.4368324279785156
+      }
+     },
+     "thick_loss_max_relative_delta": 4.469638805135928e-07,
+     "thick_grad_norm": 0.939507782459259,
+     "official_thick_grad_norm": 0.939507782459259,
+     "thick_grad_norm_relative_delta": 0.0,
+     "thick_gradients": {
+      "max_relative_l2": 1.0916861752016375e-06,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 9.39507782459259e-07,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 1.862645149230957e-08,
+     "update_relative_l2": 1.4966412891226355e-05,
+     "update_norm": 0.20191733539104462,
+     "official_update_norm": 0.20191842317581177,
+     "optimizer_slots": {
+      "model_m": {
+       "max_relative_l2": 1.1459474890571371e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 3.6134384177453063e-06,
+       "pass": true
+      },
+      "model_v": {
+       "max_relative_l2": 6.756372872001891e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 1.1426619304657267e-06,
+       "pass": true
+      },
+      "model_iterations": {
+       "port": 1,
+       "official": 1,
+       "pass": true
+      },
+      "thick_m": {
+       "max_relative_l2": 1.1046138057162627e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 9.39507999054234e-08,
+       "pass": true
+      },
+      "thick_v": {
+       "max_relative_l2": 6.617557223868549e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 2.9709653247820593e-08,
+       "pass": true
+      },
+      "thick_iterations": {
+       "port": 1,
+       "official": 1,
+       "pass": true
+      }
+     },
+     "noise_fully_replayed": true,
+     "pass": true
+    },
+    "step2": {
+     "lr": {
+      "model": 9.999999747378752e-05,
+      "thick": 9.999999747378752e-05,
+      "port": [
+       0.0001,
+       0.0001
+      ]
+     },
+     "forward": {
+      "embed": {
+       "relative_l2": 5.544643155514501e-07,
+       "max_abs": 1.1920928955078125e-06
+      },
+      "feat": {
+       "relative_l2": 3.7146830446229894e-08,
+       "max_abs": 2.086162567138672e-07
+      },
+      "kl": {
+       "relative_l2": 7.192509935928656e-07,
+       "max_abs": 1.0728836059570312e-06
+      },
+      "ctxt_kl": {
+       "relative_l2": 8.669883399464108e-07,
+       "max_abs": 2.5033950805664062e-06
+      },
+      "post_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_deter": {
+       "relative_l2": 3.8610571594782407e-07,
+       "max_abs": 4.470348358154297e-08
+      },
+      "post_context": {
+       "relative_l2": 5.531303626118317e-07,
+       "max_abs": 2.086162567138672e-07
+      },
+      "post_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_logit": {
+       "relative_l2": 7.429871274474373e-07,
+       "max_abs": 6.556510925292969e-07
+      },
+      "post_ctxt_logit": {
+       "relative_l2": 7.429871274474373e-07,
+       "max_abs": 6.556510925292969e-07
+      },
+      "post_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_deter": {
+       "relative_l2": 3.8610571594782407e-07,
+       "max_abs": 4.470348358154297e-08
+      },
+      "prior_context": {
+       "relative_l2": 5.531303626118317e-07,
+       "max_abs": 2.086162567138672e-07
+      },
+      "prior_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_logit": {
+       "relative_l2": 7.63277683510134e-07,
+       "max_abs": 6.332993507385254e-08
+      },
+      "prior_ctxt_logit": {
+       "relative_l2": 4.1910199997818847e-07,
+       "max_abs": 2.5331974029541016e-07
+      },
+      "prior_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      }
+     },
+     "forward_pass": true,
+     "loss_terms": {
+      "kl": {
+       "port": 0.7516262531280518,
+       "official": 0.751626193523407
+      },
+      "gate_activity": {
+       "port": 0.5166666507720947,
+       "official": 0.5166666507720947
+      },
+      "ctxt_sparsity": {
+       "port": 0.5166666507720947,
+       "official": 0.5166666507720947
+      },
+      "ctxt_kl": {
+       "port": 1.0032011270523071,
+       "official": 1.003200888633728
+      },
+      "carrier": {
+       "port": 338.79058837890625,
+       "official": 338.7906188964844
+      },
+      "reward": {
+       "port": 0.9394625425338745,
+       "official": 0.9394624829292297
+      },
+      "ctxt_carrier": {
+       "port": 338.77191162109375,
+       "official": 338.77191162109375
+      },
+      "ctxt_reward": {
+       "port": 0.9458131790161133,
+       "official": 0.9458131790161133
+      },
+      "model": {
+       "port": 682.2359008789062,
+       "official": 682.2359619140625
+      }
+     },
+     "loss_max_relative_delta": 2.3765786274997004e-07,
+     "model_grad_norm": 36.01802444458008,
+     "official_model_grad_norm": 36.01802444458008,
+     "model_grad_norm_relative_delta": 0.0,
+     "model_gradients": {
+      "max_relative_l2": 3.5699968539402723e-06,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 3.6018024444580074e-05,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "thick_data_relative_l2": {
+      "inps": 3.4652180559087474e-08,
+      "target_thick_tar_states": 9.049368667204424e-07,
+      "target_thick_act": 0.0,
+      "target_thick_time": 0.0,
+      "target_thick_latent": 5.414399761882025e-07,
+      "target_thick_inter_returns": 0.0,
+      "target_thick_stoch": 0.0,
+      "target_thick_logit": 9.049368667204424e-07,
+      "mask_state": 0.0,
+      "mask_action": 0.0,
+      "mask_time": 0.0
+     },
+     "thick_loss_terms": {
+      "thick_hl_act_kl": {
+       "port": 0.044238824397325516,
+       "official": 0.04423879086971283
+      },
+      "thick_kl": {
+       "port": 1.0618141889572144,
+       "official": 1.0618139505386353
+      },
+      "thick_act": {
+       "port": 2.9229772090911865,
+       "official": 2.9229772090911865
+      },
+      "thick_time": {
+       "port": 0.912475049495697,
+       "official": 0.9124747514724731
+      },
+      "thick_reward": {
+       "port": 0.9302952885627747,
+       "official": 0.9302952885627747
+      },
+      "thick_total": {
+       "port": 2.419893503189087,
+       "official": 2.419893264770508
+      }
+     },
+     "thick_loss_max_relative_delta": 2.980232238769531e-07,
+     "thick_grad_norm": 0.9463205933570862,
+     "official_thick_grad_norm": 0.9463202357292175,
+     "thick_grad_norm_relative_delta": 3.7791421460702686e-07,
+     "thick_gradients": {
+      "max_relative_l2": 4.002749549722637e-06,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 9.463202357292175e-07,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 3.3527612686157227e-08,
+     "update_relative_l2": 1.6007910744519904e-05,
+     "update_norm": 0.17877793312072754,
+     "official_update_norm": 0.17877882719039917,
+     "optimizer_slots": {
+      "model_m": {
+       "max_relative_l2": 1.1731930748639117e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 5.0876363486761e-06,
+       "pass": true
+      },
+      "model_v": {
+       "max_relative_l2": 7.44655424742472e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 1.6129637070122009e-06,
+       "pass": true
+      },
+      "model_iterations": {
+       "port": 2,
+       "official": 2,
+       "pass": true
+      },
+      "thick_m": {
+       "max_relative_l2": 2.104867090483486e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 1.4243321225591903e-07,
+       "pass": true
+      },
+      "thick_v": {
+       "max_relative_l2": 9.124245022965673e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 4.215793286032061e-08,
+       "pass": true
+      },
+      "thick_iterations": {
+       "port": 2,
+       "official": 2,
+       "pass": true
+      }
+     },
+     "noise_fully_replayed": true,
+     "pass": true
+    }
+   },
+   "pass": true
+  },
+  "pinpad-image": {
+   "reference": {
+    "npz": ".local-artifacts/issue-131-thick-v1/gport/reference-pinpad-image.npz",
+    "npz_sha256": "sha256:adfd33a46e045a779f0f2c6eaf0ceed70d02e0882a1762d5b1cd749da7e93345",
+    "meta_sha256": "sha256:ca49842bc776770784ea6238c52fe98ad337b84232ce56f7de9cd823c27d6fa7",
+    "tf": "2.4.2"
+   },
+   "parameter_names_equal": true,
+   "model_parameters": {
+    "port": 25845176,
+    "official": 25845176
+   },
+   "thick_parameters": {
+    "port": 14782482,
+    "official": 14782482
+   },
+   "config_differences": {},
+   "modules": {
+    "encoder": {
+     "relative_l2": 1.4242337262634925e-06,
+     "max_abs": 5.21540641784668e-07,
+     "pass": true
+    },
+    "gru_cell": {
+     "relative_l2": 1.1066514708609072e-07,
+     "max_abs": 4.76837158203125e-07,
+     "pass": true
+    },
+    "gatel0rd_sample0_state": {
+     "relative_l2": 2.563889270449623e-07,
+     "max_abs": 3.8743019104003906e-07,
+     "pass": true
+    },
+    "gatel0rd_sample0_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "gatel0rd_sample1_state": {
+     "relative_l2": 2.482298793118442e-07,
+     "max_abs": 4.172325134277344e-07,
+     "pass": true
+    },
+    "gatel0rd_sample1_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_deter": {
+     "relative_l2": 3.514039686386781e-07,
+     "max_abs": 3.725290298461914e-08,
+     "pass": true
+    },
+    "observe_post_context": {
+     "relative_l2": 4.127685719811694e-07,
+     "max_abs": 1.0244548320770264e-07,
+     "pass": true
+    },
+    "observe_post_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_prev_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_prev_action": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_post_logit": {
+     "relative_l2": 1.487837648501558e-06,
+     "max_abs": 2.4400651454925537e-07,
+     "pass": true
+    },
+    "observe_post_ctxt_logit": {
+     "relative_l2": 1.487837648501558e-06,
+     "max_abs": 2.4400651454925537e-07,
+     "pass": true
+    },
+    "observe_post_ctxt_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_deter": {
+     "relative_l2": 3.514039686386781e-07,
+     "max_abs": 3.725290298461914e-08,
+     "pass": true
+    },
+    "observe_prior_context": {
+     "relative_l2": 4.127685719811694e-07,
+     "max_abs": 1.0244548320770264e-07,
+     "pass": true
+    },
+    "observe_prior_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_logit": {
+     "relative_l2": 6.909597335555725e-07,
+     "max_abs": 7.450580596923828e-08,
+     "pass": true
+    },
+    "observe_prior_ctxt_logit": {
+     "relative_l2": 4.7395271984700753e-07,
+     "max_abs": 3.5762786865234375e-07,
+     "pass": true
+    },
+    "observe_prior_ctxt_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_prev_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "observe_prior_prev_action": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_deter": {
+     "relative_l2": 3.5658099963328514e-07,
+     "max_abs": 4.0978193283081055e-08,
+     "pass": true
+    },
+    "imagine_context": {
+     "relative_l2": 3.6350090535987004e-07,
+     "max_abs": 1.1920928955078125e-07,
+     "pass": true
+    },
+    "imagine_gates": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_logit": {
+     "relative_l2": 6.21264913756813e-07,
+     "max_abs": 7.450580596923828e-08,
+     "pass": true
+    },
+    "imagine_ctxt_logit": {
+     "relative_l2": 4.552103836561607e-07,
+     "max_abs": 4.470348358154297e-07,
+     "pass": true
+    },
+    "imagine_ctxt_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_prev_stoch": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "imagine_prev_action": {
+     "relative_l2": 0.0,
+     "max_abs": 0.0,
+     "pass": true
+    },
+    "decoder_image": {
+     "relative_l2": 1.0742461433637183e-06,
+     "max_abs": 2.7008354663848877e-07,
+     "pass": true
+    },
+    "ctxt_decoder_image": {
+     "relative_l2": 1.0705280360222888e-06,
+     "max_abs": 2.3469328880310059e-07,
+     "pass": true
+    },
+    "reward_head": {
+     "relative_l2": 7.67317632074758e-07,
+     "max_abs": 7.748603820800781e-07,
+     "pass": true
+    },
+    "ctxt_reward_head": {
+     "relative_l2": 8.294445451954014e-07,
+     "max_abs": 3.427267074584961e-07,
+     "pass": true
+    },
+    "thick_body": {
+     "relative_l2": 5.866086957185236e-07,
+     "max_abs": 1.1920928955078125e-06,
+     "pass": true
+    },
+    "thick_logit": {
+     "relative_l2": 7.459294087980027e-07,
+     "max_abs": 1.259148120880127e-06,
+     "pass": true
+    },
+    "thick_hl_prior_logit": {
+     "relative_l2": 4.5557758382458655e-07,
+     "max_abs": 1.0728836059570312e-06,
+     "pass": true
+    }
+   },
+   "modules_noise_fully_replayed": true,
+   "steps": {
+    "step1": {
+     "lr": {
+      "model": 9.999999747378752e-05,
+      "thick": 9.999999747378752e-05,
+      "port": [
+       0.0001,
+       0.0001
+      ]
+     },
+     "forward": {
+      "embed": {
+       "relative_l2": 1.4242337262634925e-06,
+       "max_abs": 5.21540641784668e-07
+      },
+      "feat": {
+       "relative_l2": 4.4973450460443596e-08,
+       "max_abs": 2.980232238769531e-07
+      },
+      "kl": {
+       "relative_l2": 2.5091552057785852e-05,
+       "max_abs": 1.2237578630447388e-06
+      },
+      "ctxt_kl": {
+       "relative_l2": 2.7367228141919863e-06,
+       "max_abs": 1.6689300537109375e-06
+      },
+      "post_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_deter": {
+       "relative_l2": 3.603840357635623e-07,
+       "max_abs": 4.0978193283081055e-08
+      },
+      "post_context": {
+       "relative_l2": 6.026434318750164e-07,
+       "max_abs": 2.980232238769531e-07
+      },
+      "post_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_logit": {
+       "relative_l2": 1.4919818559695482e-06,
+       "max_abs": 2.4010660126805305e-07
+      },
+      "post_ctxt_logit": {
+       "relative_l2": 1.4919818559695482e-06,
+       "max_abs": 2.4010660126805305e-07
+      },
+      "post_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_deter": {
+       "relative_l2": 3.603840357635623e-07,
+       "max_abs": 4.0978193283081055e-08
+      },
+      "prior_context": {
+       "relative_l2": 6.026434318750164e-07,
+       "max_abs": 2.980232238769531e-07
+      },
+      "prior_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_logit": {
+       "relative_l2": 7.252958684695863e-07,
+       "max_abs": 9.685754776000977e-08
+      },
+      "prior_ctxt_logit": {
+       "relative_l2": 4.779804276127603e-07,
+       "max_abs": 3.2782554626464844e-07
+      },
+      "prior_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      }
+     },
+     "forward_pass": true,
+     "loss_terms": {
+      "kl": {
+       "port": 0.02820451930165291,
+       "official": 0.028204571455717087
+      },
+      "gate_activity": {
+       "port": 0.5,
+       "official": 0.5
+      },
+      "ctxt_sparsity": {
+       "port": 0.5,
+       "official": 0.5
+      },
+      "ctxt_kl": {
+       "port": 0.2621666491031647,
+       "official": 0.26216647028923035
+      },
+      "image": {
+       "port": 11808.7734375,
+       "official": 11808.7724609375
+      },
+      "reward": {
+       "port": 0.9480493068695068,
+       "official": 0.9480493068695068
+      },
+      "ctxt_image": {
+       "port": 11808.779296875,
+       "official": 11808.7802734375
+      },
+      "ctxt_reward": {
+       "port": 0.9267072081565857,
+       "official": 0.9267072081565857
+      },
+      "model": {
+       "port": 23620.716796875,
+       "official": 23620.716796875
+      }
+     },
+     "loss_max_relative_delta": 1.7881393432617188e-07,
+     "model_grad_norm": 22.981689453125,
+     "official_model_grad_norm": 22.981693267822266,
+     "model_grad_norm_relative_delta": 1.6598852056589472e-07,
+     "model_gradients": {
+      "max_relative_l2": 2.5101715666047003e-06,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 2.2981693267822265e-05,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "thick_data_relative_l2": {
+      "inps": 2.5410154182762933e-08,
+      "target_thick_tar_states": 1.5247950408282527e-06,
+      "target_thick_act": 0.0,
+      "target_thick_time": 0.0,
+      "target_thick_latent": 5.34589124227618e-07,
+      "target_thick_inter_returns": 0.0,
+      "target_thick_stoch": 0.0,
+      "target_thick_logit": 1.5247950408282527e-06,
+      "mask_state": 0.0,
+      "mask_action": 0.0,
+      "mask_time": 0.0
+     },
+     "thick_loss_terms": {
+      "thick_hl_act_kl": {
+       "port": 0.05037529021501541,
+       "official": 0.05037526786327362
+      },
+      "thick_kl": {
+       "port": 0.3362818658351898,
+       "official": 0.3362817168235779
+      },
+      "thick_act": {
+       "port": 1.6089104413986206,
+       "official": 1.6089104413986206
+      },
+      "thick_time": {
+       "port": 0.9552627205848694,
+       "official": 0.9552627205848694
+      },
+      "thick_reward": {
+       "port": 0.9381123781204224,
+       "official": 0.9381123781204224
+      },
+      "thick_total": {
+       "port": 1.5811867713928223,
+       "official": 1.5811867713928223
+      }
+     },
+     "thick_loss_max_relative_delta": 1.4901161193847656e-07,
+     "thick_grad_norm": 1.1375110149383545,
+     "official_thick_grad_norm": 1.137511134147644,
+     "thick_grad_norm_relative_delta": 1.0479834963558994e-07,
+     "thick_gradients": {
+      "max_relative_l2": 1.4284575712422371e-06,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 1.137511134147644e-06,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "param_close_share": 1.0000001192092896,
+     "param_max_abs_delta": 2.1112100512254983e-08,
+     "update_relative_l2": 8.929085197451059e-06,
+     "update_norm": 0.35799306631088257,
+     "official_update_norm": 0.3579948842525482,
+     "optimizer_slots": {
+      "model_m": {
+       "max_relative_l2": 2.6168072301280475e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 2.2981697960373237e-06,
+       "pass": true
+      },
+      "model_v": {
+       "max_relative_l2": 7.685531924567715e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 7.267402389251279e-07,
+       "pass": true
+      },
+      "model_iterations": {
+       "port": 1,
+       "official": 1,
+       "pass": true
+      },
+      "thick_m": {
+       "max_relative_l2": 1.4480842984161572e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 1.1375114181379571e-07,
+       "pass": true
+      },
+      "thick_v": {
+       "max_relative_l2": 6.611938256275906e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 3.597102931417518e-08,
+       "pass": true
+      },
+      "thick_iterations": {
+       "port": 1,
+       "official": 1,
+       "pass": true
+      }
+     },
+     "noise_fully_replayed": true,
+     "pass": true
+    },
+    "step2": {
+     "lr": {
+      "model": 9.999999747378752e-05,
+      "thick": 9.999999747378752e-05,
+      "port": [
+       0.0001,
+       0.0001
+      ]
+     },
+     "forward": {
+      "embed": {
+       "relative_l2": 1.429363673624303e-06,
+       "max_abs": 4.6193599700927734e-07
+      },
+      "feat": {
+       "relative_l2": 3.699147258646287e-08,
+       "max_abs": 1.2665987014770508e-07
+      },
+      "kl": {
+       "relative_l2": 2.3331088710920483e-05,
+       "max_abs": 9.387731552124023e-07
+      },
+      "ctxt_kl": {
+       "relative_l2": 2.6715113339798703e-06,
+       "max_abs": 1.1920928955078125e-06
+      },
+      "post_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_deter": {
+       "relative_l2": 3.675295525806201e-07,
+       "max_abs": 3.771856427192688e-08
+      },
+      "post_context": {
+       "relative_l2": 3.934985031553471e-07,
+       "max_abs": 1.2665987014770508e-07
+      },
+      "post_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "post_logit": {
+       "relative_l2": 1.523483207203288e-06,
+       "max_abs": 2.3096799850463867e-07
+      },
+      "post_ctxt_logit": {
+       "relative_l2": 1.523483207203288e-06,
+       "max_abs": 2.3096799850463867e-07
+      },
+      "post_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_deter": {
+       "relative_l2": 3.675295525806201e-07,
+       "max_abs": 3.771856427192688e-08
+      },
+      "prior_context": {
+       "relative_l2": 3.934985031553471e-07,
+       "max_abs": 1.2665987014770508e-07
+      },
+      "prior_gates": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_logit": {
+       "relative_l2": 6.905601250291557e-07,
+       "max_abs": 8.195638656616211e-08
+      },
+      "prior_ctxt_logit": {
+       "relative_l2": 4.878805954656958e-07,
+       "max_abs": 3.2782554626464844e-07
+      },
+      "prior_ctxt_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_stoch": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      },
+      "prior_prev_action": {
+       "relative_l2": 0.0,
+       "max_abs": 0.0
+      }
+     },
+     "forward_pass": true,
+     "loss_terms": {
+      "kl": {
+       "port": 0.02813751995563507,
+       "official": 0.028137560933828354
+      },
+      "gate_activity": {
+       "port": 0.51953125,
+       "official": 0.51953125
+      },
+      "ctxt_sparsity": {
+       "port": 0.51953125,
+       "official": 0.51953125
+      },
+      "ctxt_kl": {
+       "port": 0.25808221101760864,
+       "official": 0.2580822706222534
+      },
+      "image": {
+       "port": 11808.75,
+       "official": 11808.7509765625
+      },
+      "reward": {
+       "port": 0.943062961101532,
+       "official": 0.9430629014968872
+      },
+      "ctxt_image": {
+       "port": 11808.7275390625,
+       "official": 11808.728515625
+      },
+      "ctxt_reward": {
+       "port": 0.9358025193214417,
+       "official": 0.9358024597167969
+      },
+      "model": {
+       "port": 23620.681640625,
+       "official": 23620.68359375
+      }
+     },
+     "loss_max_relative_delta": 8.269836153044234e-08,
+     "model_grad_norm": 21.572750091552734,
+     "official_model_grad_norm": 21.57274627685547,
+     "model_grad_norm_relative_delta": 1.7682946884317808e-07,
+     "model_gradients": {
+      "max_relative_l2": 1.597045465888107e-05,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 2.1572746276855467e-05,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "thick_data_relative_l2": {
+      "inps": 2.2259364445441665e-08,
+      "target_thick_tar_states": 1.5380271353143394e-06,
+      "target_thick_act": 0.0,
+      "target_thick_time": 0.0,
+      "target_thick_latent": 4.206573329253564e-07,
+      "target_thick_inter_returns": 0.0,
+      "target_thick_stoch": 0.0,
+      "target_thick_logit": 1.5380271353143394e-06,
+      "mask_state": 0.0,
+      "mask_action": 0.0,
+      "mask_time": 0.0
+     },
+     "thick_loss_terms": {
+      "thick_hl_act_kl": {
+       "port": 0.07119517028331757,
+       "official": 0.07119523733854294
+      },
+      "thick_kl": {
+       "port": 0.33125853538513184,
+       "official": 0.3312588632106781
+      },
+      "thick_act": {
+       "port": 1.6260664463043213,
+       "official": 1.6260664463043213
+      },
+      "thick_time": {
+       "port": 0.9360930323600769,
+       "official": 0.9360927939414978
+      },
+      "thick_reward": {
+       "port": 0.9323152899742126,
+       "official": 0.9323152303695679
+      },
+      "thick_total": {
+       "port": 1.5909850597381592,
+       "official": 1.5909852981567383
+      }
+     },
+     "thick_loss_max_relative_delta": 3.2782554626464844e-07,
+     "thick_grad_norm": 1.1046183109283447,
+     "official_thick_grad_norm": 1.1046178340911865,
+     "thick_grad_norm_relative_delta": 4.316761358424365e-07,
+     "thick_gradients": {
+      "max_relative_l2": 2.6375026860557423e-06,
+      "null_tensors": 0,
+      "null_max_abs_l2": 0.0,
+      "floor": 1.1046178340911866e-06,
+      "none_equal": true,
+      "none": [],
+      "pass": true
+     },
+     "param_close_share": 1.0000001192092896,
+     "param_max_abs_delta": 3.17177182296291e-08,
+     "update_relative_l2": 1.0281021786795463e-05,
+     "update_norm": 0.2951134443283081,
+     "official_update_norm": 0.2951151132583618,
+     "optimizer_slots": {
+      "model_m": {
+       "max_relative_l2": 1.1956562727347142e-05,
+       "null_max_abs_l2": 0.0,
+       "floor": 3.952019287251906e-06,
+       "pass": true
+      },
+      "model_v": {
+       "max_relative_l2": 7.08771125452294e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 9.964941810892704e-07,
+       "pass": true
+      },
+      "model_iterations": {
+       "port": 2,
+       "official": 2,
+       "pass": true
+      },
+      "thick_m": {
+       "max_relative_l2": 1.492421051061846e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 1.6213809082583965e-07,
+       "pass": true
+      },
+      "thick_v": {
+       "max_relative_l2": 8.18127438479285e-06,
+       "null_max_abs_l2": 0.0,
+       "floor": 5.012769769171869e-08,
+       "pass": true
+      },
+      "thick_iterations": {
+       "port": 2,
+       "official": 2,
+       "pass": true
+      }
+     },
+     "noise_fully_replayed": true,
+     "pass": true
+    }
+   },
+   "pass": true
+  }
+ },
+ "notes": [
+  "THICK uses a constant LR (model_opt / thick_opt lr 1e-4, no schedule): the step-0 LR is the positive LR, so both recorded steps run at 1e-4; step 2 exercises the Adam moments.",
+  "Official reference eager (upstream jit: False); one-hot samples are Gumbel-max draws from recorded uniforms and the GateL0RD noise is a recorded standard normal times ctxt_sample_noise, replayed in call order on both sides."
+ ],
+ "pass": true
+}

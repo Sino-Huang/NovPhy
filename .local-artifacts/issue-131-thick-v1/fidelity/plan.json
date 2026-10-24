@@ -1,0 +1,255 @@
+{
+ "schema": "issue_131_gfid_plan_v1",
+ "issue": 131,
+ "arm": "D1 THICK",
+ "written_at": "2026-10-24T09:47:36Z",
+ "band": {
+  "artifact": ".local-artifacts/issue-131-thick-v1/fidelity/band.json",
+  "sha256": "sha256:c48251b3c3e5295451169b58479b6ed45bde7bce813051c37d121b3024c4c2dd"
+ },
+ "official_tf_on_rtx5090": {
+  "tf242_round1": null,
+  "tf242_round2": null,
+  "tf242_log_summary": {
+   "schema": "issue_131_tf242_probe_summary_v1",
+   "round1": {
+    "log": ".local-artifacts/gpu-window/logs/131-tf-gpu-probe.log",
+    "timeout_seconds": 300,
+    "exit": 124,
+    "log_level": "TF_CPP_MIN_LOG_LEVEL=1",
+    "observed": "no output and no JSON within 300 s"
+   },
+   "round2": {
+    "log": ".local-artifacts/gpu-window/logs/131-gpu-probe-2.log",
+    "timeout_seconds": 480,
+    "exit": 124,
+    "log_level": "TF_CPP_MIN_LOG_LEVEL=0",
+    "observed_lines": [
+     "2026-10-24 20:35:05.868803: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11",
+     "2026-10-24 20:35:05.868922: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11",
+     "2026-10-24 20:35:05.872332: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8",
+     "2026-10-24 20:35:05.876353: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0",
+     "2026-10-24 20:35:05.882537: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11",
+     "2026-10-24 20:35:05.882605: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11",
+     "2026-10-24 20:35:05.882980: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8",
+     "2026-10-24 20:35:05.886715: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0",
+     "2026-10-24 20:35:26.018097: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 29542 MB memory) -> physical GPU (device: 0, name: NVIDIA GeForce RTX 5090, pci bus id: 0000:c2:00",
+     "2026-10-24 20:35:26.023544: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11",
+     "2026-10-24 20:37:50.230199: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11",
+     "2026-10-24 20:37:50.237967: I tensorflow/stream_executor/cuda/cuda_blas.cc:1838] TensorFloat-32 will be used for the matrix multiplication. This will only be logged once.",
+     "2026-10-24 20:37:50.308517: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8"
+    ],
+    "reading": "TF 2.4.2 + CUDA 11.0 / cuDNN 8.0.5 registers the RTX 5090 (compute capability 12.0) after ~20 s; the first matmul needs ~2.4 min (CUDA 11.0 has no sm_120 code: kernels are JIT-compiled from PTX) and announces TensorFloat-32; the first cuDNN 8.0.5 convolution (opened 20:37:50) had not returned when the 8-min limit ended the probe (20:43:05). The official THICK step (CNN encoder/decoder) was never reached."
+   },
+   "log_sha256": {
+    ".local-artifacts/gpu-window/logs/131-tf-gpu-probe.log": "sha256:f295b9d2571d5f9d5bea0301edd8b852ae55f36b0404d6c569d9eef4dbe9b65c",
+    ".local-artifacts/gpu-window/logs/131-gpu-probe-2.log": "sha256:33ecc87b7fde3ec4410c0b2764115ef65f839acaccfd94af7d88280498ec5144"
+   }
+  },
+  "tf2x_round1": {
+   "tf": "2.21.0",
+   "python": "3.11.17",
+   "cuda_visible_devices": "3",
+   "build": {
+    "cpu_compiler": "clang",
+    "cuda_compute_capabilities": "['sm_60', 'sm_70', 'sm_80', 'sm_89', 'compute_90']",
+    "cuda_version": "12.5.1",
+    "cudnn_version": "9",
+    "is_cuda_build": "True",
+    "is_rocm_build": "False",
+    "is_tensorrt_build": "False"
+   },
+   "gpus": [],
+   "details": [],
+   "checks": {
+    "matmul_max_abs_err": 0.0001678466796875,
+    "conv_shape": [
+     16,
+     31,
+     31,
+     48
+    ],
+    "conv_device": "/job:localhost/replica:0/task:0/device:CPU:0",
+    "matmul_device": "/job:localhost/replica:0/task:0/device:CPU:0",
+    "ok": false,
+    "first_ops_seconds": 0.29867005348205566
+   }
+  },
+  "tf2x_round2": {
+   "tf": "2.21.0",
+   "python": "3.11.17",
+   "cuda_visible_devices": "3",
+   "build": {
+    "cpu_compiler": "clang",
+    "cuda_compute_capabilities": "['sm_60', 'sm_70', 'sm_80', 'sm_89', 'compute_90']",
+    "cuda_version": "12.5.1",
+    "cudnn_version": "9",
+    "is_cuda_build": "True",
+    "is_rocm_build": "False",
+    "is_tensorrt_build": "False"
+   },
+   "gpus": [],
+   "details": [],
+   "checks": {
+    "matmul_max_abs_err": 0.000152587890625,
+    "conv_shape": [
+     16,
+     31,
+     31,
+     48
+    ],
+    "conv_device": "/job:localhost/replica:0/task:0/device:CPU:0",
+    "matmul_device": "/job:localhost/replica:0/task:0/device:CPU:0",
+    "ok": false,
+    "first_ops_seconds": 1.3482584953308105
+   }
+  },
+  "paper_wall_clock": "Suppl. G: DreamerV2 runs 15-20 h, THICK Dreamer runs 35-45 h per experiment on one GPU of the authors' cluster (official TF2 code)"
+ },
+ "port_timing": {
+  "artifact": ".local-artifacts/issue-131-thick-v1/fidelity/port-timing-gpu-r2.json",
+  "sha256": "sha256:d0f9e687a8f4837afae5d5e85a24132c9a4a2e6486f9d5ec8f1b5cff71e2a8a6"
+ },
+ "projection_model": {
+  "train_every": 5,
+  "eval_every": 10000.0,
+  "eval_episode_steps": 2000,
+  "p2e_steps": 1000000.0,
+  "overhead_fraction": 0.15,
+  "p2e_update_over_dreamer": 1.15,
+  "window_steps": {
+   "four": 400000.0,
+   "five": 600000.0
+  },
+  "formula": "GPU-h per run = (steps / train_every * s_update + (steps + evals * 2000) * s_act) * (1 + overhead) / 3600; s_update(THICK Dreamer) = world model + high level + behaviour proxy; s_update(DreamerV2) = C-RSSM world model + behaviour proxy (an upper bound: the RSSM has no context decoder / head and DreamerV2 no high-level imagination); Plan2Explore = DreamerV2 x 1.15 [INFERENCE]",
+  "status": "[INFERENCE] until the first G-fid run's measured throughput replaces it"
+ },
+ "projections": {
+  "fp32": {
+   "seconds_per_update": {
+    "thick_dreamer": 0.3493,
+    "dreamerv2": 0.2564,
+    "plan2explore": 0.2948
+   },
+   "seconds_per_act_step": 0.00147,
+   "gpu_hours_per_run": {
+    "thick_dreamer_four": 9.15,
+    "dreamerv2_four": 6.78,
+    "thick_dreamer_five": 13.73,
+    "dreamerv2_five": 10.17,
+    "plan2explore_1M": 19.4
+   },
+   "gpu_hours_by_design": {
+    "four-seeds3-p2e1": 67.2,
+    "four-seeds3-p2e2": 86.6,
+    "four-seeds5-p2e1": 99.1,
+    "four-seeds5-p2e2": 118.5,
+    "four-seeds7-p2e1": 130.9,
+    "four-seeds7-p2e2": 150.3,
+    "five-seeds3-p2e1": 91.1,
+    "five-seeds3-p2e2": 110.5,
+    "five-seeds5-p2e1": 138.9,
+    "five-seeds5-p2e2": 158.3,
+    "five-seeds7-p2e1": 186.7,
+    "five-seeds7-p2e2": 206.1,
+    "four+five-seeds3-p2e1x2": 158.3
+   }
+  },
+  "tf32": {
+   "seconds_per_update": {
+    "thick_dreamer": 0.2971,
+    "dreamerv2": 0.177,
+    "plan2explore": 0.2035
+   },
+   "seconds_per_act_step": 0.00155,
+   "gpu_hours_per_run": {
+    "thick_dreamer_four": 7.83,
+    "dreamerv2_four": 4.76,
+    "thick_dreamer_five": 11.75,
+    "dreamerv2_five": 7.14,
+    "plan2explore_1M": 13.6
+   },
+   "gpu_hours_by_design": {
+    "four-seeds3-p2e1": 51.4,
+    "four-seeds3-p2e2": 65.0,
+    "four-seeds5-p2e1": 76.6,
+    "four-seeds5-p2e2": 90.2,
+    "four-seeds7-p2e1": 101.7,
+    "four-seeds7-p2e2": 115.3,
+    "five-seeds3-p2e1": 70.3,
+    "five-seeds3-p2e2": 83.9,
+    "five-seeds5-p2e1": 108.0,
+    "five-seeds5-p2e2": 121.6,
+    "five-seeds7-p2e1": 145.8,
+    "five-seeds7-p2e2": 159.4,
+    "four+five-seeds3-p2e1x2": 121.7
+   }
+  }
+ },
+ "port_modules_to_add": [
+  {
+   "module": "EnsembleRSSM (DreamerV2 low level, DreamerV2 baseline and Plan2Explore)",
+   "upstream": "common/nets.py EnsembleRSSM",
+   "gport": "forward, KL, gradients, two Adam steps",
+   "note": "the TF reference needs the listed one-line vendored fix (undefined rnn_type)"
+  },
+  {
+   "module": "ActorCritic (actor onehot / reinforce, critic, slow target, StreamNorm, lambda return)",
+   "upstream": "agent.py ActorCritic, common/other.py",
+   "gport": "imagined sequence, losses, gradients, steps"
+  },
+  {
+   "module": "WorldModel.imagine and THICK Dreamer's thick_imagine / long_term_return / coarse critic",
+   "upstream": "agent.py",
+   "gport": "imagined sequences with replayed draws, critic targets"
+  },
+  {
+   "module": "Plan2Explore (10-head disagreement ensemble, intrinsic reward)",
+   "upstream": "expl.py",
+   "gport": "ensemble loss, intrinsic reward, gradients, steps"
+  },
+  {
+   "module": "acting (Agent.policy), Replay (uniform 50-step chunks), Driver, PinPad + OneHotAction + TimeLimit",
+   "upstream": "agent.py, common/{replay,driver,envs,pinpad_env}.py",
+   "gport": "env transitions equal on fixed seeds and action sequences; replay chunk sampling semantics (CPU tests)"
+  },
+  {
+   "module": "train.py (Plan2Explore data) and train_from_replay.py (THICK Dreamer / DreamerV2) loops with resumable checkpoints (SIGTERM -> checkpoint -> exit 75)",
+   "upstream": "train.py, train_from_replay.py",
+   "gport": "schedule equality (prefill, train_every, eval_every, eval_eps) by CPU tests"
+  }
+ ],
+ "novphy_native_training_gpu_hours_per_seed": 13.99,
+ "proposal": {
+  "route": "(ii) the G-port-verified PyTorch port extended to the full THICK Dreamer agent, DreamerV2 and Plan2Explore; every added module held to G-port against the vendored TF2 code on CPU before any run",
+  "design": "four-seeds3-p2e1",
+  "task": "pinpad_four (VisualPinPadFour: the paper's tuning task; band threshold 359, Table 3 140k vs 200k)",
+  "env_steps": 400000,
+  "seeds_per_method": [
+   20260908,
+   20260909,
+   20260910
+  ],
+  "exploration": "one Plan2Explore run (upstream train.py, configs visualpinpad + plan2explore, 1M env steps) whose replay pre-fills every THICK Dreamer / DreamerV2 run (upstream train_from_replay.py); the paper trained two Plan2Explore models and kept the higher-return one (disclosed)",
+  "evaluation": "one evaluation episode (2000 steps) every 1e4 env steps (upstream eval_every / eval_eps)",
+  "precision": "float32, TF32 off (as the G-port and the D1 adapter); the official TF 2.4 itself enables TF32 on this GPU (its log), TF32 would cut the projection by about a quarter",
+  "resumable": "SIGTERM -> checkpoint (models, optimizers, replay on disk, RNG, step) -> exit 75",
+  "gfid_gpu_hours": 67.2,
+  "gfid_gpu_hours_tf32": 51.4,
+  "child_projection_gpu_hours": {
+   "fidelity": 67.2,
+   "selection_3_configurations": 42.0,
+   "training_2_more_seeds": 28.0,
+   "matched_secondary_3_seeds": 2.0,
+   "scoring_and_validate": 2.0
+  },
+  "child_share_gpu_hours": [
+   86,
+   146
+  ],
+  "fidelity_estimate_gpu_hours": [
+   24,
+   48
+  ]
+ }
+}

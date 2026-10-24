@@ -1,0 +1,40 @@
+{
+ "torch": "2.13.0+cu130",
+ "device": "NVIDIA GeForce RTX 5090",
+ "float32": true,
+ "repeats": 10,
+ "pinpad_image_fp32": {
+  "batch": [
+   16,
+   50
+  ],
+  "world_model_parameters": 40627658,
+  "seconds_wm_update": 0.21713554859161377,
+  "seconds_thick_update": 0.09299092292785645,
+  "seconds_behaviour_proxy": 0.039218354225158694,
+  "seconds_act_step_batch1": 0.0014739274978637696,
+  "peak_memory_gb": 2.2166800498962402
+ },
+ "pinpad_image_tf32": {
+  "batch": [
+   16,
+   50
+  ],
+  "world_model_parameters": 40627658,
+  "seconds_wm_update": 0.14090213775634766,
+  "seconds_thick_update": 0.12006635665893554,
+  "seconds_behaviour_proxy": 0.036089301109313965,
+  "seconds_act_step_batch1": 0.001551351547241211,
+  "peak_memory_gb": 2.3784937858581543
+ },
+ "novphy_carrier_fp32": {
+  "batch": [
+   16,
+   46
+  ],
+  "parameters": 21852337,
+  "seconds_per_wm_and_thick_update": 0.21901285648345947,
+  "seconds_per_16_candidate_rollout": 0.028873157501220704,
+  "peak_memory_gb": 0.5053896903991699
+ }
+}

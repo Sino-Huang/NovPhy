@@ -1,0 +1,404 @@
+{
+  "jobs": [
+    {
+      "id": "131-tf-gpu-probe",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 16,
+      "shares_gpu": true,
+      "command": [
+        "bash",
+        "-c",
+        "LD_LIBRARY_PATH=/srv/home/shua0171/miniconda3/envs/b127-thick-tf/lib:$LD_LIBRARY_PATH timeout 300 /srv/home/shua0171/miniconda3/envs/b127-thick-tf/bin/python -u scripts/b127_thick_fidelity.py --tf-gpu-probe .local-artifacts/issue-131-thick-v1/fidelity/tf-gpu-probe-tf242.json --official-timing; echo tf242_exit=$?; timeout 300 /srv/home/shua0171/miniconda3/envs/b127-thick-tf2x/bin/python -u scripts/b127_thick_fidelity.py --tf-gpu-probe .local-artifacts/issue-131-thick-v1/fidelity/tf-gpu-probe-tf2x.json; echo tf2x_exit=$?; timeout 300 /srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/b127_thick_fidelity.py --port-timing .local-artifacts/issue-131-thick-v1/fidelity/port-timing-gpu.json; echo port_exit=$?; exit 0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "TF_FORCE_GPU_ALLOW_GROWTH": "true",
+        "TF_CPP_MIN_LOG_LEVEL": "1"
+      },
+      "note": "#131 D1 THICK G-fid feasibility probe (no fidelity run, no NovPhy data): (1) official TF 2.4.2 (env b127-thick-tf + conda cudatoolkit 11.0 / cuDNN 8.0.5) on the RTX 5090 (sm_120): device list, matmul / conv, and the official THICK world-model + high-level training step timed at batch 16 x 50; (2) TF 2.21 [and-cuda] (env b127-thick-tf2x): device list, matmul / conv; (3) the PyTorch port's world-model + high-level step timed on the GPU (VisualPinPad image config 16 x 50; NovPhy carrier config 16 x 46; float32, TF32 off). Each step capped at 300 s; outputs fidelity/{tf-gpu-probe-tf242,tf-gpu-probe-tf2x,port-timing-gpu}.json; < 8 GB GPU memory (memory growth on)."
+    },
+    {
+      "id": "131-gpu-probe-2",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 19,
+      "shares_gpu": true,
+      "command": [
+        "bash",
+        "-c",
+        "CUDA_CACHE_MAXSIZE=4294967296 TF_CPP_MIN_LOG_LEVEL=0 LD_LIBRARY_PATH=/srv/home/shua0171/miniconda3/envs/b127-thick-tf/lib:$LD_LIBRARY_PATH timeout 480 /srv/home/shua0171/miniconda3/envs/b127-thick-tf/bin/python -u scripts/b127_thick_fidelity.py --tf-gpu-probe .local-artifacts/issue-131-thick-v1/fidelity/tf-gpu-probe-tf242-r2.json --official-timing; echo tf242_exit=$?; TF_CPP_MIN_LOG_LEVEL=0 timeout 120 /srv/home/shua0171/miniconda3/envs/b127-thick-tf2x/bin/python -u scripts/b127_thick_fidelity.py --tf-gpu-probe .local-artifacts/issue-131-thick-v1/fidelity/tf-gpu-probe-tf2x-r2.json; echo tf2x_exit=$?; timeout 420 /srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/b127_thick_fidelity.py --port-timing .local-artifacts/issue-131-thick-v1/fidelity/port-timing-gpu-r2.json; echo port_exit=$?; exit 0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "TF_FORCE_GPU_ALLOW_GROWTH": "true"
+      },
+      "depends_on": [
+        "131-tf-gpu-probe"
+      ],
+      "note": "#131 D1 THICK G-fid feasibility probe, round 2 (no fidelity run, no NovPhy data): (1) official TF 2.4.2 + CUDA 11.0 with full TF logging and an 8-min limit (round 1 produced no output in 5 min: exit 124), CUDA JIT cache 4 GB; (2) TF 2.21 with full logging (round 1: 'Cannot dlopen some GPU libraries', no GPU registered); (3) the port's per-component GPU seconds (world model, high level, a THICK-Dreamer behaviour-update proxy, one acting step), TF32 off and on, plus the NovPhy carrier config; outputs fidelity/{tf-gpu-probe-tf242-r2,tf-gpu-probe-tf2x-r2,port-timing-gpu-r2}.json; < 8 GB GPU memory."
+    },
+    {
+      "id": "131-gfid-timing",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 40,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--gfid-timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid timing (route ii, Decision P-route issuecomment-6382756572): timing-only runs of the port (Plan2Explore, THICK Dreamer, DreamerV2 on pinpad_four, TF32 on) for their first 1000 updates each (separate logdirs fidelity/timing/, no checkpoints), then the re-checked G-fid projection -> fidelity/gfid-timing.json (projected_gpu_h, feasible); exits 0 iff feasible (<= 72 GPU-h: child share 146 minus the rest of the projected child), else 1 (dependents stay blocked, P-cap). ~3 GB GPU memory."
+    },
+    {
+      "id": "131-gfid-p2e",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 900,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-timing"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--run",
+        "plan2explore",
+        "--seed",
+        "20260908",
+        "--steps",
+        "1000000"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid exploration data: upstream train.py semantics (configs visualpinpad + plan2explore, pinpad_four, 1M env steps incl. 10k random prefill) on the G-port-verified port, TF32 on; writes fidelity/runs/plan2explore-pinpad_four-seed20260908/train_episodes (the replay every THICK Dreamer / DreamerV2 run pre-fills). Resumable (SIGTERM -> checkpoint -> exit 75; periodic checkpoint every 1e4 env steps). ~3 GB GPU, ~13 GB RAM at the end."
+    },
+    {
+      "id": "131-gfid-thick-s20260908",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 600,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-p2e"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--run",
+        "thick",
+        "--seed",
+        "20260908",
+        "--steps",
+        "400000",
+        "--load-dir",
+        ".local-artifacts/issue-131-thick-v1/fidelity/runs/plan2explore-pinpad_four-seed20260908"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid run: THICK Dreamer (thick_pinpad) seed 20260908, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+    },
+    {
+      "id": "131-gfid-thick-s20260909",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 600,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-p2e"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--run",
+        "thick",
+        "--seed",
+        "20260909",
+        "--steps",
+        "400000",
+        "--load-dir",
+        ".local-artifacts/issue-131-thick-v1/fidelity/runs/plan2explore-pinpad_four-seed20260908"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid run: THICK Dreamer (thick_pinpad) seed 20260909, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+    },
+    {
+      "id": "131-gfid-thick-s20260910",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 600,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-p2e"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--run",
+        "thick",
+        "--seed",
+        "20260910",
+        "--steps",
+        "400000",
+        "--load-dir",
+        ".local-artifacts/issue-131-thick-v1/fidelity/runs/plan2explore-pinpad_four-seed20260908"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid run: THICK Dreamer (thick_pinpad) seed 20260910, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+    },
+    {
+      "id": "131-gfid-dreamer-s20260908",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 420,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-p2e"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--run",
+        "dreamer",
+        "--seed",
+        "20260908",
+        "--steps",
+        "400000",
+        "--load-dir",
+        ".local-artifacts/issue-131-thick-v1/fidelity/runs/plan2explore-pinpad_four-seed20260908"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260908, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+    },
+    {
+      "id": "131-gfid-dreamer-s20260909",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 420,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-p2e"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--run",
+        "dreamer",
+        "--seed",
+        "20260909",
+        "--steps",
+        "400000",
+        "--load-dir",
+        ".local-artifacts/issue-131-thick-v1/fidelity/runs/plan2explore-pinpad_four-seed20260908"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260909, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+    },
+    {
+      "id": "131-gfid-dreamer-s20260910",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 420,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-p2e"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--run",
+        "dreamer",
+        "--seed",
+        "20260910",
+        "--steps",
+        "400000",
+        "--load-dir",
+        ".local-artifacts/issue-131-thick-v1/fidelity/runs/plan2explore-pinpad_four-seed20260908"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#131 D1 G-fid run: DreamerV2 (visualpinpad) seed 20260910, upstream train_from_replay.py semantics on the port, replay pre-filled with the 1M Plan2Explore steps (memory-mapped, shared), 400k env steps with one 2000-step eval episode per 1e4 steps, TF32 on; band frozen (Decision P-fid issuecomment-6382475412). Resumable; ~3 GB GPU, ~6 GB own RAM."
+    },
+    {
+      "id": "131-gfid-record",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 2,
+      "depends_on": [
+        "131-gfid-thick-s20260908",
+        "131-gfid-thick-s20260909",
+        "131-gfid-thick-s20260910",
+        "131-gfid-dreamer-s20260908",
+        "131-gfid-dreamer-s20260909",
+        "131-gfid-dreamer-s20260910"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_thick_fidelity.py",
+        "--gfid"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "#131 D1: fidelity/gfid.json (issue_127_gfid_v1) from the six completed runs against the frozen band (CPU)."
+    },
+    {
+      "id": "131-select-c1",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 760,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-timing"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--selection",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 selection run sparsity-1 (ctxt_sparsity), seed 20260908, native 200 000 updates x 16 episodes (reused as main seed 20260908 if selected); refuses unless G-port passes and fidelity/gfid-timing.json is feasible; resume.pt every 2000 updates and on SIGTERM -> exit 75; peak ~0.5 GB (shares_gpu)"
+    },
+    {
+      "id": "131-select-c2",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 760,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-timing"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--selection",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 selection run sparsity-10 (ctxt_sparsity), seed 20260908, native 200 000 updates x 16 episodes (reused as main seed 20260908 if selected); refuses unless G-port passes and fidelity/gfid-timing.json is feasible; resume.pt every 2000 updates and on SIGTERM -> exit 75; peak ~0.5 GB (shares_gpu)"
+    },
+    {
+      "id": "131-select-c3",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 760,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-gfid-timing"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--selection",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 selection run sparsity-25 (ctxt_sparsity), seed 20260908, native 200 000 updates x 16 episodes (reused as main seed 20260908 if selected); refuses unless G-port passes and fidelity/gfid-timing.json is feasible; resume.pt every 2000 updates and on SIGTERM -> exit 75; peak ~0.5 GB (shares_gpu)"
+    },
+    {
+      "id": "131-selro",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-select-c1",
+        "131-select-c2",
+        "131-select-c3"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 selection readouts: policy-split pooled grid AUC per configuration (deterministic scoring) -> selection.json (eb.select_configuration)"
+    },
+    {
+      "id": "131-smoke",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 40,
+      "shares_gpu": true,
+      "depends_on": [
+        "131-selro"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 smoke: accounting, G-port check, CPU tests, matched D1-m throughput, projection vs the 146 GPU-h child cap / 24 GPU-h per seed / 48 h on 4 GPUs -> smoke.json; then --prepare (freeze) and only then the train / readouts / score jobs are enqueued"
+    }
+  ]
+}

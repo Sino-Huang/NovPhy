@@ -1,0 +1,168 @@
+{
+  "schema": "issue_127_vendor_v1",
+  "upstream": "https://github.com/CognitiveModeling/THICK",
+  "commit": "934980a4a25d2b6baa357fe234b6e841cd3cd101",
+  "license": "MIT (vendor/LICENSE, Copyright (c) 2024 cgumbsch)",
+  "license_file": "LICENSE",
+  "license_sha256": "sha256:15b996507e60e7c5ccc2351d02c8dddbda66edfbe8984dcaf777630801f81f76",
+  "policy": "verbatim copies (one listed edit, see files[thick/common/nets.py].edits) of the import closure of the official THICK world model (ContextRSSM / GateL0RD, THICKNet, losses, optimizer), the THICK Dreamer agent and the VisualPinPad training entry points (train.py, train_from_replay.py, train_only_on_replay.py). Upstream layout kept (thick/...); upstream uses top-level imports (import common), so callers put vendor/thick on sys.path, as upstream does. Run only in env b127-thick-tf (TF 2.4.2); never imported by the PyTorch port.",
+  "runtime_notes": [
+    "Not vendored: thick/multiworld/ (MuJoCo Sawyer suite + assets), common/{minihack_utils,multiworld_utils,minigrid_utils,plot}.py, des_envs/, media/ (imported upstream only inside the MiniHack / MiniGrid / Multiworld branches of env_register).",
+    "Upstream defect, not edited: common/dists.py OneHotDist._pad ignores its tensor argument and returns probs, so get_logits() returns probabilities; the CCEL_logits action loss (VisualPinPad / MiniHack discrete actions) is therefore a softmax cross-entropy on probabilities. The PyTorch port reproduces this behaviour.",
+    "train.py / train_from_replay.py assert a visible GPU; the CPU smoke (scripts/b127_thick_port_reference.py --official-smoke) stubs that query at run time without editing the file."
+  ],
+  "files": {
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:15b996507e60e7c5ccc2351d02c8dddbda66edfbe8984dcaf777630801f81f76",
+      "vendored_sha256": "sha256:15b996507e60e7c5ccc2351d02c8dddbda66edfbe8984dcaf777630801f81f76",
+      "edits": []
+    },
+    "thick/agent.py": {
+      "upstream_path": "thick/agent.py",
+      "upstream_sha256": "sha256:3210690773e6c3e1580424bc2f6e962e3e2496a2c00fd71827d18d8e64eb52da",
+      "vendored_sha256": "sha256:3210690773e6c3e1580424bc2f6e962e3e2496a2c00fd71827d18d8e64eb52da",
+      "edits": []
+    },
+    "thick/cem_agent.py": {
+      "upstream_path": "thick/cem_agent.py",
+      "upstream_sha256": "sha256:147201f6cdb76ce54fc52d1ba374dd42b6e505d13a1482bde0b5ee13ceca64d4",
+      "vendored_sha256": "sha256:147201f6cdb76ce54fc52d1ba374dd42b6e505d13a1482bde0b5ee13ceca64d4",
+      "edits": []
+    },
+    "thick/common/__init__.py": {
+      "upstream_path": "thick/common/__init__.py",
+      "upstream_sha256": "sha256:73221a3b1a608d8e1d1b1e818f63e08263a8f22a90b454632312dbb44ac68834",
+      "vendored_sha256": "sha256:73221a3b1a608d8e1d1b1e818f63e08263a8f22a90b454632312dbb44ac68834",
+      "edits": []
+    },
+    "thick/common/config.py": {
+      "upstream_path": "thick/common/config.py",
+      "upstream_sha256": "sha256:c69f60db6061600c50741001f82d331a3de4f9ec0a0432b1f57cba27397d84c4",
+      "vendored_sha256": "sha256:c69f60db6061600c50741001f82d331a3de4f9ec0a0432b1f57cba27397d84c4",
+      "edits": []
+    },
+    "thick/common/counter.py": {
+      "upstream_path": "thick/common/counter.py",
+      "upstream_sha256": "sha256:c2e1d22ce0e33538a33a372b2b7d0b58a020a5fae80ed633608e0a551022772b",
+      "vendored_sha256": "sha256:c2e1d22ce0e33538a33a372b2b7d0b58a020a5fae80ed633608e0a551022772b",
+      "edits": []
+    },
+    "thick/common/dists.py": {
+      "upstream_path": "thick/common/dists.py",
+      "upstream_sha256": "sha256:527c80b1d7e3eb2a07d5606621b1c4583b85e818894be3cf0c87404ee6f231a7",
+      "vendored_sha256": "sha256:527c80b1d7e3eb2a07d5606621b1c4583b85e818894be3cf0c87404ee6f231a7",
+      "edits": []
+    },
+    "thick/common/driver.py": {
+      "upstream_path": "thick/common/driver.py",
+      "upstream_sha256": "sha256:1dc0c2c6de2311eb2452cbbfbd95416a3faa9c976c2a642fc57eff4fc355010a",
+      "vendored_sha256": "sha256:1dc0c2c6de2311eb2452cbbfbd95416a3faa9c976c2a642fc57eff4fc355010a",
+      "edits": []
+    },
+    "thick/common/env_register.py": {
+      "upstream_path": "thick/common/env_register.py",
+      "upstream_sha256": "sha256:864ff909e1a82c160a4ae8574d9e9785337bb17c8e9af5d42fd65adee0ce136e",
+      "vendored_sha256": "sha256:864ff909e1a82c160a4ae8574d9e9785337bb17c8e9af5d42fd65adee0ce136e",
+      "edits": []
+    },
+    "thick/common/envs.py": {
+      "upstream_path": "thick/common/envs.py",
+      "upstream_sha256": "sha256:d9d11abc89a2e0394590226fa01a2b7575211ccef44eb447ffaef1ec09c8805f",
+      "vendored_sha256": "sha256:d9d11abc89a2e0394590226fa01a2b7575211ccef44eb447ffaef1ec09c8805f",
+      "edits": []
+    },
+    "thick/common/flags.py": {
+      "upstream_path": "thick/common/flags.py",
+      "upstream_sha256": "sha256:d3511cd621c6e6b159170775251ce3093c3e13afea89565d2dba9250cbc48088",
+      "vendored_sha256": "sha256:d3511cd621c6e6b159170775251ce3093c3e13afea89565d2dba9250cbc48088",
+      "edits": []
+    },
+    "thick/common/logger.py": {
+      "upstream_path": "thick/common/logger.py",
+      "upstream_sha256": "sha256:da9279b27b891401328173bbb9a9908f17dcaea61a40257dc4f26aa71613b045",
+      "vendored_sha256": "sha256:da9279b27b891401328173bbb9a9908f17dcaea61a40257dc4f26aa71613b045",
+      "edits": []
+    },
+    "thick/common/nets.py": {
+      "upstream_path": "thick/common/nets.py",
+      "upstream_sha256": "sha256:c8a5980f0a8784f764dff2058b9db147ab0adcf0a2d79014ef05f0376c728507",
+      "vendored_sha256": "sha256:6d2e28cb62a6b08000a6db0dd2254123787f55f308f56e7fde515a96ce0bc43e",
+      "edits": [
+        "line 39 of upstream (EnsembleRSSM.__init__) `self._rnn_type = rnn_type` deleted: it reads an undefined name, so every c_rssm=False world model (the DreamerV2 baseline, Plan2Explore) raised NameError at construction at 934980a; the attribute is never read. Listed in Decision P-route on #131 (issuecomment-6382756572), 2026-10-24."
+      ]
+    },
+    "thick/common/other.py": {
+      "upstream_path": "thick/common/other.py",
+      "upstream_sha256": "sha256:492a772e6a0bad689ca996598d183c046c5517b2913df36dc63e944cdb461099",
+      "vendored_sha256": "sha256:492a772e6a0bad689ca996598d183c046c5517b2913df36dc63e944cdb461099",
+      "edits": []
+    },
+    "thick/common/pinpad_env.py": {
+      "upstream_path": "thick/common/pinpad_env.py",
+      "upstream_sha256": "sha256:1e187e70454164c8c89e78a041cf7f1561f7317f5a6c1c56dc5c95d81ed3f219",
+      "vendored_sha256": "sha256:1e187e70454164c8c89e78a041cf7f1561f7317f5a6c1c56dc5c95d81ed3f219",
+      "edits": []
+    },
+    "thick/common/replay.py": {
+      "upstream_path": "thick/common/replay.py",
+      "upstream_sha256": "sha256:03eb038dff96a75e7bf5117fcd04be41b393ec31bdefbe7468fd3224f7678401",
+      "vendored_sha256": "sha256:03eb038dff96a75e7bf5117fcd04be41b393ec31bdefbe7468fd3224f7678401",
+      "edits": []
+    },
+    "thick/common/tfutils.py": {
+      "upstream_path": "thick/common/tfutils.py",
+      "upstream_sha256": "sha256:373c43ce8229ca5ae186d2aa18ddf522c7b1aca11e113ee76bf641958a8184a7",
+      "vendored_sha256": "sha256:373c43ce8229ca5ae186d2aa18ddf522c7b1aca11e113ee76bf641958a8184a7",
+      "edits": []
+    },
+    "thick/common/thick_utils.py": {
+      "upstream_path": "thick/common/thick_utils.py",
+      "upstream_sha256": "sha256:3a6fa7569a4d71fce8fd1a163f4ce0aacad89aba79395c98ee7c7b8e744fb7c8",
+      "vendored_sha256": "sha256:3a6fa7569a4d71fce8fd1a163f4ce0aacad89aba79395c98ee7c7b8e744fb7c8",
+      "edits": []
+    },
+    "thick/common/when.py": {
+      "upstream_path": "thick/common/when.py",
+      "upstream_sha256": "sha256:5b10d5732ba80d3cc70ec68a4706274047c55bdb8cdfa2d06bb58c70a384f48e",
+      "vendored_sha256": "sha256:5b10d5732ba80d3cc70ec68a4706274047c55bdb8cdfa2d06bb58c70a384f48e",
+      "edits": []
+    },
+    "thick/configs.yaml": {
+      "upstream_path": "thick/configs.yaml",
+      "upstream_sha256": "sha256:10a3d75aa674e23d586b5779790079ddc2baeeda3e30cc52c8637df1560766eb",
+      "vendored_sha256": "sha256:10a3d75aa674e23d586b5779790079ddc2baeeda3e30cc52c8637df1560766eb",
+      "edits": []
+    },
+    "thick/expl.py": {
+      "upstream_path": "thick/expl.py",
+      "upstream_sha256": "sha256:c42ca99547a56d1dddd8cb30350922ad3ad3352c05d64f0f3126d01d106117f2",
+      "vendored_sha256": "sha256:c42ca99547a56d1dddd8cb30350922ad3ad3352c05d64f0f3126d01d106117f2",
+      "edits": []
+    },
+    "thick/hl_mcts.py": {
+      "upstream_path": "thick/hl_mcts.py",
+      "upstream_sha256": "sha256:f1c64338d5b3d544679263dbb909d651def72055118e7eac4c188a8d855120aa",
+      "vendored_sha256": "sha256:f1c64338d5b3d544679263dbb909d651def72055118e7eac4c188a8d855120aa",
+      "edits": []
+    },
+    "thick/train.py": {
+      "upstream_path": "thick/train.py",
+      "upstream_sha256": "sha256:2ee9e2b09df26c247ff385e2d76fa004d2f79d7a86d0d2103fbbacc9586b5e9a",
+      "vendored_sha256": "sha256:2ee9e2b09df26c247ff385e2d76fa004d2f79d7a86d0d2103fbbacc9586b5e9a",
+      "edits": []
+    },
+    "thick/train_from_replay.py": {
+      "upstream_path": "thick/train_from_replay.py",
+      "upstream_sha256": "sha256:f4bfc802e6b9833ca09f7c08aa259d438a1c0d26c9ab2d44ace9e55bcf7cada3",
+      "vendored_sha256": "sha256:f4bfc802e6b9833ca09f7c08aa259d438a1c0d26c9ab2d44ace9e55bcf7cada3",
+      "edits": []
+    },
+    "thick/train_only_on_replay.py": {
+      "upstream_path": "thick/train_only_on_replay.py",
+      "upstream_sha256": "sha256:dd4910cc5e63cf8e4fbe0c8b16b9f8eeb172c7f404b7bc6cb03a54a07c7cc280",
+      "vendored_sha256": "sha256:dd4910cc5e63cf8e4fbe0c8b16b9f8eeb172c7f404b7bc6cb03a54a07c7cc280",
+      "edits": []
+    }
+  }
+}

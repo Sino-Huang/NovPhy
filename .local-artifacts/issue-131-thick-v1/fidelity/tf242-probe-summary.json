@@ -1,0 +1,36 @@
+{
+ "schema": "issue_131_tf242_probe_summary_v1",
+ "round1": {
+  "log": ".local-artifacts/gpu-window/logs/131-tf-gpu-probe.log",
+  "timeout_seconds": 300,
+  "exit": 124,
+  "log_level": "TF_CPP_MIN_LOG_LEVEL=1",
+  "observed": "no output and no JSON within 300 s"
+ },
+ "round2": {
+  "log": ".local-artifacts/gpu-window/logs/131-gpu-probe-2.log",
+  "timeout_seconds": 480,
+  "exit": 124,
+  "log_level": "TF_CPP_MIN_LOG_LEVEL=0",
+  "observed_lines": [
+   "2026-10-24 20:35:05.868803: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11",
+   "2026-10-24 20:35:05.868922: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11",
+   "2026-10-24 20:35:05.872332: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8",
+   "2026-10-24 20:35:05.876353: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0",
+   "2026-10-24 20:35:05.882537: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11",
+   "2026-10-24 20:35:05.882605: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11",
+   "2026-10-24 20:35:05.882980: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8",
+   "2026-10-24 20:35:05.886715: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0",
+   "2026-10-24 20:35:26.018097: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 29542 MB memory) -> physical GPU (device: 0, name: NVIDIA GeForce RTX 5090, pci bus id: 0000:c2:00",
+   "2026-10-24 20:35:26.023544: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11",
+   "2026-10-24 20:37:50.230199: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11",
+   "2026-10-24 20:37:50.237967: I tensorflow/stream_executor/cuda/cuda_blas.cc:1838] TensorFloat-32 will be used for the matrix multiplication. This will only be logged once.",
+   "2026-10-24 20:37:50.308517: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8"
+  ],
+  "reading": "TF 2.4.2 + CUDA 11.0 / cuDNN 8.0.5 registers the RTX 5090 (compute capability 12.0) after ~20 s; the first matmul needs ~2.4 min (CUDA 11.0 has no sm_120 code: kernels are JIT-compiled from PTX) and announces TensorFloat-32; the first cuDNN 8.0.5 convolution (opened 20:37:50) had not returned when the 8-min limit ended the probe (20:43:05). The official THICK step (CNN encoder/decoder) was never reached."
+ },
+ "log_sha256": {
+  ".local-artifacts/gpu-window/logs/131-tf-gpu-probe.log": "sha256:f295b9d2571d5f9d5bea0301edd8b852ae55f36b0404d6c569d9eef4dbe9b65c",
+  ".local-artifacts/gpu-window/logs/131-gpu-probe-2.log": "sha256:33ecc87b7fde3ec4410c0b2764115ef65f839acaccfd94af7d88280498ec5144"
+ }
+}

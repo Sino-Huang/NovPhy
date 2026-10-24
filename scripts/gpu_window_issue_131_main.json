@@ -1,0 +1,309 @@
+{
+  "jobs": [
+    {
+      "id": "131-train-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 840,
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--train",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 frozen training queue 0 (plan.json queues.train['0'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+    },
+    {
+      "id": "131-train-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 840,
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--train",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 frozen training queue 1 (plan.json queues.train['1'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+    },
+    {
+      "id": "131-train-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 120,
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--train",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 frozen training queue 2 (plan.json queues.train['2'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+    },
+    {
+      "id": "131-train-q3",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 120,
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--train",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 D1 frozen training queue 3 (plan.json queues.train['3'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+    },
+    {
+      "id": "131-readouts-g0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 60,
+      "depends_on": [
+        "131-train-q0",
+        "131-train-q1",
+        "131-train-q2",
+        "131-train-q3"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--readouts",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 readouts queue (fit / policy only, deterministic_scoring): G-rank, G-action, G-collapse, policy AUCs, commit points, MACs; readouts.json per arm-seed written last (atomic)"
+    },
+    {
+      "id": "131-readouts-g1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 60,
+      "depends_on": [
+        "131-train-q0",
+        "131-train-q1",
+        "131-train-q2",
+        "131-train-q3"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--readouts",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 readouts queue (fit / policy only, deterministic_scoring): G-rank, G-action, G-collapse, policy AUCs, commit points, MACs; readouts.json per arm-seed written last (atomic)"
+    },
+    {
+      "id": "131-readouts-g2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 60,
+      "depends_on": [
+        "131-train-q0",
+        "131-train-q1",
+        "131-train-q2",
+        "131-train-q3"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--readouts",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 readouts queue (fit / policy only, deterministic_scoring): G-rank, G-action, G-collapse, policy AUCs, commit points, MACs; readouts.json per arm-seed written last (atomic)"
+    },
+    {
+      "id": "131-readouts-g3",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 60,
+      "depends_on": [
+        "131-train-q0",
+        "131-train-q1",
+        "131-train-q2",
+        "131-train-q3"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--readouts",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 readouts queue (fit / policy only, deterministic_scoring): G-rank, G-action, G-collapse, policy AUCs, commit points, MACs; readouts.json per arm-seed written last (atomic)"
+    },
+    {
+      "id": "131-freeze-readouts",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 10,
+      "depends_on": [
+        "131-readouts-g0",
+        "131-readouts-g1",
+        "131-readouts-g2",
+        "131-readouts-g3"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--freeze-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "#131 readouts-manifest.json (model / readouts sha256) before any evaluation anchor is read"
+    },
+    {
+      "id": "131-score",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 120,
+      "depends_on": [
+        "131-freeze-readouts"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--score"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 the single scoring pass (a process that did not train; deterministic_scoring); refuses (exit 1, evaluation not read) unless fidelity/gfid.json passes; resumable per record"
+    },
+    {
+      "id": "131-score-novelty",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 60,
+      "depends_on": [
+        "131-score"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--score-novelty"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 P-novelty (DESCRIPTIVE, issuecomment-6386831318): novelty anchors + U / C* / P references (eb), then every guard-passing arm (D1, D1-m) x 3 seeds on the mixed #110 novelty levels; refuses before the primary records; resumable per record"
+    },
+    {
+      "id": "131-publish",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 45,
+      "depends_on": [
+        "131-score",
+        "131-score-novelty"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--publish"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 records-manifest.json (primary + novelty records and references), compute.json, summary.json (eb.child_summary, novelty section descriptive), findings.md"
+    },
+    {
+      "id": "131-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 60,
+      "depends_on": [
+        "131-publish"
+      ],
+      "command": [
+        "python",
+        "-u",
+        "-m",
+        "scripts.run_issue_131_thick",
+        "--validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_D1_CPU_THREADS": "8"
+      },
+      "note": "#131 hash-check records, re-score D1 seed 20260908 (exact rows), receipt, re-derive publication"
+    }
+  ]
+}

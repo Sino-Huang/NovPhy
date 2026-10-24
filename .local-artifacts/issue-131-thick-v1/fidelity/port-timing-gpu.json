@@ -1,0 +1,26 @@
+{
+ "torch": "2.13.0+cu130",
+ "device": "NVIDIA GeForce RTX 5090",
+ "float32": true,
+ "tf32": false,
+ "repeats": 10,
+ "pinpad_image": {
+  "batch": [
+   16,
+   50
+  ],
+  "parameters": 40627658,
+  "seconds_per_wm_and_thick_update": 0.24981706142425536,
+  "peak_memory_gb": 2.155552864074707
+ },
+ "novphy_carrier": {
+  "batch": [
+   16,
+   46
+  ],
+  "parameters": 21852337,
+  "seconds_per_wm_and_thick_update": 0.16051619052886962,
+  "seconds_per_16_candidate_rollout": 0.019783878326416017,
+  "peak_memory_gb": 0.5053896903991699
+ }
+}
