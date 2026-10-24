@@ -1,0 +1,59 @@
+{
+  "arm": "C1-dino",
+  "ceiling_auc": 0.5947958070298497,
+  "consequence": "C1-dino stops (typed); C1-car still runs",
+  "data": {
+    "ceiling": "policy split: eb.policy_cells('grid') mixed cells, eb.policy_anchor_frames, #123 policy pixel store at min(225, end)",
+    "evaluation": "not read",
+    "r1_fit": "fit split only: eb.FitShots x rc.probe_positions, E99 targets from the #123 fit memmap"
+  },
+  "e99_true_carrier_ceiling_auc": 0.7222624892837659,
+  "feature_files": {
+    "fit": {
+      "bytes": 206309266944,
+      "path": "/srv/home/shua0171/.cache/novphy-issue-130-dino-features/fit-features.f16",
+      "sha256": "096402b5ac77b7e19fa1c4750735f610649d6e6f90d4d811362e6d1baf2f83b0"
+    },
+    "policy": {
+      "bytes": 1081036800,
+      "path": "/srv/home/shua0171/.cache/novphy-issue-130-dino-features/policy-features.f16",
+      "sha256": "71eec8e302ef4c56cf0ec358d564d098ff6dc607fca867efb652f0cc8c759587"
+    }
+  },
+  "feature_manifest_sha256": "dca36d657ca758a5f3d0f73e5738440255fe0d90a17c29fba9bfe28c272c2012",
+  "pass": false,
+  "policy_candidates": 1504,
+  "policy_grid_cells": 94,
+  "r1": {
+    "artifact": ".local-artifacts/issue-130-dino-wm-v1/readiness/r1.pt",
+    "batch": 128,
+    "epochs": 25,
+    "final_loss": 0.027648624032735825,
+    "fit_frames": 273692,
+    "fit_shots": 13919,
+    "heads": 8,
+    "hidden": 512,
+    "lr": 0.001,
+    "samples": 273692,
+    "seed": 20260908,
+    "sha256": "62266b64a1baf7c084fc75cc7761c0d54697c2209d2b9be5a886820eb44206bc",
+    "steps": 53450,
+    "weight_decay": 0.0001
+  },
+  "readout_error_vs_e99_on_policy_endpoints": {
+    "carrier_mae": 0.03599826619029045,
+    "pig_center_mae": 0.02652668207883835,
+    "pig_presence_mae": 0.0018026671605184674
+  },
+  "schema": "issue_130_readiness_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "seconds": 2923.467244359199,
+  "threshold": 0.65,
+  "typed_reason": "readiness_ceiling_below_threshold",
+  "written_at": "2026-10-24T10:38:50Z"
+}

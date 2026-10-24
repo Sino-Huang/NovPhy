@@ -1,0 +1,219 @@
+{
+ "jobs": [
+  {
+   "id": "130-gfid-tier-e",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/b127-dino_wm/bin/python",
+    "-u",
+    "scripts/b127_dino_wm_fidelity.py",
+    "--run"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTHONNOUSERSITE": "1"
+   },
+   "depends_on": [],
+   "resumable": false,
+   "est_minutes": 480,
+   "shares_gpu": false,
+   "note": "#130 Tier-E G-fid: official DINO-WM plan.py (plan_pusht.yaml, released PushT checkpoint, 50 cases, MPC-CEM, max_iter 12 frozen in fidelity/band.json); writes fidelity/gfid.json"
+  },
+  {
+   "id": "130-features",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/b127_dino_wm_features.py",
+    "--extract"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": false,
+   "note": "#130 DINOv2 ViT-S/14 feature cache (fit 687038 + policy 3600 frames, 207 GB fp16 on local NVMe); resumable (SIGTERM -> progress -> exit 75)"
+  },
+  {
+   "id": "130-readiness",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/b127_dino_wm_features.py",
+    "--readiness"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2"
+   },
+   "depends_on": [
+    "130-features"
+   ],
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": false,
+   "note": "#130 readiness smoke: R1 on fit probe frames, policy grid ceiling vs 0.65; an interrupted run refits deterministically"
+  },
+  {
+   "id": "130-gfid-tier-e-full",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/b127-dino_wm/bin/python",
+    "-u",
+    "scripts/b127_dino_wm_fidelity.py",
+    "--run"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTHONNOUSERSITE": "1"
+   },
+   "depends_on": [
+    "130-gfid-tier-e"
+   ],
+   "resumable": false,
+   "est_minutes": 760,
+   "shares_gpu": false,
+   "note": "#130 Tier-E G-fid rerun in a full window (run 1 stopped at 20:29 before its first MPC iteration: measured ~61 min/iteration x 12 > tonight's window; decision issuecomment-6382562140)"
+  },
+  {
+   "id": "130-gfid-tier-e-r",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/b127-dino_wm/bin/python",
+    "-u",
+    "scripts/b127_dino_wm_fidelity.py",
+    "--run"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTHONNOUSERSITE": "1"
+   },
+   "depends_on": [
+    "130-sel-car-lr5e-4",
+    "130-sel-car-lr5e-5",
+    "130-sel-car-release"
+   ],
+   "resumable": true,
+   "est_minutes": 760,
+   "shares_gpu": false,
+   "note": "#130 Tier-E G-fid, resumable at MPC-iteration boundaries (SIGTERM -> exit 75; resumes the unfinished tier-e-N); protocol frozen in fidelity/band.json; supersedes 130-gfid-tier-e-full (retired via depends_on the failed 130-gfid-tier-e); decision issuecomment in decisions.md"
+  },
+  {
+   "id": "130-sel-car-lr5e-4",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--selection",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 300,
+   "shares_gpu": true,
+   "note": "#130 C1-car selection car-lr5e-4 (seed 20260908; resumable; host-gathered batches, < 1 GB GPU; decision issuecomment-6386706483)"
+  },
+  {
+   "id": "130-sel-car-lr5e-5",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--selection",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 300,
+   "shares_gpu": true,
+   "note": "#130 C1-car selection car-lr5e-5 (seed 20260908; resumable; host-gathered batches, < 1 GB GPU; decision issuecomment-6386706483)"
+  },
+  {
+   "id": "130-sel-car-release",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--selection",
+    "--gpu",
+    "2"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 20,
+   "shares_gpu": true,
+   "note": "#130 C1-car selection car-release (seed 20260908; resumable; host-gathered batches, < 1 GB GPU; decision issuecomment-6386706483)"
+  },
+  {
+   "id": "130-sel-readouts",
+   "gpu": 2,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--selection-readouts"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2"
+   },
+   "depends_on": [
+    "130-sel-car-lr5e-4",
+    "130-sel-car-lr5e-5",
+    "130-sel-car-release"
+   ],
+   "resumable": true,
+   "est_minutes": 15,
+   "shares_gpu": true,
+   "note": "#130 C1-car selection readouts (policy-split pooled grid AUC; deterministic; redone from scratch if interrupted)"
+  }
+ ],
+ "post_freeze_jobs_not_enqueued": [
+  {
+   "id": "130-score-novelty",
+   "gpu": 0,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--score-novelty"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0"
+   },
+   "depends_on": [
+    "130-score"
+   ],
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": false,
+   "note": "#130 P-novelty (issuecomment-6386831073): C1-car on the mixed #110 novelty levels (C1-dino typed stop, not scored); after 130-score, before 130-publish; DESCRIPTIVE. Kept outside 'jobs' (not enqueued) until the post-freeze jobs 130-score / 130-publish are added to the spec."
+  }
+ ]
+}

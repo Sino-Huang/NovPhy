@@ -1,0 +1,40 @@
+{
+  "cache_dir": "/srv/home/shua0171/.cache/novphy-issue-130-dino-features",
+  "encoder": {
+    "feature_key": "x_norm_patchtokens",
+    "model": "dinov2_vits14",
+    "repo": "data/external/dino_wm/torch_hub/hub/facebookresearch_dinov2_main",
+    "weights_sha256": "b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9"
+  },
+  "estimate": {
+    "basis": "ViT-S/14 at 392 tokens ~ 20 GFLOP / frame fp32 (no TF32) => ~10 min GPU for 690638 frames; zstd decode on 12 workers, ~207 GB NVMe writes and the sha256 pass dominate [INFERENCE until measured]",
+    "gpu_minutes_extract": 45,
+    "gpu_minutes_readiness": 45
+  },
+  "fit": {
+    "bytes": 206309266944,
+    "frames": 687038,
+    "r1_probe_frames": 273692,
+    "shots": 13919,
+    "training_frames": 633731
+  },
+  "policy": {
+    "anchors": 120,
+    "bytes": 1081036800,
+    "endpoints": 3480
+  },
+  "preprocess": {
+    "dim": 384,
+    "dtype": "float16",
+    "grid": [
+      17,
+      23
+    ],
+    "input": "uint8 [3, 240, 320] (#123 pixel stores)",
+    "patches": 391,
+    "resize": "bilinear antialias to (238, 322) (full frame, aspect 1.353 vs 1.333)",
+    "scale": "/255, Normalize(0.5, 0.5)"
+  },
+  "schema": "issue_130_feature_plan_v1",
+  "written_at": "2026-10-24T09:25:04Z"
+}

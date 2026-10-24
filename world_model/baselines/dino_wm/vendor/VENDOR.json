@@ -1,0 +1,63 @@
+{
+  "commit": "0a9492fa12044b852ae9e001cc74604b79c8bb0c",
+  "decision": "https://github.com/Sino-Huang/NovPhy/issues/130#issuecomment-6382422982",
+  "family": "dino_wm",
+  "feature_extractor": {
+    "commit": "7764ea0f912e53c92e82eb78a2a1631e92725fc8",
+    "license": "Apache-2.0",
+    "model": "dinov2_vits14",
+    "note": "not vendored; loaded with torch.hub.load(<pinned clone>, 'dinov2_vits14', source='local', pretrained=False) + load_state_dict(strict=True) of the official weights (what hubconf's pretrained=True does)",
+    "upstream": "https://github.com/facebookresearch/dinov2",
+    "weights": "data/external/dino_wm/dinov2_vits14_pretrain.pth",
+    "weights_sha256": "sha256:b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9"
+  },
+  "files": {
+    "LICENSE": {
+      "edits": [],
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:31ee2e6efe0d638e9685d06f6267ae69c9456bbaf1fea7b3c716dee6b79c7ab5",
+      "vendored_sha256": "sha256:31ee2e6efe0d638e9685d06f6267ae69c9456bbaf1fea7b3c716dee6b79c7ab5"
+    },
+    "__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:4781d05aab2f6b73c196ea8b6dfdc1ec5ef4a8c037a6194a38521e1e40557845"
+    },
+    "models/__init__.py": {
+      "edits": [
+        "package marker (new; upstream models/__init__.py is empty and not needed)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:da0181c689db83a132b0b4ec7e6e1c4374c39e3a3b4662c6e2bb3b0983de4359"
+    },
+    "models/proprio.py": {
+      "edits": [],
+      "upstream_path": "models/proprio.py",
+      "upstream_sha256": "sha256:b0f7c761c45a6a889dc51f6d9cf4539480d1a0bd2bd200ad44c4b9373a573c72",
+      "vendored_sha256": "sha256:b0f7c761c45a6a889dc51f6d9cf4539480d1a0bd2bd200ad44c4b9373a573c72"
+    },
+    "models/vit.py": {
+      "edits": [
+        "Attention.__init__: self.bias = generate_mask_matrix(NUM_PATCHES, NUM_FRAMES).to('cuda') -> self.register_buffer(\"bias\", generate_mask_matrix(NUM_PATCHES, NUM_FRAMES), persistent=False) (identical mask values; follows .to(device), buildable without CUDA for the CPU G-port and tests; not in state_dict, as upstream's plain attribute is not)"
+      ],
+      "upstream_path": "models/vit.py",
+      "upstream_sha256": "sha256:60c77bdb03f3b2d565bfdb1695c9c193a802236763d33a03e79ed382b51f0670",
+      "vendored_sha256": "sha256:04ac70698e5c8ea5a5704c2f7e9e0a931adc13b8dd7010e8238498170a83b610"
+    }
+  },
+  "issue": 130,
+  "license": "MIT (Copyright (c) 2025 gaoyuezhou)",
+  "license_file": "LICENSE",
+  "policy": "verbatim copies of the files the NovPhy arms import; the only edit is listed per file. The predictor path of models/visual_world_model.py and the optimizer setup of train.py are ported in world_model/baselines/dino_wm/novphy.py and held to G-port against the official files (not vendored: torchvision / wandb / accelerate imports and a hard-wired proprio channel)",
+  "ported_not_vendored": {
+    "models/dino.py": "sha256:acd6a5d9c52704fe3cac2afd867104460fa10abda96fbd70c7816bc93c7eaad8",
+    "models/visual_world_model.py": "sha256:931d44c0d541d95be8236f65247de9b40ac3843fe047c1a44d4a2482d1bf636f",
+    "train.py": "sha256:05352364083111735565202f13cf6ae3ea36fbbd6e180806178f1b840b2452ab"
+  },
+  "schema": "issue_127_vendor_v1",
+  "upstream": "https://github.com/gaoyuezhou/dino_wm"
+}

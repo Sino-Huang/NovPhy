@@ -1,0 +1,33 @@
+{
+  "arm_family": "dino_wm",
+  "band": [
+    0.82,
+    0.98
+  ],
+  "band_rule": "paper 0.90 +/- 2 binomial SE on 50 cases (SE = sqrt(0.9*0.1/50) = 0.0424; +/-2SE = [0.8151, 0.9849]), on the 1/50 success grid: 41..49 successes, i.e. [0.82, 0.98] inclusive",
+  "frozen_at": "2026-10-24",
+  "issue": 130,
+  "paper": {
+    "n_cases": 50,
+    "source": "Zhou, Pan, LeCun, Pinto, DINO-WM, ICML 2025, arXiv 2411.04983v2, Table 1 (PushT SR, 'Ours') = Table 8 row 'MPC'",
+    "value": 0.9
+  },
+  "pass_rule": "pass iff the run's final_eval success_rate lies in [0.82, 0.98] (inclusive). At most two logged repair attempts, each fixing a diagnosed port/infrastructure defect, never the band (P-fid); then drop with fidelity_not_reproduced.",
+  "posted_before_run": true,
+  "protocol": {
+    "config": "conf/plan_pusht.yaml @ 0a9492f (README 'PushT' command), released checkpoint outputs/pusht/checkpoints/model_latest.pth",
+    "frameskip": 5,
+    "goal_H": 5,
+    "goal_source": "dset",
+    "max_iter": 12,
+    "max_iter_reason": "the released config sets planner.max_iter null ('unlimited if null'): the MPC loop only ends when all 50 cases succeed, so the paper's 0.90 cannot be the end state of an uncapped run (upstream issue #29: 'very large / infinite cap'). We cap MPC at 12 iterations = 300 env steps (12 x 5 planning steps x frameskip 5), the official gym registration's max_episode_steps=300 for 'pusht' (env/__init__.py). Frozen before the run; never changed after it.",
+    "n_evals": 50,
+    "objective": "create_objective_fn alpha 1, base 2, mode last",
+    "planner": "MPC-CEM: sub_planner CEM horizon 5, num_samples 300, topk 30, opt_steps 30, var_scale 1; n_taken_actions 5",
+    "runs": 1,
+    "seed": 99
+  },
+  "schema": "issue_127_gfid_band_v1",
+  "statistic": "final_eval/success_rate of the official plan.py (sticky per case: a case counts as solved at the first MPC iteration whose env rollout meets PushT eval_state: position error < 20 and angle error < pi/9)",
+  "tier": "E"
+}
