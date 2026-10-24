@@ -1,0 +1,399 @@
+{
+  "schema": "issue_127_vendor_v1",
+  "upstream": "https://github.com/phy-q/benchmark",
+  "commit": "514491c5e77dbacdd61066d11139434f982e3d9e",
+  "license": "MIT (vendor/LICENSE, Copyright (c) 2021 Cheng-Xue)",
+  "license_file": "LICENSE",
+  "license_sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7",
+  "policy": "verbatim copies of the import closure of Utils/Parameters.py, LearningAgents/DQNDiscreteAgent.py, TrainLearningAgent.py (A3, #128) and HeuristicAgents/PigShooter.py (E1, #132), plus the data files they read; the only edits rewrite absolute imports of the upstream top-level packages as package-relative imports; package markers added where upstream had none",
+  "runtime_notes": [
+    "Upstream reads data files relative to the working directory (np.loadtxt('Utils/model'), open('Utils/target_class')); callers run with cwd = this vendor directory. Not edited.",
+    "Upstream pins torch 1.8.1 / torchvision 0.9.1; vendored unchanged and imported under torch 2.13 / torchvision in env b127-phyq. Compatibility observations are listed in 'compatibility' (no code edits)."
+  ],
+  "compatibility": [
+    {
+      "item": "torchvision.models.resnet18(pretrained=True) in DQNRelationalSymbolic / DQNRelationalImage",
+      "observation": "deprecated since torchvision 0.13 but still accepted by torchvision 0.28.0; resolves to ResNet18_Weights.IMAGENET1K_V1 (resnet18-f37072fd.pth, sha256 f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec), tensor-identical (same keys, max abs diff 0.0) to torchvision 0.9.1's resnet18-5c106cde.pth (sha256 5c106cde386e87d4033832f2996f5493238eda96ccf559d1d62760c4de0613f8, data/external/phyq/)",
+      "edit": null
+    },
+    {
+      "item": "torch.load in DQNDiscreteAgent.load_q_network",
+      "observation": "torch >= 2.6 defaults to weights_only=True; state_dicts written by torch.save load unchanged",
+      "edit": null
+    },
+    {
+      "item": "LearningAgents/Memory.py docstring",
+      "observation": "invalid escape sequence warning (DeprecationWarning) under Python 3.11; harmless",
+      "edit": null
+    },
+    {
+      "item": "import and forward check",
+      "observation": "LearningAgents.RLNetwork.DQNRelationalSymbolic/DQNRelationalImage, LearningAgents.Memory, LearningAgents.DQNDiscreteAgent, Utils.Parameters, HeuristicAgents.PigShooter, TrainLearningAgent, SBEnvironment.SBEnvironmentWrapper and Client.agent_client import under torch 2.13.0+cu130 / torchvision 0.28.0+cu130 (conda env b127-phyq); both relational nets (h=120, w=160, outputs=180) give a [2, 180] output on CPU; 11,662,208 (symbolic) and 11,633,920 (image) parameters",
+      "edit": null
+    },
+    {
+      "item": "StateReader/SymbolicStateReader.py get_symbolic_image / get_symbolic_image_flat",
+      "observation": "use np.float, removed in NumPy 1.24; under numpy 2.4 (b127-phyq, novphy) they raise AttributeError. Callers set the removed alias (np.float = float, identical semantics) around the call; reported by the A3 adapter (PhyqA3). The PigShooter path (SymbolicStateDevReader) is unaffected (E1 smoke).",
+      "edit": null
+    }
+  ],
+  "upstream_observations": [
+    "DQNBase.train_model_memory: next_state_values[is_done_batch] = 0 indexes with a LongTensor (rows 0 and 1) rather than a boolean mask; kept verbatim (a port must reproduce or disclose it)",
+    "Utils/Parameters.py ships 'agent': 'ppo' (a string) and a CUDA device; TrainLearningAgent.py overrides num_update_steps to 80 // 5 (see .local-artifacts/issue-128-direct-predictors-v1/a3/harness-check.json)",
+    "HeuristicAgents/PigShooter.py samples its target pig and trajectory with the unseeded random module"
+  ],
+  "files": {
+    "Client/__init__.py": {
+      "upstream_path": "sciencebirdsagents/Client/__init__.py",
+      "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": []
+    },
+    "Client/agent_client.py": {
+      "upstream_path": "sciencebirdsagents/Client/agent_client.py",
+      "upstream_sha256": "sha256:691a5d4176a3767a3231c5c727a87fac15b97196361cae5f87b40d6c1cbacefe",
+      "vendored_sha256": "sha256:691a5d4176a3767a3231c5c727a87fac15b97196361cae5f87b40d6c1cbacefe",
+      "edits": []
+    },
+    "HeuristicAgents/HeuristicAgentThread.py": {
+      "upstream_path": "sciencebirdsagents/HeuristicAgents/HeuristicAgentThread.py",
+      "upstream_sha256": "sha256:fa249af691caa5a0ce8d7b9201a9ee4957af31cb288d24470a3659f73b7d6bab",
+      "vendored_sha256": "sha256:18074ce540bd310f9e4ed3f4d9c3643d3a0ff7fd07dbd7739d13fbdacef06198",
+      "edits": [
+        "from SBAgent import SBAgent -> from ..SBAgent import SBAgent",
+        "from SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper -> from ..SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper"
+      ]
+    },
+    "HeuristicAgents/PigShooter.py": {
+      "upstream_path": "sciencebirdsagents/HeuristicAgents/PigShooter.py",
+      "upstream_sha256": "sha256:3fc0c387d4106950b74d8a2d82b6790831e472ab0e822d1431462ba56552d41d",
+      "vendored_sha256": "sha256:292f2dc39732b1b59cc62bfc413d152ea4edd15b677a4e432fd50130fbb0ee8c",
+      "edits": [
+        "from SBAgent import SBAgent -> from ..SBAgent import SBAgent",
+        "from SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper -> from ..SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper",
+        "from StateReader.SymbolicStateDevReader import SymbolicStateDevReader -> from ..StateReader.SymbolicStateDevReader import SymbolicStateDevReader",
+        "from StateReader.game_object import GameObjectType -> from ..StateReader.game_object import GameObjectType",
+        "from Utils.point2D import Point2D -> from ..Utils.point2D import Point2D",
+        "from Utils.trajectory_planner import SimpleTrajectoryPlanner -> from ..Utils.trajectory_planner import SimpleTrajectoryPlanner"
+      ]
+    },
+    "HeuristicAgents/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:a7180fd19d258cd0817a6ab2ba2c5d3e5e4242eeb5636e23508f7c187f76c4d1",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7",
+      "vendored_sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7",
+      "edits": []
+    },
+    "LearningAgents/DQNDiscreteAgent.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/DQNDiscreteAgent.py",
+      "upstream_sha256": "sha256:76fc33e4e2d58e31593ccb9177f801f1f5f2d9a007b36cc208bb71f8a091be84",
+      "vendored_sha256": "sha256:69646dd5834680073440d3bec400055b4cdfad9aae7a0d895c9112e1da66126f",
+      "edits": [
+        "from LearningAgents.LearningAgent import LearningAgent -> from ..LearningAgents.LearningAgent import LearningAgent",
+        "from LearningAgents.Memory import ReplayMemory -> from ..LearningAgents.Memory import ReplayMemory",
+        "from LearningAgents.RLNetwork.DQNBase import DQNBase -> from ..LearningAgents.RLNetwork.DQNBase import DQNBase",
+        "from SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper -> from ..SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper",
+        "from Utils.LevelSelection import LevelSelectionSchema -> from ..Utils.LevelSelection import LevelSelectionSchema"
+      ]
+    },
+    "LearningAgents/LearningAgent.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/LearningAgent.py",
+      "upstream_sha256": "sha256:9b73b28915ab5ea3e602285a9527896536030452ac895d2696d926f0122ea71c",
+      "vendored_sha256": "sha256:24d2f4a5220c182c04020ee0619c2ec7da06d17f8bee396f06fc6786c5a1ca17",
+      "edits": [
+        "from LearningAgents.Memory import ReplayMemory -> from ..LearningAgents.Memory import ReplayMemory",
+        "from SBAgent import SBAgent -> from ..SBAgent import SBAgent",
+        "from SBEnvironment import SBEnvironmentWrapper -> from ..SBEnvironment import SBEnvironmentWrapper"
+      ]
+    },
+    "LearningAgents/LearningAgentThread.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/LearningAgentThread.py",
+      "upstream_sha256": "sha256:2358cb7521852415ce92cf3cf91608831c8a84f21dd8e0b753ef7cad635b0888",
+      "vendored_sha256": "sha256:ffe4aa91225be87882bbaac081febd86d4cf0e89ba05ba3da2262d21c7fe231a",
+      "edits": [
+        "from LearningAgents.LearningAgent import LearningAgent -> from ..LearningAgents.LearningAgent import LearningAgent",
+        "from SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper -> from ..SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper"
+      ]
+    },
+    "LearningAgents/Memory.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/Memory.py",
+      "upstream_sha256": "sha256:586e041cadc2baa33250928acb3265ca998b38665e28704e5c23e933ec51c47e",
+      "vendored_sha256": "sha256:586e041cadc2baa33250928acb3265ca998b38665e28704e5c23e933ec51c47e",
+      "edits": []
+    },
+    "LearningAgents/MemoryDataset.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/MemoryDataset.py",
+      "upstream_sha256": "sha256:979ef975bee1ed4873b85513c06988e7561744b4807c6740043fc8f6d9ab4ff6",
+      "vendored_sha256": "sha256:979ef975bee1ed4873b85513c06988e7561744b4807c6740043fc8f6d9ab4ff6",
+      "edits": []
+    },
+    "LearningAgents/RLNetwork/ActorNetwork.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/ActorNetwork.py",
+      "upstream_sha256": "sha256:a401c9c9a20d04a01a71038f192b1be001e0c8be14410daa850b3d525d18b2aa",
+      "vendored_sha256": "sha256:a401c9c9a20d04a01a71038f192b1be001e0c8be14410daa850b3d525d18b2aa",
+      "edits": []
+    },
+    "LearningAgents/RLNetwork/CriticNetwork.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/CriticNetwork.py",
+      "upstream_sha256": "sha256:02c008a9c26fa6485dd73c03151620e691e094846f3709d82ff34f5f235c0732",
+      "vendored_sha256": "sha256:02c008a9c26fa6485dd73c03151620e691e094846f3709d82ff34f5f235c0732",
+      "edits": []
+    },
+    "LearningAgents/RLNetwork/DQNBase.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/DQNBase.py",
+      "upstream_sha256": "sha256:ca3173a321bb913e46b07d964d8babddcc554f05f3e2ae340acd96dd9687bf7c",
+      "vendored_sha256": "sha256:8f3c1b92a29bdb27e341cffb47f3382653bcb90b0912d5862ba0f7b4f679911b",
+      "edits": [
+        "from LearningAgents.Memory import ReplayMemory, PrioritizedReplayMemory, PrioritizedReplayMemorySumTree -> from ...LearningAgents.Memory import ReplayMemory, PrioritizedReplayMemory, PrioritizedReplayMemorySumTree"
+      ]
+    },
+    "LearningAgents/RLNetwork/DQNImageResnet.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/DQNImageResnet.py",
+      "upstream_sha256": "sha256:5985efc62a0b99a38310c081237b34806766b0bfd53da5e16a35d312abaecfe8",
+      "vendored_sha256": "sha256:3ce5b6007cc219e3b08fec06bac5aea51fc776e98e35c2a26118b56d42880c89",
+      "edits": [
+        "from LearningAgents.RLNetwork.DQNBase import DQNBase -> from ...LearningAgents.RLNetwork.DQNBase import DQNBase"
+      ]
+    },
+    "LearningAgents/RLNetwork/DQNRelationalImage.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/DQNRelationalImage.py",
+      "upstream_sha256": "sha256:78940a9bda5171419976717b65aee97927c5b85c6444236c5e09835c5c04d0ca",
+      "vendored_sha256": "sha256:dcc72c91fd20886688520e70e6f0dae5f757fdce997c076c5cd845ec52530b0c",
+      "edits": [
+        "from LearningAgents.RLNetwork.DQNSymbolicBase import DQNBase -> from ...LearningAgents.RLNetwork.DQNSymbolicBase import DQNBase"
+      ]
+    },
+    "LearningAgents/RLNetwork/DQNRelationalSymbolic.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/DQNRelationalSymbolic.py",
+      "upstream_sha256": "sha256:4e5f2837cd4f3b53c8cb47eea08091dff528de48825c51f620bf33d1f29c610a",
+      "vendored_sha256": "sha256:dcc0607dc751375e717bdbc566ffd682f6c15fde7d625e79541e18c21be30f80",
+      "edits": [
+        "from LearningAgents.RLNetwork.DQNSymbolicBase import DQNSymbolicBase -> from ...LearningAgents.RLNetwork.DQNSymbolicBase import DQNSymbolicBase"
+      ]
+    },
+    "LearningAgents/RLNetwork/DQNSymbolicBase.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/DQNSymbolicBase.py",
+      "upstream_sha256": "sha256:3283e98ec4151bd8e542535d47ac2e495e5e754ce34d8bc7b0fca124453eddce",
+      "vendored_sha256": "sha256:84eb8ada39ac1f0d3122c2e55980e3e6e9ca659a48ffc8c08b3237ec41005e34",
+      "edits": [
+        "from LearningAgents.RLNetwork.DQNBase import DQNBase -> from ...LearningAgents.RLNetwork.DQNBase import DQNBase",
+        "from StateReader.SymbolicStateReader import SymbolicStateReader -> from ...StateReader.SymbolicStateReader import SymbolicStateReader"
+      ]
+    },
+    "LearningAgents/RLNetwork/DQNSymbolicDuelingFC_v2.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/DQNSymbolicDuelingFC_v2.py",
+      "upstream_sha256": "sha256:2b309c1dec1837151b1f69b3c7a1903abbbb2e0758a5b9c6e7c4390724217e0f",
+      "vendored_sha256": "sha256:24c28db135041637dee09e719bf0fba45e354757fc53f601f477cc9be1b93168",
+      "edits": [
+        "from LearningAgents.RLNetwork.DQNSymbolicBase import DQNSymbolicBase -> from ...LearningAgents.RLNetwork.DQNSymbolicBase import DQNSymbolicBase"
+      ]
+    },
+    "LearningAgents/RLNetwork/SACNetwork_New.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/SACNetwork_New.py",
+      "upstream_sha256": "sha256:c112a8266a56587c6487deb5576a1454293cb235d981d7adc3711addce9c0ce3",
+      "vendored_sha256": "sha256:3cbf628c1057a82aa5b70910b247e6bbe9ea725805bbb585129fff73098988e4",
+      "edits": [
+        "from LearningAgents.RLNetwork.ActorNetwork import ActorNetwork -> from ...LearningAgents.RLNetwork.ActorNetwork import ActorNetwork",
+        "from LearningAgents.RLNetwork.CriticNetwork import CriticNetwork -> from ...LearningAgents.RLNetwork.CriticNetwork import CriticNetwork",
+        "from LearningAgents.RLNetwork.ValueNetwork import ValueNetwork -> from ...LearningAgents.RLNetwork.ValueNetwork import ValueNetwork",
+        "from StateReader.SymbolicStateReader import SymbolicStateReader -> from ...StateReader.SymbolicStateReader import SymbolicStateReader"
+      ]
+    },
+    "LearningAgents/RLNetwork/ValueNetwork.py": {
+      "upstream_path": "sciencebirdsagents/LearningAgents/RLNetwork/ValueNetwork.py",
+      "upstream_sha256": "sha256:ace950745a33cc8b141b436b545316478699a214b664501e35d5a56e4bc00a04",
+      "vendored_sha256": "sha256:ace950745a33cc8b141b436b545316478699a214b664501e35d5a56e4bc00a04",
+      "edits": []
+    },
+    "LearningAgents/RLNetwork/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:a7180fd19d258cd0817a6ab2ba2c5d3e5e4242eeb5636e23508f7c187f76c4d1",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "LearningAgents/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:a7180fd19d258cd0817a6ab2ba2c5d3e5e4242eeb5636e23508f7c187f76c4d1",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "SBAgent.py": {
+      "upstream_path": "sciencebirdsagents/SBAgent.py",
+      "upstream_sha256": "sha256:c2c4aa9c2138b496d36ee6f19286f13640b655a015172f0705f6bba9883bb9b4",
+      "vendored_sha256": "sha256:9cee283fc695ccc53b94afef4c1ea0893200cb2f1c3decb27277f258c6316e6b",
+      "edits": [
+        "from Client.agent_client import AgentClient -> from .Client.agent_client import AgentClient",
+        "from SBEnvironment import SBEnvironmentWrapper -> from .SBEnvironment import SBEnvironmentWrapper",
+        "from Utils.trajectory_planner import SimpleTrajectoryPlanner -> from .Utils.trajectory_planner import SimpleTrajectoryPlanner"
+      ]
+    },
+    "SBEnvironment/SBEnvironmentWrapper.py": {
+      "upstream_path": "sciencebirdsagents/SBEnvironment/SBEnvironmentWrapper.py",
+      "upstream_sha256": "sha256:f60a3d56e60d808c12c38af1a9f828be94c28828c9939501d716d6a03a080aea",
+      "vendored_sha256": "sha256:0575352fd957f48ea34e596fd263f5df2cb35886c1f7c12c61f3a1d7a735ae86",
+      "edits": [
+        "from Client.agent_client import GameState -> from ..Client.agent_client import GameState",
+        "from StateReader.SymbolicStateDevReader import SymbolicStateDevReader, NotVaildStateError -> from ..StateReader.SymbolicStateDevReader import SymbolicStateDevReader, NotVaildStateError",
+        "from StateReader.SymbolicStateReader import NotVaildStateError -> from ..StateReader.SymbolicStateReader import NotVaildStateError",
+        "from StateReader.game_object import GameObjectType -> from ..StateReader.game_object import GameObjectType",
+        "from Utils.point2D import Point2D -> from ..Utils.point2D import Point2D"
+      ]
+    },
+    "SBEnvironment/__init__.py": {
+      "upstream_path": "sciencebirdsagents/SBEnvironment/__init__.py",
+      "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": []
+    },
+    "StateReader/ColorMap.json": {
+      "upstream_path": "sciencebirdsagents/StateReader/ColorMap.json",
+      "upstream_sha256": "sha256:08bb9e3c7f9f402cf570da8ffd8333b136b636c6613224f1d7419aafa52f4785",
+      "vendored_sha256": "sha256:08bb9e3c7f9f402cf570da8ffd8333b136b636c6613224f1d7419aafa52f4785",
+      "edits": []
+    },
+    "StateReader/SymbolicStateDevReader.py": {
+      "upstream_path": "sciencebirdsagents/StateReader/SymbolicStateDevReader.py",
+      "upstream_sha256": "sha256:2967cfd6bfb081edc798c6091cbbcfa1792aa9aa0a68dfff2486dae8a0030ac2",
+      "vendored_sha256": "sha256:553086d174b367f21fe5f6aeb94f3642c450f08c8c6083007ab7c7657413c536",
+      "edits": [
+        "from StateReader.game_object import GameObject, GameObjectType -> from ..StateReader.game_object import GameObject, GameObjectType",
+        "from StateReader.cv_utils import Rectangle -> from ..StateReader.cv_utils import Rectangle",
+        "from Utils.NDSparseMatrix import NDSparseMatrix -> from ..Utils.NDSparseMatrix import NDSparseMatrix"
+      ]
+    },
+    "StateReader/SymbolicStateReader.py": {
+      "upstream_path": "sciencebirdsagents/StateReader/SymbolicStateReader.py",
+      "upstream_sha256": "sha256:f8202cfe7be53dbd0602b3cbb07fb7073f95f6034d7e4aa0b6c281d6fc899dae",
+      "vendored_sha256": "sha256:bbf7ccfab61fbd685767625f7544188a71c2a75739be495089da18bd2aebba12",
+      "edits": [
+        "from StateReader.game_object import GameObject, GameObjectType -> from ..StateReader.game_object import GameObject, GameObjectType",
+        "from StateReader.cv_utils import Rectangle -> from ..StateReader.cv_utils import Rectangle",
+        "from Utils.NDSparseMatrix import NDSparseMatrix -> from ..Utils.NDSparseMatrix import NDSparseMatrix"
+      ]
+    },
+    "StateReader/__init__.py": {
+      "upstream_path": "sciencebirdsagents/StateReader/__init__.py",
+      "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": []
+    },
+    "StateReader/cv_utils.py": {
+      "upstream_path": "sciencebirdsagents/StateReader/cv_utils.py",
+      "upstream_sha256": "sha256:68f0060d314418271db50dbfec7252b4d28e65faa8da186f39eda845abfb97df",
+      "vendored_sha256": "sha256:68f0060d314418271db50dbfec7252b4d28e65faa8da186f39eda845abfb97df",
+      "edits": []
+    },
+    "StateReader/game_object.py": {
+      "upstream_path": "sciencebirdsagents/StateReader/game_object.py",
+      "upstream_sha256": "sha256:9a140d00498f6a24cc5e6140716689837138d476861737126853a41d27eba3c3",
+      "vendored_sha256": "sha256:830ec03bba34980d4d055969c9c9e51801eb7148924c2d3b71d3d0cb4dd2bdf3",
+      "edits": [
+        "from StateReader.cv_utils import Rectangle -> from ..StateReader.cv_utils import Rectangle"
+      ]
+    },
+    "TrainLearningAgent.py": {
+      "upstream_path": "sciencebirdsagents/TrainLearningAgent.py",
+      "upstream_sha256": "sha256:861d8bdfcdbd7bd6ff51f6b471be88eaacc4431883924919cbf50466c2fe59bb",
+      "vendored_sha256": "sha256:f7371f9b98b82b8f9d50b60685f2b9d198214f7c88f96aa2eee86d003f2ab333",
+      "edits": [
+        "from LearningAgents.LearningAgentThread import MultiThreadTrajCollection -> from .LearningAgents.LearningAgentThread import MultiThreadTrajCollection",
+        "from LearningAgents.MemoryDataset import MemoryDatasetMemmap -> from .LearningAgents.MemoryDataset import MemoryDatasetMemmap",
+        "from SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper -> from .SBEnvironment.SBEnvironmentWrapper import SBEnvironmentWrapper",
+        "from Utils.Config import config -> from .Utils.Config import config",
+        "from Utils.LevelSelection import LevelSelectionSchema -> from .Utils.LevelSelection import LevelSelectionSchema",
+        "from Utils.Parameters import Parameters -> from .Utils.Parameters import Parameters"
+      ]
+    },
+    "Utils/Config.py": {
+      "upstream_path": "sciencebirdsagents/Utils/Config.py",
+      "upstream_sha256": "sha256:a79b6518cd7aba5b7422a0d40ec1a4e91c028e2854195ee042551c3059fbf6bd",
+      "vendored_sha256": "sha256:f16f94df9f0872f9ce00b5ca5385fc01cb19bcc57e509f83fc4b704499f3d6f8",
+      "edits": [
+        "from LearningAgents.DQNImageAgent import DQNImageAgent -> from ..LearningAgents.DQNImageAgent import DQNImageAgent",
+        "from LearningAgents.RL.DQNImageDueling import DQNImageDueling -> from ..LearningAgents.RL.DQNImageDueling import DQNImageDueling"
+      ]
+    },
+    "Utils/LevelSelection.py": {
+      "upstream_path": "sciencebirdsagents/Utils/LevelSelection.py",
+      "upstream_sha256": "sha256:4e4da609b844ca9839e336ed3d7987c22808ac877e118e2fadf01275dbfefbde",
+      "vendored_sha256": "sha256:4e4da609b844ca9839e336ed3d7987c22808ac877e118e2fadf01275dbfefbde",
+      "edits": []
+    },
+    "Utils/NDSparseMatrix.py": {
+      "upstream_path": "sciencebirdsagents/Utils/NDSparseMatrix.py",
+      "upstream_sha256": "sha256:33f355b4375bbd0920138c995dec56a66513cb43b7aa85e8430aed351b146de3",
+      "vendored_sha256": "sha256:33f355b4375bbd0920138c995dec56a66513cb43b7aa85e8430aed351b146de3",
+      "edits": []
+    },
+    "Utils/Parameters.py": {
+      "upstream_path": "sciencebirdsagents/Utils/Parameters.py",
+      "upstream_sha256": "sha256:ab26a8123bb912ccfc0c1ea4b6420bdbace9f7c9c89c80a32b83e52eefc3a77d",
+      "vendored_sha256": "sha256:df527cfb8378f8b3fd9d241220c76c6b2e7d9d0990d8194302f618152798358e",
+      "edits": [
+        "from LearningAgents.RLNetwork.DQNSymbolicDuelingFC_v2 import DQNSymbolicDuelingFC_v2 -> from ..LearningAgents.RLNetwork.DQNSymbolicDuelingFC_v2 import DQNSymbolicDuelingFC_v2",
+        "from LearningAgents.RLNetwork.DQNRelationalSymbolic import DQNRelationalSymbolic -> from ..LearningAgents.RLNetwork.DQNRelationalSymbolic import DQNRelationalSymbolic",
+        "from LearningAgents.RLNetwork.DQNRelationalImage import DQNRelationalImage -> from ..LearningAgents.RLNetwork.DQNRelationalImage import DQNRelationalImage",
+        "from LearningAgents.RLNetwork.DQNImageResnet import DQNImageResNet -> from ..LearningAgents.RLNetwork.DQNImageResnet import DQNImageResNet",
+        "from LearningAgents.DQNDiscreteAgent import DQNDiscreteAgent -> from ..LearningAgents.DQNDiscreteAgent import DQNDiscreteAgent",
+        "from LearningAgents.Memory import PrioritizedReplayMemory -> from ..LearningAgents.Memory import PrioritizedReplayMemory",
+        "from LearningAgents.RLNetwork.SACNetwork_New import SACNetwork -> from ..LearningAgents.RLNetwork.SACNetwork_New import SACNetwork"
+      ]
+    },
+    "Utils/__init__.py": {
+      "upstream_path": "sciencebirdsagents/Utils/__init__.py",
+      "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": []
+    },
+    "Utils/model": {
+      "upstream_path": "sciencebirdsagents/Utils/model",
+      "upstream_sha256": "sha256:284ebbfb5fca90ace9affcf6422f192a13e7f3ceea9600f052c409b2fc70321c",
+      "vendored_sha256": "sha256:284ebbfb5fca90ace9affcf6422f192a13e7f3ceea9600f052c409b2fc70321c",
+      "edits": []
+    },
+    "Utils/point2D.py": {
+      "upstream_path": "sciencebirdsagents/Utils/point2D.py",
+      "upstream_sha256": "sha256:f547efa3565dbb076871ae6f738aa181ba65637c98dd79ad379c26fd510349f7",
+      "vendored_sha256": "sha256:f547efa3565dbb076871ae6f738aa181ba65637c98dd79ad379c26fd510349f7",
+      "edits": []
+    },
+    "Utils/server_client_config.json": {
+      "upstream_path": "sciencebirdsagents/Utils/server_client_config.json",
+      "upstream_sha256": "sha256:9d280d9dcd6f24bd6eedaea5c38ad1f88ae9804408951bdaef210f5624c3126c",
+      "vendored_sha256": "sha256:9d280d9dcd6f24bd6eedaea5c38ad1f88ae9804408951bdaef210f5624c3126c",
+      "edits": []
+    },
+    "Utils/target_class": {
+      "upstream_path": "sciencebirdsagents/Utils/target_class",
+      "upstream_sha256": "sha256:d5d7f6a1961dc3a2cb531fc239db430197dfacb0370693c51d2fe3555940a999",
+      "vendored_sha256": "sha256:d5d7f6a1961dc3a2cb531fc239db430197dfacb0370693c51d2fe3555940a999",
+      "edits": []
+    },
+    "Utils/trajectory_planner.py": {
+      "upstream_path": "sciencebirdsagents/Utils/trajectory_planner.py",
+      "upstream_sha256": "sha256:8d14f80125a7ac93a6fe5c5831e75059fdd41dd2bee72406cfb2fea31eae5617",
+      "vendored_sha256": "sha256:e8af3edcae40b2f7f836accf86f2f3f0e3b15f36705aa56ee378f612744e1f46",
+      "edits": [
+        "from StateReader.cv_utils import Rectangle -> from ..StateReader.cv_utils import Rectangle",
+        "from Utils.point2D import Point2D -> from ..Utils.point2D import Point2D"
+      ]
+    },
+    "__init__.py": {
+      "upstream_path": "sciencebirdsagents/__init__.py",
+      "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": []
+    }
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "schema": "issue_132_licenses_v1",
+  "issue": 132,
+  "verified_at": "2026-10-24",
+  "rule": "P-license (#127): per-artifact provenance and license verified before any agent execution",
+  "summary": {
+    "Datalab": "CC BY-NC-SA 3.0 (AIBIRDS framework + Datalab source repo); research evaluation only, no redistribution",
+    "EaglesWing": "CC BY-NC-SA 3.0 (standalone repo LICENSE); research evaluation only, no redistribution",
+    "PigShooter": "MIT (phy-q/benchmark); may be vendored with LICENSE",
+    "game_playing_interface": "AGPL-3.0-or-later (sciencebirdsframework); run unmodified as an external process (already the transport of every NovPhy engine run since #46); not vendored, not modified",
+    "engine": "Science Birds Unity project GPL-3.0-or-later (task_template_designer/License/LICENSE); the stock Linux build is byte-identical to phy-q/NovPhy@0da1258 (MIT repo tag); our #104 player is our own build of that project (pre-existing infrastructure, unchanged by #132)"
+  },
+  "artifacts": [
+    {
+      "name": "Datalab",
+      "files": [
+        {
+          "path": "sciencebirdsagents/HeuristicAgents/data_lab_agent_v5.jar",
+          "bytes": 736134,
+          "sha256": "sha256:c11ddd6e8d6f129eb8f88cf4f1f4e8f69f7ade0da4cf1c310d1454f6d4b43354"
+        }
+      ],
+      "identical_upstream_copy": "phy-q/benchmark@514491c sciencebirdsagents/HeuristicAgents/data_lab_agent_v5.jar (same sha256)",
+      "origin": "Datalab Birds (AIBIRDS champion 2014/2015; Czech Technical University team), source https://gitlab.fit.cvut.cz/spetlrad/angry-birds-ai (last commit c21ae70c 2015-02-09 'License files.'); this JAR was recompiled for the Science Birds interface by the Phy-Q authors (MANIFEST: Main-Class ab.demo.MainEntry, no Built-By; class timestamps 2021-07-13; packages ab.* (AIBIRDS framework), dl.* (Datalab heuristics), external.* (Science Birds client encoder)) [INFERENCE: builder identity from the repo it ships in and the timestamps; the JAR carries no author field]",
+      "in_jar_license_evidence": "no license file for the agent code; only bundled third-party notices (META-INF/LICENSE.txt + NOTICE.txt = Apache-2.0, Apache Commons Codec); bundled libs: Apache Commons, Java-WebSocket, org.json, Jama",
+      "upstream_licenses": [
+        {
+          "repo": "https://gitlab.fit.cvut.cz/spetlrad/angry-birds-ai",
+          "commit": "c21ae70cac94a2bad8ae7b4718850bf22d5b7159",
+          "license": "CC-BY-NC-SA-3.0",
+          "holder": "AIBIRDS basic game-playing software (package `ab.*`): 'Copyright (c) 2014, XiaoYu (Gary) Ge, Stephen Gould, Jochen Renz, Sahan Abeyasinghe, Jim Keys, Andrew Wang, Peng Zhang. All rights reserved. ... licensed under CC BY-NC-SA 3.0 Unported' (the header both agent source repos carry)",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/datalab-angry-birds-ai.LICENSE",
+          "sha256": "sha256:5fd514038f8b344f350377621fb10319f8d716fa6dda2b56b4f2d44c8978c0b2"
+        },
+        {
+          "repo": "https://github.com/phy-q/benchmark",
+          "commit": "514491c5e77dbacdd61066d11139434f982e3d9e",
+          "license": "MIT",
+          "holder": "Copyright (c) 2021 Cheng-Xue",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/phy-q-benchmark.LICENSE",
+          "sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7"
+        }
+      ],
+      "resolution": "The phy-q/benchmark MIT tag covers the Phy-Q authors' own code, not the recompiled third-party agent; the only license attached to the Datalab source is CC BY-NC-SA 3.0. Treated as CC-BY-NC-SA-3.0.",
+      "license_effective": "CC-BY-NC-SA-3.0",
+      "permission": "non-commercial research evaluation only: run unmodified as a separate process; results (shots, verdicts, aggregate rates) may be published with attribution; the binary is never copied into the repo by #127/#132, never modified, never redistributed"
+    },
+    {
+      "name": "EaglesWing",
+      "files": [
+        {
+          "path": "sciencebirdsagents/HeuristicAgents/eagle_wings_agent_v6.jar",
+          "bytes": 16460514,
+          "sha256": "sha256:5759b9c99a3bfc2f05d89e156ad6beb6ad120f9c8e41c6c0b2e8ab0358914ae1"
+        }
+      ],
+      "identical_upstream_copy": "phy-q/benchmark@514491c sciencebirdsagents/HeuristicAgents/eagle_wings_agent_v6.jar (same sha256)",
+      "origin": "Eagle's Wing (team HeartyTian, Tian Jian Wang; AIBIRDS champion 2017), source https://github.com/heartyguy/AI-AngryBird-Eagle-Wing (master 593bd15, 2025-06-26); this JAR was recompiled for the Science Birds interface by the Phy-Q authors (MANIFEST Main-Class ab.demo.MainEntry; 'Eagle Wings.iml' IntelliJ module file inside; class timestamps 2021-07-13; packages ab.*, dl.* (Eagle's Wing heuristics, Hearty* utilities), external.*, bundled biz.k11i xgboost-predictor) [INFERENCE: builder identity as for Datalab]",
+      "in_jar_license_evidence": "no license file for the agent code; only bundled third-party notices (META-INF/LICENSE, LICENSE.txt, NOTICE*, DEPENDENCIES, licenses/*.TXT for Apache/Jetty/Maven/javolution/thoughtworks/extreme.indiana.edu components)",
+      "upstream_licenses": [
+        {
+          "repo": "https://github.com/heartyguy/AI-AngryBird-Eagle-Wing",
+          "commit": "593bd1513b3e9781234ad09ab5109402acb3a3ff",
+          "license": "CC-BY-NC-SA-3.0",
+          "holder": "AIBIRDS basic game-playing software (package `ab.*`): 'Copyright (c) 2014, XiaoYu (Gary) Ge, Stephen Gould, Jochen Renz, Sahan Abeyasinghe, Jim Keys, Andrew Wang, Peng Zhang. All rights reserved. ... licensed under CC BY-NC-SA 3.0 Unported' (the header both agent source repos carry); 'Team HeartyTian: Tian Jian Wang'",
+          "github_license_detection": "NOASSERTION (key 'other'); README badge CC BY-NC-SA 3.0",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/eagle-wing-standalone.LICENSE",
+          "sha256": "sha256:e2aa42a4f82d4c005197dacda4427e3045afaaec80e7aabfb88f668c462cadd3"
+        },
+        {
+          "repo": "https://github.com/phy-q/benchmark",
+          "commit": "514491c5e77dbacdd61066d11139434f982e3d9e",
+          "license": "MIT",
+          "holder": "Copyright (c) 2021 Cheng-Xue",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/phy-q-benchmark.LICENSE",
+          "sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7"
+        }
+      ],
+      "resolution": "Same as Datalab: CC BY-NC-SA 3.0 governs; the Phy-Q MIT tag does not relicense it.",
+      "license_effective": "CC-BY-NC-SA-3.0",
+      "permission": "non-commercial research evaluation only: run unmodified as a separate process; results (shots, verdicts, aggregate rates) may be published with attribution; the binary is never copied into the repo by #127/#132, never modified, never redistributed"
+    },
+    {
+      "name": "PigShooter",
+      "files": [
+        {
+          "path": "sciencebirdsagents/HeuristicAgents/PigShooter.py",
+          "bytes": 4323,
+          "sha256": "sha256:3fc0c387d4106950b74d8a2d82b6790831e472ab0e822d1431462ba56552d41d"
+        }
+      ],
+      "identical_upstream_copy": "phy-q/benchmark@514491c sciencebirdsagents/HeuristicAgents/PigShooter.py (byte-identical); our repo's Client/agent_client.py and SBEnvironment/SBEnvironmentWrapper.py differ from upstream (local edits), so the upstream closure is vendored for E1",
+      "origin": "Phy-Q authors (Cheng Xue et al.), Python heuristic agent that targets pigs with Utils/trajectory_planner.py; runs through the Phy-Q Python client (Client/agent_client.py)",
+      "in_jar_license_evidence": "n/a (source file, no header)",
+      "upstream_licenses": [
+        {
+          "repo": "https://github.com/phy-q/benchmark",
+          "commit": "514491c5e77dbacdd61066d11139434f982e3d9e",
+          "license": "MIT",
+          "holder": "Copyright (c) 2021 Cheng-Xue",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/phy-q-benchmark.LICENSE",
+          "sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7"
+        }
+      ],
+      "resolution": "MIT (Phy-Q's own code). The Python client is a derivative of the sciencebirdsframework src/client (AGPL-3.0-or-later) [INFERENCE: same API/file names]; Phy-Q publishes it under its MIT tag. Vendored verbatim with the Phy-Q LICENSE; not redistributed beyond the repo's own vendor dir.",
+      "license_effective": "MIT",
+      "permission": "research use; vendored verbatim with upstream LICENSE under world_model/baselines/phyq/vendor/"
+    },
+    {
+      "name": "game_playing_interface",
+      "files": [
+        {
+          "path": "sciencebirdsgames/Linux/game_playing_interface.jar",
+          "bytes": 14545114,
+          "sha256": "sha256:b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a"
+        }
+      ],
+      "identical_upstream_copy": "phy-q/benchmark@514491c sciencebirdsgames/Linux.zip -> Linux/game_playing_interface.jar (same sha256); phy-q/NovPhy@0da1258 Linux.zip does not contain it",
+      "origin": "Science Birds Basic Game Playing Software (AIBIRDS / ANU), the competition server: MANIFEST Built-By aibirds4, Build-Jdk 13.0.2, Created-By Apache Maven, Main-Class server.ABServer, built 2020-11-05; its CLI (--headless, --agent-port, --game-start-port, --config-path, --dev) is the one documented in gitlab.com/aibirds/sciencebirdsframework README [INFERENCE: exact release not pinned; the framework repo keeps the binaries in LFS zips]",
+      "in_jar_license_evidence": "no license file for server.*/proxy.*/vision.*; only bundled third-party licenses (hamcrest BSD LICENSE.txt, Apache META-INF/LICENSE*, Google Collections README, licenses/*.TXT)",
+      "upstream_licenses": [
+        {
+          "repo": "https://gitlab.com/aibirds/sciencebirdsframework",
+          "commit": "1bc38e50bdcfd2eef4b3ecbd5ef693995486c075",
+          "license": "AGPL-3.0-or-later",
+          "license_path": "License/LICENSE (+ License/AGPL-3.0-or-later), present since the repo's first commit 03eebc8cb4 (2019-12-23)",
+          "holder": "Copyright (c) Jochen Renz, Peng Zhang, Matthew Stephenson, Xiaoyu Ge, Ekaterina Nikonova, Chathura Nagoda Gamage, Cheng Xue, Vimukthini Inguruwattage, Stephen Gould, Patrik Haslum",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/sciencebirdsframework.LICENSE",
+          "sha256": "sha256:c364dfc4fbdd6e6e477fb1681617517550957d9fe74c784021198c64141512e3"
+        },
+        {
+          "repo": "https://github.com/phy-q/benchmark",
+          "commit": "514491c5e77dbacdd61066d11139434f982e3d9e",
+          "license": "MIT",
+          "holder": "Copyright (c) 2021 Cheng-Xue",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/phy-q-benchmark.LICENSE",
+          "sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7"
+        }
+      ],
+      "resolution": "AGPL-3.0-or-later. Running the unmodified program is unrestricted under AGPL; obligations attach only to conveying or modifying it. It is not vendored, linked, modified or conveyed by #132; it is the transport every NovPhy engine run has used (#46 onwards; scripts/build_physics_player.sh copies it into the #104 player). Not within D5's 'GPL code is skipped' rule, which governs vendored arm code.",
+      "license_effective": "AGPL-3.0-or-later",
+      "permission": "run unmodified as an external process; never vendored, modified or redistributed by #127/#132",
+      "tracked_in_repo": false
+    },
+    {
+      "name": "engine (Science Birds Unity build)",
+      "files": [
+        {
+          "path": "sciencebirdsgames/Linux.zip",
+          "bytes": 46961025,
+          "sha256": "sha256:c45c8b44078ebcf1ba3168d7606a6e2e739cd70da6bf1e0400f66f12d0ba03f0"
+        }
+      ],
+      "identical_upstream_copy": "phy-q/NovPhy@0da1258 sciencebirdsgames/Linux.zip (same sha256)",
+      "origin": "Science Birds (Lucas N. Ferreira) as modified by the AIBIRDS/Phy-Q/NovPhy team; Unity project tasks/task_template_designer; the #104 player is our build of that project",
+      "upstream_licenses": [
+        {
+          "repo": "https://github.com/phy-q/NovPhy",
+          "commit": "0da1258c9c0ebb6b437d3f6291612b1032102678",
+          "license": "GPL-3.0-or-later",
+          "license_path": "tasks/task_template_designer/License/LICENSE",
+          "holder": "Copyright (C) 2016 Lucas N. Ferreira; Copyright (c) 2019 Jochen Renz, Peng Zhang, Matthew Stephenson, Xiaoyu Ge, Ekaterina Nikonova, Chathura Nagoda Gamage, Cheng Xue, Vimukthini Inguruwattage, Stephen Gould, Patrik Haslum",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/science-birds-task-template-designer.LICENSE",
+          "sha256": "sha256:0d741b986aa34d52a533630dfd2c6264d92ed9119afe704b3d9c9811a3405e66"
+        },
+        {
+          "repo": "https://github.com/phy-q/NovPhy",
+          "commit": "0da1258c9c0ebb6b437d3f6291612b1032102678",
+          "license": "MIT",
+          "holder": "Copyright (c) 2022 phy-q",
+          "local_copy": ".local-artifacts/issue-132-aibirds-agents-v1/licenses/phy-q-novphy.LICENSE",
+          "sha256": "sha256:4276a985c85bc4ea3a759d531797932acff5b0cf3a1ad1bde3d2adf89cf3fcbf"
+        }
+      ],
+      "resolution": "Pre-existing project infrastructure (GPL-3.0-or-later Unity project); #132 adds no copy or change.",
+      "license_effective": "GPL-3.0-or-later",
+      "permission": "unchanged pre-existing use"
+    }
+  ],
+  "observations": [
+    "data_lab_agent_v5.jar and eagle_wings_agent_v6.jar are already tracked in this repository since commit 68480cd0 (2026-06-05, 'prepare to make the env runnable'), i.e. before #127. CC BY-NC-SA 3.0 permits non-commercial sharing with attribution under the same license, but the #127 policy is 'never redistribute'; #132 adds no copy. Whether to keep them tracked is an owner decision outside #132.",
+    "The Phy-Q and NovPhy READMEs name the JARs datalab_037_v4_java12.jar / eaglewings_037_v3_java12.jar; the files actually shipped (and used here) are data_lab_agent_v5.jar / eagle_wings_agent_v6.jar."
+  ]
+}

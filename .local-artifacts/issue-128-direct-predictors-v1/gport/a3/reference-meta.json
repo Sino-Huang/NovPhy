@@ -1,0 +1,81 @@
+{
+ "torch": "2.13.0+cu130",
+ "torchvision": "0.28.0+cu130",
+ "numpy": "2.4.6",
+ "python": "3.11.17",
+ "written_at": "2026-10-24T10:07:24+00:00",
+ "vendor_json": "sha256:6a3d594bb675fb1b697724a37450c4d361ca085092b7944c6cd994fae9c098cb",
+ "vendor_files": {
+  "LearningAgents/RLNetwork/DQNBase.py": "sha256:8f3c1b92a29bdb27e341cffb47f3382653bcb90b0912d5862ba0f7b4f679911b",
+  "LearningAgents/RLNetwork/DQNSymbolicBase.py": "sha256:84eb8ada39ac1f0d3122c2e55980e3e6e9ca659a48ffc8c08b3237ec41005e34",
+  "LearningAgents/RLNetwork/DQNRelationalSymbolic.py": "sha256:dcc0607dc751375e717bdbc566ffd682f6c15fde7d625e79541e18c21be30f80",
+  "LearningAgents/RLNetwork/DQNRelationalImage.py": "sha256:dcc72c91fd20886688520e70e6f0dae5f757fdce997c076c5cd845ec52530b0c",
+  "StateReader/SymbolicStateReader.py": "sha256:bbf7ccfab61fbd685767625f7544188a71c2a75739be495089da18bd2aebba12",
+  "Utils/model": "sha256:284ebbfb5fca90ace9affcf6422f192a13e7f3ceea9600f052c409b2fc70321c",
+  "Utils/target_class": "sha256:d5d7f6a1961dc3a2cb531fc239db430197dfacb0370693c51d2fe3555940a999"
+ },
+ "references": {
+  "A3-sym": "sha256:485817e26970ba8a7eb9b38ee199620390fa93275b7cae0480453dfc23f86916",
+  "A3-img": "sha256:c9f716476414d5969894ae9de6d962f2c075d36fe34241f85d2956e4fb6fe729"
+ },
+ "upstream_bug": {
+  "memory": {
+   "targets": [
+    0.7892823219299316,
+    1.0,
+    1.4465255737304688,
+    1.5516308546066284,
+    0.11985627561807632,
+    0.3039312958717346,
+    0.5815961360931396,
+    0.44556924700737
+   ],
+   "rewards": [
+    0.0,
+    1.0,
+    1.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "rows_with_bootstrap": [
+    0,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "loss": 0.33276015520095825,
+   "loss_with_terminal_targets": 0.17503949999809265
+  },
+  "loader": {
+   "targets": [
+    1.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "rewards": [
+    1.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "rows_with_bootstrap": [],
+   "loss": 0.17503949999809265,
+   "loss_with_terminal_targets": 0.17503949999809265
+  }
+ }
+}
