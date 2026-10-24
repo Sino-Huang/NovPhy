@@ -215,3 +215,6 @@ Posted: https://github.com/Sino-Huang/NovPhy/issues/131#issuecomment-6386806922
 **Numbers (DESCRIPTIVE).** Per ranker: pooled grid AUC per novelty level on the novel side, on the paired normal sides, pooled over novelty levels 1–7, and the paired contrast novel − paired normal (one row per (pair, seed) where both sides are mixed); level-clustered (pair-clustered for the paired contrast) percentile bootstrap, 10 000 draws, PCG64 7201. Records are hashed into this child's records manifest and re-derived by `--validate`.
 
 Shared implementation: `scripts/external_baselines.py` (`novelty_cells`, `read_novelty_anchors`, `novelty_reference_records`, `novelty_table`), pinned by every child plan; each child runner gets a `--score-novelty` mode before its freeze.
+
+## Note (2026-10-25, orchestrator): runner hash in the precision correction
+The precision-correction entry above records the runner sha256 `b7a5940e…` as it was right after the TF32 change. The runner changed afterwards (the `--score-novelty` mode, P-novelty issuecomment-6386831318), so `b7a5940e…` matches no committed file; the TF32 behaviour it describes is unchanged. The frozen `plan.json` pins the final runner bytes.
