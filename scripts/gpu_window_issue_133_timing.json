@@ -1,0 +1,25 @@
+{
+  "note": "#133 timing probe only (Decision P-coverage timing probe); enqueued alone so that no funded-only job is queued.",
+  "jobs": [
+    {
+      "id": "133-timing",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_133_dreamerv3.py",
+        "--timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B127_T1_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8"
+      },
+      "note": "Decision P-coverage timing probe (#133; no funded.json needed; <= 1 GPU-h): 1000 official updates of the native T1 model (fit-split batches 16 x 64) and of the PushT fidelity model (synthetic batches of the real shape), one CEM planning case (30 steps x 300 samples x horizon 5); writes .local-artifacts/issue-133-dreamerv3-v1/timing.json + ledger/timing.json, keeps nothing else, exit 0. est: CPU-scaled 0.28-0.31 s/update (T1) and 0.31-0.72 s/update (PushT) [INFERENCE] -> ~10-20 min + ~2 min fit-store load; host RSS ~5.5 GB peak (CPU dry run 5.2 GB); GPU < 8 GB [INFERENCE] (shares_gpu)."
+    }
+  ]
+}

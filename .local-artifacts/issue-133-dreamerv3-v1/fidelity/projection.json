@@ -1,0 +1,23 @@
+{
+  "cache_build_cpu_h_estimate": 0.7542980632008155,
+  "cache_build_rate_source": "3-episode build (327 frames in 0.38 s; b127-dino_wm, 4 threads, 2026-10-25)",
+  "cem_rollout_300x5_cpu_seconds": 0.16945749963633716,
+  "cem_rollouts": 18000,
+  "env_allowance_h": 0.25,
+  "gpu_over_cpu": 0.3637298005808285,
+  "label": "[INFERENCE] CPU micro-benchmarks scaled by the measured GPU/CPU ratio of #131's native THICK update (a similar-size RSSM; conv-heavy PushT updates gain more on a GPU, so this training estimate is an upper one); the scan-latency model (THICK's GPU s/update x 64 / 46 steps) is the lower one",
+  "latency_model_gpu_seconds_per_update": 0.3118898521640906,
+  "measured_at": "2026-10-24T20:12:08Z",
+  "native_updates": 233674,
+  "plan_gpu_h": 0.5581837127482536,
+  "pusht_cpu_seconds_per_update": 1.9011632620822638,
+  "schema": "issue_133_fidelity_projection_v1",
+  "thick_cpu_seconds_per_update": 0.6163114237133414,
+  "thick_gpu_runs": 3,
+  "thick_gpu_seconds_per_update": 0.22417083124294013,
+  "threads": 4,
+  "total_gpu_h": 45.44369638686736,
+  "total_gpu_h_latency_model": 20.802780744579284,
+  "train_gpu_h": 44.885512674119106,
+  "train_gpu_h_latency_model": 20.24459703183103
+}

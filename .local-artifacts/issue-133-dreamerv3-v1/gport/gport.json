@@ -1,0 +1,501 @@
+{
+  "schema": "issue_127_gport_v1",
+  "issue": 133,
+  "arm": "T1 DreamerV3-car",
+  "checked_at": "2026-10-24T20:03:58Z",
+  "device": "cpu float32",
+  "torch": "2.13.0+cu130",
+  "reference_torch": "2.13.0+cu130",
+  "same_torch": true,
+  "upstream": "https://github.com/NM512/dreamerv3-torch",
+  "commit": "6ef8646d807cd10ce0c88e10a7e943211e7fc44c",
+  "tolerance": {
+    "loss_relative": 0.0001,
+    "grad_norm_relative": 0.0001,
+    "grad_tensor_relative_l2": 0.001,
+    "grad_floor_of_global_norm": 1e-06,
+    "forward_relative_l2": 0.001,
+    "forward_max_abs": 0.0001,
+    "param_close_abs": 1e-07,
+    "param_close_share": 0.999,
+    "param_max_abs_over_lr": 2.0,
+    "readout_max_abs": 1e-05
+  },
+  "G_port_rule": "issue_123_exact (run_hjepa_comparison.GPORT_TOLERANCE param rule) + #123 loss / grad tolerances; readouts max abs <= 1e-5",
+  "vendor_hashes_match": {
+    "models.py": true,
+    "networks.py": true,
+    "tools.py": true,
+    "configs.yaml": true,
+    "LICENSE": true
+  },
+  "reference_script_sha256": "sha256:afbe3896efecd4f9a29581437ab740fdf7d30f91b26d97c651da8f3de1c51fd1",
+  "adapter_sha256": "sha256:91c2135a51f6573700db361308b48f31b59e5f55a92cf835a3b9105b1602ab44",
+  "official_sha256": {
+    "models.py": "sha256:4cb8c2c858481c3d762162aee8a7bf05347d1f9713e6dc7c7a3e65e7077da49a",
+    "networks.py": "sha256:6111a4f3d4332dd4cbe8c4bc319222b384419a8110e8a27b5d041f1075ad493a",
+    "tools.py": "sha256:32266d2d3b741e6b0afe2a2033ec37aa2849e759f39c147020042920df73c7c5",
+    "configs.yaml": "sha256:6ddfa13ed0f0329a7dd079a01c80ac5eca3cca2238ee01c5f6b2bf3b13762779"
+  },
+  "arms": {
+    "official-vector": {
+      "arm": "official-vector",
+      "adapter_heads": [
+        "decoder",
+        "reward",
+        "cont"
+      ],
+      "removed_official_tensors": [],
+      "state_keys_ok": true,
+      "batch_equal": true,
+      "config_differences": [],
+      "official_head_loss_scales": {
+        "reward_head": 1.0,
+        "cont_head": 1.0
+      },
+      "official_parameters": 16903660,
+      "adapter_parameters": 16903660,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "steps": [
+        {
+          "step": 1,
+          "lr": 0.0001,
+          "loss_terms": [
+            "model_loss",
+            "carrier_loss",
+            "reward_loss",
+            "cont_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            370.0236511230469,
+            370.0236511230469
+          ],
+          "grad_norm": [
+            720.2294311523438,
+            720.2294311523438
+          ],
+          "grad_norm_rel": 0.0,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.8951384425163269,
+          "lr_equal": true,
+          "pass": true
+        },
+        {
+          "step": 2,
+          "lr": 0.0001,
+          "loss_terms": [
+            "model_loss",
+            "carrier_loss",
+            "reward_loss",
+            "cont_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            335.3966064453125,
+            335.3966064453125
+          ],
+          "grad_norm": [
+            564.4209594726562,
+            564.4209594726562
+          ],
+          "grad_norm_rel": 0.0,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.9728265404701233,
+          "lr_equal": true,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    "t1-native": {
+      "arm": "t1-native",
+      "adapter_heads": [
+        "decoder"
+      ],
+      "removed_official_tensors": [
+        "heads.cont.layers.Cont_linear0.weight",
+        "heads.cont.layers.Cont_linear1.weight",
+        "heads.cont.layers.Cont_norm0.bias",
+        "heads.cont.layers.Cont_norm0.weight",
+        "heads.cont.layers.Cont_norm1.bias",
+        "heads.cont.layers.Cont_norm1.weight",
+        "heads.cont.mean_layer.bias",
+        "heads.cont.mean_layer.weight",
+        "heads.reward.layers.Reward_linear0.weight",
+        "heads.reward.layers.Reward_linear1.weight",
+        "heads.reward.layers.Reward_norm0.bias",
+        "heads.reward.layers.Reward_norm0.weight",
+        "heads.reward.layers.Reward_norm1.bias",
+        "heads.reward.layers.Reward_norm1.weight",
+        "heads.reward.mean_layer.bias",
+        "heads.reward.mean_layer.weight"
+      ],
+      "state_keys_ok": true,
+      "batch_equal": true,
+      "config_differences": [],
+      "official_head_loss_scales": {
+        "reward_head": 0.0,
+        "cont_head": 0.0
+      },
+      "official_parameters": 16903660,
+      "adapter_parameters": 14671084,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "steps": [
+        {
+          "step": 1,
+          "lr": 0.0001,
+          "loss_terms": [
+            "model_loss",
+            "carrier_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [
+            "cont_loss",
+            "reward_loss"
+          ],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            361.9273986816406,
+            361.9273986816406
+          ],
+          "grad_norm": [
+            541.4271240234375,
+            541.4270629882812
+          ],
+          "grad_norm_rel": 1.1273015411001177e-07,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.9997556805610657,
+          "lr_equal": true,
+          "pass": true
+        },
+        {
+          "step": 2,
+          "lr": 0.0001,
+          "loss_terms": [
+            "model_loss",
+            "carrier_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [
+            "cont_loss",
+            "reward_loss"
+          ],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            317.22607421875,
+            317.22607421875
+          ],
+          "grad_norm": [
+            349.41357421875,
+            349.41357421875
+          ],
+          "grad_norm_rel": 0.0,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.9999605417251587,
+          "lr_equal": true,
+          "pass": true
+        }
+      ],
+      "rollout_max_abs": 0.0,
+      "rollout_endpoint_max_abs": 0.0,
+      "posterior_max_abs": 0.0,
+      "pass": true
+    },
+    "t1-lr3e-4": {
+      "arm": "t1-lr3e-4",
+      "adapter_heads": [
+        "decoder"
+      ],
+      "removed_official_tensors": [
+        "heads.cont.layers.Cont_linear0.weight",
+        "heads.cont.layers.Cont_linear1.weight",
+        "heads.cont.layers.Cont_norm0.bias",
+        "heads.cont.layers.Cont_norm0.weight",
+        "heads.cont.layers.Cont_norm1.bias",
+        "heads.cont.layers.Cont_norm1.weight",
+        "heads.cont.mean_layer.bias",
+        "heads.cont.mean_layer.weight",
+        "heads.reward.layers.Reward_linear0.weight",
+        "heads.reward.layers.Reward_linear1.weight",
+        "heads.reward.layers.Reward_norm0.bias",
+        "heads.reward.layers.Reward_norm0.weight",
+        "heads.reward.layers.Reward_norm1.bias",
+        "heads.reward.layers.Reward_norm1.weight",
+        "heads.reward.mean_layer.bias",
+        "heads.reward.mean_layer.weight"
+      ],
+      "state_keys_ok": true,
+      "batch_equal": true,
+      "config_differences": [],
+      "official_head_loss_scales": {
+        "reward_head": 0.0,
+        "cont_head": 0.0
+      },
+      "official_parameters": 16903660,
+      "adapter_parameters": 14671084,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "steps": [
+        {
+          "step": 1,
+          "lr": 0.0003,
+          "loss_terms": [
+            "model_loss",
+            "carrier_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [
+            "cont_loss",
+            "reward_loss"
+          ],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            361.9273986816406,
+            361.9273986816406
+          ],
+          "grad_norm": [
+            541.4271240234375,
+            541.4270629882812
+          ],
+          "grad_norm_rel": 1.1273015411001177e-07,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.9997556805610657,
+          "lr_equal": true,
+          "pass": true
+        },
+        {
+          "step": 2,
+          "lr": 0.0003,
+          "loss_terms": [
+            "model_loss",
+            "carrier_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [
+            "cont_loss",
+            "reward_loss"
+          ],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            316.7010192871094,
+            316.7010192871094
+          ],
+          "grad_norm": [
+            570.1936645507812,
+            570.1936645507812
+          ],
+          "grad_norm_rel": 0.0,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.9999629259109497,
+          "lr_equal": true,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    "pusht-64": {
+      "arm": "pusht-64",
+      "adapter_heads": [
+        "decoder"
+      ],
+      "removed_official_tensors": [
+        "heads.cont.layers.Cont_linear0.weight",
+        "heads.cont.layers.Cont_linear1.weight",
+        "heads.cont.layers.Cont_norm0.bias",
+        "heads.cont.layers.Cont_norm0.weight",
+        "heads.cont.layers.Cont_norm1.bias",
+        "heads.cont.layers.Cont_norm1.weight",
+        "heads.cont.mean_layer.bias",
+        "heads.cont.mean_layer.weight",
+        "heads.reward.layers.Reward_linear0.weight",
+        "heads.reward.layers.Reward_linear1.weight",
+        "heads.reward.layers.Reward_norm0.bias",
+        "heads.reward.layers.Reward_norm0.weight",
+        "heads.reward.layers.Reward_norm1.bias",
+        "heads.reward.layers.Reward_norm1.weight",
+        "heads.reward.mean_layer.bias",
+        "heads.reward.mean_layer.weight"
+      ],
+      "state_keys_ok": true,
+      "batch_equal": true,
+      "config_differences": [],
+      "official_head_loss_scales": {
+        "reward_head": 0.0,
+        "cont_head": 0.0
+      },
+      "official_parameters": 26204295,
+      "adapter_parameters": 23971719,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "steps": [
+        {
+          "step": 1,
+          "lr": 0.0001,
+          "loss_terms": [
+            "model_loss",
+            "image_loss",
+            "proprio_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [
+            "cont_loss",
+            "reward_loss"
+          ],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            2858.484130859375,
+            2858.484130859375
+          ],
+          "grad_norm": [
+            4373.931640625,
+            4373.931640625
+          ],
+          "grad_norm_rel": 0.0,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.8327629566192627,
+          "lr_equal": true,
+          "pass": true
+        },
+        {
+          "step": 2,
+          "lr": 0.0001,
+          "loss_terms": [
+            "model_loss",
+            "image_loss",
+            "proprio_loss",
+            "dyn_loss",
+            "rep_loss",
+            "kl",
+            "prior_ent",
+            "post_ent"
+          ],
+          "official_only_terms": [
+            "cont_loss",
+            "reward_loss"
+          ],
+          "loss_max_rel": 0.0,
+          "model_loss": [
+            2772.419677734375,
+            2772.419677734375
+          ],
+          "grad_norm": [
+            3953.76513671875,
+            3953.765380859375
+          ],
+          "grad_norm_rel": 6.174889035700306e-08,
+          "forward_max_rel_l2": 0.0,
+          "forward_max_abs": 0.0,
+          "grad_max_rel_l2": 0.0,
+          "null_gradient_max_abs_l2": 0.0,
+          "removed_heads_official_grad_max_abs": 0.0,
+          "removed_heads_official_param_moved_max_abs": 0.0,
+          "param_close_share": 1.0,
+          "param_max_abs_delta": 0.0,
+          "adam_slot_max_abs_delta": 0.0,
+          "adapter_moved_share": 0.8837627172470093,
+          "lr_equal": true,
+          "pass": true
+        }
+      ],
+      "pass": true
+    }
+  },
+  "notes": [
+    "Both sides on the same torch build (novphy, CPU) in separate processes.",
+    "DreamerV3 has a constant LR (no schedule): both steps run at the configured positive LR.",
+    "t1-* / pusht-64: the official model keeps its reward / continue heads at loss scale 0 (the official way to train without reward); the adapter removes them. Their gradients are exactly zero, so the global grad norm, the clip and Adam's updates of every shared tensor are unaffected.",
+    "Reference shims (no file edited): empty torch.utils.tensorboard module; networks.MLP default device 'cpu' while constructing."
+  ],
+  "pass": true
+}

@@ -1,0 +1,121 @@
+{
+  "fidelity": {
+    "cache_build_cpu_h_estimate": 0.7542980632008155,
+    "cache_build_rate_source": "3-episode build (327 frames in 0.38 s; b127-dino_wm, 4 threads, 2026-10-25)",
+    "cem_rollout_300x5_cpu_seconds": 0.16945749963633716,
+    "cem_rollouts": 18000,
+    "env_allowance_h": 0.25,
+    "gpu_over_cpu": 0.3637298005808285,
+    "label": "[INFERENCE] CPU micro-benchmarks scaled by the measured GPU/CPU ratio of #131's native THICK update (a similar-size RSSM; conv-heavy PushT updates gain more on a GPU, so this training estimate is an upper one); the scan-latency model (THICK's GPU s/update x 64 / 46 steps) is the lower one",
+    "latency_model_gpu_seconds_per_update": 0.3118898521640906,
+    "measured_at": "2026-10-24T20:12:08Z",
+    "native_updates": 233674,
+    "plan_gpu_h": 0.5581837127482536,
+    "pusht_cpu_seconds_per_update": 1.9011632620822638,
+    "schema": "issue_133_fidelity_projection_v1",
+    "thick_cpu_seconds_per_update": 0.6163114237133414,
+    "thick_gpu_runs": 3,
+    "thick_gpu_seconds_per_update": 0.22417083124294013,
+    "threads": 4,
+    "total_gpu_h": 45.44369638686736,
+    "total_gpu_h_latency_model": 20.802780744579284,
+    "train_gpu_h": 44.885512674119106,
+    "train_gpu_h_latency_model": 20.24459703183103
+  },
+  "gpu_over_cpu": 0.3637298005808285,
+  "label": "[INFERENCE] CPU micro-benchmarks scaled by the measured GPU/CPU ratio of #131's native THICK update (a similar-size RSSM; conv-heavy PushT updates gain more on a GPU, so this training estimate is an upper one); the scan-latency model (THICK's GPU s/update x 64 / 46 steps) is the lower one",
+  "measured_at": "2026-10-24T20:12:11Z",
+  "parameters": 14671084,
+  "plan_identity": "issue-133-dreamerv3-v1",
+  "primary": "projection_upper",
+  "projection_latency_model": {
+    "child_cap_gpu_h": 76.0,
+    "fidelity_gpu_h": 20.802780744579284,
+    "native_per_seed_gpu_h": 27.735411556182076,
+    "readouts_gpu_h_estimate": 1.5,
+    "score_gpu_h_estimate": 1.0,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "lr3e-4": 27.735411556182076,
+      "native": 27.735411556182076,
+      "rr128": 6.933831230028008
+    },
+    "steps": {
+      "lr3e-4": 320137,
+      "native": 320137,
+      "rr128": 80034
+    },
+    "total_gpu_h": 141.1782581993356,
+    "training_gpu_h": 55.47082311236415,
+    "training_queue_loads_h": [
+      27.735411556182076,
+      27.735411556182076,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T1--seed20260909"
+      ],
+      "1": [
+        "T1--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 77.64860385694344,
+    "within_caps": false
+  },
+  "projection_upper": {
+    "child_cap_gpu_h": 76.0,
+    "fidelity_gpu_h": 45.44369638686736,
+    "native_per_seed_gpu_h": 24.310231709642082,
+    "readouts_gpu_h_estimate": 1.5,
+    "score_gpu_h_estimate": 1.0,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "lr3e-4": 24.310231709642082,
+      "native": 24.310231709642082,
+      "rr128": 6.077538943169626
+    },
+    "steps": {
+      "lr3e-4": 320137,
+      "native": 320137,
+      "rr128": 80034
+    },
+    "total_gpu_h": 151.26216216860533,
+    "training_gpu_h": 48.620463419284164,
+    "training_queue_loads_h": [
+      24.310231709642082,
+      24.310231709642082,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T1--seed20260909"
+      ],
+      "1": [
+        "T1--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 95.43915980615152,
+    "within_caps": false
+  },
+  "schema": "issue_133_projection_v1",
+  "t1_cpu_seconds_per_update": 0.7515828190371394,
+  "t1_gpu_seconds_per_update_latency_model": {
+    "lr3e-4": 0.3118898521640906,
+    "native": 0.3118898521640906,
+    "rr128": 0.3118898521640906
+  },
+  "t1_gpu_seconds_per_update_upper": {
+    "lr3e-4": 0.2733730688883556,
+    "native": 0.2733730688883556,
+    "rr128": 0.2733730688883556
+  }
+}

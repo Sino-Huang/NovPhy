@@ -1,0 +1,52 @@
+{
+  "schema": "issue_127_vendor_v1",
+  "upstream": "https://github.com/NM512/dreamerv3-torch",
+  "commit": "6ef8646d807cd10ce0c88e10a7e943211e7fc44c",
+  "license": "MIT (vendor/LICENSE, Copyright (c) 2023 NM512)",
+  "license_file": "LICENSE",
+  "license_sha256": "sha256:2991634eca8d411611f201feafb50cb7041afbca049b6618b3be1cd515393ada",
+  "policy": "verbatim copies of the import closure of the official world model (models.WorldModel with networks.RSSM / MultiEncoder / MultiDecoder / MLP / GRUCell / ConvEncoder / ConvDecoder and tools.Optimizer / OneHotDist / DiscDist / SymlogDist / symlog / static_scan / weight inits) plus the official configs.yaml (defaults read by the adapter) and LICENSE. Allowed edits: package-relative imports, and the one listed P-route compatibility edit in tools.py. Not vendored: dreamer.py, exploration.py, parallel.py, envs/ (online agent loop, actor-critic driver, environments). Decision P-license: https://github.com/Sino-Huang/NovPhy/issues/133#issuecomment-6388618813",
+  "runtime_notes": [
+    "networks.MLP's default device='cuda' (MultiEncoder / MultiDecoder build their MLPs without a device) only feeds a fixed-std tensor that the encoder output path and the symlog_mse decoder path never read; on a CUDA-less host constructing it raises. The adapter (novphy.mlp_default_device) and the G-port reference set that default to the run device while a model is constructed; no file is edited (P-route).",
+    "models.WorldModel.preprocess divides obs['image'] by 255 unconditionally (upstream environments always deliver an image). The adapter's subclass applies it only when an image is present (vector-only carriers); the G-port reference feeds the official code a dummy image key that no encoder / decoder key selects.",
+    "Upstream runs torch.compile(WorldModel) by default (config compile True); the adapter runs eagerly (same graph, fp32)."
+  ],
+  "files": {
+    "models.py": {
+      "upstream_path": "models.py",
+      "upstream_sha256": "sha256:4cb8c2c858481c3d762162aee8a7bf05347d1f9713e6dc7c7a3e65e7077da49a",
+      "vendored_sha256": "sha256:23919f422eedf6510ce90e9a8123e812eee1b28d45d11f6354d5da44ad5551d5",
+      "edits": [
+        "imports made package-relative: 'import networks' -> 'from . import networks', 'import tools' -> 'from . import tools' (lines 5-6)"
+      ]
+    },
+    "networks.py": {
+      "upstream_path": "networks.py",
+      "upstream_sha256": "sha256:6111a4f3d4332dd4cbe8c4bc319222b384419a8110e8a27b5d041f1075ad493a",
+      "vendored_sha256": "sha256:5aad8bae700405813a03132b2b7f64d16e58e5a8e6adb6a08ce0e3475f9b00da",
+      "edits": [
+        "import made package-relative: 'import tools' -> 'from . import tools' (line 10)"
+      ]
+    },
+    "tools.py": {
+      "upstream_path": "tools.py",
+      "upstream_sha256": "sha256:32266d2d3b741e6b0afe2a2033ec37aa2849e759f39c147020042920df73c7c5",
+      "vendored_sha256": "sha256:f4abda698816932800bf899e293b9fade67026708054172c510f34b96e0a6fc9",
+      "edits": [
+        "P-route compatibility: the module-level 'from torch.utils.tensorboard import SummaryWriter' (line 17) moved into Logger.__init__, its only user, so the module imports without tensorboard (not installed in the novphy env; Logger is never constructed by the adapter). No other line changed."
+      ]
+    },
+    "configs.yaml": {
+      "upstream_path": "configs.yaml",
+      "upstream_sha256": "sha256:6ddfa13ed0f0329a7dd079a01c80ac5eca3cca2238ee01c5f6b2bf3b13762779",
+      "vendored_sha256": "sha256:6ddfa13ed0f0329a7dd079a01c80ac5eca3cca2238ee01c5f6b2bf3b13762779",
+      "edits": []
+    },
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:2991634eca8d411611f201feafb50cb7041afbca049b6618b3be1cd515393ada",
+      "vendored_sha256": "sha256:2991634eca8d411611f201feafb50cb7041afbca049b6618b3be1cd515393ada",
+      "edits": []
+    }
+  }
+}

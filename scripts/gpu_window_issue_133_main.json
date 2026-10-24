@@ -1,0 +1,111 @@
+{
+  "note": "#133 T1 DreamerV3 (coverage arm), phase B: main seeds, readouts, freeze of readouts, the one scoring pass, the novelty pass, publish + validate. PREPARED, NOT ENQUEUED: enqueue only after phase A (scripts/gpu_window_issue_133.json), a passing smoke and the orchestrator's --prepare freeze commit (every mode re-verifies plan.json pins; --train refuses without funded.json). Queue contents come from the frozen plan (T1 seeds 20260909 / 20260910 on train queues 0 / 1; seed 20260908 is the reused selection run).",
+  "jobs": [
+    {
+      "id": "133-train-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 1660,
+      "shares_gpu": true,
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--train", "--gpu", "0"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B127_T1_CPU_THREADS": "8"},
+      "note": "Frozen train queue 0 (T1 seed 20260909 at the selected configuration); resume.pt every 2000 updates and on SIGTERM -> exit 75."
+    },
+    {
+      "id": "133-train-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 1660,
+      "shares_gpu": true,
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--train", "--gpu", "1"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "1", "B127_T1_CPU_THREADS": "8"},
+      "note": "Frozen train queue 1 (T1 seed 20260910)."
+    },
+    {
+      "id": "133-readouts-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": ["133-train-q0", "133-train-q1"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--readouts", "--gpu", "0"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B127_T1_CPU_THREADS": "8"},
+      "note": "Fit / policy readouts of the frozen readout queue 0 (G-rank, G-action, G-collapse on the RSSM feature, policy AUC, MACs); readouts.json per arm-seed written last (resumable per arm-seed)."
+    },
+    {
+      "id": "133-readouts-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": ["133-train-q0", "133-train-q1"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--readouts", "--gpu", "1"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "1", "B127_T1_CPU_THREADS": "8"},
+      "note": "Readout queue 1."
+    },
+    {
+      "id": "133-readouts-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": ["133-train-q0", "133-train-q1"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--readouts", "--gpu", "2"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "2", "B127_T1_CPU_THREADS": "8"},
+      "note": "Readout queue 2."
+    },
+    {
+      "id": "133-freeze-readouts",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 5,
+      "shares_gpu": true,
+      "depends_on": ["133-readouts-q0", "133-readouts-q1", "133-readouts-q2"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--freeze-readouts"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": ""},
+      "note": "CPU: readouts-manifest.json (sha256 of every model.pt and readouts.json) before any evaluation anchor is read."
+    },
+    {
+      "id": "133-score",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "depends_on": ["133-freeze-readouts"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--score"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B127_T1_CPU_THREADS": "8"},
+      "note": "The one scoring pass (a process that did not train; deterministic_scoring()); refuses unless G-fid passed; records/<arm>--seed<s>.json written atomically, resumable per record."
+    },
+    {
+      "id": "133-score-novelty",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "depends_on": ["133-score"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--score-novelty"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B127_T1_CPU_THREADS": "8"},
+      "note": "P-novelty (descriptive): T1 if its guards pass, every seed, on the mixed #110 novelty levels; refuses before the primary records; resumable per record."
+    },
+    {
+      "id": "133-publish-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "depends_on": ["133-score-novelty"],
+      "command": ["bash", "-c", "/srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_133_dreamerv3.py --publish && /srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_133_dreamerv3.py --validate"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B127_T1_CPU_THREADS": "8"},
+      "note": "records-manifest, summary.json (eb.child_summary), compute.json, findings.md; then --validate re-scores T1 seed 20260908 on the same device class as --score (exact row equality) and re-derives the publication."
+    }
+  ]
+}

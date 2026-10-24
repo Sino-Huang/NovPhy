@@ -1,0 +1,207 @@
+{
+  "note": "#133 T1 DreamerV3 (coverage arm, P-coverage), phase A: the PushT G-fid (cache, training, planning) and the NovPhy selection + smoke. PREPARED, NOT ENQUEUED: enqueue only after the orchestrator's Decision P-coverage (funding) and its funded.json marker (every stage refuses without it). Phase B (after the --prepare freeze commit): scripts/gpu_window_issue_133_main.json. est_minutes = the upper [INFERENCE] projection (.local-artifacts/issue-133-dreamerv3-v1/projection.json).",
+  "jobs": [
+    {
+      "id": "133-timing",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_133_dreamerv3.py",
+        "--timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B127_T1_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8"
+      },
+      "note": "Decision P-coverage timing probe (#133; no funded.json needed; <= 1 GPU-h): 1000 official updates of the native T1 model (fit-split batches 16 x 64) and of the PushT fidelity model (synthetic batches of the real shape), one CEM planning case (30 steps x 300 samples x horizon 5); writes .local-artifacts/issue-133-dreamerv3-v1/timing.json + ledger/timing.json, keeps nothing else, exit 0. est: CPU-scaled 0.28-0.31 s/update (T1) and 0.31-0.72 s/update (PushT) [INFERENCE] -> ~10-20 min + ~2 min fit-store load; host RSS ~5.5 GB peak (CPU dry run 5.2 GB); GPU < 8 GB [INFERENCE] (shares_gpu)."
+    },
+    {
+      "id": "133-gfid-cache",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dino_wm/bin/python",
+        "-u",
+        "scripts/b127_dreamerv3_fidelity.py",
+        "--build-cache"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "CPU only (no GPU used): DINO-WM's pusht_noise train split (18 685 episodes, 2 336 736 frames) through its PushTDataset into 64 x 64 memmaps on local NVMe (~29 GB, ~/.cache/novphy-issue-133-pusht64); ~0.75 CPU-h measured rate; resumable per episode (SIGTERM -> progress.json -> exit 75); host RAM < 2 GB."
+    },
+    {
+      "id": "133-gfid-train",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 2720,
+      "shares_gpu": true,
+      "depends_on": [
+        "133-gfid-cache"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/b127_dreamerv3_fidelity.py",
+        "--train"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "PushT DreamerV3 world model (official WorldModel._train, dmc_vision 64 x 64 + proprio MLP, no reward / continue heads, 23 971 719 params), batch 16 x 64, 233 674 updates (replay ratio 512), seed 0, fp32; resume.pt every 2000 updates and on SIGTERM -> exit 75. Projection 20-45 GPU-h [INFERENCE]; peak < 8 GB (shares_gpu)."
+    },
+    {
+      "id": "133-gfid-plan",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": true,
+      "depends_on": [
+        "133-gfid-train"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dino_wm/bin/python",
+        "-u",
+        "scripts/b127_dreamerv3_fidelity.py",
+        "--plan"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "OMP_NUM_THREADS": "4",
+        "SDL_VIDEODRIVER": "dummy"
+      },
+      "note": "DINO-WM's unchanged MPC-CEM (plan_pusht.yaml: seed 99, 50 cases, goal_H 5, horizon 5, 300 samples, top-30, 30 CEM steps; max_iter 12) over the DreamerV3 latent; MPC-iteration checkpoint (SIGTERM -> exit 75); writes fidelity/gfid.json against the frozen band [0.18, 0.42]. 50 PushT env subprocesses (~3 GB host RAM)."
+    },
+    {
+      "id": "133-select-native",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 1660,
+      "shares_gpu": true,
+      "depends_on": [
+        "133-gfid-plan"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_133_dreamerv3.py",
+        "--selection",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T1_CPU_THREADS": "8"
+      },
+      "note": "T1 selection run 'native' (dreamerv3-torch defaults), seed 20260908, 320 137 updates x 16 x 64 (reused as main seed 20260908 if selected); refuses unless funded.json, G-port and G-fid pass; resume.pt every 2000 updates and on SIGTERM -> exit 75; ~0.6 GB host RAM for the fit store; small GPU footprint (shares_gpu)."
+    },
+    {
+      "id": "133-select-lr3e-4",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 1660,
+      "shares_gpu": true,
+      "depends_on": [
+        "133-gfid-plan"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_133_dreamerv3.py",
+        "--selection",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_T1_CPU_THREADS": "8"
+      },
+      "note": "T1 selection run 'lr3e-4' (model_lr 3e-4), seed 20260908, 320 137 updates; gates and resumability as 133-select-native."
+    },
+    {
+      "id": "133-select-rr128",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 420,
+      "shares_gpu": true,
+      "depends_on": [
+        "133-gfid-plan"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_133_dreamerv3.py",
+        "--selection",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_T1_CPU_THREADS": "8"
+      },
+      "note": "T1 selection run 'rr128' (train_ratio 128: 80 034 updates), seed 20260908; gates and resumability as 133-select-native."
+    },
+    {
+      "id": "133-selro",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 45,
+      "shares_gpu": true,
+      "depends_on": [
+        "133-select-native",
+        "133-select-lr3e-4",
+        "133-select-rr128"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_133_dreamerv3.py",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T1_CPU_THREADS": "8"
+      },
+      "note": "Policy-split pooled grid AUC per configuration under deterministic_scoring(); selection.json (eb.select_configuration)."
+    },
+    {
+      "id": "133-smoke",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": [
+        "133-selro"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_133_dreamerv3.py",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T1_CPU_THREADS": "8"
+      },
+      "note": "Data accounting, G-port record check, CPU tests (CUDA_VISIBLE_DEVICES='' subprocess), measured throughput of the selection runs, the selection, the projection of the rest against the child cap; smoke.json. Then the orchestrator runs --prepare and commits the freeze before phase B."
+    }
+  ]
+}

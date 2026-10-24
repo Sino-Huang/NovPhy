@@ -1,0 +1,33 @@
+{
+  "arm_family": "dreamerv3",
+  "band": [
+    0.18,
+    0.42
+  ],
+  "band_rule": "paper 0.30 +/- 2 binomial SE on 50 cases (SE = sqrt(0.3*0.7/50) = 0.0648; +/-2SE = [0.1704, 0.4296]), on the 1/50 success grid: 9..21 successes, i.e. [0.18, 0.42] inclusive",
+  "frozen_at": "2026-10-25",
+  "issue": 133,
+  "paper": {
+    "n_cases": 50,
+    "source": "Zhou, Pan, LeCun, Pinto, DINO-WM, ICML 2025, arXiv 2411.04983v2, Table 1 (PushT SR, row 'DreamerV3'); Sec. 4.2: IRIS / DreamerV3 / TD-MPC2 trained on DINO-WM's offline datasets without reward or task information, MPC on the learned world model; appendix A.9 credits https://github.com/NM512/dreamerv3-torch",
+    "value": 0.3
+  },
+  "pass_rule": "pass iff the run's final_eval success_rate lies in [0.18, 0.42] (inclusive). At most two logged repair attempts, each fixing a diagnosed port / harness defect, never the band (P-fid); then T1 is dropped with fidelity_not_reproduced.",
+  "posted_before_run": true,
+  "protocol": {
+    "config": "dino_wm @ 0a9492f conf/plan_pusht.yaml, the official planning/ code unchanged (MPCPlanner + CEMPlanner + PlanEvaluator + PlanWorkspace targets); the world model is the rebuilt DreamerV3 (Decision P-other, fidelity reconstruction)",
+    "frameskip": 5,
+    "goal_H": 5,
+    "goal_source": "dset",
+    "max_iter": 12,
+    "max_iter_reason": "as #130's frozen Tier-E band: plan_pusht.yaml sets planner.max_iter null (MPC ends only when all 50 cases succeed); capped at 12 MPC iterations = 300 env steps (12 x 5 planning steps x frameskip 5), the official gym registration's max_episode_steps=300 for 'pusht'. Frozen before the run; never changed after it.",
+    "n_evals": 50,
+    "objective": "create_objective_fn alpha 1, base 2, mode last",
+    "planner": "MPC-CEM: sub_planner CEM horizon 5, num_samples 300, topk 30, opt_steps 30, var_scale 1, eval_every 1; n_taken_actions 5",
+    "runs": 1,
+    "seed": 99
+  },
+  "schema": "issue_127_gfid_band_v1",
+  "statistic": "final_eval/success_rate of the official PlanWorkspace.perform_planning (sticky per case: a case counts as solved at the first MPC iteration whose env rollout meets PushT eval_state: position error < 20 and angle error < pi/9)",
+  "tier": "T"
+}
