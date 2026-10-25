@@ -87,7 +87,7 @@ def install_import_stubs():
     sys.modules.setdefault("d4rl.offline_env", offline_env)
 
 
-def install_decode_chunking(chunk=4):
+def install_decode_chunking(chunk=1):
     """Plot-path memory guard: the official evaluator decodes every predicted frame of all 50 cases at once with the
     VQ-VAE decoder (only for its rollout videos; upstream issue #23 reports OOM after a few MPC iterations). Decoding
     in chunks of cases gives the same tensors; planning, the objective and the success metric never use it."""
@@ -317,7 +317,7 @@ def record(run_dir, wall_seconds=None, exit_code=None):
                         "TORCH_HOME pinned to data/external/dino_wm/torch_hub (dinov2 @ 7764ea0 + official weights)",
                         "WANDB_MODE=disabled", "SDL_VIDEODRIVER=dummy",
                         "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only)",
-                        "VWorldModel.decode_obs chunked over 4 cases (plot-only decoder path; identical tensors; OOM guard, upstream #23)",
+                        "VWorldModel.decode_obs chunked per case (1 case; was 4 cases before run 3) (plot-only decoder path; identical tensors; OOM guard, upstream #23)",
                         "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 (torch 2.7 default weights_only=True; the released checkpoint pickles whole modules, as torch 2.3 loaded it)"],
               "environment": {"conda_env": "b127-dino_wm", "python": platform.python_version(),
                               "torch": torch.__version__,

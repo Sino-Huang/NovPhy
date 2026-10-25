@@ -262,3 +262,26 @@ The rerun is scheduler job `130-gfid-tier-e-full`: GPU 2, non-resumable, `est_mi
 **Numbers (DESCRIPTIVE).** Per ranker: pooled grid AUC per novelty level on the novel side, on the paired normal sides, pooled over novelty levels 1–7, and the paired contrast novel − paired normal (one row per (pair, seed) where both sides are mixed); level-clustered (pair-clustered for the paired contrast) percentile bootstrap, 10 000 draws, PCG64 7201. Records are hashed into this child's records manifest and re-derived by `--validate`.
 
 Shared implementation: `scripts/external_baselines.py` (`novelty_cells`, `read_novelty_anchors`, `novelty_reference_records`, `novelty_table`), pinned by every child plan; each child runner gets a `--score-novelty` mode before its freeze.
+
+<!-- posted: https://github.com/Sino-Huang/NovPhy/issues/130#issuecomment-6400401642 -->
+## Decision P-crash (2026-10-26): second Tier-E infrastructure crash (distinct cause); relaunch on an exclusive GPU 2, resuming from the MPC checkpoint
+
+**Trigger.** `130-gfid-tier-e-r` run 2 ran from 2026-10-25 21:55:20 AEDT on GPU 2 and ended at 02:00 with exit 1.
+- The error was a CUDA out-of-memory raised in the plot-only VQ-VAE decode inside the official evaluator (`evaluator.py:132` `decode_obs`, `vqvae` `conv_transpose2d`). It hit while iteration 3's evaluation rollout was being drawn.
+- A #131 D1 selection job with `shares_gpu` (pid 3084350, 1.53 GiB) had been placed on GPU 2 beside the Tier-E process, which needs about 29 GiB. The orchestrator has acknowledged this as a scheduling error.
+- The cause differs from the first crash (issuecomment-6386786676: an orphaned #128 process holding 18 GB).
+- **Disclosure.** The first relaunch under P-crash (run 1 of `130-gfid-tier-e-r`, directory `tier-e-2`) also ended in an infrastructure OOM, before any MPC iteration. This is the second relaunch, and each is logged.
+- No `final_eval` success value exists, and none has been read. The decision does not depend on any outcome.
+
+**State saved by the resumable runner** (`fidelity/runs/tier-e-3/mpc_checkpoint.pt`):
+- MPC iterations 1 and 2 of 12 are complete. The checkpoint was written at 00:37:18 after iteration 2, together with the `logs.json` length, the planner state and the torch CPU/CUDA, numpy and python RNG states.
+- The crash happened inside iteration 3, after the checkpoint, so the checkpoint is clean.
+- On resume, iteration 3 is recomputed from the restored RNG state. The CPU test shows this resume is byte-exact. On the GPU the restored state is exact, but GPU kernels are not bitwise deterministic between any two runs.
+- `tier-e-2` holds no MPC iteration and is kept, disclosed, but unused.
+
+**Decision.**
+- Relaunch once more, resuming `tier-e-3` from its iteration-2 checkpoint on GPU 2, with no co-scheduled job. The orchestrator keeps every other job off GPU 2 until Tier-E completes. `130-gfid-tier-e-r` already has `shares_gpu: false`; the fault was the neighbour's `shares_gpu`.
+- Plot-path OOM guard: the plot-only decode now runs one case at a time, down from 4. Its memory grows with the rollout length (12 iterations × 5 steps). It produces identical tensors and does not touch planning, the objective or the success metric.
+- Protocol, band (`band.json` sha256 `247747e2…`) and statistic are unchanged.
+- Rate measured in run 2: about 81 min per MPC iteration on an exclusive RTX 5090, slower than the 61 min seen under contention before. That leaves about 10 iterations, roughly 13.5 GPU-h.
+- Any further infrastructure crash gets a new posted decision before any relaunch.

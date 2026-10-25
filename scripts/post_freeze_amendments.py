@@ -180,6 +180,14 @@ AMENDMENTS = {
                    "closed; --smoke refuses once plan.json exists (smoke.json is pinned and a re-run would add its "
                    "ledger seconds again); training, resume, RNG, data, readout fitting, scoring math and tokens "
                    "unchanged")},
+    "scripts/b127_dino_wm_fidelity.py": {
+        "issue": 130, "replaces": ("sha256:ceb3c7bb0e13cd34e8e4bbbb7c2ea1acb988ac3a1b1ca00c295ba47ca092f4b5",),
+        "sha256": "sha256:e5c861457459336bce37ec747adbf42176a350eb3176f004c3def4f5be10d3b9",
+        "change": ("A1 (infrastructure only; after the #130 freeze, during the Tier-E G-fid run, before any success "
+                   "value or any C1-car evaluation read; P-crash issuecomment-6400401642): the plot-only VQ-VAE "
+                   "decode of the official evaluator's rollout videos runs one case at a time instead of four (the "
+                   "same tensors; planning, the objective and the success metric never use this path), after a "
+                   "CUDA OOM on that path; the frozen band, planner, checkpoint, cases and metric unchanged")},
 }
 
 
