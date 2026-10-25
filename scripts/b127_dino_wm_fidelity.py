@@ -87,23 +87,22 @@ def install_import_stubs():
     sys.modules.setdefault("d4rl.offline_env", offline_env)
 
 
-def install_decode_chunking(chunk=1):
-    """Plot-path memory guard: the official evaluator decodes every predicted frame of all 50 cases at once with the
-    VQ-VAE decoder (only for its rollout videos; upstream issue #23 reports OOM after a few MPC iterations). Decoding
-    in chunks of cases gives the same tensors; planning, the objective and the success metric never use it."""
-    import torch
-    from models import visual_world_model as vwm
-    original = vwm.VWorldModel.decode_obs
+def install_plot_off():
+    """A2 (P-crash on #130): the official evaluator draws its rollout videos only when the world model has a decoder
+    (``planning/evaluator.py``: ``if self.wm.decoder is not None``); its VQ-VAE decode of every predicted frame of the
+    50 cases runs out of memory on a 32 GB card beside the CEM peak (~28.4 GiB), even one case at a time, once the
+    rollouts grow. The evaluator's world model is given ``decoder = None``, the official branch of a model trained
+    with ``has_decoder: False``: no rollout videos. Planning (CEM / MPC rollouts via encode / predict), the objective,
+    the env rollouts and the success metric never read the decoder, and the decode consumes no RNG, so the
+    MPC-iteration checkpoint and its RNG state resume unchanged."""
+    from planning import evaluator
+    original = evaluator.PlanEvaluator.__init__
 
-    def decode_obs(self, z_obs):
-        b = z_obs["visual"].shape[0]
-        if b <= chunk:
-            return original(self, z_obs)
-        parts = [original(self, {k: v[i:i + chunk] for k, v in z_obs.items()}) for i in range(0, b, chunk)]
-        obs = {key: torch.cat([p[0][key] for p in parts]) for key in parts[0][0]}
-        return obs, sum(p[1] for p in parts) / len(parts)
+    def __init__(self, *args, **kwargs):
+        original(self, *args, **kwargs)
+        self.wm.decoder = None
 
-    vwm.VWorldModel.decode_obs = decode_obs
+    evaluator.PlanEvaluator.__init__ = __init__
 
 
 CHECKPOINT = "mpc_checkpoint.pt"
@@ -251,7 +250,7 @@ def run_official(argv, run_dir, stop_after=None):
     install_import_stubs()
     sys.path.insert(0, str(OFFICIAL))
     os.chdir(OFFICIAL)
-    install_decode_chunking()
+    install_plot_off()
     install_mpc_checkpointing(run_dir, stop_after)
     sys.argv = [str(OFFICIAL / "plan.py"), *argv]
     import runpy
@@ -317,7 +316,7 @@ def record(run_dir, wall_seconds=None, exit_code=None):
                         "TORCH_HOME pinned to data/external/dino_wm/torch_hub (dinov2 @ 7764ea0 + official weights)",
                         "WANDB_MODE=disabled", "SDL_VIDEODRIVER=dummy",
                         "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only)",
-                        "VWorldModel.decode_obs chunked per case (1 case; was 4 cases before run 3) (plot-only decoder path; identical tensors; OOM guard, upstream #23)",
+                        "A2: evaluator world model decoder = None (the official no-decoder branch; no rollout videos; plot-only path; before A2 the decode was chunked: 4 cases in run 2 of 130-gfid-tier-e-r, 1 case in run 3; both OOM'd)",
                         "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 (torch 2.7 default weights_only=True; the released checkpoint pickles whole modules, as torch 2.3 loaded it)"],
               "environment": {"conda_env": "b127-dino_wm", "python": platform.python_version(),
                               "torch": torch.__version__,

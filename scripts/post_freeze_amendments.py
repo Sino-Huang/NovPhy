@@ -181,13 +181,22 @@ AMENDMENTS = {
                    "ledger seconds again); training, resume, RNG, data, readout fitting, scoring math and tokens "
                    "unchanged")},
     "scripts/b127_dino_wm_fidelity.py": {
-        "issue": 130, "replaces": ("sha256:ceb3c7bb0e13cd34e8e4bbbb7c2ea1acb988ac3a1b1ca00c295ba47ca092f4b5",),
-        "sha256": "sha256:e5c861457459336bce37ec747adbf42176a350eb3176f004c3def4f5be10d3b9",
+        "issue": 130,
+        "replaces": ("sha256:ceb3c7bb0e13cd34e8e4bbbb7c2ea1acb988ac3a1b1ca00c295ba47ca092f4b5",
+                     "sha256:e5c861457459336bce37ec747adbf42176a350eb3176f004c3def4f5be10d3b9"),
+        "sha256": "sha256:0ba6941b47a04c4b4211ab5b2fb829a7a65b3652e1fa2573a1dd9aa634c79cf8",
         "change": ("A1 (infrastructure only; after the #130 freeze, during the Tier-E G-fid run, before any success "
                    "value or any C1-car evaluation read; P-crash issuecomment-6400401642): the plot-only VQ-VAE "
                    "decode of the official evaluator's rollout videos runs one case at a time instead of four (the "
                    "same tensors; planning, the objective and the success metric never use this path), after a "
-                   "CUDA OOM on that path; the frozen band, planner, checkpoint, cases and metric unchanged")},
+                   "CUDA OOM on that path. A2 (infrastructure only; same stage, before any success value; P-crash "
+                   "2026-10-26 on #130): the same plot path ran out of memory again at one case per decode on an "
+                   "exclusive 32 GB GPU (CEM peak ~28.4 GiB), so the evaluator's world model is given decoder = None, "
+                   "the official evaluator's no-decoder branch (planning/evaluator.py 'if self.wm.decoder is not "
+                   "None'): no rollout videos are drawn; planning, the objective, env rollouts, the success metric "
+                   "and the RNG streams never use the decoder, so the MPC-iteration checkpoint resumes unchanged. "
+                   "replaces = the frozen bytes and the A1 bytes; the frozen band, planner, checkpoint, cases and "
+                   "metric unchanged")},
 }
 
 

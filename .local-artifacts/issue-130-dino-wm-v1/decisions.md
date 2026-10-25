@@ -285,3 +285,39 @@ Shared implementation: `scripts/external_baselines.py` (`novelty_cells`, `read_n
 - Protocol, band (`band.json` sha256 `247747e2…`) and statistic are unchanged.
 - Rate measured in run 2: about 81 min per MPC iteration on an exclusive RTX 5090, slower than the 61 min seen under contention before. That leaves about 10 iterations, roughly 13.5 GPU-h.
 - Any further infrastructure crash gets a new posted decision before any relaunch.
+
+<!-- posted: https://github.com/Sino-Huang/NovPhy/issues/130#issuecomment-6402614864 -->
+## Decision P-crash (2026-10-26): third Tier-E infrastructure OOM (the plot path again); root fix = the official evaluator's no-decoder branch; resume from the iteration-2 checkpoint on the exclusive GPU 2
+
+**Trigger.** `130-gfid-tier-e-r` run 3 started at 03:50:21 AEDT on GPU 2 with no other job on the card. It resumed from the iteration-2 checkpoint and ended at 04:55:20 with exit 1.
+- The error was a CUDA out-of-memory in the **plot-only** decode of the official evaluator's rollout videos: `plan` (MPC loop) → `evaluator.py:132 decode_obs` → `vqvae` `conv_transpose2d`. It happened even with the one-case-per-decode chunking added after run 2. At that point 30.64 GiB was allocated by the process, against a CEM peak of about 28.4 GiB on a 31.36 GiB card.
+- This is the same path as run 2's crash (issuecomment-6400401642). Chunking only shrank each decode, not the total, so the earlier fix did not address the root.
+
+**All three crashes (disclosed; none produced or exposed a success value):**
+
+| # | job run | directory | cause | MPC iterations finished |
+| --- | --- | --- | --- | --- |
+| 1 | `130-gfid-tier-e-r#1` (2026-10-24 22:00 – 2026-10-25 03:31) | `tier-e-2` | orphaned #128 A4 process (18 GB) on GPU 2 | 0 |
+| 2 | `#2` (2026-10-25 21:55 – 2026-10-26 02:00) | `tier-e-3` | plot decode OOM beside a co-scheduled #131 job (1.5 GB) | 2 (checkpoint 00:37:18) |
+| 3 | `#3` (2026-10-26 03:50 – 04:55) | `tier-e-3` (resumed) | plot decode OOM on the exclusive card | 0 more (iteration 3 not finished) |
+
+The earlier stopped run (`130-gfid-tier-e`, 2026-10-24, `tier-e-1`) was a scheduling stop before its first iteration (issuecomment-6382562140). No `final_eval` value exists, and none has been read.
+
+**Options.**
+- An official configuration switch that disables the videos. **Checked: there is none.** `plan_pusht.yaml` has only `n_plot_samples`, and it slices after the full decode. The evaluator draws videos iff `self.wm.decoder is not None` (`planning/evaluator.py:131`), and the decoder comes from the checkpoint.
+- Move the decode to the CPU. Rejected: `eval_actions` runs after every CEM step (`eval_every: 1`), so all 50 cases' growing rollouts would be decoded more than 30 times per MPC iteration on the CPU. That adds hours, for videos nothing reads.
+- **Chosen: the official no-decoder branch.** The evaluator's world model gets `decoder = None`, the code path of a model trained with `has_decoder: False`.
+  - No rollout videos are drawn.
+  - CEM/MPC rollouts (encode/predict), the objective, the env rollouts and the PushT `eval_state` success metric never read the decoder.
+  - The decode consumes no RNG, so the MPC-iteration checkpoint (including its RNG states) resumes unchanged.
+  - Protocol, frozen band (`band.json` sha256 `247747e2…`), checkpoint, cases and metric are unchanged.
+
+**Registration.** This is post-freeze amendment **A2** of `scripts/b127_dino_wm_fidelity.py` in `scripts/post_freeze_amendments.py`.
+- `replaces`: the frozen bytes `sha256:ceb3c7bb…` and the A1 bytes `sha256:e5c86145…`.
+- `sha256`: `0ba6941b…`.
+- `tests/test_issue_127_amendments.py` passes, as do the #101 registry tests. `load_plan` of #130 passes. The CPU resume-equality test (official `plan.py`, 2 cases, 2 MPC iterations) passes under A2.
+
+**Relaunch.** This is the third P-crash relaunch.
+- It resumes `tier-e-3` from the iteration-2 checkpoint (saved 2026-10-25T13:37:18Z). Iteration 3 is recomputed from the restored RNG state.
+- It runs on GPU 2, exclusive (the orchestrator keeps every other job off the card), from 18:00 on 2026-10-26.
+- Any further crash gets a new posted decision.
