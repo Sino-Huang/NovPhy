@@ -224,3 +224,29 @@ The precision-correction entry above records the runner sha256 `b7a5940e…` as 
 **Trigger.** The P-crash decision (issuecomment-6386806922) asked for `shares_gpu: false` on every `131-gfid-*` job so that the timing rerun would be clean. That timing run (run 3) is finished and recorded (`fidelity/gfid-timing.json`; P2E 0.142 s/update, THICK 0.317, DreamerV2 0.091). The remaining G-fid runs measure returns, not speed: sharing a GPU changes only their wall time, never their results (seeded, checkpointed, no time-dependent logic). P2E alone used about 45 % of its GPU, and the program budget counts device time (Decision P-budget on #127), so serialising six under-utilising runs on one GPU wastes budget and calendar time.
 
 **Decision.** `shares_gpu: true` on `131-gfid-p2e`, the three `131-gfid-thick-*` and the three `131-gfid-dreamer-*` jobs (THICK on GPU 3, DreamerV2 on GPU 1). Their per-run ledgers keep the recorded process seconds; the program summary flags them as shared. The frozen band, pass rule, seeds, precision and window are unchanged.
+## Decision P-crash (2026-10-26): shared replay-cache race at G-fid launch; fix, then relaunch all six runs once from scratch
+
+**Trigger.** Rule P-crash (infrastructure; not a typed failure). After `131-gfid-p2e` completed (1M env steps, 8.54 GPU-h), the six G-fid runs (THICK Dreamer and DreamerV2 × seeds 20260908/09/10) launched together at 2026-10-25 23:45:20 AEDT. Each run lazily uncompressed the shared Plan2Explore episodes into the `.npy` cache. Several processes rewrote the same cache files at once (`os.replace` over files that other processes had already memory-mapped, on the mergerfs volume). Four runs failed within seconds with `OSError: [Errno 116] Stale file handle` at `np.load(..., mmap_mode="r")`: thick s20260908/09/10 and dreamer s20260908. The two that started (dreamer s20260909/10, about 0.4 h each) recorded no loaded-episode list or digest. Their replay therefore cannot be proven identical to a verified copy, and they may hold maps of replaced files.
+
+**Fix (no change to training semantics).**
+- The exploration cache is now built exactly once, by a separate CPU step (`b127_thick_fidelity.py --build-cache`). It is written to a temporary directory, every file is fsynced, the directory is renamed into place, and a `MANIFEST.json` records each episode's npz name, size and length and each array's shape, dtype and sha256.
+- Runs only open the cache, read-only. They refuse unless the manifest covers exactly the source episodes with matching npz sizes, every array has its recorded shape and dtype, and the action and reward arrays re-hash to their recorded sha256. Each run writes the manifest's sha256 and its loaded counts to `replay_source.json`.
+- The old lazily-built cache directory is no longer read.
+- A full verification (`--verify-cache`) compares every array of every Plan2Explore episode with its cached copy and its sha256. Result (`fidelity/cache-verification.json`): **pass**. 500 episodes, 3 000 arrays and 1 000 000 steps match their cached copies and their sha256, with 0 mismatches. Manifest `sha256:ef527042…a43f092`.
+- Code: `world_model/baselines/thick/envs.py` (`build_cache`, `open_cache`, `verify_cache`) and `fidelity_runner.py`. New CPU tests cover refusal of a missing, tampered or incomplete cache.
+
+**Decision.** Stop dreamer s20260909/10 (exit 75), delete all six run directories, and relaunch all six runs once, from scratch, on the verified cache. All six then start from identical data. The Plan2Explore run is not repeated. Its episodes are the cache's verified source.
+- **Ledger:** the discarded GPU time (about 0.4 h × 2 plus seconds for the four failed runs) stays in the ledger and is disclosed.
+- **Placement:** THICK runs on GPU 3 and DreamerV2 runs on GPU 1, `shares_gpu`.
+- **P-crash relaunch:** this uses the single relaunch for these six jobs.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/131#issuecomment-6398071674
+
+---
+
+**Addendum to Decision P-crash (2026-10-26), comment 6398071674.** The orchestrator SIGTERMed dreamer s20260909/10; they exited 75 (paused), but the scheduler resumed both from their checkpoints at the next tick (run 2). They were then SIGKILLed and recorded as failed. Their run directories were deleted, and both were requeued to restart from scratch on the verified cache. The GPU time of their discarded runs (0.44 h of run 1, plus the seconds of run 2) is not counted toward the G-fid runs. The four relaunched runs (thick s20260908/09/10, dreamer s20260908) each record the verified manifest sha256 in `replay_source.json`.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/131#issuecomment-6398164689
+
+---
+

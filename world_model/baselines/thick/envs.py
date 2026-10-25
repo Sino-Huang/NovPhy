@@ -11,16 +11,20 @@ with these implementation differences (no semantic change):
 - the replay's chunk generator keeps its pending sequence as (episode, start, length) and is checkpointable;
   batches are drawn synchronously (upstream: ``tf.data`` with ``prefetch(5)``, i.e. up to a few batches drawn
   ahead of the update that uses them);
-- episodes loaded from another run's directory (the Plan2Explore data) are cached once as uncompressed ``.npy``
-  files and memory-mapped, so concurrent runs share them through the page cache (upstream: each process decompresses
-  every episode into its own memory); saved episodes use the upstream ``.npz`` format and file names.
+- episodes loaded from another run's directory (the Plan2Explore data) are uncompressed once into ``.npy`` files
+  by a separate step (``build_cache``: temporary directory, fsync, rename, ``MANIFEST.json`` with per-array sha256)
+  and opened read-only and memory-mapped by every run (``open_cache`` refuses an incomplete or mismatching cache),
+  so concurrent runs share them through the page cache (upstream: each process decompresses every episode into its
+  own memory); saved episodes use the upstream ``.npz`` format and file names.
 """
 from __future__ import annotations
 
 import collections
 import datetime
+import hashlib
 import importlib.util
 import io
+import json
 import os
 from pathlib import Path
 import sys
@@ -278,21 +282,120 @@ def save_episode(directory, episode):
     return filename
 
 
-def _mapped(filename, cache_root):
-    """Memory-mapped arrays of an upstream .npz episode (uncompressed once into cache_root)."""
-    filename = Path(filename)
-    cache = Path(cache_root) / filename.stem
-    done = cache / ".complete"
-    if not done.is_file():
-        cache.mkdir(parents=True, exist_ok=True)
+CACHE_SCHEMA = "issue_131_replay_cache_v1"
+PROBE_KEYS = ("action", "reward")  # arrays re-hashed at every run start (small)
+
+
+class CacheError(RuntimeError):
+    pass
+
+
+def _sha256(array):
+    return "sha256:" + hashlib.sha256(np.ascontiguousarray(array).tobytes()).hexdigest()
+
+
+def _fsync_dir(path):
+    fd = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def build_cache(load_directory, cache_root):
+    """Uncompress every ``.npz`` episode of ``load_directory`` once into ``cache_root`` (``<episode>/<key>.npy``)
+    with ``MANIFEST.json`` (per-episode npz name, bytes, length, and per-array shape / dtype / sha256). Built in a
+    temporary directory (every file fsynced), then renamed into place; refuses to overwrite an existing cache.
+    Returns the manifest. Never called by a training run (runs only open a complete cache, ``open_cache``)."""
+    load_directory, cache_root = Path(load_directory), Path(cache_root)
+    if cache_root.exists():
+        raise CacheError(f"{cache_root} exists; a cache is built once (remove it explicitly to rebuild)")
+    building = cache_root.with_name(cache_root.name + f".building-{os.getpid()}")
+    building.mkdir(parents=True)
+    episodes = []
+    for filename in sorted(load_directory.glob("*.npz")):
+        target = building / filename.stem
+        target.mkdir()
+        arrays = {}
         with np.load(filename) as data:
             for key in data.files:
-                tmp = cache / f"{key}.npy.{os.getpid()}.tmp"
-                with open(tmp, "wb") as f:
-                    np.save(f, data[key])
-                os.replace(tmp, cache / f"{key}.npy")
-        done.touch()
-    return {p.name[:-4]: np.load(p, mmap_mode="r") for p in sorted(cache.glob("*.npy"))}
+                value = data[key]
+                with open(target / f"{key}.npy", "wb") as f:
+                    np.save(f, value)
+                    f.flush()
+                    os.fsync(f.fileno())
+                arrays[key] = {"shape": list(value.shape), "dtype": str(value.dtype), "sha256": _sha256(value)}
+        _fsync_dir(target)
+        episodes.append({"npz": filename.name, "npz_bytes": filename.stat().st_size,
+                         "length": arrays["action"]["shape"][0] - 1, "arrays": arrays})
+    manifest = {"schema": CACHE_SCHEMA, "source": str(load_directory), "episodes": episodes,
+                "steps": sum(e["length"] for e in episodes), "complete": True}
+    with open(building / "MANIFEST.json", "w") as f:
+        f.write(json.dumps(manifest, indent=1) + "\n")
+        f.flush()
+        os.fsync(f.fileno())
+    _fsync_dir(building)
+    os.rename(building, cache_root)
+    _fsync_dir(cache_root.parent)
+    return manifest
+
+
+def read_manifest(cache_root):
+    path = Path(cache_root) / "MANIFEST.json"
+    if not path.is_file():
+        raise CacheError(f"{cache_root}: no MANIFEST.json (cache missing or incomplete; run --build-cache)")
+    manifest = json.loads(path.read_text())
+    if manifest.get("schema") != CACHE_SCHEMA or manifest.get("complete") is not True:
+        raise CacheError(f"{cache_root}: manifest incomplete or of another schema")
+    return manifest
+
+
+def open_cache(cache_root, filenames):
+    """Read-only memory maps of the cached episodes ``filenames`` (upstream .npz paths). Refuses unless the cache's
+    manifest covers exactly the source directory's episodes with matching npz sizes, every array has its recorded
+    shape / dtype, and the probe arrays (``PROBE_KEYS``) re-hash to their recorded sha256."""
+    cache_root = Path(cache_root)
+    manifest = read_manifest(cache_root)
+    entries = {e["npz"]: e for e in manifest["episodes"]}
+    filenames = [Path(f) for f in filenames]
+    source = {p.name for p in filenames[0].parent.glob("*.npz")} if filenames else set()
+    if source != set(entries):
+        raise CacheError(f"{cache_root}: manifest episodes differ from {filenames[0].parent}")
+    out = {}
+    for filename in filenames:
+        entry = entries[filename.name]
+        if filename.stat().st_size != entry["npz_bytes"]:
+            raise CacheError(f"{filename.name}: npz size differs from the manifest")
+        arrays = {}
+        for key, spec in entry["arrays"].items():
+            value = np.load(cache_root / filename.stem / f"{key}.npy", mmap_mode="r")
+            if list(value.shape) != spec["shape"] or str(value.dtype) != spec["dtype"]:
+                raise CacheError(f"{filename.stem}/{key}: shape or dtype differs from the manifest")
+            if key in PROBE_KEYS and _sha256(value) != spec["sha256"]:
+                raise CacheError(f"{filename.stem}/{key}: sha256 differs from the manifest")
+            arrays[key] = value
+        out[str(filename)] = arrays
+    return out
+
+
+def verify_cache(load_directory, cache_root):
+    """Every array of every source episode equals its cached copy and its manifest sha256 (full read)."""
+    manifest = read_manifest(cache_root)
+    filenames = sorted(Path(load_directory).glob("*.npz"))
+    opened = open_cache(cache_root, filenames)
+    mismatches, arrays = [], 0
+    for filename in filenames:
+        spec = {e["npz"]: e for e in manifest["episodes"]}[filename.name]["arrays"]
+        with np.load(filename) as data:
+            if set(data.files) != set(spec):
+                mismatches.append(f"{filename.name}: keys")
+            for key in data.files:
+                arrays += 1
+                cached = opened[str(filename)][key]
+                if not np.array_equal(data[key], cached) or _sha256(cached) != spec[key]["sha256"]:
+                    mismatches.append(f"{filename.name}/{key}")
+    return {"episodes": len(filenames), "arrays": arrays, "steps": manifest["steps"], "mismatches": mismatches,
+            "pass": not mismatches and len(filenames) == len(manifest["episodes"])}
 
 
 class Replay:
@@ -318,8 +421,12 @@ class Replay:
                     if steps >= capacity:
                         break
                 filenames = filenames[-episodes:]
-            for filename in filenames:
-                self._complete_eps[str(filename)] = _mapped(filename, cache)
+            if cache is not None:
+                self._complete_eps.update(open_cache(cache, filenames))
+            else:
+                for filename in filenames:
+                    with np.load(filename) as data:
+                        self._complete_eps[str(filename)] = {k: data[k] for k in data.files}
             self._total_episodes, self._total_steps = count_episodes(load_directory)
         else:
             self._total_episodes, self._total_steps = count_episodes(self._directory)

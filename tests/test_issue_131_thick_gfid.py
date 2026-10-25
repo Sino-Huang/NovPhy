@@ -98,14 +98,35 @@ def test_replay_state_round_trip(tmp_path):
         assert all(np.array_equal(a[k], b[k]) for k in a)
 
 
-def test_loaded_directory_is_memory_mapped(tmp_path):
+def test_loaded_directory_uses_a_built_verified_cache(tmp_path):
     _episodes(tmp_path / "src", 2, 20)
+    with pytest.raises(envs.CacheError):  # runs never build the cache themselves
+        envs.Replay(tmp_path / "own", minlen=5, maxlen=5, load_directory=tmp_path / "src", cache=tmp_path / "cache")
+    manifest = envs.build_cache(tmp_path / "src", tmp_path / "cache")
+    assert len(manifest["episodes"]) == 2 and manifest["steps"] == 40
+    with pytest.raises(envs.CacheError):  # built once
+        envs.build_cache(tmp_path / "src", tmp_path / "cache")
+    assert envs.verify_cache(tmp_path / "src", tmp_path / "cache")["pass"]
     replay = envs.Replay(tmp_path / "own", minlen=5, maxlen=5, load_directory=tmp_path / "src",
                          cache=tmp_path / "cache", seed=0)
     assert replay.stats["loaded_episodes"] == 2
     first = next(iter(replay._complete_eps.values()))
-    assert isinstance(first["image"], np.memmap)
+    assert isinstance(first["image"], np.memmap) and not first["image"].flags.writeable
     assert replay.batch(2, 5)["image"].shape == (2, 5, 64, 64, 3)
+
+
+def test_cache_refuses_tampering_and_missing_episodes(tmp_path):
+    _episodes(tmp_path / "src", 2, 20)
+    envs.build_cache(tmp_path / "src", tmp_path / "cache")
+    episode = sorted((tmp_path / "cache").iterdir())[0]
+    action = np.load(episode / "action.npy")
+    action[1] = 1.0 - action[1]
+    np.save(episode / "action.npy", action)
+    with pytest.raises(envs.CacheError):
+        envs.open_cache(tmp_path / "cache", sorted((tmp_path / "src").glob("*.npz")))
+    _episodes(tmp_path / "src", 1, 20, seed=1)  # a new source episode the manifest does not cover
+    with pytest.raises(envs.CacheError):
+        envs.open_cache(tmp_path / "cache", sorted((tmp_path / "src").glob("*.npz")))
 
 
 def test_lambda_return_matches_the_recursion():
@@ -129,6 +150,7 @@ def test_stream_norm_with_momentum_one_is_the_identity():
 
 def _fake_exploration(tmp_path, length=60):
     _episodes(tmp_path / "explore" / "train_episodes", 2, length)
+    envs.build_cache(tmp_path / "explore" / "train_episodes", fr.envs_cache_root(tmp_path / "explore"))
     return tmp_path / "explore"
 
 

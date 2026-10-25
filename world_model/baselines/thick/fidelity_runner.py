@@ -17,6 +17,7 @@ also written after every loop iteration (1e4 env steps). GPU / wall seconds go t
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -37,6 +38,11 @@ KINDS = {
     "dreamer": {"configs": ["visualpinpad"], "from_replay": True},
 }
 STOP = []
+
+
+def envs_cache_root(load_dir):
+    """The exploration run's replay cache (built once by ``b127_thick_fidelity.py --build-cache``)."""
+    return Path(load_dir) / "train_episodes_cache"
 
 
 def request_stop(signum, frame):
@@ -125,8 +131,15 @@ class Run:
             raise ValueError("train_from_replay needs the exploration run's directory")
         load = Path(load_dir) / "train_episodes" if self.from_replay else None
         self.replay = envs.Replay(self.logdir / "train_episodes", **config.replay, load_directory=load,
-                                  cache=(Path(load_dir) / "train_episodes_npy_cache") if load else None,
+                                  cache=envs_cache_root(load_dir) if load else None,
                                   seed=self.seed + 2000)
+        if load is not None:
+            manifest = Path(envs_cache_root(load_dir)) / "MANIFEST.json"
+            _write_json(self.logdir / "replay_source.json", {
+                "load_directory": str(load), "cache": str(envs_cache_root(load_dir)),
+                "manifest_sha256": "sha256:" + hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                "loaded_episodes": self.replay.stats["loaded_episodes"],
+                "loaded_steps": self.replay.stats["loaded_steps"]})
         obs_space = {k: tuple(v.shape) for k, v in self.train_env.obs_space.items()}
         self.act_dim = self.train_env.act_space["action"].n
         self.agent = ag.Agent(config, obs_space, self.act_dim).to(self.device)

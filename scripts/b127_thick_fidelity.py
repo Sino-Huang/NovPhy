@@ -670,6 +670,8 @@ def main(argv=None):
     group.add_argument("--port-timing", metavar="OUT_JSON")
     group.add_argument("--gfid-timing", action="store_true", help="timing-only runs + re-checked projection")
     group.add_argument("--gfid", action="store_true", help="write fidelity/gfid.json from the completed runs")
+    group.add_argument("--build-cache", metavar="LOAD_DIR", help="build the exploration replay cache once (CPU)")
+    group.add_argument("--verify-cache", metavar="LOAD_DIR", help="verify the cache against the episodes (CPU)")
     group.add_argument("--run", choices=["plan2explore", "thick", "dreamer"],
                        help="a G-fid run (resumable: SIGTERM -> checkpoint -> exit 75)")
     parser.add_argument("--official-timing", action="store_true")
@@ -694,6 +696,26 @@ def main(argv=None):
         return gfid_timing()
     if args.gfid:
         return gfid()
+    if args.build_cache or args.verify_cache:
+        sys.path.insert(0, str(ROOT))
+        from world_model.baselines.thick import envs
+        from world_model.baselines.thick.fidelity_runner import envs_cache_root
+        load_dir = Path(args.build_cache or args.verify_cache)
+        source, cache = load_dir / "train_episodes", envs_cache_root(load_dir)
+        if args.build_cache:
+            t0 = time.time()
+            manifest = envs.build_cache(source, cache)
+            print(f"[b127-thick-cache] built {cache}: {len(manifest['episodes'])} episodes, {manifest['steps']} steps, "
+                  f"{time.time() - t0:.0f} s", flush=True)
+            return 0
+        t0 = time.time()
+        result = envs.verify_cache(source, cache)
+        result.update({"schema": "issue_131_replay_cache_verification_v1", "source": str(source), "cache": str(cache),
+                       "manifest_sha256": sha256_of(cache / "MANIFEST.json"), "seconds": round(time.time() - t0, 1),
+                       "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+        write_json(FIDELITY / "cache-verification.json", result)
+        print(json.dumps({k: result[k] for k in ("episodes", "arrays", "steps", "pass")}), flush=True)
+        return 0 if result["pass"] else 1
     if args.run:
         sys.path.insert(0, str(ROOT))
         from world_model.baselines.thick import fidelity_runner
