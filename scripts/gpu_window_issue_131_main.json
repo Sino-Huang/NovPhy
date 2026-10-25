@@ -2,9 +2,10 @@
   "jobs": [
     {
       "id": "131-train-q0",
-      "gpu": 0,
+      "gpu": 1,
       "resumable": true,
-      "est_minutes": 840,
+      "shares_gpu": true,
+      "est_minutes": 752,
       "command": [
         "python",
         "-u",
@@ -16,16 +17,17 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "0",
+        "CUDA_VISIBLE_DEVICES": "1",
         "B127_D1_CPU_THREADS": "8"
       },
-      "note": "#131 D1 frozen training queue 0 (plan.json queues.train['0'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+      "note": "#131 D1 frozen training queue 0 (plan.json queues.train['0'], LPT of the smoke projection; est_minutes from smoke.json projection 12.53 GPU-h); placed on GPU 1 (queue index stays 0; GPU 2 is kept exclusive for #130's Tier-E fidelity run); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
     },
     {
       "id": "131-train-q1",
-      "gpu": 1,
+      "gpu": 0,
       "resumable": true,
-      "est_minutes": 840,
+      "shares_gpu": true,
+      "est_minutes": 752,
       "command": [
         "python",
         "-u",
@@ -37,16 +39,17 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
         "B127_D1_CPU_THREADS": "8"
       },
-      "note": "#131 D1 frozen training queue 1 (plan.json queues.train['1'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+      "note": "#131 D1 frozen training queue 1 (plan.json queues.train['1'], LPT of the smoke projection; est_minutes from smoke.json projection 12.53 GPU-h); placed on GPU 0 (queue index stays 1); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
     },
     {
       "id": "131-train-q2",
-      "gpu": 2,
+      "gpu": 3,
       "resumable": true,
-      "est_minutes": 120,
+      "shares_gpu": true,
+      "est_minutes": 58,
       "command": [
         "python",
         "-u",
@@ -58,16 +61,17 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "2",
+        "CUDA_VISIBLE_DEVICES": "3",
         "B127_D1_CPU_THREADS": "8"
       },
-      "note": "#131 D1 frozen training queue 2 (plan.json queues.train['2'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+      "note": "#131 D1 frozen training queue 2 (plan.json queues.train['2'], LPT of the smoke projection; est_minutes from smoke.json projection 0.97 GPU-h); placed on GPU 3 (queue index stays 2; GPU 2 is kept exclusive for #130's Tier-E fidelity run); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
     },
     {
       "id": "131-train-q3",
-      "gpu": 3,
+      "gpu": 1,
       "resumable": true,
-      "est_minutes": 120,
+      "shares_gpu": true,
+      "est_minutes": 29,
       "command": [
         "python",
         "-u",
@@ -79,15 +83,16 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "3",
+        "CUDA_VISIBLE_DEVICES": "1",
         "B127_D1_CPU_THREADS": "8"
       },
-      "note": "#131 D1 frozen training queue 3 (plan.json queues.train['3'], LPT of the smoke projection; est_minutes to be set from smoke.json before enqueue); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
+      "note": "#131 D1 frozen training queue 3 (plan.json queues.train['3'], LPT of the smoke projection; est_minutes from smoke.json projection 0.49 GPU-h); placed on GPU 1 (queue index stays 3); TF32 training precision; resume.pt every 2000 updates and on SIGTERM -> exit 75"
     },
     {
       "id": "131-readouts-g0",
       "gpu": 0,
       "resumable": true,
+      "shares_gpu": true,
       "est_minutes": 60,
       "depends_on": [
         "131-train-q0",
@@ -115,6 +120,7 @@
       "id": "131-readouts-g1",
       "gpu": 1,
       "resumable": true,
+      "shares_gpu": true,
       "est_minutes": 60,
       "depends_on": [
         "131-train-q0",
@@ -140,8 +146,9 @@
     },
     {
       "id": "131-readouts-g2",
-      "gpu": 2,
+      "gpu": 3,
       "resumable": true,
+      "shares_gpu": true,
       "est_minutes": 60,
       "depends_on": [
         "131-train-q0",
@@ -160,15 +167,16 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "2",
+        "CUDA_VISIBLE_DEVICES": "3",
         "B127_D1_CPU_THREADS": "8"
       },
-      "note": "#131 readouts queue (fit / policy only, deterministic_scoring): G-rank, G-action, G-collapse, policy AUCs, commit points, MACs; readouts.json per arm-seed written last (atomic)"
+      "note": "#131 readouts queue (fit / policy only, deterministic_scoring): G-rank, G-action, G-collapse, policy AUCs, commit points, MACs; readouts.json per arm-seed written last (atomic); placed on GPU 3 (queue index stays 2; GPU 2 kept for #130's Tier-E)"
     },
     {
       "id": "131-readouts-g3",
       "gpu": 3,
       "resumable": true,
+      "shares_gpu": true,
       "est_minutes": 60,
       "depends_on": [
         "131-train-q0",

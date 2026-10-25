@@ -1,0 +1,162 @@
+{
+  "accounting": {
+    "episode_frames": 46,
+    "fit_anchors": 480,
+    "fit_levels": 480,
+    "fit_positive": 838,
+    "fit_shots": 13919,
+    "launch5_abs_max": 1.0,
+    "policy_grid_mixed_cells": 94,
+    "shots_ending_before_225": 601
+  },
+  "device": "cuda",
+  "gport": {
+    "agent_pass": true,
+    "pass": true,
+    "port_current": true,
+    "world_model_pass": true
+  },
+  "pass": true,
+  "plan_identity": "issue-131-thick-v1",
+  "projection": {
+    "child_cap_gpu_h": 146.0,
+    "fidelity_gpu_h": 37.8,
+    "fidelity_source": "fidelity/gfid-timing.json:projected_gpu_h",
+    "native_per_seed_gpu_h": 12.534958568280821,
+    "readouts_gpu_h_estimate": 3.0,
+    "score_gpu_h_estimate": 2.0,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": 36.828705399266006,
+    "total_gpu_h": 106.15395576971427,
+    "training_gpu_h": 26.525250370448273,
+    "training_queue_loads_h": [
+      12.534958568280821,
+      12.534958568280821,
+      0.9702221559244208,
+      0.4851110779622104
+    ],
+    "training_queues": {
+      "0": [
+        "D1--seed20260909"
+      ],
+      "1": [
+        "D1--seed20260910"
+      ],
+      "2": [
+        "D1-m--seed20260908",
+        "D1-m--seed20260910"
+      ],
+      "3": [
+        "D1-m--seed20260909"
+      ]
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus": 15.284958568280821,
+    "within_caps": true
+  },
+  "readiness": {
+    "fidelity/gfid-timing.json": true,
+    "gport/agent/gport.json": true,
+    "gport/gport.json": true,
+    "pass": true
+  },
+  "schema": "issue_131_smoke_v1",
+  "selected": "sparsity-1",
+  "selection": {
+    "configs": {
+      "sparsity-1": {
+        "loss_scales.ctxt_sparsity": 1.0
+      },
+      "sparsity-10": {
+        "loss_scales.ctxt_sparsity": 10.0
+      },
+      "sparsity-25": {
+        "loss_scales.ctxt_sparsity": 25.0
+      }
+    },
+    "details": {
+      "sparsity-1": {
+        "cells": 94,
+        "exploratory_auc": {
+          "D1-coarse": 0.5253857844283376,
+          "D1-hl": 0.5111565739225313
+        },
+        "model_sha256": "sha256:835cd10dda081a9ce1a0a2b699ca93ac2e129394c145449fa3b6a2ab0758df40",
+        "typed_failure": null
+      },
+      "sparsity-10": {
+        "cells": 94,
+        "exploratory_auc": {
+          "D1-coarse": 0.4775845608292417,
+          "D1-hl": 0.495495284856987
+        },
+        "model_sha256": "sha256:8f4e9c351cb752c3a06172d4a5a86fc1b7c891ad10299911fdfed9ffd2f7de40",
+        "typed_failure": null
+      },
+      "sparsity-25": {
+        "cells": 94,
+        "exploratory_auc": {
+          "D1-coarse": 0.505001558724963,
+          "D1-hl": 0.5097283921752007
+        },
+        "model_sha256": "sha256:2bc4490e59ffad50a4f180c0f3319bb310e31ad692f7d8b0741c707d95747f97",
+        "typed_failure": null
+      }
+    },
+    "plan_identity": "issue-131-thick-v1",
+    "policy_cells": 94,
+    "results": {
+      "sparsity-1": {
+        "auc": 0.531170602447198,
+        "parameters": 21852337
+      },
+      "sparsity-10": {
+        "auc": 0.4801574312212609,
+        "parameters": 21852337
+      },
+      "sparsity-25": {
+        "auc": 0.4597907411737199,
+        "parameters": 21852337
+      }
+    },
+    "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+    "schema": "issue_131_selection_v1",
+    "scoring_policy": {
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false
+    },
+    "selected": "sparsity-1",
+    "written_at": "2026-10-25T16:45:34Z"
+  },
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES= python -m pytest -q tests/test_issue_131_thick_runner.py",
+    "exit_code": 0,
+    "tail": [
+      "14 passed in 6.20s"
+    ]
+  },
+  "throughput": {
+    "D1-m": {
+      "seconds_per_step": 0.19404443118488415,
+      "steps": 9000
+    },
+    "sparsity-1": {
+      "gpu_seconds": 45125.85084581096,
+      "seconds_per_step": 0.22562925422905478,
+      "steps": 200000
+    },
+    "sparsity-10": {
+      "gpu_seconds": 43887.45062650554,
+      "seconds_per_step": 0.21943725313252768,
+      "steps": 200000
+    },
+    "sparsity-25": {
+      "gpu_seconds": 43570.03796504112,
+      "seconds_per_step": 0.2178501898252056,
+      "steps": 200000
+    }
+  },
+  "written_at": "2026-10-25T16:51:21Z"
+}

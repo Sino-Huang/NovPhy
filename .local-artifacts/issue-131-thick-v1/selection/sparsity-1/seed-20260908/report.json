@@ -1,0 +1,55 @@
+{
+  "complete": true,
+  "device": "cuda",
+  "final": {
+    "carrier": 216.9564971923828,
+    "ctxt_carrier": 216.96595764160156,
+    "ctxt_kl": 0.3167785704135895,
+    "ctxt_reward": 0.9189385175704956,
+    "ctxt_sparsity": 0.043563179671764374,
+    "gate_activity": 0.043563179671764374,
+    "kl": 0.2785329818725586,
+    "model_grad_norm": 2.6177451610565186,
+    "model_loss": 436.4427795410156,
+    "reward": 0.9189385175704956,
+    "seconds": 45125.850312910974,
+    "step": 199999,
+    "thick_act": -6.387911319732666,
+    "thick_grad_norm": 1.1070914268493652,
+    "thick_hl_act_kl": 0.0048040058463811874,
+    "thick_kl": 0.24852998554706573,
+    "thick_loss": 0.6015395522117615,
+    "thick_reward": 0.8461893200874329,
+    "thick_time": 1.408073902130127
+  },
+  "finished_at": "2026-10-25T16:43:11Z",
+  "gpu_seconds": 45125.85084581096,
+  "model_sha256": "sha256:835cd10dda081a9ce1a0a2b699ca93ac2e129394c145449fa3b6a2ab0758df40",
+  "parameters": 21852337,
+  "peak_gib": 0.7635736465454102,
+  "precision": {
+    "cudnn_allow_tf32": true,
+    "device": "cuda",
+    "dtype": "float32",
+    "flags": {
+      "cudnn_allow_tf32": true,
+      "matmul_allow_tf32": true
+    },
+    "matmul_allow_tf32": true,
+    "source": "https://github.com/Sino-Huang/NovPhy/issues/131#issuecomment-6382756572"
+  },
+  "seconds_per_step": 0.22562925422905478,
+  "seed": 20260908,
+  "spec": {
+    "arm": "D1",
+    "batch": 16,
+    "configuration": "sparsity-1",
+    "name": "sparsity-1",
+    "overrides": {},
+    "size": "native",
+    "steps": 200000
+  },
+  "steps": 200000,
+  "typed_failure": null,
+  "wall_seconds": 45125.85084581096
+}

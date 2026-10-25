@@ -1,0 +1,68 @@
+{
+  "configs": {
+    "sparsity-1": {
+      "loss_scales.ctxt_sparsity": 1.0
+    },
+    "sparsity-10": {
+      "loss_scales.ctxt_sparsity": 10.0
+    },
+    "sparsity-25": {
+      "loss_scales.ctxt_sparsity": 25.0
+    }
+  },
+  "details": {
+    "sparsity-1": {
+      "cells": 94,
+      "exploratory_auc": {
+        "D1-coarse": 0.5253857844283376,
+        "D1-hl": 0.5111565739225313
+      },
+      "model_sha256": "sha256:835cd10dda081a9ce1a0a2b699ca93ac2e129394c145449fa3b6a2ab0758df40",
+      "typed_failure": null
+    },
+    "sparsity-10": {
+      "cells": 94,
+      "exploratory_auc": {
+        "D1-coarse": 0.4775845608292417,
+        "D1-hl": 0.495495284856987
+      },
+      "model_sha256": "sha256:8f4e9c351cb752c3a06172d4a5a86fc1b7c891ad10299911fdfed9ffd2f7de40",
+      "typed_failure": null
+    },
+    "sparsity-25": {
+      "cells": 94,
+      "exploratory_auc": {
+        "D1-coarse": 0.505001558724963,
+        "D1-hl": 0.5097283921752007
+      },
+      "model_sha256": "sha256:2bc4490e59ffad50a4f180c0f3319bb310e31ad692f7d8b0741c707d95747f97",
+      "typed_failure": null
+    }
+  },
+  "plan_identity": "issue-131-thick-v1",
+  "policy_cells": 94,
+  "results": {
+    "sparsity-1": {
+      "auc": 0.531170602447198,
+      "parameters": 21852337
+    },
+    "sparsity-10": {
+      "auc": 0.4801574312212609,
+      "parameters": 21852337
+    },
+    "sparsity-25": {
+      "auc": 0.4597907411737199,
+      "parameters": 21852337
+    }
+  },
+  "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+  "schema": "issue_131_selection_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "selected": "sparsity-1",
+  "written_at": "2026-10-25T16:45:34Z"
+}

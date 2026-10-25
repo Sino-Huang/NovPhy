@@ -1,0 +1,55 @@
+{
+  "complete": true,
+  "device": "cuda",
+  "final": {
+    "carrier": 217.02841186523438,
+    "ctxt_carrier": 217.0576629638672,
+    "ctxt_kl": 2.5858423709869385,
+    "ctxt_reward": 0.9189385175704956,
+    "ctxt_sparsity": 0.0,
+    "gate_activity": 0.0,
+    "kl": 1.108114242553711,
+    "model_grad_norm": 17.135852813720703,
+    "model_loss": 439.617919921875,
+    "reward": 0.9189385175704956,
+    "seconds": 43570.03731113998,
+    "step": 199999,
+    "thick_act": 0.0,
+    "thick_grad_norm": 0.0,
+    "thick_hl_act_kl": 0.0,
+    "thick_kl": 0.0,
+    "thick_loss": 0.0,
+    "thick_reward": -0.0,
+    "thick_time": -0.0
+  },
+  "finished_at": "2026-10-25T16:17:15Z",
+  "gpu_seconds": 43570.03796504112,
+  "model_sha256": "sha256:2bc4490e59ffad50a4f180c0f3319bb310e31ad692f7d8b0741c707d95747f97",
+  "parameters": 21852337,
+  "peak_gib": 0.7635736465454102,
+  "precision": {
+    "cudnn_allow_tf32": true,
+    "device": "cuda",
+    "dtype": "float32",
+    "flags": {
+      "cudnn_allow_tf32": true,
+      "matmul_allow_tf32": true
+    },
+    "matmul_allow_tf32": true,
+    "source": "https://github.com/Sino-Huang/NovPhy/issues/131#issuecomment-6382756572"
+  },
+  "seconds_per_step": 0.2178501898252056,
+  "seed": 20260908,
+  "spec": {
+    "arm": "D1",
+    "batch": 16,
+    "configuration": "sparsity-25",
+    "name": "sparsity-25",
+    "overrides": {},
+    "size": "native",
+    "steps": 200000
+  },
+  "steps": 200000,
+  "typed_failure": null,
+  "wall_seconds": 43570.03796504112
+}

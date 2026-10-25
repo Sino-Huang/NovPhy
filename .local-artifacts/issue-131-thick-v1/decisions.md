@@ -250,3 +250,19 @@ Posted: https://github.com/Sino-Huang/NovPhy/issues/131#issuecomment-6398164689
 
 ---
 
+
+## Decision P-freeze (2026-10-26): #131 frozen — D1 selected `sparsity-1`
+
+**Selection** (frozen rule: largest policy-split pooled grid AUC at 4 d.p.; ties → fewer trainable parameters → declaration order), one seed (20260908) per configuration, 94 policy cells, deterministic scoring policy (TF32 off):
+
+| configuration | `loss_scales.ctxt_sparsity` | policy grid AUC | parameters |
+| --- | --- | --- | --- |
+| **sparsity-1 (selected)** | 1 | **0.5312** | 21 852 337 |
+| sparsity-10 | 10 | 0.4802 | 21 852 337 |
+| sparsity-25 | 25 | 0.4598 | 21 852 337 |
+
+All three configurations sit near chance on the policy split; disclosed, no re-selection. The selected run (seed 20260908) is reused as the first D1 seed.
+
+**Smoke** (`smoke.json`, pass): G-port of the world model and of the full agent pass (port current); readiness pass (G-fid timing, both G-port records). Projection: native 12.53 GPU-h per seed; training 26.5 GPU-h; child total 106.2 GPU-h (cap 146), wall on 4 GPUs 15.3 h (cap 48) — within caps.
+
+**Frozen plan**: `plan.json` sha256 `557d4572badee8033427a75f96b606e2acef04ad3e7b3d31dbcf353930d613aa`, 134 pins, frozen_at 2026-10-25T20:09:20Z. Training queues (LPT): q0 D1 s20260909; q1 D1 s20260910; q2 D1-m s20260908 + s20260910; q3 D1-m s20260909. Placement for the night window: q0 and q3 on GPU 1, q1 on GPU 0, q2 on GPU 3 (queue indices unchanged; GPU 2 stays exclusive for #130's Tier-E fidelity run). Scoring waits for the D1 G-fid record (`131-gfid-record`; THICK s20260908–10 still running, DreamerV2 s20260908–10 done) and runs once.
