@@ -1,113 +1,117 @@
 {
- "jobs": [
-  {
-   "id": "128-gfid-a4-probe",
-   "gpu": 3,
-   "resumable": false,
-   "est_minutes": 30,
-   "command": [
-    "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
-    "-u",
-    "scripts/b127_dynamics_aware_fidelity.py",
-    "--probe-gpu"
-   ],
-   "env": {
-    "CUDA_VISIBLE_DEVICES": "3",
-    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache"
-   },
-   "note": "#128 A4 Tier-T timing probe: official fold-0 recipe shortened to 600 updates in fidelity/a4/probe-gpu-scratch (never a fidelity result): update rate, in-training eval, final test eval, GPU memory -> fidelity/a4/probe-gpu.json; the folds wait for it",
-   "cwd": "."
-  },
-  {
-   "id": "128-gfid-a4-fold0",
-   "gpu": 3,
-   "resumable": true,
-   "est_minutes": 600,
-   "depends_on": [
-    "128-gfid-a4-probe"
-   ],
-   "command": [
-    "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
-    "-u",
-    "scripts/b127_dynamics_aware_fidelity.py",
-    "--fold",
-    "0"
-   ],
-   "env": {
-    "CUDA_VISIBLE_DEVICES": "3",
-    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache"
-   },
-   "note": "#128 A4 G-fid Tier T fold 0: official Table-1 hand-crafted recipe (100k x 512, ball_within_template, test split) against the frozen band [82.8, 87.2] (band.json sha256 aba5a789...); SIGTERM -> official checkpoint after the current update, exit 75; resumes from fidelity/a4/fold0/checkpoints",
-   "cwd": "."
-  },
-  {
-   "id": "128-gfid-a4-fold1",
-   "gpu": 3,
-   "resumable": true,
-   "est_minutes": 600,
-   "depends_on": [
-    "128-gfid-a4-probe"
-   ],
-   "command": [
-    "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
-    "-u",
-    "scripts/b127_dynamics_aware_fidelity.py",
-    "--fold",
-    "1"
-   ],
-   "env": {
-    "CUDA_VISIBLE_DEVICES": "3",
-    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache",
-    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
-   },
-   "note": "#128 A4 G-fid Tier T fold 1 (as fold 0); PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only: limits fragmentation of the reserved cache; no kernel or numeric change)",
-   "cwd": "."
-  },
-  {
-   "id": "128-gfid-a4-fold2",
-   "gpu": 3,
-   "resumable": true,
-   "est_minutes": 600,
-   "depends_on": [
-    "128-gfid-a4-probe"
-   ],
-   "command": [
-    "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
-    "-u",
-    "scripts/b127_dynamics_aware_fidelity.py",
-    "--fold",
-    "2"
-   ],
-   "env": {
-    "CUDA_VISIBLE_DEVICES": "3",
-    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache",
-    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
-   },
-   "note": "#128 A4 G-fid Tier T fold 2 (as fold 0); PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only: limits fragmentation of the reserved cache; no kernel or numeric change)",
-   "cwd": "."
-  },
-  {
-   "id": "128-gfid-a4-table",
-   "gpu": null,
-   "resumable": false,
-   "est_minutes": 2,
-   "depends_on": [
-    "128-gfid-a4-fold0",
-    "128-gfid-a4-fold1",
-    "128-gfid-a4-fold2"
-   ],
-   "command": [
-    "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
-    "-u",
-    "scripts/b127_dynamics_aware_fidelity.py",
-    "--table"
-   ],
-   "env": {
-    "CUDA_VISIBLE_DEVICES": "",
-    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache"
-   },
-   "note": "#128 A4 G-fid Tier T table: fidelity/a4/gfid.json (mean over folds 0-2 vs band.json)",
-   "cwd": "."
-  }
- ]
+  "jobs": [
+    {
+      "id": "128-gfid-a4-probe",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 30,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
+        "-u",
+        "scripts/b127_dynamics_aware_fidelity.py",
+        "--probe-gpu"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache"
+      },
+      "note": "#128 A4 Tier-T timing probe: official fold-0 recipe shortened to 600 updates in fidelity/a4/probe-gpu-scratch (never a fidelity result): update rate, in-training eval, final test eval, GPU memory -> fidelity/a4/probe-gpu.json; the folds wait for it",
+      "cwd": "."
+    },
+    {
+      "id": "128-gfid-a4-fold0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 600,
+      "depends_on": [
+        "128-gfid-a4-probe"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
+        "-u",
+        "scripts/b127_dynamics_aware_fidelity.py",
+        "--fold",
+        "0"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache",
+        "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+      },
+      "note": "#128 A4 G-fid Tier T fold 0: official Table-1 hand-crafted recipe (100k x 512, ball_within_template, test split) against the frozen band [82.8, 87.2] (band.json sha256 aba5a789...); SIGTERM -> official checkpoint after the current update, exit 75; resumes from fidelity/a4/fold0/checkpoints",
+      "cwd": ".",
+      "shares_gpu": true
+    },
+    {
+      "id": "128-gfid-a4-fold1",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 600,
+      "depends_on": [
+        "128-gfid-a4-fold0"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
+        "-u",
+        "scripts/b127_dynamics_aware_fidelity.py",
+        "--fold",
+        "1"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache",
+        "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+      },
+      "note": "#128 A4 G-fid Tier T fold 1 (as fold 0); PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only: limits fragmentation of the reserved cache; no kernel or numeric change)",
+      "cwd": ".",
+      "shares_gpu": true
+    },
+    {
+      "id": "128-gfid-a4-fold2",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 600,
+      "depends_on": [
+        "128-gfid-a4-fold1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
+        "-u",
+        "scripts/b127_dynamics_aware_fidelity.py",
+        "--fold",
+        "2"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache",
+        "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+      },
+      "note": "#128 A4 G-fid Tier T fold 2 (as fold 0); PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only: limits fragmentation of the reserved cache; no kernel or numeric change)",
+      "cwd": ".",
+      "shares_gpu": true
+    },
+    {
+      "id": "128-gfid-a4-table",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 2,
+      "depends_on": [
+        "128-gfid-a4-fold0",
+        "128-gfid-a4-fold1",
+        "128-gfid-a4-fold2"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dynaware/bin/python",
+        "-u",
+        "scripts/b127_dynamics_aware_fidelity.py",
+        "--table"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache"
+      },
+      "note": "#128 A4 G-fid Tier T table: fidelity/a4/gfid.json (mean over folds 0-2 vs band.json)",
+      "cwd": "."
+    }
+  ]
 }
