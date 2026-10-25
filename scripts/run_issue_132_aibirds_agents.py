@@ -29,6 +29,11 @@ Modes:
                            every distinct recorded shot; writes smoke/smoke.json (determinism, seconds/execution,
                            anchor and verdict agreement, projection against the 190 CPU worker-hour allowance)
   --project                recompute the projection from smoke/smoke.json
+  --publish                summary.json / compute.json / findings.md / records-manifest.json after the N1 run (refuses
+                           while a planned execution lacks its record); drafts the A3 funding decision
+  --validate               re-derive every published file byte for byte from the manifest-checked records; exit 0 iff equal
+  --run                    the N1 run (resumable; daytime engine window only; exit 75 when the window closes,
+                           exit 3 on the shared-allowance stop); needs the posted P-engine projection decision
   --pigshooter-driver PORT internal: the Phy-Q PigShooter loop (run with the b127-phyq python, cwd = vendor dir)
 
 Engine runs are CPU only; worker count is capped at 8.
@@ -101,6 +106,15 @@ STAGE_A_VERDICT_DEADLINE = 180.0  # seconds from the shot until the engine's eva
 ALLOWANCE_WORKER_HOURS = 190.0
 N1_LEVELS = 400
 PORT_BASE = 39400
+# Owner rule (2026-10-25, after a night-time OOM): engine (Unity) processes run only 07:05-17:30 Melbourne and are
+# gone by 17:30. Stage A worst case: shot + verdict deadlines + teardown; stage B: the #104 attempt cap (1800 s).
+ENGINE_WINDOW_TZ = "Australia/Melbourne"
+ENGINE_WINDOW = ((7, 5), (17, 30))
+STAGE_A_WINDOW_MINUTES = 12.0
+STAGE_B_WINDOW_MINUTES = 32.0
+EXIT_PAUSED = 75
+EXIT_BUDGET = 3
+N1_CHUNK_LEVELS = 20
 
 
 def utc_now():
@@ -582,14 +596,39 @@ def stage_a_attempt(agent, level, repeat, slot, root):
     return record
 
 
+class EnginePaused(Exception):
+    """Engine work stopped because the daytime engine window is closed (resume later; exit 75)."""
+
+
+def engine_minutes_left(now=None):
+    """Minutes left in today's engine window (07:05-17:30 Australia/Melbourne; owner rule 2026-10-25), else 0."""
+    from zoneinfo import ZoneInfo
+    now = now or datetime.now(ZoneInfo(ENGINE_WINDOW_TZ))
+    start = now.replace(hour=ENGINE_WINDOW[0][0], minute=ENGINE_WINDOW[0][1], second=0, microsecond=0)
+    end = now.replace(hour=ENGINE_WINDOW[1][0], minute=ENGINE_WINDOW[1][1], second=0, microsecond=0)
+    return 0.0 if now < start or now >= end else (end - now).total_seconds() / 60
+
+
 def run_stage_a(jobs, root, workers):
-    """``jobs`` = [(agent, level, repeat)]; slots are reused only after their attempt finished."""
+    """``jobs`` = [(agent, level, repeat)]; slots are reused only after their attempt finished.
+
+    An attempt without a record starts only if its worst case (shot + verdict deadlines + teardown) ends inside
+    the engine window; otherwise it is skipped and EnginePaused is raised after the running attempts finish.
+    """
     workers = min(workers, MAX_WORKERS)
     stock_player()  # built once, before any worker clones it
     free = list(range(workers))
     lock = threading.Lock()
+    paused = []
 
     def run(job):
+        agent, level, repeat = job
+        done = Path(root) / agent / f"{level['identity']}-r{repeat}" / "record.json"
+        if done.is_file():
+            return read_json(done)
+        if paused or engine_minutes_left() < STAGE_A_WINDOW_MINUTES:
+            paused.append(job)
+            return None
         with lock:
             slot = free.pop()
         try:
@@ -600,6 +639,8 @@ def run_stage_a(jobs, root, workers):
 
     with concurrent.futures.ThreadPoolExecutor(workers) as pool:
         records = list(pool.map(run, jobs))
+    if paused:
+        raise EnginePaused(f"stage A: {len(paused)} attempts left for the next engine window")
     return records
 
 
@@ -642,8 +683,15 @@ def run_stage_b(engine, records, workers, label):
     environment = {"PULSE_SERVER": os.environ.get("PULSE_SERVER"), "XDG_RUNTIME_DIR": os.environ.get("XDG_RUNTIME_DIR")}
     os.environ.pop("XDG_RUNTIME_DIR", None)
     os.environ["PULSE_SERVER"] = "unix:/nonexistent"
+    pending = [r for r in records if pipeline.branch_entry(engine, r["identity"])["status"] == "unattempted"]
+    wall = 0.0
     try:
-        wall = pipeline.run_campaign(engine, IDENTITY, records, limits, label) if records else 0.0
+        # one round of workers per campaign call, so the window is re-checked between rounds; a round starts only
+        # if even a capped attempt (#104 attempt_seconds) ends inside the window
+        for start in range(0, len(pending), limits["workers"]):
+            if engine_minutes_left() < STAGE_B_WINDOW_MINUTES:
+                raise EnginePaused(f"stage B: {len(pending) - start} executions left for the next engine window")
+            wall += pipeline.run_campaign(engine, IDENTITY, pending[start:start + limits["workers"]], limits, label)
     finally:
         for key, value in environment.items():
             if value is None:
@@ -699,19 +747,21 @@ def determinism(records):
     return out
 
 
-def projection(seconds_a, seconds_b, deterministic, levels=N1_LEVELS, allowance=ALLOWANCE_WORKER_HOURS):
+def projection(seconds_a, seconds_b, deterministic, levels=N1_LEVELS, allowance=ALLOWANCE_WORKER_HOURS,
+               stage_b_share=1.0):
     """Worker-hours of the full E1 run: pass@1 for deterministic agents, pass@3 for agents whose shots vary.
 
     ``seconds_a`` / ``seconds_b``: mean worker seconds per stage-A attempt / stage-B execution, per agent.
-    Every attempt is costed with its own stage-B execution (no sharing credit), an upper bound.
+    ``stage_b_share``: stage-B executions per stage-A attempt (identical shots on a level share one execution,
+    the #102 sharing rule); 1.0 costs every attempt with its own execution (upper bound).
     """
     rows, total = {}, 0.0
     for agent in sorted(deterministic):
         attempts = levels * (1 if deterministic[agent] else 3)
-        hours = attempts * (seconds_a[agent] + seconds_b[agent]) / 3600
+        hours = attempts * (seconds_a[agent] + stage_b_share * seconds_b[agent]) / 3600
         rows[agent] = {"attempts_per_level": 1 if deterministic[agent] else 3, "executions": attempts,
                        "stage_a_seconds": seconds_a[agent], "stage_b_seconds": seconds_b[agent],
-                       "worker_hours": round(hours, 2)}
+                       "stage_b_share": stage_b_share, "worker_hours": round(hours, 2)}
         total += hours
     return {"agents": rows, "worker_hours": round(total, 2), "allowance_worker_hours": allowance,
             "remainder_for_a3_worker_hours": round(allowance - total, 2), "within_allowance": total <= allowance}
@@ -720,6 +770,428 @@ def projection(seconds_a, seconds_b, deterministic, levels=N1_LEVELS, allowance=
 def mean(values):
     values = [v for v in values if v is not None]
     return sum(values) / len(values) if values else None
+
+
+class BudgetStop(Exception):
+    """The next chunk would take the engine total over the shared 190 worker-hour allowance (typed engine_budget)."""
+
+
+def n1_order(plan=None):
+    """The N1 levels in a fixed pseudo-random order (sha256 of '132:<identity>'), so that a budget stop leaves a
+    random subset rather than one family or one ordinal range."""
+    return sorted(n1_levels(plan), key=lambda level: sha256_bytes(f"132:{level['identity']}".encode()))
+
+
+def group_executions(records):
+    """Distinct (level, shot) executions of stage-A records; polar or missing shots have none (not passed)."""
+    executions = {}
+    for record in records:
+        if record["shot"] is None or record["anchor"] is None or record["shot"]["polar"]:
+            continue
+        action = shot_action(record["shot"], record["anchor"])
+        identity = f"{record['level']}-{execution_suffix(action)}"
+        executions.setdefault(identity, {"level": record["level"], "action": action, "wire": record["shot"],
+                                         "attempts": []})["attempts"].append(
+            f"{record['agent']}/{record['level']}-r{record['repeat']}")
+    return executions
+
+
+ENGINE_COMPONENTS = {
+    "smoke_stage_a": ("smoke/stage-a/*/*/record.json", "wall_seconds"),
+    "n1_stage_a": ("n1/stage-a/*/*/record.json", "wall_seconds"),
+    "probe_stage_a": ("scratch/*/*/*/record.json", "wall_seconds"),
+    "smoke_stage_b": ("smoke/engine/receipts/*.json", "wall_seconds"),
+    "n1_stage_b": ("n1/engine/receipts/*.json", "wall_seconds"),
+    "probe_stage_b": ("scratch/*/receipts/*.json", "wall_seconds"),
+}
+
+
+def engine_seconds_by_component(root=OUTPUT):
+    """Engine worker seconds per component (stage-A attempt walls, stage-B receipts), summed in sorted file order."""
+    root = Path(root)
+    return {name: sum(read_json(p).get(key) or 0.0 for p in sorted(root.glob(pattern)))
+            for name, (pattern, key) in ENGINE_COMPONENTS.items()}
+
+
+def engine_worker_seconds(root=OUTPUT):
+    """Every engine worker second #132 has spent: stage-A attempt walls and stage-B receipts of the smoke, the
+    N1 run and the pre-smoke probes (counted against the shared allowance, conservatively)."""
+    return sum(engine_seconds_by_component(root).values())
+
+
+def run_plan():
+    """Frozen inputs of the N1 run, derived from the smoke (attempts per agent, per-attempt cost)."""
+    path = OUTPUT / "n1" / "run-plan.json"
+    if path.is_file():
+        return read_json(path)
+    smoke_summary = read_json(OUTPUT / "smoke" / "smoke.json")
+    shared = smoke_summary["projection_with_smoke_sharing"]["agents"]
+    order = [level["identity"] for level in n1_order()]
+    plan = {"schema": "issue_132_n1_run_plan_v1", "identity": IDENTITY, "frozen_at": utc_now(),
+            "smoke_sha256": sha256_file(OUTPUT / "smoke" / "smoke.json"),
+            "attempts_per_level": {a: (1 if smoke_summary["determinism"][a]["deterministic"] else 3) for a in AGENTS},
+            "attempt_cost_seconds": {a: shared[a]["stage_a_seconds"] + shared[a]["stage_b_share"]
+                                     * shared[a]["stage_b_seconds"] for a in AGENTS},
+            "allowance_worker_hours": ALLOWANCE_WORKER_HOURS, "chunk_levels": N1_CHUNK_LEVELS,
+            "level_order": order, "level_order_sha256": sha256_bytes("\n".join(order).encode()),
+            "rule": ("attempt rounds in order (attempt 1 of every level and agent first, then 2, then 3); within a "
+                     "round, chunks of levels in level_order; a chunk starts only if the engine total so far plus "
+                     "its projected cost stays within the allowance, else the run stops typed engine_budget")}
+    write_json(path, plan)
+    return plan
+
+
+def run_n1(workers):
+    out = OUTPUT / "n1"
+    plan = run_plan()
+    by_id = {level["identity"]: level for level in n1_levels()}
+    levels = [by_id[identity] for identity in plan["level_order"]]
+    for attempt in range(max(plan["attempts_per_level"].values())):
+        agents = [a for a in AGENTS if plan["attempts_per_level"][a] > attempt]
+        for start in range(0, len(levels), plan["chunk_levels"]):
+            chunk = levels[start:start + plan["chunk_levels"]]
+            jobs = [(agent, level, attempt) for level in chunk for agent in agents]
+            todo = [job for job in jobs if not (out / "stage-a" / job[0] / f"{job[1]['identity']}-r{attempt}"
+                                                / "record.json").is_file()]
+            projected = sum(plan["attempt_cost_seconds"][job[0]] for job in todo)
+            spent = engine_worker_seconds()
+            if todo and spent + projected > plan["allowance_worker_hours"] * 3600:
+                write_json(out / "budget-stop.json", {"attempt": attempt + 1, "chunk_start": start,
+                                                      "spent_worker_seconds": spent,
+                                                      "projected_chunk_seconds": projected, "at": utc_now()})
+                raise BudgetStop(f"attempt {attempt + 1}, chunk {start}: engine_budget")
+            records = run_stage_a(jobs, out / "stage-a", workers)
+            executions = group_executions(records)
+            dispatch = [dispatch_record("issue109-evaluation", by_id[e["level"]], e["action"])
+                        for e in executions.values()]
+            run_stage_b(out / "engine", dispatch, workers, f"{IDENTITY}:n1:a{attempt + 1}:{start}")
+            for identity, execution in executions.items():
+                path = out / "verdicts" / f"{identity}.json"
+                if not path.is_file():
+                    write_json(path, {**stage_b_verdict(out / "engine", identity, execution["wire"]), **execution})
+            write_json(out / "status.json", {"attempt": attempt + 1, "levels_done_in_attempt": start + len(chunk),
+                                             "engine_worker_hours": round(engine_worker_seconds() / 3600, 3),
+                                             "at": utc_now()})
+            log(f"attempt {attempt + 1}: {start + len(chunk)}/{len(levels)} levels")
+
+# ---------------------------------------------------------------------------
+# publication (--publish / --validate): the native-action table, #102's estimator and bootstrap
+# ---------------------------------------------------------------------------
+
+SCHEMA_SUMMARY = "issue_132_e1_summary_v1"
+SCHEMA_MANIFEST = "issue_132_records_manifest_v1"
+SCHEMA_COMPUTE = "issue_132_compute_v1"
+ISSUE_102_SUMMARY = ROOT / ".local-artifacts/issue-102-closed-loop-v1/summary.json"
+ISSUE_102_ROWS = {"random": "random", "prior": "prior", "U (F-15-macro)": "F-15-macro", "C* (C-F-15)": "C-F-15",
+                  "J (J-1e-04)": "J-1e-04", "J_dec (J-dec-1e-01)": "J-dec-1e-01", "oracle": "oracle"}
+AGENT_LABELS = {"datalab": "Datalab", "eaglewing": "Eagle's Wing", "pigshooter": "PigShooter"}
+A3_DRAFT = ROOT / ".local-artifacts/issue-128-direct-predictors-v1/a3/decision-p-engine-a3-funding.draft.md"
+A3_SYM_FUNDING_WORKER_HOURS = 5.0   # 1.25 x 4.0 worker-h (#128 P-engine decision, 2026-10-25)
+DECISIONS = {
+    "p_license": "https://github.com/Sino-Huang/NovPhy/issues/132#issuecomment-6382271495",
+    "p_engine_path": "https://github.com/Sino-Huang/NovPhy/issues/132#issuecomment-6382714673",
+    "p_engine_projection": "https://github.com/Sino-Huang/NovPhy/issues/132#issuecomment-6388390880",
+    "a3_p_engine": "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6388391126",
+}
+VERDICT_CHANNEL = ("stage B: the agent's recorded wire shot, as a slingshot-relative drag, executed once on the frozen "
+                   "#104 player by the #102 executor (capture_pipeline_v2.run_campaign); pass = "
+                   "capture_pipeline_v2.branch_outcome pig_removed (#85 channel), as every #102 row")
+PASS_DEFINITION = (
+    "#102 episode rule (run_closed_loop_evaluation.episodes / episode_view): attempt k is the agent's k-th reset "
+    "to the level start; the episode ends at the first pass or the first typed failure (no transferable shot, or "
+    "a stage-B execution that did not complete), so attempts after a typed failure are not counted; pass@k = 1 "
+    "iff the episode passed within its first k attempts. Unlike #102, an attempt cannot exclude earlier failed "
+    "launches (the agent chooses afresh after every reset). One cell per level (no model seeds). An agent the "
+    "smoke found deterministic gets one attempt per level (a reset replays the same shot), so its pass@3 is not "
+    "run (null) and pass@1 is its only row.")
+PUBLISHED = ("summary.json", "compute.json", "findings.md")
+
+
+class IncompleteRun(Exception):
+    """A planned execution of the frozen run plan has no record (the N1 run is not finished)."""
+
+
+def manifest_patterns():
+    return ("n1/run-plan.json", "n1/budget-stop.json", "n1/stage-a/*/*/record.json", "n1/verdicts/*.json",
+            "n1/engine/results/*.json", "n1/engine/receipts/*.json", "smoke/smoke.json",
+            "smoke/stage-a/*/*/record.json", "smoke/engine/receipts/*.json", "scratch/*/*/*/record.json",
+            "scratch/*/receipts/*.json")
+
+
+def records_manifest(root):
+    root = Path(root)
+    files = {}
+    for pattern in manifest_patterns():
+        for path in sorted(root.glob(pattern)):
+            files[path.relative_to(root).as_posix()] = "sha256:" + sha256_file(path)
+    return {"schema": SCHEMA_MANIFEST, "identity": IDENTITY, "files": dict(sorted(files.items()))}
+
+
+def planned_jobs(plan, stop):
+    """(agent, level, attempt index) of the frozen run plan in run_n1 order, up to the allowance stop's chunk."""
+    jobs, order, chunk = [], plan["level_order"], plan["chunk_levels"]
+    for attempt in range(max(plan["attempts_per_level"].values())):
+        agents = [a for a in AGENTS if plan["attempts_per_level"][a] > attempt]
+        for start in range(0, len(order), chunk):
+            if stop is not None and (attempt + 1, start) >= (stop["attempt"], stop["chunk_start"]):
+                return jobs
+            jobs.extend((agent, level, attempt) for level in order[start:start + chunk] for agent in agents)
+    return jobs
+
+
+def execution_of(record):
+    """Stage-B execution identity of a stage-A record, or None (no transferable shot)."""
+    shot, anchor = record.get("shot"), record.get("anchor")
+    if shot is None or anchor is None or shot["polar"]:
+        return None
+    return f"{record['level']}-{execution_suffix(shot_action(shot, anchor))}"
+
+
+def load_run(root):
+    """Records of the planned jobs; raises IncompleteRun when one lacks its stage-A record or its stage-B verdict."""
+    root = Path(root)
+    plan = read_json(root / "n1" / "run-plan.json")
+    stop_path = root / "n1" / "budget-stop.json"
+    stop = read_json(stop_path) if stop_path.is_file() else None
+    records, verdicts, missing = {}, {}, []
+    for agent, level, attempt in planned_jobs(plan, stop):
+        path = root / "n1" / "stage-a" / agent / f"{level}-r{attempt}" / "record.json"
+        if not path.is_file():
+            missing.append(f"stage-a {agent}/{level}-r{attempt}")
+            continue
+        record = read_json(path)
+        records[(agent, level, attempt)] = record
+        execution = execution_of(record)
+        if execution is None or execution in verdicts:
+            continue
+        verdict_path = root / "n1" / "verdicts" / f"{execution}.json"
+        verdict = read_json(verdict_path) if verdict_path.is_file() else None
+        if verdict is None or verdict["status"] == "unattempted":
+            missing.append(f"stage-b {execution}")
+            continue
+        verdicts[execution] = verdict
+    if missing:
+        raise IncompleteRun(f"{len(missing)} planned executions lack a record (first: {missing[0]})")
+    return plan, stop, records, verdicts
+
+
+def agent_episode(records, verdicts, agent, level, attempts):
+    """#102 episode over the agent's resets of one level (see PASS_DEFINITION)."""
+    available = 0
+    while available < attempts and (agent, level, available) in records:
+        available += 1
+    shots, outcome = [], "failed"
+    for attempt in range(available):
+        record = records[(agent, level, attempt)]
+        execution = execution_of(record)
+        if execution is None:
+            shots.append({"attempt": attempt + 1, "status": "no_shot", "pass": False, "native_agrees": None})
+            outcome = "typed_failure"
+            break
+        verdict = verdicts[execution]
+        passed = verdict["status"] == "complete" and verdict["pig_removed"] is True
+        native = record.get("native") or {}
+        agrees = (None if verdict["pig_removed"] is None or not native.get("LevelStatus")
+                  else (native["LevelStatus"] == "Pass") == verdict["pig_removed"])
+        shots.append({"attempt": attempt + 1, "status": verdict["status"], "pass": passed, "native_agrees": agrees})
+        if verdict["status"] != "complete":
+            outcome = "typed_failure"
+            break
+        if passed:
+            outcome = "passed"
+            break
+    pass_shot = next((s["attempt"] for s in shots if s["pass"]), None)
+    return {"level": level, "available": available, "outcome": outcome, "shots": shots, "pass_shot": pass_shot}
+
+
+def pass_block(episodes, k):
+    """pass@k over the levels that got k attempts, as #102's field_block (p94.bootstrap, level clusters)."""
+    from scripts import run_launch_power_probe as p94
+    rows = [(float(e["pass_shot"] is not None and e["pass_shot"] <= k), e["level"]) for e in episodes
+            if e["available"] >= k]
+    return p94.bootstrap([v for v, _ in rows], [m for _, m in rows])
+
+
+def agent_summary(plan, records, verdicts, agent):
+    attempts = plan["attempts_per_level"][agent]
+    episodes = [agent_episode(records, verdicts, agent, level, attempts) for level in sorted(plan["level_order"])]
+    shots = [s for e in episodes for s in e["shots"]]
+    agree = [s["native_agrees"] for s in shots if s["native_agrees"] is not None]
+    passed = [e["pass_shot"] for e in episodes if e["pass_shot"] is not None]
+    return {"label": AGENT_LABELS[agent], "attempts_per_level": attempts,
+            "pass1": pass_block(episodes, 1),
+            "pass2": pass_block(episodes, 2) if attempts >= 3 else None,
+            "pass3": pass_block(episodes, 3) if attempts >= 3 else None,
+            "levels": {"pass1": sum(e["available"] >= 1 for e in episodes),
+                       "pass3": sum(e["available"] >= 3 for e in episodes) if attempts >= 3 else 0},
+            "outcomes": {o: sum(e["outcome"] == o for e in episodes)
+                         for o in sorted({e["outcome"] for e in episodes})},
+            "attempts_counted": len(shots),
+            "typed_failures": {"no_shot": sum(s["status"] == "no_shot" for s in shots),
+                               "stage_b_failed": sum(s["status"] not in ("complete", "no_shot") for s in shots)},
+            "shots_to_pass_mean": mean(passed),
+            "native_vs_stage_b_agreement": mean([float(a) for a in agree])}
+
+
+def issue_102_rows(issue_102):
+    n1 = issue_102["sets"]["N1"]
+    return {label: {k: n1[arm][k] for k in ("pass1", "pass3")} for label, arm in ISSUE_102_ROWS.items() if arm in n1}
+
+
+def compute_section(root, plan, records, verdicts):
+    components = engine_seconds_by_component(root)
+    per_agent = {}
+    for agent in AGENTS:
+        rows = [r for (a, _, _), r in records.items() if a == agent]
+        per_agent[agent] = {"attempts": len(rows), "stage_a_seconds_mean": mean([r["wall_seconds"] for r in rows]),
+                            "decision_seconds_mean": mean([r.get("decision_seconds") for r in rows])}
+    return {"schema": SCHEMA_COMPUTE, "identity": IDENTITY,
+            "engine_worker_seconds": components,
+            "engine_worker_hours": round(sum(components.values()) / 3600, 3),
+            "allowance_worker_hours": plan["allowance_worker_hours"],
+            "stage_a": per_agent,
+            "stage_b": {"executions": len(verdicts), "attempts": len(records),
+                        "executions_per_attempt": len(verdicts) / len(records) if records else None,
+                        "seconds_mean": mean([v["wall_seconds"] for v in verdicts.values()])},
+            "gpu_seconds": 0.0}
+
+
+def build_publication(root=OUTPUT, issue_102=None, issue_102_sha256=None):
+    """Every published file's text, derived from the manifest-covered records only."""
+    root = Path(root)
+    plan, stop, records, verdicts = load_run(root)
+    if issue_102 is None:
+        issue_102, issue_102_sha256 = read_json(ISSUE_102_SUMMARY), "sha256:" + sha256_file(ISSUE_102_SUMMARY)
+    manifest = records_manifest(root)
+    manifest_text = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    compute = compute_section(root, plan, records, verdicts)
+    agents = {agent: agent_summary(plan, records, verdicts, agent) for agent in AGENTS}
+    summary = {
+        "schema": SCHEMA_SUMMARY, "identity": IDENTITY, "issue": 132, "set": "N1",
+        "label": ("native-action, DESCRIPTIVE: the agents choose continuous shots on the #102 N1 levels; not the "
+                  "grid protocol; no disposition, no program claim"),
+        "levels": len(plan["level_order"]), "level_order_sha256": plan["level_order_sha256"],
+        "attempts_per_level": plan["attempts_per_level"],
+        "attempts_planned": len(planned_jobs(plan, None)), "attempts_recorded": len(records),
+        "allowance_stop": stop,
+        "agents": agents,
+        "pass_definition": PASS_DEFINITION,
+        "bootstrap": "level-clustered percentile bootstrap, 10000 draws, PCG64 7201 (p94.bootstrap, as #102), DESCRIPTIVE",
+        "verdict_channel": VERDICT_CHANNEL,
+        "engine_worker_hours": compute["engine_worker_hours"],
+        "allowance_worker_hours": plan["allowance_worker_hours"],
+        "issue_102_n1": issue_102_rows(issue_102), "issue_102_summary_sha256": issue_102_sha256,
+        "decisions": DECISIONS,
+        "run_plan_sha256": manifest["files"]["n1/run-plan.json"],
+        "records_manifest_sha256": "sha256:" + sha256_bytes(manifest_text.encode()),
+    }
+    return {"records-manifest.json": manifest_text,
+            "summary.json": json.dumps(summary, indent=2, sort_keys=True) + "\n",
+            "compute.json": json.dumps(compute, indent=2, sort_keys=True) + "\n",
+            "findings.md": findings_md(summary)}
+
+
+def fmt_block(block, digits=3):
+    if block is None or block.get("mean") is None:
+        return "n/a"
+    low, high = block["interval"]
+    return f"{block['mean']:.{digits}f} [{low:.{digits}f}, {high:.{digits}f}]"
+
+
+def findings_md(summary):
+    stop = summary["allowance_stop"]
+    lines = ["# #132 E1: AIBIRDS agents acting natively on the #102 N1 levels (native-action table)", "",
+             f"{summary['label']}.", "",
+             f"- Levels: the {summary['levels']} #102 N1 levels (#109 evaluation split, one bird each), reset to the "
+             "start for every attempt.",
+             f"- Attempts per level: {', '.join(f'{AGENT_LABELS[a]} {n}' for a, n in summary['attempts_per_level'].items())} "
+             "(frozen P-engine decision: every agent's shot varied after a reset in the smoke).",
+             f"- Pass: {summary['verdict_channel']}.",
+             f"- pass@k: {summary['pass_definition']}",
+             f"- Intervals: {summary['bootstrap']}. #102 cells are level x seed; E1 cells are levels.",
+             f"- Engine: {summary['engine_worker_hours']:.1f} of {summary['allowance_worker_hours']:.0f} CPU "
+             "worker-hours (smoke and probes included).", ""]
+    if stop is None:
+        lines += ["The run completed every planned attempt; no allowance stop.", ""]
+    else:
+        lines += [(f"**Allowance stop** (typed `engine_budget`) before attempt {stop['attempt']}, chunk starting at "
+                   f"level-order position {stop['chunk_start']}. Following the posted P-engine decision "
+                   f"({DECISIONS['p_engine_projection']}): attempts ran attempt-major in a fixed pseudo-random level "
+                   "order, so pass@1 covers the levels that got attempt 1 and pass@3 is computed on the random subset "
+                   "of levels that got all three attempts (counts in the table)."), ""]
+    lines += ["| Row | pass@1 | pass@3 | levels (pass@1 / pass@3) |", "| --- | --- | --- | --- |"]
+    for agent, a in summary["agents"].items():
+        lines.append(f"| E1 {a['label']} | {fmt_block(a['pass1'])} | {fmt_block(a['pass3'])} | "
+                     f"{a['levels']['pass1']} / {a['levels']['pass3']} |")
+    for label, row in summary["issue_102_n1"].items():
+        lines.append(f"| #102 {label} (as published) | {fmt_block(row['pass1'])} | {fmt_block(row['pass3'])} | "
+                     "400 levels x 3 seeds |")
+    lines += ["", "Per agent (DESCRIPTIVE):", ""]
+    for agent, a in summary["agents"].items():
+        lines.append(f"- {a['label']}: outcomes {a['outcomes']}; typed failures {a['typed_failures']}; mean attempts "
+                     f"to pass among passed levels {a['shots_to_pass_mean'] if a['shots_to_pass_mean'] is None else round(a['shots_to_pass_mean'], 3)}; "
+                     f"agent-side level status vs stage-B pig removal agreement "
+                     f"{a['native_vs_stage_b_agreement'] if a['native_vs_stage_b_agreement'] is None else round(a['native_vs_stage_b_agreement'], 4)}.")
+    lines += ["", ("Reading: descriptive only. The agents choose continuous shots in their native interface; the #102 "
+                   "rows rank a fixed 16-launch grid and exclude failed launches between shots. No delta-rule token is "
+                   "attached to any E1 row and no E1 number enters a disposition or the program claim."), "",
+              f"Decisions: {', '.join(f'{k} {v}' for k, v in summary['decisions'].items())}.", ""]
+    return "\n".join(lines)
+
+
+def a3_funding_draft(engine_worker_hours, allowance=ALLOWANCE_WORKER_HOURS):
+    remainder = allowance - engine_worker_hours
+    funded = remainder >= A3_SYM_FUNDING_WORKER_HOURS
+    choice = ("Relational-Symbolic's native-task fidelity run (template 3_02_01, band frozen in "
+              "a3/fidelity-band.json) is funded; an A3 smoke of the first 50 episodes re-checks the projection, and "
+              "Relational-Image follows only if the remainder after Symbolic's realised cost still covers its "
+              "projection with the same 25 % margin" if funded else
+              "A3 is not funded: both relational variants stay tokens-only, typed `engine_budget`")
+    return "\n".join([
+        "## Decision P-engine (DRAFT, not posted): A3 native-task fidelity funding after E1", "",
+        f"**Trigger.** E1's N1 run has finished; the #128 P-engine decision of 2026-10-25 ({DECISIONS['a3_p_engine']}) "
+        "fixes the rule: R = 190 - E1's realised worker-hours (smoke and probes included); R >= 1.25 x 4.0 = 5.0 "
+        "worker-h funds Relational-Symbolic first.", "",
+        f"**Numbers.** E1 realised {engine_worker_hours:.3f} CPU worker-hours (#132 compute.json); "
+        f"R = {remainder:.3f} worker-h.", "",
+        f"**Choice.** {choice}.", "",
+        "**Reason.** The frozen rule, applied as posted; no NovPhy result enters it.", ""])
+
+
+def publish(root=OUTPUT, a3_draft=A3_DRAFT):
+    texts = build_publication(root)
+    for name, text in texts.items():
+        (Path(root) / name).write_text(text)
+    hours = json.loads(texts["compute.json"])["engine_worker_hours"]
+    Path(a3_draft).write_text(a3_funding_draft(hours))
+    return texts
+
+
+def validate(root=OUTPUT, recheck=12):
+    """0 iff the saved manifest matches the records and every published file re-derives byte for byte."""
+    root = Path(root)
+    problems = []
+    saved = read_json(root / "records-manifest.json")
+    current = records_manifest(root)
+    if saved != current:
+        changed = sorted(set(saved["files"].items()) ^ set(current["files"].items()))
+        problems.append(f"records manifest differs ({len(changed)} entries, first {changed[0][0]})")
+    else:
+        texts = build_publication(root)
+        for name in ("records-manifest.json", *PUBLISHED):
+            if (root / name).read_text() != texts[name]:
+                problems.append(f"{name} does not re-derive")
+        engine = root / "n1" / "engine"
+        for path in sorted((root / "n1" / "verdicts").glob("*.json"))[:recheck]:
+            stored = read_json(path)
+            fresh = stage_b_verdict(engine, stored["execution"], stored["wire"])
+            keys = ("status", "pig_removed", "stop_kind", "native_clear", "wire_reproduced")
+            if any(fresh[k] != stored[k] for k in keys):
+                problems.append(f"verdict {stored['execution']} does not recompute")
+    for problem in problems:
+        log(f"validate: {problem}")
+    return 1 if problems else 0
+
 
 
 def smoke(workers):
@@ -747,8 +1219,12 @@ def smoke(workers):
     stage_b_wall = time.monotonic() - began
     verdicts = {}
     for identity, execution in executions.items():
+        path = out / "verdicts" / f"{identity}.json"
+        if path.is_file():
+            verdicts[identity] = read_json(path)
+            continue
         verdicts[identity] = {**stage_b_verdict(out / "engine", identity, execution["wire"]), **execution}
-        write_json(out / "verdicts" / f"{identity}.json", verdicts[identity])
+        write_json(path, verdicts[identity])
     summary = summarize(records, verdicts)
     summary.update(schema=SCHEMA_SMOKE, identity=IDENTITY, levels=[level["identity"] for level in levels],
                    repeats=SMOKE_REPEATS, workers=min(workers, MAX_WORKERS), stage_a_wall_seconds=stage_a_wall,
@@ -791,8 +1267,12 @@ def summarize(records, verdicts):
     seconds_a = {a: agents[a]["stage_a_seconds_mean"] or 0.0 for a in AGENTS}
     proj = projection(seconds_a, {a: seconds_b or 0.0 for a in AGENTS},
                       {a: det[a]["deterministic"] for a in AGENTS})
+    shared = projection(seconds_a, {a: seconds_b or 0.0 for a in AGENTS},
+                        {a: det[a]["deterministic"] for a in AGENTS},
+                        stage_b_share=len(verdicts) / len(records) if records else 1.0)
     return {"agents": agents, "determinism": det, "stage_b_executions": len(verdicts),
-            "stage_b_complete": len(distinct_b), "stage_b_seconds_mean": seconds_b, "projection": proj}
+            "stage_b_complete": len(distinct_b), "stage_b_seconds_mean": seconds_b, "projection": proj,
+            "projection_with_smoke_sharing": shared}
 
 
 # ---------------------------------------------------------------------------
@@ -837,6 +1317,9 @@ def main(argv=None):
     mode.add_argument("--levels", action="store_true")
     mode.add_argument("--smoke", action="store_true")
     mode.add_argument("--project", action="store_true")
+    mode.add_argument("--run", action="store_true")
+    mode.add_argument("--publish", action="store_true")
+    mode.add_argument("--validate", action="store_true")
     mode.add_argument("--pigshooter-driver", type=int, metavar="PORT")
     parser.add_argument("--workers", type=int, default=MAX_WORKERS)
     args = parser.parse_args(argv)
@@ -850,10 +1333,36 @@ def main(argv=None):
                           "smoke": [level["identity"] for level in smoke_levels()]}, indent=2))
         return 0
     if args.smoke:
-        smoke(args.workers)
+        try:
+            smoke(args.workers)
+        except EnginePaused as paused:
+            log(f"paused: {paused}")
+            return EXIT_PAUSED
         return 0
+    if args.run:
+        try:
+            run_n1(args.workers)
+        except EnginePaused as paused:
+            log(f"paused: {paused}")
+            return EXIT_PAUSED
+        except BudgetStop as stop:
+            log(f"stopped: {stop}")
+            return EXIT_BUDGET
+        return 0
+    if args.publish:
+        try:
+            publish()
+        except IncompleteRun as error:
+            log(f"refused: {error}")
+            return 1
+        log(f"published summary.json, compute.json, findings.md, records-manifest.json; A3 draft {A3_DRAFT}")
+        return 0
+    if args.validate:
+        return validate()
     summary = read_json(OUTPUT / "smoke" / "smoke.json")
-    print(json.dumps(summary["projection"], indent=2))
+    print(json.dumps({"no_sharing": summary["projection"],
+                      "with_smoke_sharing": summary["projection_with_smoke_sharing"],
+                      "engine_worker_hours_spent": round(engine_worker_seconds() / 3600, 3)}, indent=2))
     return 0
 
 

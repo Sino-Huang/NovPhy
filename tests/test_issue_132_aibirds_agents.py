@@ -1,5 +1,6 @@
 """CPU tests for the #132 E1 runner: level lists, request parsing, shot recording/transfer, verdict parsing."""
 import hashlib
+import json
 import re
 import struct
 
@@ -142,3 +143,128 @@ def test_determinism_and_projection():
     assert proj["worker_hours"] == pytest.approx(expected, abs=0.01)
     assert proj["remainder_for_a3_worker_hours"] == pytest.approx(190 - expected, abs=0.01)
     assert proj["within_allowance"] is (expected <= 190)
+
+
+def test_engine_window_is_daytime_melbourne_only():
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    tz = ZoneInfo(e1.ENGINE_WINDOW_TZ)
+    assert e1.engine_minutes_left(datetime(2026, 10, 25, 7, 4, tzinfo=tz)) == 0.0
+    assert e1.engine_minutes_left(datetime(2026, 10, 25, 7, 5, tzinfo=tz)) == pytest.approx(625.0)
+    assert e1.engine_minutes_left(datetime(2026, 10, 25, 17, 0, tzinfo=tz)) == pytest.approx(30.0)
+    assert e1.engine_minutes_left(datetime(2026, 10, 25, 17, 30, tzinfo=tz)) == 0.0
+    assert e1.engine_minutes_left(datetime(2026, 10, 25, 23, 0, tzinfo=tz)) == 0.0
+
+
+# --- publication (synthetic N1 records; never real N1 content) ---------------------------------------------------
+
+SYN_LEVELS = [f"lvl-{i}" for i in range(6)]
+SYN_ATTEMPTS = {"datalab": 3, "eaglewing": 3, "pigshooter": 1}
+# outcome per (agent, level index) -> list of per-attempt verdicts: True pass, False fail, None no shot, "x" failed exec
+SYN_OUTCOMES = {
+    "datalab": [[True, False, False], [False, True, False], [False, False, False], [None, True, True],
+                [False, False, True], ["x", True, True]],
+    "eaglewing": [[False, False, False], [True, True, True], [False, False, True], [False, True, False],
+                  [False, False, False], [False, False, False]],
+    "pigshooter": [[True], [False], [True], [None], [False], [True]],
+}
+
+
+def make_run(root, stop=None):
+    plan = {"schema": "issue_132_n1_run_plan_v1", "attempts_per_level": SYN_ATTEMPTS, "chunk_levels": 2,
+            "level_order": SYN_LEVELS, "level_order_sha256": "sha256:x", "allowance_worker_hours": 190.0}
+    e1.write_json(root / "n1" / "run-plan.json", plan)
+    if stop:
+        e1.write_json(root / "n1" / "budget-stop.json", stop)
+    anchor = {"gameX": 100.0, "gameY": 200.0}
+    for agent, levels in SYN_OUTCOMES.items():
+        for index, outcomes in enumerate(levels):
+            for attempt, outcome in enumerate(outcomes):
+                level = SYN_LEVELS[index]
+                shot = None if outcome is None else {"code": 31, "polar": False, "fx": 10 * attempt + index,
+                                                     "fy": 300 + len(agent), "t1": 0, "t2": 0}
+                record = {"agent": agent, "level": level, "repeat": attempt, "status": "complete", "shot": shot,
+                          "anchor": anchor, "wall_seconds": 20.0, "decision_seconds": 5.0,
+                          "native": None if outcome is None else {"LevelStatus": "Pass" if outcome is True else "Fail"}}
+                e1.write_json(root / "n1" / "stage-a" / agent / f"{level}-r{attempt}" / "record.json", record)
+                execution = e1.execution_of(record)
+                if execution is not None:
+                    failed = outcome == "x"
+                    e1.write_json(root / "n1" / "verdicts" / f"{execution}.json",
+                                  {"execution": execution, "status": "failed" if failed else "complete",
+                                   "pig_removed": None if failed else outcome is True, "wall_seconds": 100.0,
+                                   "wire": shot})
+    return plan
+
+
+def expected_block(values_by_level):
+    from scripts import run_launch_power_probe as p94
+    levels = sorted(values_by_level)
+    return p94.bootstrap([values_by_level[level] for level in levels], levels)
+
+
+def test_pass_at_k_follows_the_102_episode_rule(tmp_path):
+    plan = make_run(tmp_path)
+    _, stop, records, verdicts = e1.load_run(tmp_path)
+    assert stop is None
+    summary = e1.agent_summary(plan, records, verdicts, "datalab")
+    # level 3: no shot at attempt 1 ends the episode (typed failure); level 5: failed execution ends it
+    pass1 = {"lvl-0": 1.0, "lvl-1": 0.0, "lvl-2": 0.0, "lvl-3": 0.0, "lvl-4": 0.0, "lvl-5": 0.0}
+    pass3 = {"lvl-0": 1.0, "lvl-1": 1.0, "lvl-2": 0.0, "lvl-3": 0.0, "lvl-4": 1.0, "lvl-5": 0.0}
+    assert summary["pass1"] == expected_block(pass1)
+    assert summary["pass3"] == expected_block(pass3)
+    assert summary["pass1"]["clusters"] == 6 and summary["pass1"]["interval"][0] <= summary["pass1"]["mean"]
+    assert summary["outcomes"] == {"failed": 1, "passed": 3, "typed_failure": 2}
+    assert summary["typed_failures"] == {"no_shot": 1, "stage_b_failed": 1}
+    deterministic = e1.agent_summary(plan, records, verdicts, "pigshooter")
+    assert deterministic["pass3"] is None and deterministic["levels"]["pass3"] == 0
+    assert deterministic["pass1"] == expected_block({"lvl-0": 1.0, "lvl-1": 0.0, "lvl-2": 1.0, "lvl-3": 0.0,
+                                                     "lvl-4": 0.0, "lvl-5": 1.0})
+
+
+def test_allowance_stop_restricts_pass3_to_levels_with_all_attempts(tmp_path):
+    plan = make_run(tmp_path, stop={"attempt": 3, "chunk_start": 2})
+    for level in SYN_LEVELS[2:]:   # attempt 3 never ran past the first chunk
+        for agent in ("datalab", "eaglewing"):
+            record_path = tmp_path / "n1" / "stage-a" / agent / f"{level}-r2" / "record.json"
+            record_path.unlink()
+    _, stop, records, verdicts = e1.load_run(tmp_path)
+    summary = e1.agent_summary(plan, records, verdicts, "eaglewing")
+    assert summary["levels"] == {"pass1": 6, "pass3": 2}
+    assert summary["pass3"] == expected_block({"lvl-0": 0.0, "lvl-1": 1.0})
+    assert summary["pass1"] == expected_block({"lvl-0": 0.0, "lvl-1": 1.0, "lvl-2": 0.0, "lvl-3": 0.0,
+                                               "lvl-4": 0.0, "lvl-5": 0.0})
+    assert len(e1.planned_jobs(plan, stop)) == 6 * 3 + 6 * 2 + 2 * 2
+
+
+def test_publish_refuses_an_incomplete_run(tmp_path):
+    make_run(tmp_path)
+    (tmp_path / "n1" / "stage-a" / "eaglewing" / "lvl-4-r2" / "record.json").unlink()
+    with pytest.raises(e1.IncompleteRun):
+        e1.load_run(tmp_path)
+    make_run(tmp_path)
+    next(iter(sorted((tmp_path / "n1" / "verdicts").glob("*.json")))).unlink()
+    with pytest.raises(e1.IncompleteRun):
+        e1.publish(tmp_path, a3_draft=tmp_path / "draft.md")
+    assert not (tmp_path / "summary.json").exists()
+
+
+def test_publish_then_validate_round_trip(tmp_path):
+    make_run(tmp_path)
+    texts = e1.publish(tmp_path, a3_draft=tmp_path / "draft.md")
+    summary = json.loads(texts["summary.json"])
+    assert summary["schema"] == "issue_132_e1_summary_v1"
+    assert set(summary["agents"]) == set(e1.AGENTS) and summary["agents"]["datalab"]["pass3"]["clusters"] == 6
+    stage_a = len(list((tmp_path / "n1" / "stage-a").glob("*/*/record.json")))
+    assert summary["engine_worker_hours"] == round(stage_a * 20.0 / 3600, 3)
+    assert not any(word in texts["findings.md"].lower() for word in ("beats", "outperform", "sota"))
+    assert "Relational-Symbolic's native-task fidelity run" in (tmp_path / "draft.md").read_text()
+    assert e1.validate(tmp_path, recheck=0) == 0
+    record = tmp_path / "n1" / "stage-a" / "datalab" / "lvl-0-r0" / "record.json"
+    record.write_text(record.read_text().replace('"wall_seconds": 20.0', '"wall_seconds": 21.0'))
+    assert e1.validate(tmp_path, recheck=0) == 1
+
+
+def test_a3_funding_draft_threshold():
+    assert "is funded" in e1.a3_funding_draft(185.0)
+    assert "tokens-only, typed `engine_budget`" in e1.a3_funding_draft(185.01)
