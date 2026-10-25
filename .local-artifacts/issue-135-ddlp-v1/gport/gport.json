@@ -1,0 +1,1054 @@
+{
+  "G_port": true,
+  "G_port_rule": "issue_123_exact",
+  "adapter": "sha256:adbc332d6ef46ae28e80a4734db65df94daf77b8b5c5baae84108b8200c176fe",
+  "arm_family": "T2 DDLP",
+  "cases": {
+    "clevrer-released": {
+      "batch": 1,
+      "case": "clevrer-released",
+      "config": "released:ddlp-clevrer",
+      "config_sha256": "sha256:4de36e73f45a885bb51f42e393e9b3640937dd99efdf7d7ba9e4591312b37fc5",
+      "initial_state_equal": true,
+      "launch": false,
+      "official_optimizer_class": "Adam",
+      "official_torch": "2.13.0+cu130",
+      "official_trainable_parameters": 9319182,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "pass": true,
+      "rollout_pass": true,
+      "rollout_relative_l2": {
+        "z": 0.0,
+        "z_bg": 0.0,
+        "z_depth": 0.0,
+        "z_features": 0.0,
+        "z_obj_on": 0.0,
+        "z_scale": 0.0
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 0,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 282.0867080027985,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 0,
+          "loss": 226.19801330566406,
+          "loss_terms": {
+            "kl": 19085.68359375,
+            "kl_dyn": 0.0,
+            "loss": 226.19801330566406,
+            "loss_kl_depth": 0.11799439042806625,
+            "loss_kl_feat": 0.42374178767204285,
+            "loss_kl_kp": 4481.87109375,
+            "loss_kl_obj_on": 44.48804473876953,
+            "loss_kl_scale": 14559.3251953125,
+            "loss_rec": 3605017.25,
+            "obj_on_l1": 5.797074794769287,
+            "psnr": 0.0
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0002
+          ],
+          "official_grad_norm": 282.0867080027985,
+          "official_loss": 226.19801330566406,
+          "official_lrs": [
+            0.0002
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": true
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 1,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 1446.0151026341216,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 20003,
+          "loss": 3985.421875,
+          "loss_terms": {
+            "kl": 18629.478515625,
+            "kl_dyn": 1202.3095703125,
+            "loss": 3985.421875,
+            "loss_kl_depth": 0.15380510687828064,
+            "loss_kl_feat": 0.4148426949977875,
+            "loss_kl_kp": 4427.53125,
+            "loss_kl_obj_on": 44.244293212890625,
+            "loss_kl_scale": 14157.7021484375,
+            "loss_rec": 82503952.0,
+            "obj_on_l1": 6.010310649871826,
+            "psnr": 10.687915802001953
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.00018
+          ],
+          "official_grad_norm": 1446.0151026341216,
+          "official_loss": 3985.421875,
+          "official_lrs": [
+            0.00018
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": false
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 2,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 1175.6223293366552,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 45000,
+          "loss": 4266.5712890625,
+          "loss_terms": {
+            "kl": 2434.186767578125,
+            "kl_dyn": 1167.5792236328125,
+            "loss": 4266.5712890625,
+            "loss_kl_depth": 0.18875692784786224,
+            "loss_kl_feat": 0.4067133069038391,
+            "loss_kl_kp": 967.137939453125,
+            "loss_kl_obj_on": 53.43950271606445,
+            "loss_kl_scale": 1413.60888671875,
+            "loss_rec": 89381888.0,
+            "obj_on_l1": 6.462968349456787,
+            "psnr": 10.775814056396484
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.000162
+          ],
+          "official_grad_norm": 1175.6223293366552,
+          "official_loss": 4266.5712890625,
+          "official_lrs": [
+            0.000162
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": false,
+            "warmup": false
+          }
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 9319182,
+      "why": "the released CLEVRER-128 checkpoint's hparams.json (VGG perceptual loss, K = 12)"
+    },
+    "novphy-launch": {
+      "batch": 2,
+      "case": "novphy-launch",
+      "config": "released:ddlp-phyre",
+      "config_sha256": "sha256:7f5d12139a0048bb4b653465108011bcf6cab0daf89eccd9a9e539c24c0a7d38",
+      "initial_state_equal": true,
+      "launch": true,
+      "official_optimizer_class": "Adam",
+      "official_torch": "2.13.0+cu130",
+      "official_trainable_parameters": 23386566,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "pass": true,
+      "rollout_pass": true,
+      "rollout_relative_l2": {
+        "z": 0.0,
+        "z_bg": 0.0,
+        "z_depth": 0.0,
+        "z_features": 0.0,
+        "z_obj_on": 0.0,
+        "z_scale": 0.0
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 0,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 2508.9090145789733,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 0,
+          "loss": 1712.6439208984375,
+          "loss_terms": {
+            "kl": 73184.8828125,
+            "kl_dyn": 0.0,
+            "loss": 1712.6439208984375,
+            "loss_kl_depth": 0.06138324737548828,
+            "loss_kl_feat": 0.49234914779663086,
+            "loss_kl_kp": 9859.4970703125,
+            "loss_kl_obj_on": 97.14884948730469,
+            "loss_kl_scale": 63228.234375,
+            "loss_rec": 16424.5703125,
+            "obj_on_l1": 12.168227195739746,
+            "psnr": 0.0
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0002
+          ],
+          "official_grad_norm": 2508.9090145789733,
+          "official_loss": 1712.6439208984375,
+          "official_lrs": [
+            0.0002
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": true
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 1,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 3459.487137326314,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 20003,
+          "loss": 4906.09619140625,
+          "loss_terms": {
+            "kl": 72524.9296875,
+            "kl_dyn": 1973.9564208984375,
+            "loss": 4906.09619140625,
+            "loss_kl_depth": 0.03642939776182175,
+            "loss_kl_feat": 0.5896409749984741,
+            "loss_kl_kp": 9827.9931640625,
+            "loss_kl_obj_on": 96.9129638671875,
+            "loss_kl_scale": 62600.0234375,
+            "loss_rec": 67322.703125,
+            "obj_on_l1": 12.33232307434082,
+            "psnr": 10.674995422363281
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.00019
+          ],
+          "official_grad_norm": 3459.487137326314,
+          "official_loss": 4906.09619140625,
+          "official_lrs": [
+            0.00019
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": false
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 2,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 525.4856176749163,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 45000,
+          "loss": 4121.35546875,
+          "loss_terms": {
+            "kl": 644.1626586914062,
+            "kl_dyn": 1016.654052734375,
+            "loss": 4121.35546875,
+            "loss_kl_depth": 0.029639318585395813,
+            "loss_kl_feat": 0.6437987685203552,
+            "loss_kl_kp": 0.23306502401828766,
+            "loss_kl_obj_on": 116.23678588867188,
+            "loss_kl_scale": 527.692138671875,
+            "loss_rec": 65692.5625,
+            "obj_on_l1": 12.242706298828125,
+            "psnr": 10.781449317932129
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0001805
+          ],
+          "official_grad_norm": 525.4856176749163,
+          "official_loss": 4121.35546875,
+          "official_lrs": [
+            0.0001805
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": false,
+            "warmup": false
+          }
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 23386566,
+      "why": "the NovPhy model: native shape + the launch particle (Decision P-other adapter)"
+    },
+    "phyre-config": {
+      "batch": 2,
+      "case": "phyre-config",
+      "config": "clone:configs/phyre.json",
+      "config_sha256": "sha256:8f899aa10a3a3e786f839a5cb9a74fa58675f2f190bcf6353134d5cd8a213aac",
+      "initial_state_equal": true,
+      "launch": false,
+      "official_optimizer_class": "Adam",
+      "official_torch": "2.13.0+cu130",
+      "official_trainable_parameters": 26052426,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "pass": true,
+      "rollout_pass": true,
+      "rollout_relative_l2": {
+        "z": 0.0,
+        "z_bg": 0.0,
+        "z_depth": 0.0,
+        "z_features": 0.0,
+        "z_obj_on": 0.0,
+        "z_scale": 0.0
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 0,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 2748.1428990241084,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 0,
+          "loss": 1654.507568359375,
+          "loss_terms": {
+            "kl": 72097.984375,
+            "kl_dyn": 0.0,
+            "loss": 1654.507568359375,
+            "loss_kl_depth": 0.08734530210494995,
+            "loss_kl_feat": 0.5447205305099487,
+            "loss_kl_kp": 9660.6650390625,
+            "loss_kl_obj_on": 97.89688873291016,
+            "loss_kl_scale": 62339.421875,
+            "loss_rec": 15657.421875,
+            "obj_on_l1": 12.875846862792969,
+            "psnr": 0.0
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0002
+          ],
+          "official_grad_norm": 2748.1428990241084,
+          "official_loss": 1654.507568359375,
+          "official_lrs": [
+            0.0002
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": true
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 1,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 3555.107439527621,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 20003,
+          "loss": 4892.21337890625,
+          "loss_terms": {
+            "kl": 71279.2578125,
+            "kl_dyn": 1907.009033203125,
+            "loss": 4892.21337890625,
+            "loss_kl_depth": 0.07072693109512329,
+            "loss_kl_feat": 0.5804161429405212,
+            "loss_kl_kp": 9595.083984375,
+            "loss_kl_obj_on": 97.67840576171875,
+            "loss_kl_scale": 61586.4921875,
+            "loss_rec": 67297.46875,
+            "obj_on_l1": 12.49593448638916,
+            "psnr": 10.676626205444336
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.00019
+          ],
+          "official_grad_norm": 3555.107439527621,
+          "official_loss": 4892.21337890625,
+          "official_lrs": [
+            0.00019
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": false
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 2,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 825.6158140197347,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 45000,
+          "loss": 4198.4931640625,
+          "loss_terms": {
+            "kl": 8727.2607421875,
+            "kl_dyn": 1059.1949462890625,
+            "loss": 4198.4931640625,
+            "loss_kl_depth": 0.0643589049577713,
+            "loss_kl_feat": 0.6193692684173584,
+            "loss_kl_kp": 2105.509033203125,
+            "loss_kl_obj_on": 117.77424621582031,
+            "loss_kl_scale": 6503.9765625,
+            "loss_rec": 65707.921875,
+            "obj_on_l1": 11.995443344116211,
+            "psnr": 10.780434608459473
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0001805
+          ],
+          "official_grad_norm": 825.6158140197347,
+          "official_loss": 4198.4931640625,
+          "official_lrs": [
+            0.0001805
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": false,
+            "warmup": false
+          }
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 26052426,
+      "why": "the repository's configs/phyre.json (train_ddlp.py -d phyre)"
+    },
+    "phyre-released": {
+      "batch": 2,
+      "case": "phyre-released",
+      "config": "released:ddlp-phyre",
+      "config_sha256": "sha256:7f5d12139a0048bb4b653465108011bcf6cab0daf89eccd9a9e539c24c0a7d38",
+      "initial_state_equal": true,
+      "launch": false,
+      "official_optimizer_class": "Adam",
+      "official_torch": "2.13.0+cu130",
+      "official_trainable_parameters": 23386410,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "pass": true,
+      "rollout_pass": true,
+      "rollout_relative_l2": {
+        "z": 0.0,
+        "z_bg": 0.0,
+        "z_depth": 0.0,
+        "z_features": 0.0,
+        "z_obj_on": 0.0,
+        "z_scale": 0.0
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 0,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 2508.9090145789733,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 0,
+          "loss": 1712.6439208984375,
+          "loss_terms": {
+            "kl": 73184.8828125,
+            "kl_dyn": 0.0,
+            "loss": 1712.6439208984375,
+            "loss_kl_depth": 0.06138324737548828,
+            "loss_kl_feat": 0.49234914779663086,
+            "loss_kl_kp": 9859.4970703125,
+            "loss_kl_obj_on": 97.14884948730469,
+            "loss_kl_scale": 63228.234375,
+            "loss_rec": 16424.5703125,
+            "obj_on_l1": 12.168227195739746,
+            "psnr": 0.0
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0002
+          ],
+          "official_grad_norm": 2508.9090145789733,
+          "official_loss": 1712.6439208984375,
+          "official_lrs": [
+            0.0002
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": true
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 1,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 3458.933109060709,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 20003,
+          "loss": 4905.43115234375,
+          "loss_terms": {
+            "kl": 72524.9296875,
+            "kl_dyn": 1903.039306640625,
+            "loss": 4905.43115234375,
+            "loss_kl_depth": 0.03642939776182175,
+            "loss_kl_feat": 0.5896409749984741,
+            "loss_kl_kp": 9827.9931640625,
+            "loss_kl_obj_on": 96.9129638671875,
+            "loss_kl_scale": 62600.0234375,
+            "loss_rec": 67322.703125,
+            "obj_on_l1": 12.33232307434082,
+            "psnr": 10.674995422363281
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.00019
+          ],
+          "official_grad_norm": 3458.933109060709,
+          "official_loss": 4905.43115234375,
+          "official_lrs": [
+            0.00019
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": false
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 2,
+          "forward_relative_l2": {
+            "logvar_dyn": 0.0,
+            "mu_bg_dyn": 0.0,
+            "mu_dyn": 0.0,
+            "mu_features_dyn": 0.0,
+            "obj_on": 0.0,
+            "obj_on_a_dyn": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 525.3930543449324,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 45000,
+          "loss": 4121.494140625,
+          "loss_terms": {
+            "kl": 644.1614379882812,
+            "kl_dyn": 1031.28857421875,
+            "loss": 4121.494140625,
+            "loss_kl_depth": 0.029637567698955536,
+            "loss_kl_feat": 0.6554743051528931,
+            "loss_kl_kp": 0.23306897282600403,
+            "loss_kl_obj_on": 116.23676300048828,
+            "loss_kl_scale": 527.69091796875,
+            "loss_rec": 65692.5859375,
+            "obj_on_l1": 12.24286937713623,
+            "psnr": 10.781448364257812
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0001805
+          ],
+          "official_grad_norm": 525.3930543449324,
+          "official_loss": 4121.494140625,
+          "official_lrs": [
+            0.0001805
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": false,
+            "warmup": false
+          }
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 23386410,
+      "why": "the released PHYRE-128 checkpoint's hparams.json (paper Table 4; the NovPhy native shape)"
+    },
+    "phyre-released-static": {
+      "batch": 2,
+      "case": "phyre-released-static",
+      "config": "released:ddlp-phyre",
+      "config_sha256": "sha256:7f5d12139a0048bb4b653465108011bcf6cab0daf89eccd9a9e539c24c0a7d38",
+      "initial_state_equal": true,
+      "launch": false,
+      "official_optimizer_class": "Adam",
+      "official_torch": "2.13.0+cu130",
+      "official_trainable_parameters": 23386410,
+      "optimizer_class": "Adam",
+      "optimizer_defaults_equal": true,
+      "pass": true,
+      "rollout_pass": true,
+      "rollout_relative_l2": {
+        "z": 0.0,
+        "z_bg": 0.0,
+        "z_depth": 0.0,
+        "z_features": 0.0,
+        "z_obj_on": 0.0,
+        "z_scale": 0.0
+      },
+      "steps": [
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 0,
+          "forward_relative_l2": {
+            "obj_on": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 1671.3201228500648,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 0,
+          "loss": 2876.714111328125,
+          "loss_terms": {
+            "kl": 18295.3046875,
+            "kl_dyn": 0.0,
+            "loss": 2876.714111328125,
+            "loss_kl_depth": 0.01436839159578085,
+            "loss_kl_feat": 0.13060502707958221,
+            "loss_kl_kp": 2462.945556640625,
+            "loss_kl_obj_on": 24.287023544311523,
+            "loss_kl_scale": 15808.0712890625,
+            "loss_rec": 132.41827392578125,
+            "obj_on_l1": 12.133575439453125,
+            "psnr": 0.0
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0002
+          ],
+          "official_grad_norm": 1671.3201228500648,
+          "official_loss": 2876.714111328125,
+          "official_lrs": [
+            0.0002
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": true
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 1,
+          "forward_relative_l2": {
+            "obj_on": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 3588.886558789831,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 20003,
+          "loss": 6920.47314453125,
+          "loss_terms": {
+            "kl": 18129.1171875,
+            "kl_dyn": 0.0,
+            "loss": 6920.47314453125,
+            "loss_kl_depth": 0.009126673452556133,
+            "loss_kl_feat": 0.14072461426258087,
+            "loss_kl_kp": 2456.609619140625,
+            "loss_kl_obj_on": 24.228355407714844,
+            "loss_kl_scale": 15648.2783203125,
+            "loss_rec": 4201.10546875,
+            "obj_on_l1": 12.277374267578125,
+            "psnr": 10.68177604675293
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.00019
+          ],
+          "official_grad_norm": 3588.886558789831,
+          "official_loss": 6920.47314453125,
+          "official_lrs": [
+            0.00019
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": true,
+            "warmup": false
+          }
+        },
+        {
+          "adam_moment_max_relative_l2": 0.0,
+          "checks": {
+            "forward": true,
+            "grad_norm": true,
+            "grad_tensors": true,
+            "loss_terms": true,
+            "lrs": true,
+            "moments": true,
+            "param_max": true,
+            "param_share": true
+          },
+          "epoch": 2,
+          "forward_relative_l2": {
+            "obj_on": 0.0,
+            "rec": 0.0,
+            "z": 0.0,
+            "z_bg": 0.0,
+            "z_features": 0.0
+          },
+          "grad_norm": 498.48371785762487,
+          "grad_tensor_max_relative_l2": 0.0,
+          "iteration": 45000,
+          "loss": 4130.1826171875,
+          "loss_terms": {
+            "kl": 161.02377319335938,
+            "kl_dyn": 0.0,
+            "loss": 4130.1826171875,
+            "loss_kl_depth": 0.0066590276546776295,
+            "loss_kl_feat": 0.1393779069185257,
+            "loss_kl_kp": 0.05067053809762001,
+            "loss_kl_obj_on": 29.051467895507812,
+            "loss_kl_scale": 131.92147827148438,
+            "loss_rec": 4106.02880859375,
+            "obj_on_l1": 12.124189376831055,
+            "psnr": 10.781192779541016
+          },
+          "loss_terms_max_relative_delta": 0.0,
+          "lrs": [
+            0.0001805
+          ],
+          "official_grad_norm": 498.48371785762487,
+          "official_loss": 4130.1826171875,
+          "official_lrs": [
+            0.0001805
+          ],
+          "param_close_share_abs": 1.0,
+          "param_max_abs_delta": 0.0,
+          "pass": true,
+          "phase": {
+            "noisy": false,
+            "warmup": false
+          }
+        }
+      ],
+      "torch": "2.13.0+cu130",
+      "trainable_parameters": 23386410,
+      "why": "train_ddlp.py's static branch (epoch < start_dyn_epoch: forward_dyn False, calc_elbo_static): the #135 readiness model R0"
+    }
+  },
+  "commit": "5686275800ee58d9832714af5ed8363c4fb606bc",
+  "env": "b127-ddlp (both sides; torch 2.13.0+cu130, CPU, float32, 4 threads)",
+  "issue": 135,
+  "iter_per_epoch": 20000,
+  "official_root": "/mnt/array/sukaih/novphy-baselines-src/ddlp@5686275",
+  "pass": true,
+  "procedure": "Issue #135 G-port: the official DDLP (taldatech/ddlp @ 5686275, run from the read-only clone) vs the NovPhy adapter\n(``world_model/baselines/ddlp``), CPU, float32, the same torch build on both sides (env ``b127-ddlp``, torch 2.13).\n\nTwo modes, separate processes, one fixed set of cases (``CASES``):\n\n    python scripts/b127_ddlp_port_reference.py reference [CASE ...]   # official side -> REF_DIR/<case>.pt\n    python scripts/b127_ddlp_port_reference.py compare   [CASE ...]   # adapter side + comparison -> gport/gport.json\n\nOfficial side (imports ``models``, ``modules``, ``utils`` from the clone; never the vendored copy). Per case the model\nis the official ``ObjectDynamicsDLP`` built with ``train_ddlp.py``'s constructor call from an official config, the\noptimizer / scheduler / flags / dynamics-discount lines are ``train_ddlp.py``'s, the loss is ``calc_elbo``. Steps\n(``STEPS``): epoch 0 (warm-up + noisy: object-glimpse reconstruction, warm-up priors), epoch 1 (noisy), epoch 2\n(regular, dynamics ramp part-way); the StepLR scheduler steps at every epoch boundary, so the three steps run at\nlr 2e-4, then gamma x, then gamma^2 x. Then a deterministic rollout: ``model.sample(x, cond_steps=4, num_steps=6,\nreturn_z=True)`` from a static 4-frame context (the NovPhy layout).\n\n``novphy-launch``: the NovPhy model (native config + the launch particle). The official side builds the official\nmodel, replaces its PINT by an official ``DynamicsDLP`` with ``max_particles = K + 2`` and wraps it with an\nindependently written launch-particle wrapper (``RefLaunch`` below: append the particle, strip it from every output,\nre-set it after every rollout step), so the comparison checks the adapter's wrapper and every official component.\n\nInputs are fixed seeded uniform frames [B, T + 1, 3, 128, 128] and launches; seeds are reset before construction and\nbefore every step on both sides (posterior sampling and PINT dropout 0.1 draw from torch's global generator).\n\nGate (``issue_123_exact``, #123 ``run_hjepa_comparison.GPORT_TOLERANCE``): per step loss and every loss term relative\ndelta <= 1e-4, gradient norm relative delta <= 1e-4, per-tensor gradient relative L2 <= 1e-3 (tensors above 1e-6 of\nthe global norm), the share of trainable elements with |delta param| <= 1e-7 >= 0.999 and max |delta param| <=\n2 lr + 1e-7, Adam moments, learning rates, parameter names / counts / initial values equal; the rollout particles and\nthe forward outputs equal within 1e-5 relative L2.\n",
+  "runner": "sha256:fd37ef47697102dc5ba7bf3d59185843cf2185249160993814414ab98ecc0907",
+  "schema": "issue_127_gport_v1",
+  "steps_spec": [
+    {
+      "epoch": 0,
+      "iteration": 0
+    },
+    {
+      "epoch": 1,
+      "iteration": 20003
+    },
+    {
+      "epoch": 2,
+      "iteration": 45000
+    }
+  ],
+  "tolerance": {
+    "grad_floor_of_global_norm": 1e-06,
+    "grad_norm_relative": 0.0001,
+    "grad_tensor_relative_l2": 0.001,
+    "loss_relative": 0.0001,
+    "lr_abs": 1e-12,
+    "output_relative_l2": 1e-05,
+    "param_close_abs": 1e-07,
+    "param_close_share": 0.999,
+    "param_max_abs_over_lr": 2.0
+  },
+  "vendor_json": "sha256:4157ef59e7a7490d709fe9f7b5cd675194e4c0adb9eae1d828d4599460b310b8",
+  "written_at": "2026-10-25T11:44:34Z"
+}

@@ -1,0 +1,226 @@
+{
+  "note": "#135 T2 DDLP, phase B: main seeds 20260909 / 20260910 at the selected configuration, readouts, the readouts freeze, the one scoring pass, the novelty pass, publish + validate. PREPARED, NOT ENQUEUED: enqueue only after phase A, a passing smoke and the orchestrator's --prepare freeze commit (every GPU stage refuses without funded.json; --score also refuses unless G-fid passed). est_minutes for training = the native upper [INFERENCE] projection; replace with the smoke's measured rate.",
+  "jobs": [
+    {
+      "id": "135-train-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 5210,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--train",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": ""
+    },
+    {
+      "id": "135-train-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 5210,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--train",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": ""
+    },
+    {
+      "id": "135-readouts-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--readouts",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "",
+      "depends_on": [
+        "135-train-q0",
+        "135-train-q1"
+      ]
+    },
+    {
+      "id": "135-readouts-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--readouts",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "",
+      "depends_on": [
+        "135-train-q0",
+        "135-train-q1"
+      ]
+    },
+    {
+      "id": "135-readouts-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--readouts",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "",
+      "depends_on": [
+        "135-train-q0",
+        "135-train-q1"
+      ]
+    },
+    {
+      "id": "135-freeze-readouts",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 5,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--freeze-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "",
+      "depends_on": [
+        "135-readouts-q0",
+        "135-readouts-q1",
+        "135-readouts-q2"
+      ]
+    },
+    {
+      "id": "135-score",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 120,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--score"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "one process that did not train; deterministic; resumable per record.",
+      "depends_on": [
+        "135-freeze-readouts"
+      ]
+    },
+    {
+      "id": "135-score-novelty",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--score-novelty"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "",
+      "depends_on": [
+        "135-score"
+      ]
+    },
+    {
+      "id": "135-publish-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "depends_on": [
+        "135-score-novelty"
+      ],
+      "command": [
+        "bash",
+        "-c",
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python -u scripts/run_issue_135_ddlp.py --publish && /srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python -u scripts/run_issue_135_ddlp.py --validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "--validate re-scores the seed-20260908 record (exact row equality)."
+    }
+  ]
+}

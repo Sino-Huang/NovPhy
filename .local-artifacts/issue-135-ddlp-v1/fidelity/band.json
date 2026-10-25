@@ -1,0 +1,43 @@
+{
+  "arm": "T2 DDLP",
+  "issue": 135,
+  "rule": "G-fid (T2 DDLP) = Tier E: pass iff 0.0505 <= ours <= 0.0595, ours = the official script's 'lpips' from one run. PSNR and SSIM are reported against their stated bands, descriptive (not gating). A fail follows P-fid: at most two logged repair attempts, each fixing a diagnosed harness / port defect, never this band; then drop with fidelity_not_reproduced.",
+  "schema": "issue_127_gfid_band_v1",
+  "tier_t": "not needed (released checkpoint reachable; Decision P-route issuecomment-6396701779)",
+  "tiers": {
+    "tier-e": {
+      "band": [
+        0.0505,
+        0.0595
+      ],
+      "band_basis": "The official script is deterministic, so it has no sampling variability of its own; the tolerance is the sampling variability of the test-set mean over episodes. The paper's +-0.04 is the SD over all predicted frames (the script's lpips_std over batch x T values). With 90 frames per episode, Var(episode mean) <= Var(frame value) (law of total variance), so the SE of the 400-episode mean is <= 0.04 / sqrt(400) = 0.002; band = 0.055 +- (2 x 0.002 + 0.0005), the last term half of the paper's last reported digit (0.055 stands for [0.0545, 0.0555)).",
+      "descriptive": {
+        "psnr": {
+          "band": [
+            26.445,
+            27.515
+          ],
+          "basis": "26.98 +- (2 x 5.3 / 20 + 0.005)",
+          "paper": 26.98,
+          "paper_sd": 5.3
+        },
+        "ssim": {
+          "band": [
+            0.941,
+            0.959
+          ],
+          "basis": "0.95 +- (2 x 0.04 / 20 + 0.005)",
+          "paper": 0.95,
+          "paper_sd": 0.04
+        }
+      },
+      "half_width": 0.0045,
+      "metric": "mean LPIPS (piqa 1.3.1 LPIPS(network='vgg'), reduction none) over every predicted frame (400 test episodes x 90 frames = 36 000) printed by the official eval/eval_gen_metrics.py (results['lpips'] = mean over the concatenated per-frame values; key 'lpips')",
+      "paper": 0.055,
+      "paper_source": "Daniel & Tamar, DDLP, TMLR 2024 (arXiv 2306.05957 v2), Table 3, PHYRE column, row 'DDLP (Ours)': PSNR 26.98+-5.3, SSIM 0.95+-0.04, LPIPS 0.055+-0.04; section 5.2: 'At inference time, we condition on 10 frames and predict the next 90 frames'; appendix G: 400 PHYRE test episodes; footnote 5: metrics from the PIQA library",
+      "protocol": "official eval/eval_gen_metrics.py at 5686275 from the read-only clone: -d phyre -p <run>/ddlp-phyre --checkpoint data/external/ddlp/checkpoints/ddlp-phyre/phyre_ddlp.pth -c 10 --horizon 100 -b 2 --cpu; deterministic (no --sample: the script's default; model.sample deterministic=True, posterior means and PINT means); released hparams.json with only root -> data/external/ddlp/data/phyre (the authors' released PHYRE data, test split: PhyreDataset mode 'test', ep_len 100, 3 s cutoff, last-frame padding, PIL resize to 128, colour inversion as released); torch 2.13 CPU float32, 4 threads; batch 2 instead of 10 (host RAM; the model has no batch-coupled layer in eval: GroupNorm, no BatchNorm on this config); one run",
+      "statistic_key": "lpips"
+    }
+  },
+  "written_at": "2026-10-25T10:52:22Z"
+}

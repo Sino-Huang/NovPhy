@@ -1,0 +1,154 @@
+{
+  "note": "#135 T2 DDLP (triggered Tier-C), phase A: the readiness stop (R0 static DLPv2 + readout ceiling, Decision issuecomment-6396890266), the three selection runs, selection readouts, smoke. PREPARED, NOT ENQUEUED: enqueue only after the orchestrator's funding decision and its .local-artifacts/issue-135-ddlp-v1/funded.json marker (every stage refuses without it); --selection also refuses unless G-port, G-fid (fidelity/gfid.json, CPU run) and readiness/readiness.json passed, so a readiness stop leaves the selection jobs failing fast (exit 1, no GPU work). est_minutes = the upper [INFERENCE] FLOP projection (projection.json, 10 TFLOP/s sustained); replace with the --timing measurement before enqueue. Phase B after the --prepare freeze commit: scripts/gpu_window_issue_135_main.json.",
+  "jobs": [
+    {
+      "id": "135-readiness",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 140,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--readiness"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "R0: native config in the official static mode, 30 000 batch-12 steps (resumable: SIGTERM -> resume.pt -> exit 75), then the readout fit on 220 887 fit frames and the policy ceiling (~20-45 min, redone deterministically after a pause); writes readiness/readiness.json (pass or typed stop readiness_ceiling_below_threshold)."
+    },
+    {
+      "id": "135-select-native",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 5210,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--selection",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "native: 1 577 480 steps (40 epochs x 39 437); resumable.",
+      "depends_on": [
+        "135-readiness"
+      ]
+    },
+    {
+      "id": "135-select-paper-schedule",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 2406,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--selection",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "paper-schedule: 729 280 steps (40 x 18 232); resumable.",
+      "depends_on": [
+        "135-readiness"
+      ]
+    },
+    {
+      "id": "135-select-repo-config",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 8298,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--selection",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "repo-config: 1 577 480 steps, configs/phyre.json model; resumable. First cut under P-cap (CUT_ORDER): drop this job before enqueue if the funded remainder covers only two configurations.",
+      "depends_on": [
+        "135-readiness"
+      ]
+    },
+    {
+      "id": "135-selro",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "per configuration: readout fit (fit frames), policy grid AUC, readout ceiling; selection.json.",
+      "depends_on": [
+        "135-select-native",
+        "135-select-paper-schedule",
+        "135-select-repo-config"
+      ]
+    },
+    {
+      "id": "135-smoke",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "accounting, G-port currency, CPU tests, throughput from the selection reports, projection vs the child cap / 48 h wall; smoke.json.",
+      "depends_on": [
+        "135-selro"
+      ]
+    }
+  ]
+}

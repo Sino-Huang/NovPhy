@@ -1,0 +1,49 @@
+{
+  "batch": 2,
+  "decision": "https://github.com/Sino-Huang/NovPhy/issues/135#issuecomment-6397579863",
+  "episodes": 50,
+  "exit_code": 0,
+  "inputs": {
+    "ddlp-phyre.zip": "sha256:efa5878b6c6317896886c6e77a7a0ef83672390e67ecd194031657d51aceb06a",
+    "ddlp-phyre/hparams.json": "sha256:7f5d12139a0048bb4b653465108011bcf6cab0daf89eccd9a9e539c24c0a7d38",
+    "ddlp-phyre/phyre_ddlp.pth": "sha256:d975a8c64f0d42915a3e1d8c59d474802dc6dfcd3232eefaecfc8e3292775889",
+    "phyre_dataset.zip": "sha256:22d346893213b5b619139ba1958ee035e00e6de4de9ce226b57d06355d0a20ec"
+  },
+  "log": ".local-artifacts/issue-135-ddlp-v1/fidelity/diagnostics/t201-b2.log",
+  "log_sha256": "sha256:abdb92c8604959f3e5b5325ac1edf8d5f50ddd448ce1f9295181fdb1f8a67ad8",
+  "metrics": {
+    "lpips": 0.04836079105734825,
+    "lpips_std": 0.04196745157241821,
+    "psnr": 26.194917678833008,
+    "psnr_std": 5.57716178894043,
+    "ssim": 0.9641035199165344,
+    "ssim_std": 0.027956418693065643
+  },
+  "official_args": [
+    "-d",
+    "phyre",
+    "-p",
+    "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-135-ddlp-v1/fidelity/diagnostics/run-t201-b2/ddlp-phyre",
+    "--checkpoint",
+    "/mnt/array/sukaih/Project/NovPhy/data/external/ddlp/checkpoints/ddlp-phyre/phyre_ddlp.pth",
+    "-c",
+    "10",
+    "--horizon",
+    "100",
+    "-b",
+    "2",
+    "--cpu"
+  ],
+  "python": "/srv/home/shua0171/miniconda3/envs/b127-ddlp-orig/bin/python",
+  "schema": "issue_135_gfid_diagnostic_v1",
+  "tag": "t201-b2",
+  "versions": {
+    "numpy": "1.24.3",
+    "pillow": "12.3.0",
+    "piqa": "1.3.1",
+    "torch": "2.0.1+cpu",
+    "torchvision": "0.15.2+cpu"
+  },
+  "wall_seconds": 596.7983157429844,
+  "written_at": "2026-10-25T12:35:56Z"
+}

@@ -1,0 +1,129 @@
+{
+  "assumed_sustained_tflops": [
+    10.0,
+    40.0
+  ],
+  "label": "[INFERENCE] FLOP model",
+  "measured_at": "2026-10-25T11:23:01Z",
+  "plan_identity": "issue-135-ddlp-v1",
+  "primary": "projection_upper",
+  "projection_lower": {
+    "r0_gpu_h": 0.35340070912,
+    "seconds_per_step": {
+      "native": 0.0495009261144,
+      "paper-schedule": 0.0495009261144,
+      "r0-static": 0.0424080850944,
+      "repo-config": 0.078908607036
+    },
+    "three": {
+      "child_cap_gpu_h": 164.0,
+      "configurations": [
+        "native",
+        "paper-schedule",
+        "repo-config"
+      ],
+      "native_per_seed_gpu_h_max": 34.5768748408748,
+      "other_gpu_h": 6.35340070912,
+      "selection_gpu_h": {
+        "native": 21.690755813039917,
+        "paper-schedule": 10.02778761019712,
+        "repo-config": 34.5768748408748
+      },
+      "steps": {
+        "native": 1577480,
+        "paper-schedule": 729280,
+        "repo-config": 1577480
+      },
+      "total_gpu_h": 141.80256865498143,
+      "training_gpu_h": 69.1537496817496,
+      "wall_cap_h": 48.0,
+      "wall_h_on_4_gpus_serial_ladder": 75.5071503908696,
+      "within_caps": false
+    },
+    "two_after_cut": {
+      "child_cap_gpu_h": 164.0,
+      "configurations": [
+        "native",
+        "paper-schedule"
+      ],
+      "native_per_seed_gpu_h_max": 21.690755813039917,
+      "other_gpu_h": 6.35340070912,
+      "selection_gpu_h": {
+        "native": 21.690755813039917,
+        "paper-schedule": 10.02778761019712
+      },
+      "steps": {
+        "native": 1577480,
+        "paper-schedule": 729280
+      },
+      "total_gpu_h": 81.45345575843687,
+      "training_gpu_h": 43.381511626079835,
+      "wall_cap_h": 48.0,
+      "wall_h_on_4_gpus_serial_ladder": 49.73491233519984,
+      "within_caps": false
+    }
+  },
+  "projection_upper": {
+    "r0_gpu_h": 1.41360283648,
+    "seconds_per_step": {
+      "native": 0.1980037044576,
+      "paper-schedule": 0.1980037044576,
+      "r0-static": 0.1696323403776,
+      "repo-config": 0.315634428144
+    },
+    "three": {
+      "child_cap_gpu_h": 164.0,
+      "configurations": [
+        "native",
+        "paper-schedule",
+        "repo-config"
+      ],
+      "native_per_seed_gpu_h_max": 138.3074993634992,
+      "other_gpu_h": 7.41360283648,
+      "selection_gpu_h": {
+        "native": 86.76302325215967,
+        "paper-schedule": 40.11115044078848,
+        "repo-config": 138.3074993634992
+      },
+      "steps": {
+        "native": 1577480,
+        "paper-schedule": 729280,
+        "repo-config": 1577480
+      },
+      "total_gpu_h": 549.2102746199257,
+      "training_gpu_h": 276.6149987269984,
+      "wall_cap_h": 48.0,
+      "wall_h_on_4_gpus_serial_ladder": 284.0286015634784,
+      "within_caps": false
+    },
+    "two_after_cut": {
+      "child_cap_gpu_h": 164.0,
+      "configurations": [
+        "native",
+        "paper-schedule"
+      ],
+      "native_per_seed_gpu_h_max": 86.76302325215967,
+      "other_gpu_h": 7.41360283648,
+      "selection_gpu_h": {
+        "native": 86.76302325215967,
+        "paper-schedule": 40.11115044078848
+      },
+      "steps": {
+        "native": 1577480,
+        "paper-schedule": 729280
+      },
+      "total_gpu_h": 307.8138230337475,
+      "training_gpu_h": 173.52604650431934,
+      "wall_cap_h": 48.0,
+      "wall_h_on_4_gpus_serial_ladder": 180.93964934079935,
+      "within_caps": false
+    }
+  },
+  "schema": "issue_135_projection_v1",
+  "step_tflop_batch12": {
+    "native": 1.980037044576,
+    "paper-schedule": 1.980037044576,
+    "r0-static": 1.696323403776,
+    "repo-config": 3.15634428144
+  }
+}

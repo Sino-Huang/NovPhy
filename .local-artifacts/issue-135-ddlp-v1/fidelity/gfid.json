@@ -1,0 +1,130 @@
+{
+  "G_fid": false,
+  "arm": "T2 DDLP",
+  "attempts": [
+    {
+      "attempt": 1,
+      "ended_at": "2026-10-25T12:20:25Z",
+      "exit_code": 0,
+      "log": ".local-artifacts/issue-135-ddlp-v1/fidelity/eval.attempt1.log",
+      "log_sha256": "sha256:e1cb633ad493ca76b42d2e42fbaab41b230a00417a9f8176c9fdd36d1077b4c9",
+      "started_at": "2026-10-25T10:52:44Z",
+      "wall_seconds": 5260.741329878103
+    },
+    {
+      "attempt": 2,
+      "batch": 2,
+      "ended_at": "2026-10-25T14:09:59Z",
+      "exit_code": 0,
+      "log": ".local-artifacts/issue-135-ddlp-v1/fidelity/eval.attempt2.log",
+      "log_sha256": "sha256:dfa0a2f62e43eb8c064d0ae3398d6b17b5a77ff731cfa88e447989750179569c",
+      "python": "/srv/home/shua0171/miniconda3/envs/b127-ddlp-orig/bin/python",
+      "repair_decision": "https://github.com/Sino-Huang/NovPhy/issues/135#issuecomment-6397847883",
+      "started_at": "2026-10-25T12:49:35Z",
+      "versions": {
+        "numpy": "1.24.3",
+        "pillow": "12.3.0",
+        "piqa": "1.3.1",
+        "torch": "2.0.1+cpu",
+        "torchvision": "0.15.2+cpu"
+      },
+      "wall_seconds": 4824.239664669149
+    }
+  ],
+  "band_sha256": "sha256:06cbd43b680c7996c4719833d7ad70888cfc274fd43a02b100d45794a0254581",
+  "command": [
+    "python",
+    "eval/eval_gen_metrics.py",
+    "-d",
+    "phyre",
+    "-p",
+    "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-135-ddlp-v1/fidelity/run/ddlp-phyre",
+    "--checkpoint",
+    "/mnt/array/sukaih/Project/NovPhy/data/external/ddlp/checkpoints/ddlp-phyre/phyre_ddlp.pth",
+    "-c",
+    "10",
+    "--horizon",
+    "100",
+    "-b",
+    "2",
+    "--cpu"
+  ],
+  "commit": "5686275800ee58d9832714af5ed8363c4fb606bc",
+  "complete": true,
+  "compute": {
+    "tier-e": {
+      "attempts": 2,
+      "cpu_wall_seconds": 10084.980994547252,
+      "gpu_seconds": 0.0
+    }
+  },
+  "cwd": "/mnt/array/sukaih/novphy-baselines-src/ddlp@5686275",
+  "device": "cpu",
+  "env_freeze_sha256": "sha256:2ce5f22f55377a03d522bb665125c7191c8777875194c9924d88be85480efb37",
+  "harness": {
+    "hparams_override": {
+      "root": {
+        "released": "/media/newhd/data/phyre/full",
+        "run": "/mnt/array/sukaih/Project/NovPhy/data/external/ddlp/data/phyre"
+      }
+    },
+    "langtable_ds_stand_in": "empty module registered as datasets.langtable_ds (missing upstream)"
+  },
+  "inputs": {
+    "ddlp-phyre.zip": "sha256:efa5878b6c6317896886c6e77a7a0ef83672390e67ecd194031657d51aceb06a",
+    "ddlp-phyre/hparams.json": "sha256:7f5d12139a0048bb4b653465108011bcf6cab0daf89eccd9a9e539c24c0a7d38",
+    "ddlp-phyre/phyre_ddlp.pth": "sha256:d975a8c64f0d42915a3e1d8c59d474802dc6dfcd3232eefaecfc8e3292775889",
+    "phyre_dataset.zip": "sha256:22d346893213b5b619139ba1958ee035e00e6de4de9ce226b57d06355d0a20ec",
+    "test_split_digest": "sha256:11ce91c5924b0a0a83aadf9adc602221fc755334c8b48bc1b734bacabc03ef19",
+    "torch_hub": {
+      "vgg.pth": "sha256:a78928a0af1e5f0fcb1f3b9e8f8c3a2a5a3de244d830ad5c1feddc79b8432868",
+      "vgg16-397923af.pth": "sha256:397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0"
+    }
+  },
+  "issue": 135,
+  "pass": false,
+  "rules": "G-fid (T2 DDLP) = Tier E: pass iff 0.0505 <= ours <= 0.0595, ours = the official script's 'lpips' from one run. PSNR and SSIM are reported against their stated bands, descriptive (not gating). A fail follows P-fid: at most two logged repair attempts, each fixing a diagnosed harness / port defect, never this band; then drop with fidelity_not_reproduced.",
+  "schema": "issue_127_gfid_v1",
+  "threads": 4,
+  "tiers": {
+    "tier-e": {
+      "band": [
+        0.0505,
+        0.0595
+      ],
+      "descriptive": {
+        "psnr": {
+          "band": [
+            26.445,
+            27.515
+          ],
+          "in_band": false,
+          "ours": 24.548139572143555,
+          "paper": 26.98
+        },
+        "ssim": {
+          "band": [
+            0.941,
+            0.959
+          ],
+          "in_band": false,
+          "ours": 0.9350236654281616,
+          "paper": 0.95
+        }
+      },
+      "in_band": false,
+      "metric": "mean LPIPS (piqa 1.3.1 LPIPS(network='vgg'), reduction none) over every predicted frame (400 test episodes x 90 frames = 36 000) printed by the official eval/eval_gen_metrics.py (results['lpips'] = mean over the concatenated per-frame values; key 'lpips')",
+      "official_results": {
+        "lpips": 0.0744883269071579,
+        "lpips_std": 0.05277688428759575,
+        "psnr": 24.548139572143555,
+        "psnr_std": 5.135457515716553,
+        "ssim": 0.9350236654281616,
+        "ssim_std": 0.04485185071825981
+      },
+      "ours": 0.0744883269071579,
+      "paper": 0.055
+    }
+  },
+  "written_at": "2026-10-25T14:10:01Z"
+}

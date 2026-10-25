@@ -1,0 +1,82 @@
+{
+  "commit": "5686275800ee58d9832714af5ed8363c4fb606bc",
+  "decisions": [
+    "https://github.com/Sino-Huang/NovPhy/issues/135#issuecomment-6396690148"
+  ],
+  "files": {
+    "LICENSE": {
+      "edits": [],
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:4cf2e6bd04ba567c829197b278e2e458fce67f82358e22ede43d27aabceb6c97",
+      "vendored_sha256": "sha256:4cf2e6bd04ba567c829197b278e2e458fce67f82358e22ede43d27aabceb6c97"
+    },
+    "__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:0f8cf64e37dfd4ab6f124e81d6951d3140d9c05e186a5a675497ee8d45bdc25f"
+    },
+    "models.py": {
+      "edits": [
+        "package-relative imports only: 'from modules.modules' -> 'from .modules.modules' (2 lines), 'from modules.dynamics_modules' -> 'from .modules.dynamics_modules', 'from utils.util_func' -> 'from .utils.util_func', 'from utils.loss_functions' -> 'from .utils.loss_functions'"
+      ],
+      "upstream_path": "models.py",
+      "upstream_sha256": "sha256:686f50c873fa614b1b34a48ed20185515deafd45e73a1ee469c19e642e29158e",
+      "vendored_sha256": "sha256:8678126d2f54b2e90275c70ff3dc075125f3e266c91f7dc68a4b06e3d3473419"
+    },
+    "modules/__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "modules/dynamics_modules.py": {
+      "edits": [
+        "package-relative imports only: 'from utils.util_func' -> 'from ..utils.util_func'"
+      ],
+      "upstream_path": "modules/dynamics_modules.py",
+      "upstream_sha256": "sha256:9e4b55b9dad0bc5585b530bb84f2a3ef59f713d93203be873feb9aa19d551bb5",
+      "vendored_sha256": "sha256:486289760d1afebf26a4cb0fe1ce757137aa29ad4238c6902b7c2c371bab82ce"
+    },
+    "modules/modules.py": {
+      "edits": [
+        "package-relative imports only: 'from utils.util_func' -> 'from ..utils.util_func'"
+      ],
+      "upstream_path": "modules/modules.py",
+      "upstream_sha256": "sha256:38a72f2e7e9287fcec78d123b22b372700b20ca4dbd216dfec4692a18308ca10",
+      "vendored_sha256": "sha256:79b70f8c840cb2646f04174e44fe519a774e4d0afd8ca8e9071a65a02eff34bb"
+    },
+    "utils/__init__.py": {
+      "edits": [
+        "package marker (new)"
+      ],
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "utils/loss_functions.py": {
+      "edits": [],
+      "upstream_path": "utils/loss_functions.py",
+      "upstream_sha256": "sha256:3ab3126f9e73d3fdda4b2e4ae31593aaee8d5488edfe0f6830b5e8cd51e163f5",
+      "vendored_sha256": "sha256:3ab3126f9e73d3fdda4b2e4ae31593aaee8d5488edfe0f6830b5e8cd51e163f5"
+    },
+    "utils/util_func.py": {
+      "edits": [],
+      "upstream_path": "utils/util_func.py",
+      "upstream_sha256": "sha256:192bc60e08e646dfa272566c03edf38095c826d36b4d5753eb5c8b8078f5ab5b",
+      "vendored_sha256": "sha256:192bc60e08e646dfa272566c03edf38095c826d36b4d5753eb5c8b8078f5ab5b"
+    }
+  },
+  "license": "MIT (Copyright (c) 2023 Tal Daniel)",
+  "license_file": "LICENSE",
+  "not_vendored": {
+    "train_ddlp.py, datasets/*, eval/*": "run from the read-only clone by scripts/b127_ddlp_port_reference.py and scripts/b127_ddlp_fidelity.py"
+  },
+  "policy": "verbatim copies of the DDLP model closure (ObjectDynamicsDLP and its modules, PINT, losses, utils); edits only as listed per file (package-relative imports, package markers)",
+  "schema": "issue_127_vendor_v1",
+  "upstream": "https://github.com/taldatech/ddlp"
+}

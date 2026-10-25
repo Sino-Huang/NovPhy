@@ -1,0 +1,26 @@
+{
+  "note": "#135 T2 DDLP --timing probe (<= 0.5 GPU-h). PREPARED, NOT ENQUEUED: enqueue only after its own posted decision on #135 (the probe itself needs no funded.json). Exclusive GPU (shares_gpu false) so the s/step is clean (#133/#134 lesson: contended probes were not usable).",
+  "jobs": [
+    {
+      "id": "135-timing",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-ddlp/bin/python",
+        "-u",
+        "scripts/run_issue_135_ddlp.py",
+        "--timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B135_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "300 official batch-12 steps of each configuration (native, paper-schedule = same step, repo-config) and of the static R0 model on the real fit windows (the 128 x 128 frame cache, ~/.cache/novphy-issue-135-ddlp-frames, 31.5 GB, built on CPU), one 16-candidate decision (45-step rollout + readout) x 8, 512 frame encodings; writes .local-artifacts/issue-135-ddlp-v1/timing.json + ledger/timing.json and updates projection.json (measured primary); keeps no model. est [INFERENCE] FLOP model 0.05-0.32 s/step -> 4-7 min of steps + < 2 min rollouts/encodings + model builds; GPU memory unknown (batch 12 x 16 frames x 128^2, K = 25; repo-config largest) -> exclusive; host RSS < 6 GB [INFERENCE]."
+    }
+  ]
+}
