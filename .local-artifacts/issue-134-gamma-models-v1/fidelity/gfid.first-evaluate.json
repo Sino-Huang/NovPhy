@@ -1,0 +1,88 @@
+{
+  "G_fid": true,
+  "arm": "T3 \u03b3-model-car",
+  "band": [
+    0.633,
+    1.0
+  ],
+  "band_sha256": "sha256:38dfd8950e797d4375c6408566b22d7d1ec23a7a5b43c091520c4b7aa20343a5",
+  "commit": "bb23e06753717a9255065355b5f6ab77278f3305",
+  "complete": true,
+  "compute": {
+    "cpu_seconds_wall": 4689.175186544191,
+    "gpu_seconds": 0.0
+  },
+  "deviations": [
+    "device cpu (notebook: cuda:0); torch 2.13.0 float32, 4 threads",
+    "seeds fixed: torch.manual_seed(0), np.random.seed(0) before the model cell (the notebook sets none)",
+    "in-loop visualisation cell body (every 100 steps: visualize + display_video) skipped: display only; it reads the model without touching parameters, optimizer or RNG; the loss is logged instead",
+    "save_model every 1000 steps replaced by a resumable checkpoint (model, target, optimizer, ActNorm init flags, numpy / torch RNG states, step) every 1000 steps and on SIGTERM / SIGUSR1 (exit 75)",
+    "target network shares the online model's prior after copy.deepcopy (torch 2.13 deepcopy shim; VENDOR.json)",
+    "Policy snapshot loaded with map_location=cpu, weights_only=False (vendored P-route edit; VENDOR.json)"
+  ],
+  "environment": "pendulum (released replay pool + SAC policy), official Colab notebook",
+  "issue": 134,
+  "paper_value": 0.7827649420178153,
+  "pass": true,
+  "runs": [
+    {
+      "device": "cpu",
+      "final_loss": 0.018643472343683243,
+      "grids": {
+        "20": {
+          "finite": true,
+          "rho_vs_ground_truth": 0.6495809475328985,
+          "rho_vs_paper_value_estimates": 0.714351406928732,
+          "seconds": 3.363701520022005,
+          "value_map": ".local-artifacts/issue-134-gamma-models-v1/fidelity/run/value-map-20.npy"
+        },
+        "41": {
+          "finite": true,
+          "rho_vs_ground_truth": 0.6602587141685229,
+          "rho_vs_paper_value_estimates": 0.7281433372636358,
+          "seconds": 49.64761797711253,
+          "value_map": ".local-artifacts/issue-134-gamma-models-v1/fidelity/run/value-map-41.npy"
+        }
+      },
+      "loss_trace_tail": [
+        {
+          "loss": 0.019500693306326866,
+          "seconds": 4655.9693562272005,
+          "step": 49600
+        },
+        {
+          "loss": 0.038607191294431686,
+          "seconds": 4666.01419058023,
+          "step": 49700
+        },
+        {
+          "loss": 0.014243653044104576,
+          "seconds": 4673.489005871117,
+          "step": 49800
+        },
+        {
+          "loss": 0.01795300282537937,
+          "seconds": 4680.875174856279,
+          "step": 49900
+        },
+        {
+          "loss": 0.018643472343683243,
+          "seconds": 4689.17492170725,
+          "step": 49999
+        }
+      ],
+      "model": ".local-artifacts/issue-134-gamma-models-v1/fidelity/run/model-final.pt",
+      "model_sha256": "sha256:e3a1b5e9e2f905820b8d5f9866622a640740cfb0079917a717d53c77b0414f8a",
+      "rho": 0.6602587141685229,
+      "seed": 0,
+      "steps": 50000,
+      "threads": 4,
+      "wall_seconds": 4689.175186544191
+    }
+  ],
+  "schema": "issue_127_gfid_v1",
+  "statistic": "Spearman rank correlation, on the visualize_values grid n = 41 (get_states: angle linspace(0, 2\u03c0, n), angular velocity linspace(-8, 8, n) reversed), between the run's value map V[c] = \u03a3_q prob_fn(c, q) \u00b7 reward_fn(q) (the official visualize_values arithmetic, final model) and the digitised Ground-truth panel sampled at the same states",
+  "tier": "E",
+  "torch": "2.13.0+cu130",
+  "written_at": "2026-10-25T00:47:45Z"
+}

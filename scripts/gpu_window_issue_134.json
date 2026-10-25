@@ -1,0 +1,119 @@
+{
+  "note": "#134 T3 γ-models (coverage arm, P-coverage / Tier-C), phase A: the NovPhy selection + smoke. PREPARED, NOT ENQUEUED: enqueue only after the orchestrator's Decision P-coverage (funding) and its funded.json marker (every training stage refuses without it). The pendulum G-fid runs on CPU (scripts/b127_gamma_models_fidelity.py --run, env b127-gamma_models; no GPU job). Phase B (after the --prepare freeze commit): scripts/gpu_window_issue_134_main.json. est_minutes = the upper [INFERENCE] projection (.local-artifacts/issue-134-gamma-models-v1/projection.json); replace by timing.json's measured rate when it exists.",
+  "jobs": [
+    {
+      "id": "134-select-g0.95",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 340,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--selection",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "T3 selection run 'g0.95' (γ = 0.95), seed 20260908, 50 000 updates x 1024 transitions (reused as main seed 20260908 if selected); refuses unless funded.json, G-port and G-fid pass; resume.pt every 2000 updates and on SIGTERM -> exit 75. est = upper [INFERENCE] projection (5.65 GPU-h); lower 0.47 GPU-h."
+    },
+    {
+      "id": "134-select-g0.978",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 340,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--selection",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "T3 selection run 'g0.978' (γ = 1 - 1/45), seed 20260908, 50 000 updates x 1024 transitions (reused as main seed 20260908 if selected); refuses unless funded.json, G-port and G-fid pass; resume.pt every 2000 updates and on SIGTERM -> exit 75. est = upper [INFERENCE] projection (5.65 GPU-h); lower 0.47 GPU-h."
+    },
+    {
+      "id": "134-select-g0.99",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 340,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--selection",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "T3 selection run 'g0.99' (γ = 0.99), seed 20260908, 50 000 updates x 1024 transitions (reused as main seed 20260908 if selected); refuses unless funded.json, G-port and G-fid pass; resume.pt every 2000 updates and on SIGTERM -> exit 75. est = upper [INFERENCE] projection (5.65 GPU-h); lower 0.47 GPU-h."
+    },
+    {
+      "id": "134-selro",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": [
+        "134-select-g0.95",
+        "134-select-g0.978",
+        "134-select-g0.99"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Policy-split pooled grid AUC per configuration under deterministic_scoring() (64 occupancy samples per candidate); selection.json (eb.select_configuration)."
+    },
+    {
+      "id": "134-smoke",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "134-selro"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Data accounting, G-port record check, CPU tests (CUDA_VISIBLE_DEVICES='' subprocess), measured throughput of the selection runs, the selection, the projection of the rest against the child cap; smoke.json."
+    }
+  ]
+}

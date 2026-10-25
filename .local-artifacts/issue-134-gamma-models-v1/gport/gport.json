@@ -1,0 +1,459 @@
+{
+ "schema": "issue_127_gport_v1",
+ "issue": 134,
+ "arm": "T3 \u03b3-model-car",
+ "checked_at": "2026-10-24T23:43:24Z",
+ "device": "cpu float32",
+ "threads": 4,
+ "torch": "2.13.0+cu130",
+ "reference_torch": "2.13.0+cu130",
+ "same_torch": true,
+ "upstream": "https://github.com/jannerm/gamma-models",
+ "commit": "bb23e06753717a9255065355b5f6ab77278f3305",
+ "tolerance": {
+  "loss_relative": 0.0001,
+  "grad_norm_relative": 0.0001,
+  "grad_tensor_relative_l2": 0.001,
+  "grad_floor_of_global_norm": 1e-06,
+  "param_close_abs": 1e-07,
+  "param_close_share": 0.999,
+  "param_max_abs_over_lr": 2.0,
+  "forward_max_abs": 1e-05,
+  "sample_max_abs": 1e-05
+ },
+ "G_port_rule": "issue_123_exact (run_hjepa_comparison.GPORT_TOLERANCE param rule: |delta| <= 1e-7 on >= 99.9 % of elements, <= 2 lr + 1e-7 everywhere; also the target network) + #123 loss / grad tolerances; forward log-likelihood and sampling max abs <= 1e-5",
+ "step_indices": [
+  0,
+  2000
+ ],
+ "vendor_hashes_match": {
+  "LICENSE": true,
+  "__init__.py": true,
+  "gamma/__init__.py": true,
+  "gamma/flows/__init__.py": true,
+  "gamma/flows/conditional.py": true,
+  "gamma/flows/conditional_spline.py": true,
+  "gamma/flows/flows.py": true,
+  "gamma/flows/nets.py": true,
+  "gamma/flows/spline.py": true,
+  "gamma/flows/utils.py": true,
+  "gamma/td/__init__.py": true,
+  "gamma/td/distributions.py": true,
+  "gamma/td/structs.py": true,
+  "gamma/td/utils.py": true,
+  "gamma/utils/__init__.py": true,
+  "gamma/utils/arrays.py": true,
+  "gamma/utils/serialization.py": true,
+  "gamma/visualization/__init__.py": true,
+  "gamma/visualization/base.py": true,
+  "gamma/visualization/pendulum.py": true,
+  "scripts/gamma-pendulum.ipynb": true
+ },
+ "upstream_hashes_match": {
+  "LICENSE": true,
+  "gamma/flows/__init__.py": true,
+  "gamma/flows/conditional.py": true,
+  "gamma/flows/conditional_spline.py": true,
+  "gamma/flows/flows.py": true,
+  "gamma/flows/nets.py": true,
+  "gamma/flows/spline.py": true,
+  "gamma/flows/utils.py": true,
+  "gamma/td/__init__.py": true,
+  "gamma/td/distributions.py": true,
+  "gamma/td/structs.py": true,
+  "gamma/td/utils.py": true,
+  "gamma/utils/__init__.py": true,
+  "gamma/utils/arrays.py": true,
+  "gamma/utils/serialization.py": true,
+  "gamma/visualization/__init__.py": true,
+  "gamma/visualization/base.py": true,
+  "gamma/visualization/pendulum.py": true,
+  "scripts/gamma-pendulum.ipynb": true
+ },
+ "reference_script_sha256": "sha256:556a553742f97de1f3ed61d887b5641010e14d299ec58961ea5e1c33ec93ae4f",
+ "adapter_sha256": "sha256:c43c78e0102e1d2eb93c04663a0630ce7a067460c45e211507523b9fc068d9de",
+ "arms": {
+  "pendulum-official": {
+   "arm": "pendulum-official",
+   "discount": 0.99,
+   "config": {
+    "hidden_dims": [
+     256,
+     256,
+     256
+    ],
+    "K": 16,
+    "B": 10,
+    "num_layers": 3,
+    "delta": false,
+    "sigma": 0.1,
+    "batch_size": 1024,
+    "lr": 0.0001,
+    "decay": 1e-05,
+    "tau": 0.005,
+    "discount": 0.99,
+    "sample_discount": 0.9,
+    "burnin_discount": 0.5,
+    "n_burnin": 2000,
+    "n_steps": 50000
+   },
+   "official_parameters": 908280,
+   "adapter_parameters": 908280,
+   "init_state_equal": true,
+   "batch_equal": [
+    true,
+    true
+   ],
+   "steps": [
+    {
+     "index": 0,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      63.663902282714844,
+      63.663902282714844
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      329.4207802107631,
+      329.4207802107631
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    },
+    {
+     "index": 2000,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      6.177721977233887,
+      6.177721977233887
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      92.63229506419168,
+      92.63229506419168
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    }
+   ],
+   "forward": {
+    "log_prob_max_abs": 0.0,
+    "target_log_prob_max_abs": 0.0,
+    "sample_max_abs": 0.0,
+    "sampling_failed": false,
+    "pass": true
+   },
+   "pass": true
+  },
+  "car-g0.95": {
+   "arm": "car-g0.95",
+   "discount": 0.95,
+   "config": {
+    "hidden_dims": [
+     256,
+     256,
+     256
+    ],
+    "K": 16,
+    "B": 10,
+    "num_layers": 3,
+    "delta": false,
+    "sigma": 0.1,
+    "batch_size": 1024,
+    "lr": 0.0001,
+    "decay": 1e-05,
+    "tau": 0.005,
+    "discount": 0.95,
+    "sample_discount": 0.9,
+    "burnin_discount": 0.5,
+    "n_burnin": 2000,
+    "n_steps": 50000
+   },
+   "official_parameters": 10230696,
+   "adapter_parameters": 10230696,
+   "init_state_equal": true,
+   "batch_equal": [
+    true,
+    true
+   ],
+   "steps": [
+    {
+     "index": 0,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      337986.625,
+      337986.625
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      458526.3717132332,
+      458526.3717132332
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    },
+    {
+     "index": 2000,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      65623.125,
+      65623.125
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      127445.14763428237,
+      127445.14763428237
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    }
+   ],
+   "forward": {
+    "log_prob_max_abs": 0.0,
+    "target_log_prob_max_abs": 0.0,
+    "sample_max_abs": 0.0,
+    "sampling_failed": false,
+    "pass": true
+   },
+   "pass": true
+  },
+  "car-g0.978": {
+   "arm": "car-g0.978",
+   "discount": 0.9777777777777777,
+   "config": {
+    "hidden_dims": [
+     256,
+     256,
+     256
+    ],
+    "K": 16,
+    "B": 10,
+    "num_layers": 3,
+    "delta": false,
+    "sigma": 0.1,
+    "batch_size": 1024,
+    "lr": 0.0001,
+    "decay": 1e-05,
+    "tau": 0.005,
+    "discount": 0.9777777777777777,
+    "sample_discount": 0.9,
+    "burnin_discount": 0.5,
+    "n_burnin": 2000,
+    "n_steps": 50000
+   },
+   "official_parameters": 10230696,
+   "adapter_parameters": 10230696,
+   "init_state_equal": true,
+   "batch_equal": [
+    true,
+    true
+   ],
+   "steps": [
+    {
+     "index": 0,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      337986.625,
+      337986.625
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      458526.3717132332,
+      458526.3717132332
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    },
+    {
+     "index": 2000,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      65491.671875,
+      65491.671875
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      127334.72173067581,
+      127334.72173067581
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    }
+   ],
+   "forward": {
+    "log_prob_max_abs": 0.0,
+    "target_log_prob_max_abs": 0.0,
+    "sample_max_abs": 0.0,
+    "sampling_failed": false,
+    "pass": true
+   },
+   "pass": true
+  },
+  "car-g0.99": {
+   "arm": "car-g0.99",
+   "discount": 0.99,
+   "config": {
+    "hidden_dims": [
+     256,
+     256,
+     256
+    ],
+    "K": 16,
+    "B": 10,
+    "num_layers": 3,
+    "delta": false,
+    "sigma": 0.1,
+    "batch_size": 1024,
+    "lr": 0.0001,
+    "decay": 1e-05,
+    "tau": 0.005,
+    "discount": 0.99,
+    "sample_discount": 0.9,
+    "burnin_discount": 0.5,
+    "n_burnin": 2000,
+    "n_steps": 50000
+   },
+   "official_parameters": 10230696,
+   "adapter_parameters": 10230696,
+   "init_state_equal": true,
+   "batch_equal": [
+    true,
+    true
+   ],
+   "steps": [
+    {
+     "index": 0,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      337986.625,
+      337986.625
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      458526.3717132332,
+      458526.3717132332
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    },
+    {
+     "index": 2000,
+     "lr": 0.0001,
+     "lr_equal": true,
+     "loss": [
+      65362.2421875,
+      65362.2421875
+     ],
+     "loss_rel": 0.0,
+     "grad_norm": [
+      127218.44363123283,
+      127218.44363123283
+     ],
+     "grad_norm_rel": 0.0,
+     "grad_max_rel_l2": 0.0,
+     "null_gradient_max_abs_l2": 0.0,
+     "forward_max_abs": 0.0,
+     "param_close_share": 1.0,
+     "param_max_abs_delta": 0.0,
+     "target_param_max_abs_delta": 0.0,
+     "adam_slot_max_abs_delta": 0.0,
+     "pass": true
+    }
+   ],
+   "forward": {
+    "log_prob_max_abs": 0.0,
+    "target_log_prob_max_abs": 0.0,
+    "sample_max_abs": 0.0,
+    "sampling_failed": false,
+    "pass": true
+   },
+   "pass": true
+  }
+ },
+ "injected_defects": {
+  "sample_discount_equals_discount": {
+   "detected": true,
+   "failed_checks": [
+    "step1"
+   ]
+  },
+  "launch_as_next_action": {
+   "detected": true,
+   "failed_checks": [
+    "step0",
+    "step1",
+    "batch"
+   ]
+  },
+  "tau_0.05": {
+   "detected": true,
+   "failed_checks": [
+    "step1"
+   ]
+  }
+ },
+ "notes": [
+  "Both sides: novphy env, torch 2.13 CPU float32, separate processes; the reference imports the pristine clone, the adapter the vendored copy (hashes above).",
+  "The reference runs the Colab notebook's model cell and training-cell body verbatim (with the torch 2.13 deepcopy prior shim) at loop indices 0 (burn-in: discount 0.5, sample discount 0.5) and 2000 (discount = the arm's \u03b3, sample discount 0.9); constant lr 1e-4.",
+  "Carrier arms: the official format_batch with the NovPhy no-op policy vs the adapter's transition_batch on the same (shot, k) rows (launches at k = 0; absorbing k = 45 rows).",
+  "Sampling: official model.sample after torch.manual_seed vs the adapter's sample_occupancy on the same uniform draw from a seeded CPU generator.",
+  "pendulum-official uses a fixed stand-in next-action policy (rlkit is not in novphy); the released SAC policy is exercised by G-fid."
+ ],
+ "pass": true
+}

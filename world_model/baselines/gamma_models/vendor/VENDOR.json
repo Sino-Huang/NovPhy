@@ -1,0 +1,155 @@
+{
+ "schema": "issue_127_vendor_v1",
+ "upstream": "https://github.com/jannerm/gamma-models",
+ "commit": "bb23e06753717a9255065355b5f6ab77278f3305",
+ "license": "MIT (vendor/LICENSE, Copyright (c) 2021 Gamma-Models authors)",
+ "license_file": "LICENSE",
+ "license_sha256": "sha256:89b9c6150dd66abdf34748610e774da7b2aee097a26911562167e69268b5a312",
+ "policy": "verbatim copies of the gamma package (flows: conditional neural spline flow, ActNorm, invertible 1x1 conv, RQS; td: BootstrapTarget, SingleStepGaussian, ReplayPool, Policy, format_batch, soft_update_from_to; utils; visualization base + pendulum) and the README's Colab notebook scripts/gamma-pendulum.ipynb (the fidelity recipe; read, not imported), plus LICENSE. Allowed edits: package-relative imports, and the listed P-route edits. Not vendored: gamma/visualization/video.py, setup.py, environment.yml / requirements.txt, scripts/gamma-pendulum-local.ipynb (local variant: burn-in disabled, 100k steps), data/ (copied to data/external/gamma_models with MANIFEST.json). Decision P-license: https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6390841265",
+ "runtime_notes": [
+  "torch 2.13: copy.deepcopy(model) (the notebook's target network) leaves the copied logistic prior unusable (Transform.__getstate__ drops _InverseTransform._inv; sampling raises 'AssertionError: _inv must not be None'). The adapter, the G-port reference and the fidelity runner let the target share the online model's prior object right after the deepcopy (the prior holds no parameters: Uniform(0, 1) through the inverse sigmoid). No file is edited (P-route).",
+  "torch.Tensor.lu (Invertible1x1Conv init) is deprecated in torch 2.13 (warning only; same factorisation).",
+  "On a GPU the flows build tensors with factory defaults (torch.zeros(m), torch.diag(torch.ones(dim)), the prior's Uniform bounds): upstream sets torch.set_default_tensor_type(torch.cuda.FloatTensor) via gamma.utils.set_device; the adapter builds the model seeded on CPU, then rebuilds it under torch.device(device) and loads the CPU state, and runs every call under torch.device(device)."
+ ],
+ "files": {
+  "LICENSE": {
+   "upstream_path": "LICENSE",
+   "upstream_sha256": "sha256:89b9c6150dd66abdf34748610e774da7b2aee097a26911562167e69268b5a312",
+   "vendored_sha256": "sha256:89b9c6150dd66abdf34748610e774da7b2aee097a26911562167e69268b5a312",
+   "edits": []
+  },
+  "__init__.py": {
+   "upstream_path": null,
+   "upstream_sha256": null,
+   "vendored_sha256": "sha256:1a04826b9da68b0f4838fcc823d706e24d46ff84ab475f621f364fca9264e9bb",
+   "edits": [
+    "added: package marker (not upstream)"
+   ]
+  },
+  "gamma/__init__.py": {
+   "upstream_path": null,
+   "upstream_sha256": null,
+   "vendored_sha256": "sha256:4ae9c6b2646b6dc8bc033c79ebec174cea4072cd99dd6ccbaac00dc94f8a7784",
+   "edits": [
+    "added: package marker (not upstream)"
+   ]
+  },
+  "gamma/flows/__init__.py": {
+   "upstream_path": "gamma/flows/__init__.py",
+   "upstream_sha256": "sha256:a46f983d51b4809209eace31700cfd4bf0a7531a54733df7c25f5e3544a0c469",
+   "vendored_sha256": "sha256:a46f983d51b4809209eace31700cfd4bf0a7531a54733df7c25f5e3544a0c469",
+   "edits": []
+  },
+  "gamma/flows/conditional.py": {
+   "upstream_path": "gamma/flows/conditional.py",
+   "upstream_sha256": "sha256:9d0fd664a902a46768ed9b083cd297d7b8dcf00c281133506ad9c36d59aa7904",
+   "vendored_sha256": "sha256:9d0fd664a902a46768ed9b083cd297d7b8dcf00c281133506ad9c36d59aa7904",
+   "edits": []
+  },
+  "gamma/flows/conditional_spline.py": {
+   "upstream_path": "gamma/flows/conditional_spline.py",
+   "upstream_sha256": "sha256:8d2529ba1deab467d1ac22d64451cadecbf5bb78b699312ba4ffaf315e91b2a4",
+   "vendored_sha256": "sha256:8d2529ba1deab467d1ac22d64451cadecbf5bb78b699312ba4ffaf315e91b2a4",
+   "edits": []
+  },
+  "gamma/flows/flows.py": {
+   "upstream_path": "gamma/flows/flows.py",
+   "upstream_sha256": "sha256:fc54a38d1aeeb99d08630ecf78e54c523851111323bb401583c001d21fd30ec6",
+   "vendored_sha256": "sha256:fc54a38d1aeeb99d08630ecf78e54c523851111323bb401583c001d21fd30ec6",
+   "edits": []
+  },
+  "gamma/flows/nets.py": {
+   "upstream_path": "gamma/flows/nets.py",
+   "upstream_sha256": "sha256:84aebda4cf7f74f5fbf32162040d73970c25fb25754cbb20e3ec29a8d82a3cf7",
+   "vendored_sha256": "sha256:84aebda4cf7f74f5fbf32162040d73970c25fb25754cbb20e3ec29a8d82a3cf7",
+   "edits": []
+  },
+  "gamma/flows/spline.py": {
+   "upstream_path": "gamma/flows/spline.py",
+   "upstream_sha256": "sha256:fa1fbdf5ed3737eedab41b680ae46904c53de0768b2e3010c53d67d8b817699e",
+   "vendored_sha256": "sha256:fa1fbdf5ed3737eedab41b680ae46904c53de0768b2e3010c53d67d8b817699e",
+   "edits": []
+  },
+  "gamma/flows/utils.py": {
+   "upstream_path": "gamma/flows/utils.py",
+   "upstream_sha256": "sha256:ea03ac7b536ed863e5d563a6fa21686b5cc498a28e59f6344cd3e86db475e940",
+   "vendored_sha256": "sha256:ea03ac7b536ed863e5d563a6fa21686b5cc498a28e59f6344cd3e86db475e940",
+   "edits": []
+  },
+  "gamma/td/__init__.py": {
+   "upstream_path": "gamma/td/__init__.py",
+   "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "edits": []
+  },
+  "gamma/td/distributions.py": {
+   "upstream_path": "gamma/td/distributions.py",
+   "upstream_sha256": "sha256:fdb8902a18ef0f3b07b0311cfe5f8bb03081f248a30473216e59956bd768f746",
+   "vendored_sha256": "sha256:fdb8902a18ef0f3b07b0311cfe5f8bb03081f248a30473216e59956bd768f746",
+   "edits": []
+  },
+  "gamma/td/structs.py": {
+   "upstream_path": "gamma/td/structs.py",
+   "upstream_sha256": "sha256:0ab97939195ac221c12701c343f24cd59b43ed937319444ae5adc0a1061e0494",
+   "vendored_sha256": "sha256:a0b64dba2e2b17854a657b7511bb74a4c15f8000f9c9341a59d8882454e35b02",
+   "edits": [
+    "imports made package-relative: 'from gamma.utils.arrays import (' -> 'from ..utils.arrays import (' (line 6), plus 'from ..utils import arrays' (line 5) for the edit below",
+    "P-route compatibility: Policy.__init__ 'torch.load(loadpath)' -> 'torch.load(loadpath, map_location=arrays.DEVICE, weights_only=False)': torch >= 2.6 defaults to weights_only=True (the rlkit snapshot is a full pickle) and the released snapshot holds CUDA storages, which cannot load on a CPU host; arrays.DEVICE is the device set_device() selected (the notebook's set_device(args.device)). Numerically inert."
+   ]
+  },
+  "gamma/td/utils.py": {
+   "upstream_path": "gamma/td/utils.py",
+   "upstream_sha256": "sha256:eedc4556b9deb29ce5ecc77b611204ef07a03af66fdc503bff49eb8c19da6549",
+   "vendored_sha256": "sha256:35c08f6fcf92dac5c0bff7872ebc47cc71f3e69f7940e5062a96ca6474869590",
+   "edits": [
+    "imports made package-relative: 'from gamma.utils.arrays import to_torch' -> 'from ..utils.arrays import to_torch'"
+   ]
+  },
+  "gamma/utils/__init__.py": {
+   "upstream_path": "gamma/utils/__init__.py",
+   "upstream_sha256": "sha256:a688aa395a1c748c065d8609da03238b28497161a5d4b532ac42e0b3b6ff0b3d",
+   "vendored_sha256": "sha256:a688aa395a1c748c065d8609da03238b28497161a5d4b532ac42e0b3b6ff0b3d",
+   "edits": []
+  },
+  "gamma/utils/arrays.py": {
+   "upstream_path": "gamma/utils/arrays.py",
+   "upstream_sha256": "sha256:924254660bd4101fe06e05013fe14565d3f4a14d87b7f7110792511f20fa52d1",
+   "vendored_sha256": "sha256:924254660bd4101fe06e05013fe14565d3f4a14d87b7f7110792511f20fa52d1",
+   "edits": []
+  },
+  "gamma/utils/serialization.py": {
+   "upstream_path": "gamma/utils/serialization.py",
+   "upstream_sha256": "sha256:408df42ae09c64defa7418b90479272dfc5bb92307c11f809a5f118f7ed61263",
+   "vendored_sha256": "sha256:408df42ae09c64defa7418b90479272dfc5bb92307c11f809a5f118f7ed61263",
+   "edits": []
+  },
+  "gamma/visualization/__init__.py": {
+   "upstream_path": "gamma/visualization/__init__.py",
+   "upstream_sha256": "sha256:1d07543110fc0e4ebea8d4651dddb44d0b480159e08185efc39b81824e018e8a",
+   "vendored_sha256": "sha256:dd5346192a1da7b646d2477b940795fd339710257aec441820bdbb7c2e2d25eb",
+   "edits": [
+    "dropped 'from .video import display_video' (video.py not vendored: the notebook's training-video display; needs sk-video and IPython; no numerical role)"
+   ]
+  },
+  "gamma/visualization/base.py": {
+   "upstream_path": "gamma/visualization/base.py",
+   "upstream_sha256": "sha256:7c64a1bce6e3843579f0ff0d43ced85be194729a3b08bf7704178380fb0d682e",
+   "vendored_sha256": "sha256:ac2afb013f27272da1e15d8afcb4e994acb700f93970edad19d02c122474f5b1",
+   "edits": [
+    "imports made package-relative: 'from gamma.td.utils import make_condition' -> 'from ..td.utils import make_condition'; 'from gamma.utils.arrays import (' -> 'from ..utils.arrays import ('"
+   ]
+  },
+  "gamma/visualization/pendulum.py": {
+   "upstream_path": "gamma/visualization/pendulum.py",
+   "upstream_sha256": "sha256:7e955c3d87a9ccbf56cf37228009900aebc34930883e5467058b68202ab671ae",
+   "vendored_sha256": "sha256:7e955c3d87a9ccbf56cf37228009900aebc34930883e5467058b68202ab671ae",
+   "edits": []
+  },
+  "scripts/gamma-pendulum.ipynb": {
+   "upstream_path": "scripts/gamma-pendulum.ipynb",
+   "upstream_sha256": "sha256:a6b2489929f9ad0841cec349afec7d12f9a49d7807dd8111b2cd5c667348da77",
+   "vendored_sha256": "sha256:a6b2489929f9ad0841cec349afec7d12f9a49d7807dd8111b2cd5c667348da77",
+   "edits": []
+  }
+ }
+}

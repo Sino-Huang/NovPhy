@@ -1,0 +1,73 @@
+{
+  "arm_family": "gamma_models",
+  "band": [
+    0.633,
+    1.0
+  ],
+  "band_rule": "[paper - 0.15, 1]: the paper's single unseeded run gives no spread; the margin covers the digitisation / resolution sensitivity of the paper's own map (rho 0.769-0.805 over grids 20 / 41 / 101) and run-to-run variation of a bootstrapped \u03b3 = 0.99 model; the lower bound stays far above the myopic reference (0.204), so a model without long-horizon prediction cannot pass. Upper bound 1: agreeing with the ground truth more closely than the paper's figure is not a reproduction failure.",
+  "frozen_at": "2026-10-24",
+  "issue": 134,
+  "paper": {
+    "digitised": ".local-artifacts/issue-134-gamma-models-v1/fidelity/digitised/fig4.json",
+    "digitised_sha256": "sha256:bafe51cb0c3c473b379d38c95713c31b6737d60600bd82f9b186cb0c31b5577c",
+    "myopic_reference": {
+      "meaning": "a value map equal to the one-step reward (no long-horizon prediction)",
+      "rho_reward_vs_ground_truth": 0.2040353509097448
+    },
+    "resolution_sensitivity": {
+      "101": 0.8051697349460053,
+      "20": 0.7694969151715068,
+      "41": 0.7827649420178153
+    },
+    "source": "Janner, Mordatch, Levine, \u03b3-Models: Generative Temporal Difference Learning for Infinite-Horizon Prediction, NeurIPS 2020 (arXiv 2010.14496v4), Fig. 4 (pendulum, \u03b3 = 0.99: 'Value estimates' vs 'Ground truth' = value iteration on a discretisation)",
+    "value": 0.7827649420178153
+  },
+  "pass_rule": "pass iff the run's rho at n = 41 lies in the band (inclusive). One run (seed 0). At most two logged repair attempts, each fixing a diagnosed port / harness defect, never the band (P-fid); then T3 is dropped with fidelity_not_reproduced.",
+  "posted_before_run": true,
+  "protocol": {
+    "args": {
+      "batch_size": 1024,
+      "burnin_discount": 0.5,
+      "data_path": "/mnt/array/sukaih/Project/NovPhy/data/external/gamma_models/pools/pendulum.pkl",
+      "decay": 1e-05,
+      "device": "cpu",
+      "discount": 0.99,
+      "hidden_dims": [
+        256,
+        256,
+        256
+      ],
+      "load_epoch": null,
+      "lr": 0.0001,
+      "n_burnin": 2000,
+      "n_steps": 50000,
+      "policy_path": "/mnt/array/sukaih/Project/NovPhy/data/external/gamma_models/policies/pendulum.pkl",
+      "sample_discount": 0.9,
+      "save_freq": 1000,
+      "sigma": 0.1,
+      "tau": 0.005,
+      "vis_freq": 100
+    },
+    "commit": "bb23e06753717a9255065355b5f6ab77278f3305",
+    "deviations": [
+      "device cpu (notebook: cuda:0); torch 2.13.0 float32, 4 threads",
+      "seeds fixed: torch.manual_seed(0), np.random.seed(0) before the model cell (the notebook sets none)",
+      "in-loop visualisation cell body (every 100 steps: visualize + display_video) skipped: display only; it reads the model without touching parameters, optimizer or RNG; the loss is logged instead",
+      "save_model every 1000 steps replaced by a resumable checkpoint (model, target, optimizer, ActNorm init flags, numpy / torch RNG states, step) every 1000 steps and on SIGTERM / SIGUSR1 (exit 75)",
+      "target network shares the online model's prior after copy.deepcopy (torch 2.13 deepcopy shim; VENDOR.json)",
+      "Policy snapshot loaded with map_location=cpu, weights_only=False (vendored P-route edit; VENDOR.json)"
+    ],
+    "device": "cpu float32",
+    "notebook": "world_model/baselines/gamma_models/vendor/scripts/gamma-pendulum.ipynb",
+    "notebook_sha256": "sha256:a6b2489929f9ad0841cec349afec7d12f9a49d7807dd8111b2cd5c667348da77",
+    "runs": 1,
+    "seeds": {
+      "numpy": 0,
+      "torch": 0
+    },
+    "threads": 4
+  },
+  "schema": "issue_127_gfid_band_v1",
+  "statistic": "Spearman rank correlation, on the visualize_values grid n = 41 (get_states: angle linspace(0, 2\u03c0, n), angular velocity linspace(-8, 8, n) reversed), between the run's value map V[c] = \u03a3_q prob_fn(c, q) \u00b7 reward_fn(q) (the official visualize_values arithmetic, final model) and the digitised Ground-truth panel sampled at the same states",
+  "tier": "E"
+}

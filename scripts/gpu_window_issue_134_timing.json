@@ -1,0 +1,25 @@
+{
+  "note": "#134 timing probe only (Decision P-coverage timing probe, to be posted on #134 before enqueue); enqueued alone so that no funded-only job is queued.",
+  "jobs": [
+    {
+      "id": "134-timing",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "GPU timing probe (#134; no funded.json needed; <= 0.5 GPU-h): fit store load (~2 min CPU), 500 official updates of the native T3 γ-model (g0.99; fit-split batches of 1024 transitions; 250 burn-in + 250 post-burn-in updates) and the scoring cost of 8 fit anchors (16 candidates x 64 samples, expected tie-free cost); writes .local-artifacts/issue-134-gamma-models-v1/timing.json + ledger/timing.json and makes the measured projection primary in projection.json; keeps no model, exit 0. est: CPU-scaled 0.03-0.41 s/update [INFERENCE] -> 2-4 min of updates + fit store; host RSS ~5 GB peak [INFERENCE, #133 analogue]; GPU < 8 GB [INFERENCE] (shares_gpu)."
+    }
+  ]
+}

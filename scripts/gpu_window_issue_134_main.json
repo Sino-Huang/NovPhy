@@ -1,0 +1,220 @@
+{
+  "note": "#134 T3 γ-models (coverage arm), phase B: main seeds, readouts, freeze of readouts, the one scoring pass, the novelty pass, publish + validate. PREPARED, NOT ENQUEUED: enqueue only after phase A (scripts/gpu_window_issue_134.json), a passing smoke and the orchestrator's --prepare freeze commit (every stage re-verifies plan.json pins).",
+  "jobs": [
+    {
+      "id": "134-train-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 340,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--train",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Frozen train queue 0 (T3 seed 20260909 at the selected γ); resume.pt every 2000 updates and on SIGTERM -> exit 75."
+    },
+    {
+      "id": "134-train-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 340,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--train",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Frozen train queue 1 (T3 seed 20260910)."
+    },
+    {
+      "id": "134-readouts-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "134-train-q0",
+        "134-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--readouts",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Fit / policy readouts of the frozen readout queue (G-rank on the 480 x 16 expected-cost matrix, G-action on the per-candidate sample means, policy AUC, MACs); readouts.json per arm-seed written last (resumable per arm-seed)."
+    },
+    {
+      "id": "134-readouts-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "134-train-q0",
+        "134-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--readouts",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Fit / policy readouts of the frozen readout queue (G-rank on the 480 x 16 expected-cost matrix, G-action on the per-candidate sample means, policy AUC, MACs); readouts.json per arm-seed written last (resumable per arm-seed)."
+    },
+    {
+      "id": "134-readouts-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "134-train-q0",
+        "134-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--readouts",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Fit / policy readouts of the frozen readout queue (G-rank on the 480 x 16 expected-cost matrix, G-action on the per-candidate sample means, policy AUC, MACs); readouts.json per arm-seed written last (resumable per arm-seed)."
+    },
+    {
+      "id": "134-freeze-readouts",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 5,
+      "shares_gpu": true,
+      "depends_on": [
+        "134-readouts-q0",
+        "134-readouts-q1",
+        "134-readouts-q2"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--freeze-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "CPU: readouts-manifest.json (sha256 of every model.pt and readouts.json) before any evaluation anchor is read."
+    },
+    {
+      "id": "134-score",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "depends_on": [
+        "134-freeze-readouts"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--score"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "The one scoring pass (a process that did not train; deterministic_scoring()); refuses unless G-fid passed; records/<arm>--seed<s>.json written atomically, resumable per record."
+    },
+    {
+      "id": "134-score-novelty",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "depends_on": [
+        "134-score"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_134_gamma_models.py",
+        "--score-novelty"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "P-novelty (descriptive): T3 if its guards pass, every seed, on the mixed #110 novelty levels; refuses before the primary records; resumable per record."
+    },
+    {
+      "id": "134-publish-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "depends_on": [
+        "134-score-novelty"
+      ],
+      "command": [
+        "bash",
+        "-c",
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_134_gamma_models.py --publish && /srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_134_gamma_models.py --validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T3_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "records-manifest, summary.json (eb.child_summary), compute.json, findings.md; then --validate re-scores T3 seed 20260908 on the same device class as --score (exact row equality) and re-derives the publication byte for byte."
+    }
+  ]
+}

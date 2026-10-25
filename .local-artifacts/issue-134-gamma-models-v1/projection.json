@@ -1,0 +1,108 @@
+{
+  "fidelity": {
+    "cpu_feasible": true,
+    "cpu_hours_training": 1.5519850421696901,
+    "cpu_seconds_per_step": 0.11174292303621769,
+    "evaluation_cpu_hours_estimate": 0.25,
+    "gpu_hours_training": [
+      0.0775992521084845,
+      0.5587146151810884
+    ],
+    "label": "[INFERENCE] CPU micro-benchmark (synthetic pendulum-shaped batches, 4 threads); the GPU range applies an assumed GPU/CPU per-step ratio of 0.05-0.36 (upper = #133's measured THICK ratio)",
+    "measured_at": "2026-10-24T23:28:08Z",
+    "schema": "issue_134_fidelity_projection_v1",
+    "steps": 50000,
+    "threads": 4
+  },
+  "fidelity_note": "pendulum G-fid runs on CPU in daytime (0 GPU-h)",
+  "gpu_over_cpu": {
+    "lower": 0.03,
+    "upper": 0.3637298005808285
+  },
+  "label": "[INFERENCE] CPU micro-benchmark (synthetic carrier-shaped batches of 1024, 4 threads) scaled by an assumed GPU/CPU per-update ratio range (lower 0.03: launch-bound dense flow; upper 0.364: #131's measured THICK ratio)",
+  "measured_at": "2026-10-24T23:41:10Z",
+  "parameters": 10230696,
+  "plan_identity": "issue-134-gamma-models-v1",
+  "primary": "projection_upper",
+  "projection_lower": {
+    "child_cap_gpu_h": 12.0,
+    "fidelity_gpu_h": 0.0,
+    "native_per_seed_gpu_h": 0.4660989398447175,
+    "readouts_gpu_h_estimate": 0.3,
+    "score_gpu_h_estimate": 0.5,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "g0.95": 0.4660989398447175,
+      "g0.978": 0.4660989398447175,
+      "g0.99": 0.4660989398447175
+    },
+    "steps": {
+      "g0.95": 50000,
+      "g0.978": 50000,
+      "g0.99": 50000
+    },
+    "total_gpu_h": 3.1304946992235876,
+    "training_gpu_h": 0.932197879689435,
+    "training_queue_loads_h": [
+      0.4660989398447175,
+      0.4660989398447175,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T3--seed20260909"
+      ],
+      "1": [
+        "T3--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 1.5071978796894352,
+    "within_caps": true
+  },
+  "projection_upper": {
+    "child_cap_gpu_h": 12.0,
+    "fidelity_gpu_h": 0.0,
+    "native_per_seed_gpu_h": 5.65113581468849,
+    "readouts_gpu_h_estimate": 0.3,
+    "score_gpu_h_estimate": 0.5,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "g0.95": 5.65113581468849,
+      "g0.978": 5.65113581468849,
+      "g0.99": 5.65113581468849
+    },
+    "steps": {
+      "g0.95": 50000,
+      "g0.978": 50000,
+      "g0.99": 50000
+    },
+    "total_gpu_h": 29.05567907344245,
+    "training_gpu_h": 11.30227162937698,
+    "training_queue_loads_h": [
+      5.65113581468849,
+      5.65113581468849,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T3--seed20260909"
+      ],
+      "1": [
+        "T3--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 11.87727162937698,
+    "within_caps": false
+  },
+  "schema": "issue_134_projection_v1",
+  "t3_cpu_seconds_per_update": 1.1186374556273222,
+  "threads": 4
+}
