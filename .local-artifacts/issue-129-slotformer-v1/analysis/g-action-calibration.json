@@ -1,0 +1,105 @@
+{
+ "schema": "issue_129_g_action_calibration_v1",
+ "label": "DESCRIPTIVE (fit split only; no token, guard or record changes)",
+ "metric": "eb.action_sensitivity (hn.action_sensitivity): mean over anchors and ordered grid-launch pairs of ||z_i - z_j|| / ||z_i||",
+ "threshold_frozen": 0.05,
+ "threshold_origin": "#123 G-action on latent states (#127 GUARD action_sensitivity_min)",
+ "engine_truth": {
+  "G_action_carrier_236": 0.03946318254143544,
+  "G_action_slots_only_234": 0.03962625018551788,
+  "levels": 479,
+  "levels_missing_a_grid_shot": 1,
+  "grid_shots_ending_before_225": 389,
+  "rule": "true E99 fit carrier at min(225, end) of the level's 16 executed grid shots (fit store)"
+ },
+ "U": {
+  "per_seed": {
+   "20260908": {
+    "G_action_carrier_236": 0.023955988972146094,
+    "G_action_slots_only_234": 0.024022258919449112,
+    "nonfinite": 0
+   },
+   "20260909": {
+    "G_action_carrier_236": 0.0228577986141733,
+    "G_action_slots_only_234": 0.022926973527296002,
+    "nonfinite": 0
+   },
+   "20260910": {
+    "G_action_carrier_236": 0.02203344437940333,
+    "G_action_slots_only_234": 0.022106427230108243,
+    "nonfinite": 0
+   }
+  },
+  "rollout": "request F-15-macro, pair delta 15"
+ },
+ "C*": {
+  "per_seed": {
+   "20260908": {
+    "G_action_carrier_236": 0.03628775141678124,
+    "G_action_slots_only_234": 0.03638527934570233,
+    "nonfinite": 0
+   },
+   "20260909": {
+    "G_action_carrier_236": 0.030363719198777422,
+    "G_action_slots_only_234": 0.030462130936189106,
+    "nonfinite": 0
+   },
+   "20260910": {
+    "G_action_carrier_236": 0.03359411107493638,
+    "G_action_slots_only_234": 0.03373142348056852,
+    "nonfinite": 0
+   }
+  },
+  "rollout": "request C-F-15, pair delta 15"
+ },
+ "B1": {
+  "per_seed": {
+   "20260908": {
+    "G_action_carrier_236": 0.01302439461935545
+   },
+   "20260909": {
+    "G_action_carrier_236": 0.013811676556812848
+   },
+   "20260910": {
+    "G_action_carrier_236": 0.012232661197783838
+   }
+  },
+  "source": "readouts/B1/seed-*/readouts.json (frozen; readouts-manifest.json)"
+ },
+ "B1-m": {
+  "per_seed": {
+   "20260908": {
+    "G_action_carrier_236": 7.462152726220738e-05
+   },
+   "20260909": {
+    "G_action_carrier_236": 0.0002643987941687819
+   },
+   "20260910": {
+    "G_action_carrier_236": 0.0001878959467544778
+   }
+  },
+  "source": "readouts/B1-m/seed-*/readouts.json (frozen; readouts-manifest.json)"
+ },
+ "means": {
+  "engine_truth": 0.03946318254143544,
+  "U": 0.022949077321907572,
+  "C*": 0.03341519389683168,
+  "B1": 0.013022910791317378,
+  "B1-m": 0.00017563875606182238
+ },
+ "fraction_of_engine_truth": {
+  "U": 0.5815313374133363,
+  "C*": 0.8467435149647774,
+  "B1": 0.3300015344085242,
+  "B1-m": 0.004450699227752493
+ },
+ "threshold_attainable_by_a_perfect_model": false,
+ "inputs": {
+  "fit_anchors": "eb.fit_anchors() (480 levels)",
+  "fit_store": "eb.FitShots (#123 fit carrier memmap)",
+  "U_C*": "eb._reference_predictor (Gate-B handoff checkpoints, hash-checked), request pair to frame 225, CPU",
+  "B1": "frozen readouts"
+ },
+ "script": ".local-artifacts/issue-129-slotformer-v1/analysis/g_action_calibration.py (CPU, OMP_NUM_THREADS=4; writes g-action-calibration.raw.json, from which this file is assembled)",
+ "reading": "DESCRIPTIVE context; it changes no token, guard, record or disposition (integrity rule: nothing is changed after the evaluation score). G-action (endpoint action sensitivity >= 0.05) was frozen on #123's latent states; #129 applies it, as frozen, to the 236-d predicted endpoint carrier. Measured with the same eb.action_sensitivity call on the fit split, the engine truth itself (the true E99 carriers at min(225, end) of the 16 executed grid shots of 479 fit levels) reaches only 0.0395 (slots only: 0.0396), below 0.05: the frozen threshold is not attainable in carrier space even by a perfect model. On the same scale U reaches 0.0229 (58% of the engine truth), C* 0.0334 (85%), B1 0.0130 (33%) and B1-m 0.000176 (0.4%). So the guard failure of B1 and B1-m reflects a threshold calibrated in another space as well as low action sensitivity: B1's endpoints vary with the launch about one third as much as the true endpoints do (about half of U's), and B1-m's are nearly launch-invariant. U and C* would also fail the 0.05 threshold in this space; they are not subject to it in #129 (reference rankers). The frozen guard, its failure and disposition 4 stand."
+}
