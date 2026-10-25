@@ -1,0 +1,316 @@
+{
+  "arms": {
+    "B1": {
+      "macs_per_candidate": 5690880.0,
+      "trainable_parameters": 6325005,
+      "training_gpu_seconds": {
+        "20260908": 26538.460945544764,
+        "20260909": 6489.519546190742,
+        "20260910": 6049.869886395987
+      },
+      "wall_per_decision": 0.046398228500038385
+    },
+    "B1-m": {
+      "macs_per_candidate": 3023280.0,
+      "trainable_parameters": 1793445,
+      "training_gpu_seconds": {
+        "20260908": 1189.9886256139725,
+        "20260909": 1491.8890546299517,
+        "20260910": 1183.955230458174
+      },
+      "wall_per_decision": 0.03804997238330543
+    }
+  },
+  "gpu_seconds_total": 53072.66442282079,
+  "ledger": {
+    "bench-train-clevrer-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 596.3590078060515,
+      "last_at": "2026-10-25T09:00:34Z",
+      "wall_seconds": 596.3589803050272
+    },
+    "bench-train-clevrer-seed20260909": {
+      "complete": true,
+      "gpu_seconds": 576.8069771607406,
+      "last_at": "2026-10-25T09:00:15Z",
+      "wall_seconds": 576.8069552276284
+    },
+    "bench-train-clevrer-seed20260910": {
+      "complete": true,
+      "gpu_seconds": 594.9469252270646,
+      "last_at": "2026-10-25T09:10:29Z",
+      "wall_seconds": 594.9469038653187
+    },
+    "bench-train-physion-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 623.9362343619578,
+      "last_at": "2026-10-25T09:10:39Z",
+      "wall_seconds": 623.9362194789574
+    },
+    "bench-train-physion-seed20260909": {
+      "complete": true,
+      "gpu_seconds": 581.2612065412104,
+      "last_at": "2026-10-25T09:20:11Z",
+      "wall_seconds": 581.2611934309825
+    },
+    "bench-train-physion-seed20260910": {
+      "complete": true,
+      "gpu_seconds": 562.4388773660176,
+      "last_at": "2026-10-25T09:20:02Z",
+      "wall_seconds": 562.4388571358286
+    },
+    "fidelity-tier-e": {
+      "gpu_index": 1,
+      "gpu_seconds": 473.302157972008,
+      "job": "129-gfid-tier-e",
+      "last_at": "2026-10-24T09:26:30Z",
+      "source": "gpu_window queue.json run seconds (whole job: input hashing, slot pickle load, test_vp.py evaluation 457.9 s)",
+      "wall_seconds": 473.302157972008
+    },
+    "readouts-B1-m-seed20260908": {
+      "gpu_seconds": 8.781665274873376,
+      "last_at": "2026-10-25T08:51:42Z",
+      "wall_seconds": 8.781665274873376
+    },
+    "readouts-B1-m-seed20260909": {
+      "gpu_seconds": 9.544282679911703,
+      "last_at": "2026-10-25T08:51:20Z",
+      "wall_seconds": 9.544282679911703
+    },
+    "readouts-B1-m-seed20260910": {
+      "gpu_seconds": 8.485762523952872,
+      "last_at": "2026-10-25T08:51:51Z",
+      "wall_seconds": 8.485762523952872
+    },
+    "readouts-B1-seed20260908": {
+      "gpu_seconds": 66.06199061963707,
+      "last_at": "2026-10-25T08:51:44Z",
+      "wall_seconds": 66.06199061963707
+    },
+    "readouts-B1-seed20260909": {
+      "gpu_seconds": 63.78291670931503,
+      "last_at": "2026-10-25T08:51:42Z",
+      "wall_seconds": 63.78291670931503
+    },
+    "readouts-B1-seed20260910": {
+      "gpu_seconds": 55.74883859558031,
+      "last_at": "2026-10-25T08:51:34Z",
+      "wall_seconds": 55.74883859558031
+    },
+    "readouts-U+head-seed20260908": {
+      "gpu_seconds": 32.47835941007361,
+      "last_at": "2026-10-25T08:51:10Z",
+      "wall_seconds": 32.47835941007361
+    },
+    "readouts-U+head-seed20260909": {
+      "gpu_seconds": 33.38542656367645,
+      "last_at": "2026-10-25T08:52:17Z",
+      "wall_seconds": 33.38542656367645
+    },
+    "readouts-U+head-seed20260910": {
+      "gpu_seconds": 30.92928506154567,
+      "last_at": "2026-10-25T08:52:12Z",
+      "wall_seconds": 30.92928506154567
+    },
+    "score-B1-m-seed20260908": {
+      "gpu_seconds": 45.75270166806877,
+      "last_at": "2026-10-25T09:04:30Z",
+      "wall_seconds": 45.75270166806877
+    },
+    "score-B1-m-seed20260909": {
+      "gpu_seconds": 45.36918979603797,
+      "last_at": "2026-10-25T09:05:16Z",
+      "wall_seconds": 45.36918979603797
+    },
+    "score-B1-m-seed20260910": {
+      "gpu_seconds": 45.78643274214119,
+      "last_at": "2026-10-25T09:06:02Z",
+      "wall_seconds": 45.78643274214119
+    },
+    "score-B1-seed20260908": {
+      "gpu_seconds": 59.40640477091074,
+      "last_at": "2026-10-25T09:01:46Z",
+      "wall_seconds": 59.40640477091074
+    },
+    "score-B1-seed20260909": {
+      "gpu_seconds": 58.86436167685315,
+      "last_at": "2026-10-25T09:02:45Z",
+      "wall_seconds": 58.86436167685315
+    },
+    "score-B1-seed20260910": {
+      "gpu_seconds": 58.67302613426,
+      "last_at": "2026-10-25T09:03:44Z",
+      "wall_seconds": 58.67302613426
+    },
+    "score-U+head-seed20260908": {
+      "gpu_seconds": 15.073444495908916,
+      "last_at": "2026-10-25T09:06:17Z",
+      "wall_seconds": 15.073444495908916
+    },
+    "score-U+head-seed20260909": {
+      "gpu_seconds": 14.964918003883213,
+      "last_at": "2026-10-25T09:06:32Z",
+      "wall_seconds": 14.964918003883213
+    },
+    "score-U+head-seed20260910": {
+      "gpu_seconds": 15.005082407034934,
+      "last_at": "2026-10-25T09:06:47Z",
+      "wall_seconds": 15.005082407034934
+    },
+    "selection-readouts": {
+      "gpu_seconds": 14.484604319091886,
+      "last_at": "2026-10-24T18:20:37Z",
+      "wall_seconds": 14.484604319091886
+    },
+    "smoke": {
+      "gpu_seconds": 88.64457806898281,
+      "last_at": "2026-10-24T18:26:51Z",
+      "wall_seconds": 88.64457806898281
+    },
+    "train-B1-m@C3-s15-long-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 1189.9886256139725,
+      "last_at": "2026-10-25T07:20:28Z",
+      "ledger_gpu_seconds": 1192.1752567789517,
+      "ledger_wall_seconds": 1192.1752567789517,
+      "report": ".local-artifacts/issue-129-slotformer-v1/models/B1-m/seed-20260908/report.json",
+      "wall_seconds": 1189.9886256139725
+    },
+    "train-B1-m@C3-s15-long-seed20260909": {
+      "complete": true,
+      "gpu_seconds": 1491.8890546299517,
+      "last_at": "2026-10-25T07:25:30Z",
+      "ledger_gpu_seconds": 1493.7766847731546,
+      "ledger_wall_seconds": 1493.7766847731546,
+      "report": ".local-artifacts/issue-129-slotformer-v1/models/B1-m/seed-20260909/report.json",
+      "wall_seconds": 1491.8890546299517
+    },
+    "train-B1-m@C3-s15-long-seed20260910": {
+      "complete": true,
+      "gpu_seconds": 1183.955230458174,
+      "last_at": "2026-10-25T07:40:12Z",
+      "ledger_gpu_seconds": 1184.0882489159703,
+      "ledger_wall_seconds": 1184.0882489159703,
+      "report": ".local-artifacts/issue-129-slotformer-v1/models/B1-m/seed-20260910/report.json",
+      "wall_seconds": 1183.955230458174
+    },
+    "train-C1-s15-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 1729.7350950492546,
+      "last_at": "2026-10-24T10:19:03Z",
+      "ledger_gpu_seconds": 1731.4486324088648,
+      "ledger_wall_seconds": 1731.4486324088648,
+      "report": ".local-artifacts/issue-129-slotformer-v1/selection/C1-s15/seed-20260908/report.json",
+      "wall_seconds": 1729.7350950492546
+    },
+    "train-C2-s5-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 3618.971380981151,
+      "last_at": "2026-10-24T18:15:48Z",
+      "ledger_gpu_seconds": 3620.4853174570017,
+      "ledger_wall_seconds": 3620.4853174570017,
+      "report": ".local-artifacts/issue-129-slotformer-v1/selection/C2-s5/seed-20260908/report.json",
+      "wall_seconds": 3618.971380981151
+    },
+    "train-C3-s15-long-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 26538.460945544764,
+      "last_at": "2026-10-24T17:12:32Z",
+      "ledger_gpu_seconds": 26540.07169075217,
+      "ledger_wall_seconds": 26540.07169075217,
+      "report": ".local-artifacts/issue-129-slotformer-v1/selection/C3-s15-long/seed-20260908/report.json",
+      "wall_seconds": 26538.460945544764
+    },
+    "train-C3-s15-long-seed20260909": {
+      "complete": true,
+      "gpu_seconds": 6489.519546190742,
+      "last_at": "2026-10-25T08:48:47Z",
+      "ledger_gpu_seconds": 6491.529602028895,
+      "ledger_wall_seconds": 6491.529602028895,
+      "report": ".local-artifacts/issue-129-slotformer-v1/models/B1/seed-20260909/report.json",
+      "wall_seconds": 6489.519546190742
+    },
+    "train-C3-s15-long-seed20260910": {
+      "complete": true,
+      "gpu_seconds": 6049.869886395987,
+      "last_at": "2026-10-25T08:41:28Z",
+      "ledger_gpu_seconds": 6052.077502423897,
+      "ledger_wall_seconds": 6052.077502423897,
+      "report": ".local-artifacts/issue-129-slotformer-v1/models/B1/seed-20260910/report.json",
+      "wall_seconds": 6049.869886395987
+    }
+  },
+  "plan_identity": "issue-129-slotformer-v1",
+  "reference": {
+    "C*": {
+      "inference_macs_per_candidate": 27264600.0,
+      "linear_macs_per_candidate": 27783000,
+      "model_class": "ContinuousDynamics",
+      "name": "c_star",
+      "request": "C-F-15",
+      "rollout": {
+        "delta": 15,
+        "endpoint": 225,
+        "steps": 15
+      },
+      "trainable_parameters": 1862396,
+      "training": {
+        "20260908": {
+          "parameters_per_member": 1862396,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group0.json",
+          "steps": 9000,
+          "training_gpu_seconds": 984.8691363630351
+        },
+        "20260909": {
+          "parameters_per_member": 1862396,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group1.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1044.1844274359755
+        },
+        "20260910": {
+          "parameters_per_member": 1862396,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group2.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1043.799301308114
+        }
+      },
+      "training_gpu_seconds_mean": 1024.2842883690416
+    },
+    "U": {
+      "inference_macs_per_candidate": 20991360.0,
+      "linear_macs_per_candidate": 21970560,
+      "model_class": "CNNHybridPredictor",
+      "name": "unit",
+      "request": "F-15-macro",
+      "rollout": {
+        "delta": 15,
+        "endpoint": 225,
+        "steps": 15
+      },
+      "trainable_parameters": 1837690,
+      "training": {
+        "20260908": {
+          "parameters_per_member": 1837690,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group0.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1290.2939926690888
+        },
+        "20260909": {
+          "parameters_per_member": 1837690,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group1.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1299.884319175966
+        },
+        "20260910": {
+          "parameters_per_member": 1837690,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group2.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1292.3847305669915
+        }
+      },
+      "training_gpu_seconds_mean": 1294.1876808040154
+    }
+  },
+  "schema": "issue_129_compute_v1",
+  "wall_seconds_total": 53072.66430380149
+}

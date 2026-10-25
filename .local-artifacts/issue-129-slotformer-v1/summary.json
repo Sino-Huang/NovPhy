@@ -1,0 +1,2903 @@
+{
+  "arms": {
+    "B1": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 10.064962230170085,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 13025.950126043832
+      },
+      "compute": {
+        "macs_per_candidate": 5690880.0,
+        "trainable_parameters": 6325005,
+        "training_gpu_seconds": {
+          "20260908": 26538.460945544764,
+          "20260909": 6489.519546190742,
+          "20260910": 6049.869886395987
+        },
+        "wall_per_decision": 0.046398228500038385
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.26140259570725805,
+              -0.20981139260882029
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.23575590183307227,
+            "units": 933
+          },
+          "first": "B1",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "C*",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.22537206675068414,
+              -0.17077216549081506
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.1983616597764508,
+            "units": 933
+          },
+          "first": "B1",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "J_dec",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.19725766217526666,
+              -0.1478704227176896
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.17268245330946294,
+            "units": 933
+          },
+          "first": "B1",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "P",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.22275330867774598,
+              -0.1705109850849401
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.19679006238491772,
+            "units": 933
+          },
+          "first": "B1",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "U",
+          "token": "readiness_or_precision_insufficient"
+        }
+      },
+      "disposition": {
+        "disposition": 4,
+        "guards_pass": false,
+        "label": "per-contrast tokens only",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            -0.22275330867774598,
+            -0.1705109850849401
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.19679006238491772,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_action": false,
+        "G_fid": true,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_action",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": false,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": false,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "tie_free",
+      "program_set": true,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.5264155565763282,
+            0.5691971867896305
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5476157104774468,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.5467487014593124,
+              0.6089815289212396
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.5777610920697738,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.4296272805436792,
+              0.48945038750103054
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.45909861842337724,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.5792850812103224,
+              0.6328429649129006
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.6059874209391894,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.0,
+        "top1_hits": 74,
+        "top1_rate": 0.07931404072883172,
+        "typed_failures": 0
+      },
+      "role": "primary",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "B1"
+    },
+    "B1-m": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 0.9956909568428916,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 1288.6109702340327
+      },
+      "compute": {
+        "macs_per_candidate": 3023280.0,
+        "trainable_parameters": 1793445,
+        "training_gpu_seconds": {
+          "20260908": 1189.9886256139725,
+          "20260909": 1491.8890546299517,
+          "20260910": 1183.955230458174
+        },
+        "wall_per_decision": 0.03804997238330543
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.26870230341291435,
+              -0.22856126010466848
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.24852498341244325,
+            "units": 933
+          },
+          "first": "B1-m",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "C*",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.23076101551181935,
+              -0.19253682633907712
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.21113074135582177,
+            "units": 933
+          },
+          "first": "B1-m",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "J_dec",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.2212938416977806,
+              -0.15041889960700253
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.1854515348888339,
+            "units": 933
+          },
+          "first": "B1-m",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "P",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              -0.23025358840873314,
+              -0.18985409820618826
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.20955914396428865,
+            "units": 933
+          },
+          "first": "B1-m",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "U",
+          "token": "readiness_or_precision_insufficient"
+        }
+      },
+      "disposition": {
+        "disposition": 4,
+        "guards_pass": false,
+        "label": "per-contrast tokens only",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            -0.23025358840873314,
+            -0.18985409820618826
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.20955914396428865,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_action": false,
+        "G_fid": true,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_action",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": false,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": false,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "tie_free",
+      "program_set": false,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.5175801699193983,
+            0.5523141113977127
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5348466288980758,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.6454087311402424,
+              0.6946685482256222
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.6700917517637774,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.4442078018444578,
+              0.49776552359751713
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.4707931404072882,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.43795201582982934,
+              0.48932972038679434
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.4636549945231618,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.0,
+        "top1_hits": 30,
+        "top1_rate": 0.03215434083601286,
+        "typed_failures": 0
+      },
+      "role": "secondary (matched budget and parameters)",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "B1-m"
+    }
+  },
+  "engine_seconds": 0,
+  "extra": {
+    "benchmarks_exploratory": {
+      "clevrer": {
+        "B1-bench": {
+          "position_mse": {
+            "120": 0.002526477503629899,
+            "15": 0.005403975715530073,
+            "30": 0.00441174249964307,
+            "60": 0.004158027528167925
+          }
+        },
+        "J (#117 item 5, LC, full) F-15-continuous": {
+          "position_mse": {
+            "120": 0.006566666129704875,
+            "15": 0.0017953759615920717,
+            "30": 0.0020578709013029262,
+            "60": 0.0012139745841624164
+          }
+        },
+        "J (#117 item 5, LC, full) F-5-continuous": {
+          "position_mse": {
+            "120": 0.015367704406445328,
+            "15": 0.002573826115824179,
+            "30": 0.004234285133861704,
+            "60": 0.004886165229739466
+          }
+        }
+      },
+      "physion": {
+        "B1-bench": {
+          "position_mse": {
+            "120": 0.0004822833038310313,
+            "15": 7.700440591583578e-05,
+            "30": 0.0001456960229309819,
+            "60": 0.00024731622337033815
+          }
+        },
+        "J (#117 item 5, LC, full) F-15-continuous": {
+          "position_mse": {
+            "120": 0.0011005854968162668,
+            "15": 0.00018651492918151134,
+            "30": 0.00029473560531793436,
+            "60": 0.0005389497774659605
+          }
+        },
+        "J (#117 item 5, LC, full) F-5-continuous": {
+          "position_mse": {
+            "120": 0.0028621299829359893,
+            "15": 0.0004013559473100435,
+            "30": 0.0008574450182802846,
+            "60": 0.001725860987789929
+          }
+        }
+      }
+    },
+    "inventories": {
+      "angle": {
+        "contrasts": {
+          "B1 - U": {
+            "cells": 234,
+            "estimate": {
+              "clusters": 78,
+              "interval": [
+                -0.08106869981869982,
+                -0.009970700595700595
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": -0.04509842009842009,
+              "units": 234
+            },
+            "first": "B1",
+            "guards_pass": false,
+            "members": 78,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "B1-m - U": {
+            "cells": 234,
+            "estimate": {
+              "clusters": 78,
+              "interval": [
+                -0.16255503755503753,
+                -0.1302423271173271
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": -0.14633514633514633,
+              "units": 234
+            },
+            "first": "B1-m",
+            "guards_pass": false,
+            "members": 78,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "rankers": {
+          "cells": 234,
+          "members": 78,
+          "rankers": {
+            "B1": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.6018494237244236,
+                  0.6646270396270396
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6340326340326339,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.6737567987567987,
+                    0.7708818958818959
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7229020979020978,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.48572261072261075,
+                    0.5906177156177156
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5377816627816628,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.5929462898212897,
+                    0.6878399378399378
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6414141414141415,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 13,
+              "top1_rate": 0.05555555555555555,
+              "typed_failures": 0
+            },
+            "B1-head": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.6958689458689459,
+                  0.7656695156695158
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.731837606837607,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7412587412587411,
+                    0.8257575757575757
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7839937839937842,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7701995920745919,
+                    0.8384809634809636
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8042929292929294,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.5499222999222999,
+                    0.6640442890442889
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6072261072261075,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 39,
+              "top1_rate": 0.16666666666666666,
+              "typed_failures": 0
+            },
+            "B1-m": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.5224674630924631,
+                  0.5429964711214712
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5327959077959079,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.3727661227661228,
+                    0.4352175602175602
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.40374902874902874,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.5673076923076925,
+                    0.6292735042735043
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5983877233877234,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.5652680652680653,
+                    0.6266511266511267
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5962509712509713,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 0,
+              "top1_rate": 0.0,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.7422291828541829,
+                  0.7752201502201502
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.759000259000259,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7461052836052835,
+                    0.8188616938616939
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.783022533022533,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.6933760683760684,
+                    0.7601981351981352
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7265928515928516,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7354312354312355,
+                    0.7978826728826728
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7673853923853924,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 24,
+              "top1_rate": 0.10256410256410256,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.7401903651903651,
+                  0.8115473646723647
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7764504014504015,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.5948912198912197,
+                    0.7125097125097125
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6537490287490288,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7542735042735043,
+                    0.8386752136752137
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7970085470085472,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.8493589743589743,
+                    0.9056915306915306
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8785936285936286,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 60,
+              "top1_rate": 0.2564102564102564,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.6826923076923078,
+                  0.7147112147112147
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6988150738150737,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7281468531468531,
+                    0.7933177933177934
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7607808857808858,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7889471639471639,
+                    0.8512067793317792
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.820804195804196,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.4805749805749805,
+                    0.546911421911422
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5148601398601399,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 28,
+              "top1_rate": 0.11965811965811966,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.7777777777777778,
+                  0.8449883449883447
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8118686868686869,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 54,
+              "top1_rate": 0.23076923076923078,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.6663105413105413,
+                  0.6912393162393161
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6791310541310539,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7112470862470862,
+                    0.7763209013209014
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7436868686868686,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.735042735042735,
+                    0.8108974358974358
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7735042735042734,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.49135586635586637,
+                    0.5474941724941724
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5202020202020202,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 16,
+              "top1_rate": 0.06837606837606838,
+              "typed_failures": 0
+            },
+            "U+head": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.8475783475783475,
+                  0.8845830095830098
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8666148666148664,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.8461538461538464,
+                    0.9091880341880343
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8792735042735043,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.8397435897435895,
+                    0.8888888888888888
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8648018648018649,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.8301282051282052,
+                    0.8814102564102564
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.855769230769231,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 75,
+              "top1_rate": 0.32051282051282054,
+              "typed_failures": 0
+            }
+          }
+        }
+      },
+      "grid": {
+        "rankers": {
+          "cells": 933,
+          "members": 311,
+          "rankers": {
+            "B1": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.5264155565763282,
+                  0.5691971867896305
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5476157104774468,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.5467487014593124,
+                    0.6089815289212396
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5777610920697738,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.4296272805436792,
+                    0.48945038750103054
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.45909861842337724,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.5792850812103224,
+                    0.6328429649129006
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6059874209391894,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 74,
+              "top1_rate": 0.07931404072883172,
+              "typed_failures": 0
+            },
+            "B1-head": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.581258175996922,
+                  0.6328309806485047
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6069416471345731,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.5877331336937447,
+                    0.6396274130478311
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6136420385616526,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.5593376853585856,
+                    0.6121148840441444
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5855529251027642,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.5959707843067972,
+                    0.6474532702024663
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6216299777393025,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 86,
+              "top1_rate": 0.09217577706323687,
+              "typed_failures": 0
+            },
+            "B1-m": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.5175801699193983,
+                  0.5523141113977127
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5348466288980758,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6454087311402424,
+                    0.6946685482256222
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6700917517637774,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.4442078018444578,
+                    0.49776552359751713
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.4707931404072882,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.43795201582982934,
+                    0.48932972038679434
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.4636549945231618,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 30,
+              "top1_rate": 0.03215434083601286,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7676081871861615,
+                  0.7991644582641367
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7833716123105191,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.8090866930497156,
+                    0.8431429543125686
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8261728089702365,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7127077959553845,
+                    0.7535528190994429
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.733401057677585,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7687825518532915,
+                    0.8120352196035476
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7905409702837356,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 179,
+              "top1_rate": 0.19185423365487675,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.6845815715188706,
+                  0.7267283448955475
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7057212348209133,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6449441715840429,
+                    0.6931389055745969
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6690005064603135,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6787369704250733,
+                    0.72335790549215
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.701211382401093,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7261330430020141,
+                    0.7678043473139936
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7469518156013334,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 149,
+              "top1_rate": 0.15969989281886388,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7277492108641626,
+                  0.7637271160422284
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7459773702538975,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6988952834411034,
+                    0.7416553596457133
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7204598188521019,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7739148057194681,
+                    0.8124289188839029
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7933082458805931,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7035261710422482,
+                    0.7450974641649883
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7241640460289978,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 168,
+              "top1_rate": 0.18006430868167203,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.6964709285890959,
+                  0.7442291129288716
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7202981637869096,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 0,
+              "tied_pair_share": 0.0022169437846397467,
+              "top1_hits": 168,
+              "top1_rate": 0.18006430868167203,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7269181497316545,
+                  0.7620354551664841
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7444057728623645,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6917169151855648,
+                    0.7361769460443094
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7140619294960131,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7825813133811527,
+                    0.819872295443035
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8010977232842185,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.69611085591793,
+                    0.7404332149629578
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7180576658068619,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 182,
+              "top1_rate": 0.19506966773847803,
+              "typed_failures": 0
+            },
+            "U+head": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7948265716955428,
+                  0.8302864150854504
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8123401607324436,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7797255986243125,
+                    0.8184269696006031
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7990977939530994,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7972320177143328,
+                    0.8334765997667928
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8154511619141843,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.801849434060045,
+                    0.8435325017961675
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8224715263300473,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 325,
+              "top1_rate": 0.3483386923901393,
+              "typed_failures": 0
+            }
+          }
+        }
+      },
+      "offset": {
+        "contrasts": {
+          "B1 - U": {
+            "cells": 228,
+            "estimate": {
+              "clusters": 76,
+              "interval": [
+                -0.08201754385964911,
+                -0.0008771929824561471
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": -0.041033138401559456,
+              "units": 228
+            },
+            "first": "B1",
+            "guards_pass": false,
+            "members": 76,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "B1-m - U": {
+            "cells": 228,
+            "estimate": {
+              "clusters": 76,
+              "interval": [
+                -0.1232456140350877,
+                -0.08469663742690059
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": -0.10443469785575049,
+              "units": 228
+            },
+            "first": "B1-m",
+            "guards_pass": false,
+            "members": 76,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "rankers": {
+          "cells": 228,
+          "members": 76,
+          "rankers": {
+            "B1": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.5895224171539962,
+                  0.6601364522417155
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.625925925925926,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.6548245614035088,
+                    0.7543859649122807
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7061403508771928,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.520906432748538,
+                    0.6328947368421052
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.577485380116959,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.5381578947368422,
+                    0.6480994152046783
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5941520467836257,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 21,
+              "top1_rate": 0.09210526315789473,
+              "typed_failures": 0
+            },
+            "B1-head": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.6482456140350877,
+                  0.7298245614035087
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6903508771929824,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.6921052631578948,
+                    0.7934210526315789
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7434210526315791,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.748391812865497,
+                    0.8263157894736842
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7878654970760234,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.4690058479532165,
+                    0.6081871345029239
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.539766081871345,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 40,
+              "top1_rate": 0.17543859649122806,
+              "typed_failures": 0
+            },
+            "B1-m": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.5489278752436647,
+                  0.576364522417154
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5625243664717349,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.3052631578947369,
+                    0.37763157894736843
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.3426900584795321,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.6368421052631579,
+                    0.7093567251461987
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6730994152046783,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.6356725146198831,
+                    0.7080409356725146
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6717836257309941,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 6,
+              "top1_rate": 0.02631578947368421,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.7523879142300194,
+                  0.7962475633528264
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7747563352826511,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7532163742690058,
+                    0.8353837719298246
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7953216374269005,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7388888888888888,
+                    0.802046783625731
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7704678362573099,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7184173976608185,
+                    0.7966374269005847
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7584795321637428,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 38,
+              "top1_rate": 0.16666666666666666,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.7039473684210527,
+                  0.7978070175438597
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7521929824561403,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.5657894736842105,
+                    0.7197368421052632
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6434210526315788,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7026315789473683,
+                    0.8039473684210526
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7539473684210527,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.8263157894736841,
+                    0.8907894736842106
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8592105263157896,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 73,
+              "top1_rate": 0.3201754385964912,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.6736842105263159,
+                  0.7062378167641326
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6904483430799221,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7793859649122806,
+                    0.8412280701754385
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8109649122807018,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.797953216374269,
+                    0.8671052631578948
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8334795321637426,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.39532163742690063,
+                    0.456578947368421
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.4269005847953216,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 33,
+              "top1_rate": 0.14473684210526316,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.5,
+                  0.5
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 228,
+              "tied_pair_share": 1.0,
+              "top1_hits": 9,
+              "top1_rate": 0.039473684210526314,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.6502923976608187,
+                  0.6827485380116959
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6669590643274854,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7548172514619883,
+                    0.8160818713450292
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7858187134502923,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7355226608187133,
+                    0.8216374269005847
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.77953216374269,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.4026315789473684,
+                    0.46842105263157896
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.4355263157894737,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 29,
+              "top1_rate": 0.12719298245614036,
+              "typed_failures": 0
+            },
+            "U+head": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.8421052631578947,
+                  0.8788011695906434
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8603801169590641,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.8210526315789475,
+                    0.8894736842105262
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8565789473684212,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.831578947368421,
+                    0.8919590643274854
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8624269005847952,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.839766081871345,
+                    0.8850877192982456
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8621345029239766,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 67,
+              "top1_rate": 0.29385964912280704,
+              "typed_failures": 0
+            }
+          }
+        }
+      },
+      "power": {
+        "contrasts": {
+          "B1 - U": {
+            "cells": 141,
+            "estimate": {
+              "clusters": 47,
+              "interval": [
+                -0.3598471651943097,
+                -0.2523835075276844
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": -0.305524449421426,
+              "units": 141
+            },
+            "first": "B1",
+            "guards_pass": false,
+            "members": 47,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "B1-m - U": {
+            "cells": 141,
+            "estimate": {
+              "clusters": 47,
+              "interval": [
+                -0.11394228775247808,
+                -0.06327972709551657
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": -0.08737713077018788,
+              "units": 141
+            },
+            "first": "B1-m",
+            "guards_pass": false,
+            "members": 47,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "rankers": {
+          "cells": 141,
+          "members": 47,
+          "rankers": {
+            "B1": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.44880941271618763,
+                  0.5535961283231721
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.500228111650284,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.3899449421425906,
+                    0.5614361702127659
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.47551947243996523,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.4560151486873211,
+                    0.6370232984944632
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5465658827920865,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.39327096553440327,
+                    0.5668175314171954
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.4785989797188006,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 12,
+              "top1_rate": 0.0851063829787234,
+              "typed_failures": 0
+            },
+            "B1-head": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7725516880262121,
+                  0.8448960018248931
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8085002695864958,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7712120505163619,
+                    0.84904270872216
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8092882916511135,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7791775538136121,
+                    0.8541759985069056
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.816473808635063,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7649931566504915,
+                    0.8345806893119323
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7997387084733109,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 32,
+              "top1_rate": 0.22695035460992907,
+              "typed_failures": 0
+            },
+            "B1-m": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.676660808344739,
+                  0.7620424806105095
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7183754303015222,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7187064514122184,
+                    0.7936123553564761
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7561279084235412,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.6174528742067936,
+                    0.7485691178300359
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6846460121936045,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.6557468582804529,
+                    0.7722121127286301
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7143523702874207,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 4,
+              "top1_rate": 0.028368794326241134,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7711412840612168,
+                  0.8439718904234583
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8068309070548714,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7794567313674257,
+                    0.8555438907552569
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8172514619883042,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7257994276471319,
+                    0.812835168595247
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7685392559412716,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.8022886338185888,
+                    0.8681722035585417
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.834702003235038,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 26,
+              "top1_rate": 0.18439716312056736,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7695139148106674,
+                  0.8462740035668369
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8075878229853595,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7714616772427523,
+                    0.8475527248973499
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8100348388702254,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7642155032972505,
+                    0.8453091949732489
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.804560159263407,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7694716623118079,
+                    0.8486064451909916
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8081684708224461,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 36,
+              "top1_rate": 0.2553191489361702,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7554847891004104,
+                  0.833147214964124
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7942951350006222,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7462050516361827,
+                    0.8315937227821326
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7888204553938037,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7355325370162996,
+                    0.8482666106756253
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7942018165982332,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7744494214259051,
+                    0.8259300734104763
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7998631330098293,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 21,
+              "top1_rate": 0.14893617021276595,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.5,
+                  0.5
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 141,
+              "tied_pair_share": 1.0,
+              "top1_hits": 0,
+              "top1_rate": 0.0,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7729044834307994,
+                  0.8396478785616523
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8057525610717099,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7532039318153539,
+                    0.8338629152668906
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.793424163244992,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.786984415826801,
+                    0.8600231740699267
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8228505661316411,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7726452656463854,
+                    0.8293214196839613
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8009829538384967,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 18,
+              "top1_rate": 0.1276595744680851,
+              "typed_failures": 0
+            },
+            "U+head": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7765428642528308,
+                  0.855192391439592
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8150221890423458,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7917436543486377,
+                    0.8693254634813986
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8300982953838497,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7969383787482891,
+                    0.8722471071295259
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8340487744183153,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7360947803906929,
+                    0.8270506718924971
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7809194973248724,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 43,
+              "top1_rate": 0.3049645390070922,
+              "typed_failures": 0
+            }
+          }
+        }
+      }
+    },
+    "novelty": null,
+    "positions": {
+      "B1": {
+        "floor_15": null,
+        "floor_150": null,
+        "floor_225": null,
+        "floor_30": null,
+        "floor_60": null,
+        "pred_15": {
+          "clusters": 311,
+          "interval": [
+            0.04793133628152164,
+            0.057488204516924116
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.052685937141326564,
+          "units": 14928
+        },
+        "pred_150": {
+          "clusters": 311,
+          "interval": [
+            0.043896788679341145,
+            0.053326621867111644
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04859496990167968,
+          "units": 14928
+        },
+        "pred_225": {
+          "clusters": 311,
+          "interval": [
+            0.046176701978620824,
+            0.0554840100574247
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.050831981075872466,
+          "units": 14928
+        },
+        "pred_30": {
+          "clusters": 311,
+          "interval": [
+            0.04784931416768829,
+            0.05743408810108623
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.052627944238607435,
+          "units": 14928
+        },
+        "pred_60": {
+          "clusters": 311,
+          "interval": [
+            0.04609919803423307,
+            0.05570638748433119
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05089282634634861,
+          "units": 14928
+        }
+      },
+      "B1-m": {
+        "floor_15": null,
+        "floor_150": null,
+        "floor_225": null,
+        "floor_30": null,
+        "floor_60": null,
+        "pred_15": {
+          "clusters": 311,
+          "interval": [
+            0.0487710925401516,
+            0.05822553486894201
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05347350452320865,
+          "units": 14928
+        },
+        "pred_150": {
+          "clusters": 311,
+          "interval": [
+            0.04342958738921424,
+            0.05294157004908502
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.048143434625395096,
+          "units": 14928
+        },
+        "pred_225": {
+          "clusters": 311,
+          "interval": [
+            0.0448737425980959,
+            0.054280769376579156
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04954536663590475,
+          "units": 14928
+        },
+        "pred_30": {
+          "clusters": 311,
+          "interval": [
+            0.04948725729232386,
+            0.05906872240227909
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.054244733007092205,
+          "units": 14928
+        },
+        "pred_60": {
+          "clusters": 311,
+          "interval": [
+            0.04777203392011379,
+            0.05745373280233516
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05257733937569132,
+          "units": 14928
+        }
+      },
+      "C*": {
+        "floor_15": null,
+        "floor_150": null,
+        "floor_225": null,
+        "floor_30": null,
+        "floor_60": null,
+        "pred_15": {
+          "clusters": 311,
+          "interval": [
+            0.04998444804183482,
+            0.05946037494902195
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05470286291813835,
+          "units": 14928
+        },
+        "pred_150": {
+          "clusters": 311,
+          "interval": [
+            0.05435197946104577,
+            0.0645073319745018
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.059383282609049855,
+          "units": 14928
+        },
+        "pred_225": {
+          "clusters": 311,
+          "interval": [
+            0.06166364129178436,
+            0.07231419506112399
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.06697697972622152,
+          "units": 14928
+        },
+        "pred_30": {
+          "clusters": 311,
+          "interval": [
+            0.04994002474920618,
+            0.05915022745746367
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05452591748110848,
+          "units": 14928
+        },
+        "pred_60": {
+          "clusters": 311,
+          "interval": [
+            0.049736373757909416,
+            0.05893856218990842
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0543035610042982,
+          "units": 14928
+        }
+      },
+      "U": {
+        "floor_15": null,
+        "floor_150": null,
+        "floor_225": null,
+        "floor_30": null,
+        "floor_60": null,
+        "pred_15": {
+          "clusters": 311,
+          "interval": [
+            0.046036515201577075,
+            0.05501498770672043
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05048554208353491,
+          "units": 14928
+        },
+        "pred_150": {
+          "clusters": 311,
+          "interval": [
+            0.04228964305618357,
+            0.049552133758549326
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04588432980410039,
+          "units": 14928
+        },
+        "pred_225": {
+          "clusters": 311,
+          "interval": [
+            0.044049823166512216,
+            0.05075928763254902
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04737385629588254,
+          "units": 14928
+        },
+        "pred_30": {
+          "clusters": 311,
+          "interval": [
+            0.045695512546062154,
+            0.05453429018718417
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.050071708841168495,
+          "units": 14928
+        },
+        "pred_60": {
+          "clusters": 311,
+          "interval": [
+            0.04425861864689782,
+            0.05261358345309211
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04838147661891379,
+          "units": 14928
+        }
+      }
+    },
+    "readouts": {
+      "B1--seed20260908": {
+        "G_action": 0.01302439461935545,
+        "policy_auc": 0.5505377601122281,
+        "policy_head_auc": 0.616621853323981,
+        "typed_failure": null
+      },
+      "B1--seed20260909": {
+        "G_action": 0.013811676556812848,
+        "policy_auc": 0.4438878497389135,
+        "policy_head_auc": 0.5878302548515314,
+        "typed_failure": null
+      },
+      "B1--seed20260910": {
+        "G_action": 0.012232661197783838,
+        "policy_auc": 0.5799645390070922,
+        "policy_head_auc": 0.623106149169979,
+        "typed_failure": null
+      },
+      "B1-m--seed20260908": {
+        "G_action": 7.462152726220738e-05,
+        "policy_auc": 0.6665068973579612,
+        "typed_failure": null
+      },
+      "B1-m--seed20260909": {
+        "G_action": 0.0002643987941687819,
+        "policy_auc": 0.4721144104122827,
+        "typed_failure": null
+      },
+      "B1-m--seed20260910": {
+        "G_action": 0.0001878959467544778,
+        "policy_auc": 0.4664562387966642,
+        "typed_failure": null
+      },
+      "U+head--seed20260908": {
+        "policy_head_auc": 0.8017048554282596,
+        "typed_failure": null
+      },
+      "U+head--seed20260909": {
+        "policy_head_auc": 0.8161191645234198,
+        "typed_failure": null
+      },
+      "U+head--seed20260910": {
+        "policy_head_auc": 0.8208888629101396,
+        "typed_failure": null
+      }
+    },
+    "selection": "C3-s15-long",
+    "wrong_anchor": {
+      "B1": {
+        "guards_pass": false,
+        "right": {
+          "clusters": 311,
+          "interval": [
+            0.5264155565763282,
+            0.5691971867896305
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5476157104774468,
+          "units": 933
+        },
+        "right_minus_wrong": {
+          "clusters": 311,
+          "interval": [
+            -0.02388100778527326,
+            0.01126772954626652
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.006499532309419774,
+          "units": 933
+        },
+        "stability": {
+          "clusters": 311,
+          "interval": [
+            0.3065697915353172,
+            0.3311252076962886
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.318858218796629,
+          "units": 933
+        },
+        "token": "readiness_or_precision_insufficient",
+        "wrong": {
+          "clusters": 311,
+          "interval": [
+            0.5399731007472417,
+            0.5681824547817313
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5541152427868665,
+          "units": 933
+        },
+        "wrong_anchors": 480
+      },
+      "B1-m": {
+        "guards_pass": false,
+        "right": {
+          "clusters": 311,
+          "interval": [
+            0.5175801699193983,
+            0.5523141113977127
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5348466288980758,
+          "units": 933
+        },
+        "right_minus_wrong": {
+          "clusters": 311,
+          "interval": [
+            0.002998247060043674,
+            0.016022272823267587
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.009655998773764033,
+          "units": 933
+        },
+        "stability": {
+          "clusters": 311,
+          "interval": [
+            0.8485872772642015,
+            0.8694215669855829
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.8596416327785132,
+          "units": 933
+        },
+        "token": "readiness_or_precision_insufficient",
+        "wrong": {
+          "clusters": 311,
+          "interval": [
+            0.5074454498401444,
+            0.5432740960231414
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5251906301243117,
+          "units": 933
+        },
+        "wrong_anchors": 480
+      }
+    }
+  },
+  "frozen_at": "2026-10-24T20:06:47Z",
+  "gfid": {
+    "B1": {
+      "band": [
+        48.92,
+        49.92
+      ],
+      "pass": true,
+      "tier_e": 49.4203226257541
+    }
+  },
+  "global_guards": {
+    "G_chronology": {
+      "anchors_read_at": "2026-10-25T09:00:46Z",
+      "first_scored_at": "2026-10-25T09:01:46Z",
+      "novelty": {
+        "anchors_read_at": "2026-10-25T09:11:11Z",
+        "last_primary_scored_at": "2026-10-25T09:06:47Z",
+        "pass": true
+      },
+      "pass": true,
+      "plan_frozen_at": "2026-10-24T20:06:47Z",
+      "readouts_frozen_at": "2026-10-25T08:55:28Z"
+    },
+    "G_isolation": {
+      "pass": true,
+      "rule": "fit split trains (dynamics, heads), policy split selects; evaluation anchors are read only by --score after --freeze-readouts (G_chronology)"
+    },
+    "G_records": {
+      "bound_to_current_records": true,
+      "pass": true,
+      "receipt": "validation.json",
+      "records_manifest_sha256": "sha256:a178bb1f8cdd6b7437702d12c3fea10625cc5981197d7c807c7ec72c702ab0aa",
+      "spot_check": {
+        "pass": true,
+        "record": "B1--seed20260908",
+        "rule": "exact row equality, every inventory"
+      }
+    },
+    "G_scoring_policy": {
+      "pass": true
+    }
+  },
+  "global_guards_pass": true,
+  "identity": "issue-129-slotformer-v1",
+  "issue": 129,
+  "program_claim_entries": {
+    "B1": {
+      "disposition": 4,
+      "dropped": null,
+      "gfid_pass": true,
+      "guards_pass": false
+    }
+  },
+  "program_issue": 127,
+  "program_set_members": [
+    "B1"
+  ],
+  "schema": "issue_127_child_summary_v1",
+  "within_family": {
+    "B1 - B1-m": {
+      "cells": 933,
+      "estimate": {
+        "clusters": 311,
+        "interval": [
+          -0.01961520794318222,
+          0.04468276052279266
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.01276908157937097,
+        "units": 933
+      },
+      "first": "B1",
+      "guards_pass": false,
+      "label": "B1 - B1-m",
+      "members": 311,
+      "reverse_token": "readiness_or_precision_insufficient",
+      "second": "B1-m",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "B1-head - B1": {
+      "cells": 933,
+      "estimate": {
+        "clusters": 311,
+        "interval": [
+          0.022732323946150313,
+          0.09649538787400523
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.05932593665712636,
+        "units": 933
+      },
+      "first": "B1-head",
+      "guards_pass": false,
+      "label": "B1-head - B1",
+      "members": 311,
+      "reverse_token": "readiness_or_precision_insufficient",
+      "second": "B1",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "B1-head - U+head": {
+      "cells": 933,
+      "estimate": {
+        "clusters": 311,
+        "interval": [
+          -0.23031151726087418,
+          -0.17972602067457377
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.2053985135978705,
+        "units": 933
+      },
+      "first": "B1-head",
+      "guards_pass": false,
+      "label": "B1-head - U+head",
+      "members": 311,
+      "reverse_token": "readiness_or_precision_insufficient",
+      "second": "U+head",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "U+head - U": {
+      "cells": 933,
+      "estimate": {
+        "clusters": 311,
+        "interval": [
+          0.05828345288152361,
+          0.07731993667283055
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.06793438787007919,
+        "units": 933
+      },
+      "first": "U+head",
+      "guards_pass": true,
+      "label": "U+head - U",
+      "members": 311,
+      "reverse_token": "not_supported_by_this_experiment",
+      "second": "U",
+      "token": "supported"
+    }
+  }
+}
