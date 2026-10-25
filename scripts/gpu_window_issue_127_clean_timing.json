@@ -1,0 +1,35 @@
+{
+  "jobs": [
+    {
+      "id": "133-timing-clean",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "depends_on": [
+        "131-gfid-thick-s20260908",
+        "131-gfid-thick-s20260909",
+        "131-gfid-thick-s20260910",
+        "131-train-q2"
+      ],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_133_dreamerv3.py", "--timing"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "3", "B127_T1_CPU_THREADS": "8", "OMP_NUM_THREADS": "8"},
+      "note": "Decision P-coverage issuecomment-6402603214: the #133 timing probe repeated unchanged on an exclusive GPU 3 (after #131's THICK G-fid runs and D1-m queue 2); the contended record is kept as timing-contended.json"
+    },
+    {
+      "id": "134-timing-clean",
+      "gpu": 3,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "depends_on": [
+        "133-timing-clean"
+      ],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_134_gamma_models.py", "--timing"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "3", "B127_T3_CPU_THREADS": "4", "OMP_NUM_THREADS": "4"},
+      "note": "Decision P-coverage issuecomment-6402603433: the #134 timing probe repeated unchanged on an exclusive GPU 3 after 133-timing-clean; the contended record is kept as timing-contended.json"
+    }
+  ]
+}

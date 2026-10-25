@@ -1,0 +1,145 @@
+{
+  "cem_case": {
+    "cem_steps": 30,
+    "horizon": 5,
+    "samples": 300,
+    "seconds": 1.5437369397841394,
+    "seconds_per_30_steps": 1.5437369397841394
+  },
+  "decision": "P-coverage timing probe (#133)",
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "fit_store_seconds": 5.839047452900559,
+  "host_peak_rss_gib": 2.6805191040039062,
+  "host_rss_gib": 2.084320068359375,
+  "plan_identity": "issue-133-dreamerv3-v1",
+  "pusht": {
+    "batch": [
+      16,
+      64
+    ],
+    "batch_build_seconds_per_update": 0.008251356310211122,
+    "chunks": [
+      {
+        "seconds": 73.74014989379793,
+        "updates": 100
+      },
+      {
+        "seconds": 72.61207541497424,
+        "updates": 100
+      },
+      {
+        "seconds": 72.54584288410842,
+        "updates": 100
+      },
+      {
+        "seconds": 67.6419390249066,
+        "updates": 100
+      },
+      {
+        "seconds": 71.82428161008283,
+        "updates": 100
+      },
+      {
+        "seconds": 72.49393559014425,
+        "updates": 100
+      },
+      {
+        "seconds": 72.6664499361068,
+        "updates": 100
+      },
+      {
+        "seconds": 71.6875250088051,
+        "updates": 100
+      },
+      {
+        "seconds": 72.8073382107541,
+        "updates": 100
+      },
+      {
+        "seconds": 72.34782065730542,
+        "updates": 100
+      }
+    ],
+    "data": "synthetic batches of the real shape (uint8 images cast to float per update)",
+    "finite": true,
+    "first_loss": 2927.171142578125,
+    "host_peak_rss_gib": 2.6805191040039062,
+    "host_rss_gib": 2.1111068725585938,
+    "last_loss": 1034.046630859375,
+    "parameters": 23971719,
+    "peak_gpu_allocated_gib": 2.757221221923828,
+    "peak_gpu_reserved_gib": 3.1484375,
+    "seconds": 720.367365651764,
+    "seconds_per_update_all": 0.720367365651764,
+    "seconds_per_update_steady_median": 0.7249393559014424,
+    "updates": 1000
+  },
+  "rr128": "same update as native (not timed)",
+  "schema": "issue_133_timing_v1",
+  "seconds": 1505.8714021160267,
+  "t1": {
+    "batch": [
+      16,
+      64
+    ],
+    "batch_build_seconds_per_update": 0.004366154829505831,
+    "chunks": [
+      {
+        "seconds": 78.4234520108439,
+        "updates": 100
+      },
+      {
+        "seconds": 98.11736260401085,
+        "updates": 100
+      },
+      {
+        "seconds": 79.4806826421991,
+        "updates": 100
+      },
+      {
+        "seconds": 74.92151744989678,
+        "updates": 100
+      },
+      {
+        "seconds": 74.01248866319656,
+        "updates": 100
+      },
+      {
+        "seconds": 76.2409555488266,
+        "updates": 100
+      },
+      {
+        "seconds": 75.07010958297178,
+        "updates": 100
+      },
+      {
+        "seconds": 68.81982434913516,
+        "updates": 100
+      },
+      {
+        "seconds": 75.23679782776162,
+        "updates": 100
+      },
+      {
+        "seconds": 74.97162553016096,
+        "updates": 100
+      }
+    ],
+    "finite": true,
+    "first_loss": 193.5400390625,
+    "host_peak_rss_gib": 2.6805191040039062,
+    "host_rss_gib": 2.470001220703125,
+    "last_loss": 1.475736379623413,
+    "parameters": 14671084,
+    "peak_gpu_allocated_gib": 0.6186237335205078,
+    "peak_gpu_reserved_gib": 0.6484375,
+    "seconds": 775.2948280060664,
+    "seconds_per_update_all": 0.7752948280060664,
+    "seconds_per_update_steady_median": 0.7507010958297178,
+    "updates": 1000
+  },
+  "torch": "2.13.0+cu130",
+  "updates": 1000,
+  "written_at": "2026-10-25T07:25:30Z"
+}
