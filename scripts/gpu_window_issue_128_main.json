@@ -1,0 +1,216 @@
+{
+ "jobs": [
+  {
+   "id": "128-train-q0",
+   "gpu": 1,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--train",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 150,
+   "shares_gpu": true,
+   "note": "#128 frozen training queue 0 (plan.json training.queues[0]) on physical GPU 1; SIGTERM -> resume.pt -> exit 75"
+  },
+  {
+   "id": "128-train-q1",
+   "gpu": 3,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--train",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 150,
+   "shares_gpu": true,
+   "note": "#128 frozen training queue 1 (plan.json training.queues[1]) on physical GPU 3; SIGTERM -> resume.pt -> exit 75"
+  },
+  {
+   "id": "128-train-q2",
+   "gpu": 1,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--train",
+    "--gpu",
+    "2"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": true,
+   "note": "#128 frozen training queue 2 (plan.json training.queues[2]) on physical GPU 1; SIGTERM -> resume.pt -> exit 75"
+  },
+  {
+   "id": "128-train-q3",
+   "gpu": 3,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--train",
+    "--gpu",
+    "3"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": true,
+   "note": "#128 frozen training queue 3 (plan.json training.queues[3]) on physical GPU 3; SIGTERM -> resume.pt -> exit 75"
+  },
+  {
+   "id": "128-readouts-w0",
+   "gpu": 1,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--readouts",
+    "--gpu",
+    "0",
+    "--workers",
+    "4"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [
+    "128-train-q0",
+    "128-train-q1",
+    "128-train-q2",
+    "128-train-q3"
+   ],
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "note": "#128 readouts (G-rank etc., fit/policy only) of every trained arm-seed, worker 0 of 4; A4's readouts run later in their own jobs"
+  },
+  {
+   "id": "128-readouts-w1",
+   "gpu": 3,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--readouts",
+    "--gpu",
+    "1",
+    "--workers",
+    "4"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [
+    "128-train-q0",
+    "128-train-q1",
+    "128-train-q2",
+    "128-train-q3"
+   ],
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "note": "#128 readouts (G-rank etc., fit/policy only) of every trained arm-seed, worker 1 of 4; A4's readouts run later in their own jobs"
+  },
+  {
+   "id": "128-readouts-w2",
+   "gpu": 1,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--readouts",
+    "--gpu",
+    "2",
+    "--workers",
+    "4"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [
+    "128-train-q0",
+    "128-train-q1",
+    "128-train-q2",
+    "128-train-q3"
+   ],
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "note": "#128 readouts (G-rank etc., fit/policy only) of every trained arm-seed, worker 2 of 4; A4's readouts run later in their own jobs"
+  },
+  {
+   "id": "128-readouts-w3",
+   "gpu": 3,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--readouts",
+    "--gpu",
+    "3",
+    "--workers",
+    "4"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "depends_on": [
+    "128-train-q0",
+    "128-train-q1",
+    "128-train-q2",
+    "128-train-q3"
+   ],
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "note": "#128 readouts (G-rank etc., fit/policy only) of every trained arm-seed, worker 3 of 4; A4's readouts run later in their own jobs"
+  }
+ ]
+}
