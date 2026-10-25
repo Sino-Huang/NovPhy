@@ -354,3 +354,29 @@ def test_score_novelty_rows_equal_primary_path(tmp_path, monkeypatch):
         primary = r.score_arm(tmp_path, {"selected": "tiny"}, seed, {"carriers": carriers}, gate_cells, "cpu")
         fresh = json.loads(eb.json_text(primary["inventories"]["grid"]))
         assert fresh == record["inventories"]["grid"]
+
+
+def test_g_action_calibration_share():
+    from scripts import run_issue_130_dino_wm as r
+    if not r.G_ACTION_CALIBRATION.is_file():
+        pytest.skip("#129 calibration absent")
+    out = r.g_action_calibration({20260908: 0.0395, 20260909: None, 20260910: 0.0})
+    truth = out["engine_truth_g_action"]
+    assert abs(truth - 0.0395) < 1e-3 and out["frozen_threshold"] == 0.05
+    assert abs(out["share_of_engine_truth"]["20260908"] - 0.0395 / truth) < 1e-12
+    assert out["share_of_engine_truth"]["20260909"] is None and out["threshold_attainable_by_a_perfect_model"] is False
+
+
+def test_score_waits_for_the_gfid_record(tmp_path, monkeypatch):
+    from scripts import external_baselines as eb
+    from scripts import run_issue_130_dino_wm as r
+    monkeypatch.setattr(r, "load_plan", lambda output: {"selected": "tiny"})
+    monkeypatch.setattr(r, "load_manifest", lambda output: {})
+    with pytest.raises(SystemExit, match="G-fid"):
+        r.score(tmp_path, "cpu")
+    eb.write_json(tmp_path / "fidelity/gfid.json", {"pass": False, "decided_by_run": None})
+    with pytest.raises(SystemExit, match="G-fid"):
+        r.score(tmp_path, "cpu")
+    assert not eb.evaluation_anchors_path(tmp_path).exists()
+    eb.write_json(tmp_path / "fidelity/gfid.json", {"pass": False, "decided_by_run": "runs/tier-e-2"})
+    assert r.gfid_decided(tmp_path)

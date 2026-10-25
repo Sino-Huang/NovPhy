@@ -192,28 +192,5 @@
    "shares_gpu": true,
    "note": "#130 C1-car selection readouts (policy-split pooled grid AUC; deterministic; redone from scratch if interrupted)"
   }
- ],
- "post_freeze_jobs_not_enqueued": [
-  {
-   "id": "130-score-novelty",
-   "gpu": 0,
-   "command": [
-    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
-    "-u",
-    "scripts/run_issue_130_dino_wm.py",
-    "--score-novelty"
-   ],
-   "cwd": ".",
-   "env": {
-    "CUDA_VISIBLE_DEVICES": "0"
-   },
-   "depends_on": [
-    "130-score"
-   ],
-   "resumable": true,
-   "est_minutes": 30,
-   "shares_gpu": false,
-   "note": "#130 P-novelty (issuecomment-6386831073): C1-car on the mixed #110 novelty levels (C1-dino typed stop, not scored); after 130-score, before 130-publish; DESCRIPTIVE. Kept outside 'jobs' (not enqueued) until the post-freeze jobs 130-score / 130-publish are added to the spec."
-  }
  ]
 }

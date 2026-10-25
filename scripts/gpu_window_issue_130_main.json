@@ -1,0 +1,177 @@
+{
+ "note": "#130 post-freeze jobs: NOT enqueued; enqueue after the orchestrator's freeze (--prepare). 130-gfid-tier-e-r is in scripts/gpu_window_issue_130.json (already queued).",
+ "jobs": [
+  {
+   "id": "130-train-q0",
+   "gpu": 1,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--train",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": true,
+   "note": "#130 C1-car main training queue 0 (plan.json queues: the 2 remaining seeds by LPT; seed 20260908 = the reused selection run); resumable; shares_gpu false: never beside the ~27.6 GiB Tier-E run on GPU 2 (OOM risk); the two queues run one after the other [orchestrator placement 2026-10-25: physical GPU 1, shares_gpu (0.52 GiB peak), away from Tier-E on GPU 2]"
+  },
+  {
+   "id": "130-train-q1",
+   "gpu": 1,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--train",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1"
+   },
+   "depends_on": [],
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": true,
+   "note": "#130 C1-car main training queue 1; resumable; shares_gpu false: never beside the ~27.6 GiB Tier-E run on GPU 2 (OOM risk); the two queues run one after the other [orchestrator placement 2026-10-25: physical GPU 1, shares_gpu (0.52 GiB peak), away from Tier-E on GPU 2]"
+  },
+  {
+   "id": "130-readouts",
+   "gpu": 1,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--readouts",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "1"
+   },
+   "depends_on": [
+    "130-train-q0",
+    "130-train-q1"
+   ],
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "note": "#130 C1-car readouts (G-rank, G-action, policy AUC, MACs; fit/policy only); resumable per seed [orchestrator placement 2026-10-25: physical GPU 1, shares_gpu (0.52 GiB peak), away from Tier-E on GPU 2]"
+  },
+  {
+   "id": "130-freeze-readouts",
+   "gpu": null,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--freeze-readouts"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": ""
+   },
+   "depends_on": [
+    "130-readouts"
+   ],
+   "resumable": false,
+   "est_minutes": 5,
+   "shares_gpu": false,
+   "note": "#130 readouts-manifest.json (before any evaluation anchor); CPU"
+  },
+  {
+   "id": "130-score",
+   "gpu": 0,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--score"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0"
+   },
+   "depends_on": [
+    "130-freeze-readouts",
+    "130-gfid-tier-e-r"
+   ],
+   "resumable": true,
+   "est_minutes": 60,
+   "shares_gpu": true,
+   "note": "#130 the one scoring pass (fresh process; deterministic); depends on the Tier-E G-fid job and refuses unless fidelity/gfid.json is decided; resumable per record"
+  },
+  {
+   "id": "130-score-novelty",
+   "gpu": 0,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--score-novelty"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0"
+   },
+   "depends_on": [
+    "130-score"
+   ],
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "note": "#130 P-novelty (issuecomment-6386831073): C1-car on mixed #110 novelty levels (C1-dino typed stop, not scored); DESCRIPTIVE"
+  },
+  {
+   "id": "130-publish",
+   "gpu": null,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--publish"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": ""
+   },
+   "depends_on": [
+    "130-score-novelty"
+   ],
+   "resumable": false,
+   "est_minutes": 20,
+   "shares_gpu": false,
+   "note": "#130 publication (CPU)"
+  },
+  {
+   "id": "130-validate",
+   "gpu": 0,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "scripts/run_issue_130_dino_wm.py",
+    "--validate"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0"
+   },
+   "depends_on": [
+    "130-publish"
+   ],
+   "resumable": false,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "note": "#130 --validate (re-scores C1-car seed 20260908 under deterministic_scoring; exit 0)"
+  }
+ ]
+}

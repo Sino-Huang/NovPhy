@@ -1,0 +1,156 @@
+{
+  "accounting": {
+    "fit_anchors": 480,
+    "fit_levels": 480,
+    "fit_positive": 838,
+    "fit_shots": 13919,
+    "policy_grid_mixed_cells": 94,
+    "short_shots": 601,
+    "steps_per_epoch": 18500,
+    "windows": 591974
+  },
+  "device": "cpu",
+  "gport": {
+    "pass": true,
+    "sha256": "sha256:7db54ec7abf32230db1d7ecad70e9bee857ee1399f07c4594f7fee88641f0363",
+    "vendor_hashes_match": {
+      "LICENSE": true,
+      "__init__.py": true,
+      "models/__init__.py": true,
+      "models/proprio.py": true,
+      "models/vit.py": true
+    }
+  },
+  "pass": true,
+  "plan_identity": "issue-130-dino-wm-v1",
+  "projection": {
+    "child_cap_gpu_h": 88.0,
+    "fidelity_gpu_h_estimate": 13.0,
+    "per_seed_gpu_h": 0.709702361391909,
+    "readouts_gpu_h_estimate": 0.5,
+    "score_gpu_h_estimate": 1.0,
+    "seed_cap_gpu_h": 20.0,
+    "selection_gpu_h": 14.84960388882254,
+    "total_gpu_h": 30.769008611606356,
+    "training_gpu_h": 1.419404722783818,
+    "training_queue_loads_h": [
+      0.709702361391909,
+      0.709702361391909,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "C1-car--seed20260909"
+      ],
+      "1": [
+        "C1-car--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus": 14.5,
+    "within_caps": true
+  },
+  "readiness_c1_dino": {
+    "artifact": ".local-artifacts/issue-130-dino-wm-v1/readiness/readiness.json",
+    "ceiling_auc": 0.5947958070298497,
+    "pass": false,
+    "sha256": "sha256:7a6da66dcb1361c21759380cfb8bae431de25626e1aa1ec48cd5cab03d9e77d9",
+    "threshold": 0.65,
+    "typed_reason": "readiness_ceiling_below_threshold"
+  },
+  "schema": "issue_130_smoke_v1",
+  "selected": "car-release",
+  "selection": {
+    "configs": {
+      "car-lr5e-4": {
+        "action_encoder_lr": 0.0005,
+        "epochs": 100,
+        "predictor_lr": 0.0005,
+        "samples": null
+      },
+      "car-lr5e-5": {
+        "action_encoder_lr": 0.0005,
+        "epochs": 100,
+        "predictor_lr": 5e-05,
+        "samples": null
+      },
+      "car-release": {
+        "action_encoder_lr": 0.0005,
+        "epochs": null,
+        "predictor_lr": 0.0005,
+        "samples": 3963442
+      }
+    },
+    "details": {
+      "car-lr5e-4": {
+        "cells": 94,
+        "model_sha256": "sha256:88fbd781226b3de335168f25e4c5988a4b200ed76dda93c6fcbdb5ecaab81a93",
+        "typed_failure": null
+      },
+      "car-lr5e-5": {
+        "cells": 94,
+        "model_sha256": "sha256:b8132f4b2941ca7576ca05493b4be69a79030e8e61ed46bcd52ab980868ee153",
+        "typed_failure": null
+      },
+      "car-release": {
+        "cells": 94,
+        "model_sha256": "sha256:1987e2df70e6cc781401b4948a912f8560b038edf5894f73995b1ee617403af1",
+        "typed_failure": null
+      }
+    },
+    "plan_identity": "issue-130-dino-wm-v1",
+    "policy_cells": 94,
+    "results": {
+      "car-lr5e-4": {
+        "auc": 0.4811043566362715,
+        "parameters": 1243648
+      },
+      "car-lr5e-5": {
+        "auc": 0.5189112306133582,
+        "parameters": 1243648
+      },
+      "car-release": {
+        "auc": 0.540861974904528,
+        "parameters": 1243648
+      }
+    },
+    "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+    "schema": "issue_130_selection_v1",
+    "scoring_policy": {
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false
+    },
+    "selected": "car-release",
+    "written_at": "2026-10-25T10:55:45Z"
+  },
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES= python -m pytest -q tests/test_issue_130_dino_wm.py",
+    "exit_code": 0,
+    "tail": [
+      "19 passed, 3 warnings in 167.59s (0:02:47)"
+    ]
+  },
+  "throughput": {
+    "car-lr5e-4": {
+      "gpu_seconds": 25459.942715254147,
+      "seconds_per_step": 0.013762131197434673,
+      "steps": 1850000
+    },
+    "car-lr5e-5": {
+      "gpu_seconds": 25443.70278349612,
+      "seconds_per_step": 0.013753352855943849,
+      "steps": 1850000
+    },
+    "car-release": {
+      "gpu_seconds": 2554.9285010108724,
+      "seconds_per_step": 0.02062788435959625,
+      "steps": 123858
+    }
+  },
+  "written_at": "2026-10-25T11:37:23Z"
+}

@@ -1,0 +1,65 @@
+{
+  "configs": {
+    "car-lr5e-4": {
+      "action_encoder_lr": 0.0005,
+      "epochs": 100,
+      "predictor_lr": 0.0005,
+      "samples": null
+    },
+    "car-lr5e-5": {
+      "action_encoder_lr": 0.0005,
+      "epochs": 100,
+      "predictor_lr": 5e-05,
+      "samples": null
+    },
+    "car-release": {
+      "action_encoder_lr": 0.0005,
+      "epochs": null,
+      "predictor_lr": 0.0005,
+      "samples": 3963442
+    }
+  },
+  "details": {
+    "car-lr5e-4": {
+      "cells": 94,
+      "model_sha256": "sha256:88fbd781226b3de335168f25e4c5988a4b200ed76dda93c6fcbdb5ecaab81a93",
+      "typed_failure": null
+    },
+    "car-lr5e-5": {
+      "cells": 94,
+      "model_sha256": "sha256:b8132f4b2941ca7576ca05493b4be69a79030e8e61ed46bcd52ab980868ee153",
+      "typed_failure": null
+    },
+    "car-release": {
+      "cells": 94,
+      "model_sha256": "sha256:1987e2df70e6cc781401b4948a912f8560b038edf5894f73995b1ee617403af1",
+      "typed_failure": null
+    }
+  },
+  "plan_identity": "issue-130-dino-wm-v1",
+  "policy_cells": 94,
+  "results": {
+    "car-lr5e-4": {
+      "auc": 0.4811043566362715,
+      "parameters": 1243648
+    },
+    "car-lr5e-5": {
+      "auc": 0.5189112306133582,
+      "parameters": 1243648
+    },
+    "car-release": {
+      "auc": 0.540861974904528,
+      "parameters": 1243648
+    }
+  },
+  "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+  "schema": "issue_130_selection_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "selected": "car-release",
+  "written_at": "2026-10-25T10:55:45Z"
+}

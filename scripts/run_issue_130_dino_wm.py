@@ -83,6 +83,9 @@ SEED_CAP_GPU_HOURS = 20.0  # #127: C1 cap per seed
 WALL_CAP_HOURS = 48.0  # on 4 GPUs
 GRID = "grid"
 READINESS = OUTPUT / "readiness/readiness.json"
+# #127 decision (2026-10-25): the frozen G-action stands; every carrier-space world model also reports its action
+# sensitivity as a share of the engine truth's (descriptive), from the #129 fit-split calibration
+G_ACTION_CALIBRATION = ROOT / ".local-artifacts/issue-129-slotformer-v1/analysis/g-action-calibration.json"
 
 
 def log(message):
@@ -546,6 +549,7 @@ def own_pins(output):
               output / "smoke.json", output / "selection.json", READINESS, output / "readiness/r1.pt",
               output / "features/MANIFEST.json"]  # gfid.json is read live (it lands after the freeze; G_fid)
     paths += [selection_dir(output, name) / f for name in CONFIGS for f in ("model.pt", "report.json")]
+    paths += [G_ACTION_CALIBRATION]
     return [{"name": f"c1_{p.relative_to(ROOT)}", "artifact": rel(p), "sha256": eb.sha256_of(p)}
             for p in paths if p.is_file() and "__pycache__" not in str(p)]
 
@@ -768,10 +772,19 @@ def score_arm(output, plan, seed, anchors, cells, device=None):
     return record
 
 
+def gfid_decided(output):
+    """The Tier-E G-fid record exists and was decided by a completed run (pass or fail; a failed G-fid makes every
+    C1-car token the stop token at publication, it does not block scoring)."""
+    path = Path(output) / "fidelity/gfid.json"
+    return path.is_file() and eb.read_json(path).get("decided_by_run") is not None
+
+
 def score(output, device=None):
     output = Path(output)
     plan = load_plan(output)
     load_manifest(output)
+    if not gfid_decided(output):
+        raise SystemExit("fidelity/gfid.json has no decided Tier-E run: --score waits for the G-fid record")
     readouts_frozen_at = eb.read_json(output / "readouts-manifest.json")["frozen_at"]
     with harness.deterministic_scoring() as policy:
         anchors_path = eb.evaluation_anchors_path(output)
@@ -936,6 +949,25 @@ def car_guards(output, records):
     return {"arm": block, "extra": extra, "gfid": gfid, "failed": failed, "pass": not failed}
 
 
+def g_action_calibration(per_seed_g_action):
+    """DESCRIPTIVE (#127 G-action decision): C1-car's carrier-space endpoint action sensitivity per seed as a share
+    of the engine truth's (true E99 carriers of the executed fit grid shots, eb.action_sensitivity, #129
+    calibration). The frozen guard (>= 0.05) stands and is unattainable in carrier space even by a perfect model."""
+    cal = eb.read_json(G_ACTION_CALIBRATION)
+    truth = float(cal["engine_truth"]["G_action_carrier_236"])
+    shares = {str(s): (None if v is None else float(v) / truth) for s, v in per_seed_g_action.items()}
+    values = [v for v in shares.values() if v is not None]
+    return {"label": "DESCRIPTIVE (no token, guard or record change)", "engine_truth_g_action": truth,
+            "frozen_threshold": cal["threshold_frozen"], "threshold_attainable_by_a_perfect_model":
+            cal["threshold_attainable_by_a_perfect_model"], "g_action": {str(s): v for s, v in per_seed_g_action.items()},
+            "share_of_engine_truth": shares, "mean_share": float(np.mean(values)) if values else None,
+            "reference_shares": {k: cal["fraction_of_engine_truth"].get(k) for k in ("U", "C*", "B1", "B1-m")}
+            if isinstance(cal.get("fraction_of_engine_truth"), dict) else None,
+            "calibration": {"artifact": rel(G_ACTION_CALIBRATION), "sha256": eb.sha256_of(G_ACTION_CALIBRATION)},
+            "statement": "the frozen G-action threshold 0.05 (set on #123 latent states) is not attainable in carrier "
+                         "space: the engine truth itself reaches 0.0395"}
+
+
 def arm_compute(output, plan):
     seconds, macs, walls, params = {}, [], [], None
     records = load_records(output)
@@ -995,6 +1027,8 @@ def publication(output):
     summary = eb.child_summary(ISSUE, IDENTITY, plan["frozen_at"], blocks, within, guards_global, gfid_block, {
         "inventories": tables, "wrong_anchor": wrong, "positions": positions, "selection": plan["selected"],
         "dropped": plan["dropped"], "novelty": novelty_section(output, records),
+        "g_action_calibration": {ARM: g_action_calibration({s: eb.read_json(readouts_dir(output, s) / "readouts.json")
+                                                            .get("G_action") for s in eb.SEEDS})},
         "readouts": {f"{ARM}--seed{s}": {k: v for k, v in eb.read_json(readouts_dir(output, s) / "readouts.json").items()
                                          if k in ("policy_auc", "G_action", "G_rank", "typed_failure")}
                      for s in eb.SEEDS}})
@@ -1014,6 +1048,12 @@ def findings_text(summary):
     for label, block in summary["within_family"].items():
         lines.append(f"- {label}: {eb.rc.fmt_block(block['estimate'])} ({block['token']} / {block['reverse_token']}); "
                      f"{block.get('note', '')}")
+    cal = summary["extra"]["g_action_calibration"][ARM]
+    lines += ["", "## G-action in carrier space (DESCRIPTIVE; #127 decision: the frozen guard stands)", "",
+              f"- {ARM}: G-action per seed "
+              + ", ".join(f"{s} {eb.rc.fmt_num(v)} ({eb.rc.fmt_num(cal['share_of_engine_truth'][s], 2)} x engine truth)"
+                          for s, v in cal["g_action"].items())
+              + f"; engine truth {cal['engine_truth_g_action']:.4f}; {cal['statement']}."]
     lines += ["", "## Wrong anchor (right - wrong, grid)", ""]
     for arm, block in summary["extra"]["wrong_anchor"].items():
         lines.append(f"- {arm}: {eb.rc.fmt_block(block['right_minus_wrong'])} ({block['token']})")
