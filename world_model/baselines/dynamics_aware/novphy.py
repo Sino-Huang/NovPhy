@@ -212,8 +212,9 @@ def train_step(model, optimizer, scheduler, observations, actions, is_solved, tr
 def task_balanced_indices(rng, positive_in_task, negative_in_task, n_tasks_per_batch,
                           n_samples_per_task=NATIVE["n_samples_per_task"]):
     """Official task_balanced_sampler (one batch): n_tasks_per_batch distinct tasks, per task n/2 negatives then n/2
-    positives drawn with replacement; a task without positives takes negatives (official fallback); a task without
-    negatives takes positives (NovPhy has all-success levels; the official code assumes negatives exist)."""
+    positives drawn with replacement; a task without positives takes negatives (official fallback; the fit split has
+    55 all-fail levels and no all-success level); a task without negatives would take positives (a guard only: the
+    official code assumes negatives exist, and no fit level lacks them)."""
     tasks = rng.choice(len(positive_in_task), size=n_tasks_per_batch, replace=False)
     half = n_samples_per_task // 2
     indices = []

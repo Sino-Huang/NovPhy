@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {"id": "128-score", "gpu": 0, "resumable": true, "est_minutes": 30, "shares_gpu": false,
+     "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "-m", "scripts.run_issue_128_direct_predictors", "--score"],
+     "cwd": ".", "env": {"CUDA_VISIBLE_DEVICES": "0"},
+     "note": "#128 single primary scoring pass of the next frozen scoring group (group 'primary' = A1, A2, A2-native, A4) after --freeze-readouts; reads the Gate-B evaluation anchors once; resumable per record (an interrupted record is redone deterministically). ENQUEUE ONLY AFTER the plan freeze, every primary arm-seed's readouts and --freeze-readouts."},
+    {"id": "128-score-novelty", "gpu": 0, "resumable": true, "est_minutes": 40, "shares_gpu": false, "depends_on": ["128-score"],
+     "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "-m", "scripts.run_issue_128_direct_predictors", "--score-novelty"],
+     "cwd": ".", "env": {"CUDA_VISIBLE_DEVICES": "0"},
+     "note": "#128 P-novelty pass (Decision P-novelty issuecomment-6386830623; DESCRIPTIVE): guard-passing arms with primary records on the mixed #110 novelty levels; reads anchors-novelty.pt once (E99 parses of 455 levels) and writes the U / C* / P novelty references; resumable per record. A3 later: --score-novelty --arms A3-sym,A3-img after A3's own primary pass."},
+    {"id": "128-publish", "gpu": null, "resumable": true, "est_minutes": 20, "shares_gpu": false, "depends_on": ["128-score-novelty"],
+     "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "-m", "scripts.run_issue_128_direct_predictors", "--publish"],
+     "cwd": ".", "env": {"CUDA_VISIBLE_DEVICES": ""},
+     "note": "#128 publication (CPU): records manifest (primary + novelty records and references), compute.json, summary.json, findings.md with the descriptive novelty section; every token is the stop token until --validate"}
+  ]
+}

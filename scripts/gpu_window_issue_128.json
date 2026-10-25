@@ -1,0 +1,170 @@
+{
+  "jobs": [
+    {
+      "id": "128-gfid-a1-tier-e",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 60,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-phyre/bin/python",
+        "-u",
+        "scripts/b127_phyre_dqn_fidelity.py"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "PHYRE_REF": "/mnt/array/sukaih/novphy-baselines-src/phyre@d0765dd"
+      },
+      "note": "#128 A1 Tier-E G-fid: the unmodified official PHYRE agents/train.py (--dqn-load-from the 10 shipped dqn_10k ball_within_template checkpoints, rank 10000 cached actions) on PHYRE-B within-template folds 0-9 in env b127-phyre; frozen band [75.4, 79.8] (fidelity/band.json sha256 def37bb4..., Decision P-fid on #128); writes .local-artifacts/issue-128-direct-predictors-v1/fidelity/gfid.json; < 2 GB GPU memory (ResNet-18 eval, batch 128); resumable per fold (SIGTERM -> exit 75, the interrupted fold reruns); CPU smoke 3 s/task, GPU expected ~2-5 min/fold"
+    },
+    {
+      "id": "128-sel-a1a2",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 150,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--selection",
+        "--gpu",
+        "0",
+        "--workers",
+        "1",
+        "--arms",
+        "A1,A2,A2-native"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 Phase-1 selection (Decision P-other issuecomment-6382674719): A1 native/tenth/hundredth (100k/10k/1k x 64), A2 lr 3e-4/1e-4/1e-3 at 9000 x 64, A2-native native/tenth/hundredth; seed 20260908; fit split only; resumable (SIGTERM -> resume.pt after the current update -> exit 75); est from FLOPs (A1 native ~25-45 min), measured in report.json"
+    },
+    {
+      "id": "128-selro-a1a2",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "depends_on": [
+        "128-sel-a1a2"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--selection-readouts",
+        "--gpu",
+        "0",
+        "--workers",
+        "1",
+        "--arms",
+        "A1,A2,A2-native"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 selection readouts: policy-split pooled grid AUC (selection score), G-rank on 480 fit anchors x 16 grid launches, MACs per candidate; deterministic_scoring(); per run (an interrupted run's readouts are redone)"
+    },
+    {
+      "id": "128-throughput-a4",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--throughput",
+        "--arms",
+        "A4"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 A4 measured throughput (scratch, nothing kept): 200 native updates (batch 512, 320x240 RGB) -> throughput/A4.json; feeds the A4 P-cap decision before A4's selection; a stop signal exits 75 and the probe reruns"
+    },
+    {
+      "id": "128-sel-a3",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 200,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--selection",
+        "--gpu",
+        "0",
+        "--workers",
+        "1",
+        "--arms",
+        "A3-sym,A3-img"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 A3 (secondary, scoring deferred) selection: native-code / native-paper / native-template (PhyqA3's Decision P-other issuecomment-6382973132), seed 20260908, fit split only; resumable (resume.pt incl. the outer-step AdamW resets)"
+    },
+    {
+      "id": "128-selro-a3",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": false,
+      "depends_on": [
+        "128-sel-a3"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--selection-readouts",
+        "--gpu",
+        "0",
+        "--workers",
+        "1",
+        "--arms",
+        "A3-sym,A3-img"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 A3 selection readouts: policy grid AUC of Q (cost -Q), G-rank on 480 fit anchors x 16 grid launches, MACs; deterministic_scoring()"
+    },
+    {
+      "id": "128-throughput-a4-g3",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--throughput",
+        "--arms",
+        "A4"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#128 A4 measured throughput (scratch, nothing kept): 200 native updates (batch 512, 320x240 RGB) -> throughput/A4.json; feeds the A4 P-cap decision before A4's selection; a stop signal exits 75 and the probe reruns; re-run on idle GPU 3 (the GPU-0 run hit OOM beside an A4 Tier-T fold)"
+    }
+  ]
+}

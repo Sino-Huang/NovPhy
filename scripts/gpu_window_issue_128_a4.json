@@ -57,9 +57,10 @@
    ],
    "env": {
     "CUDA_VISIBLE_DEVICES": "3",
-    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache"
+    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
    },
-   "note": "#128 A4 G-fid Tier T fold 1 (as fold 0)",
+   "note": "#128 A4 G-fid Tier T fold 1 (as fold 0); PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only: limits fragmentation of the reserved cache; no kernel or numeric change)",
    "cwd": "."
   },
   {
@@ -79,9 +80,10 @@
    ],
    "env": {
     "CUDA_VISIBLE_DEVICES": "3",
-    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache"
+    "PHYRE_CACHE_DIR": "/mnt/array/sukaih/Project/NovPhy/data/external/dynamics_aware/phyre_cache",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
    },
-   "note": "#128 A4 G-fid Tier T fold 2 (as fold 0)",
+   "note": "#128 A4 G-fid Tier T fold 2 (as fold 0); PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (allocator only: limits fragmentation of the reserved cache; no kernel or numeric change)",
    "cwd": "."
   },
   {

@@ -1,0 +1,2184 @@
+{
+  "arms": {
+    "A1": {
+      "batch": 64,
+      "budget": "native",
+      "cap_gpu_hours_per_seed": 2.0,
+      "config": {
+        "learning_rate": 0.0003,
+        "updates": 10000
+      },
+      "configurations": {
+        "hundredth": {
+          "learning_rate": 0.0003,
+          "updates": 1000
+        },
+        "native": {
+          "learning_rate": 0.0003,
+          "updates": 100000
+        },
+        "tenth": {
+          "learning_rate": 0.0003,
+          "updates": 10000
+        }
+      },
+      "deferred_scoring": false,
+      "deferred_selection": false,
+      "family": "phyre_dqn",
+      "input": "frame",
+      "model_arm": "A1",
+      "parameters": 11309889,
+      "program_set": true,
+      "projected_gpu_hours_per_seed": 0.07476107945691587,
+      "reused_model_sha256": "sha256:1aa825bedad414323dc08c0af465ce7c3835167c8a7c5700523fc7f9de36fbfa",
+      "reused_run": ".local-artifacts/issue-128-direct-predictors-v1/selection/A1/tenth/seed-20260908",
+      "role": "primary",
+      "score": "logit",
+      "selected_configuration": "tenth",
+      "selection": {
+        "complete": true,
+        "results": {
+          "hundredth": {
+            "auc": 0.9907801418439716,
+            "parameters": 11309889
+          },
+          "native": {
+            "auc": 0.9959726443768998,
+            "parameters": 11309889
+          },
+          "tenth": {
+            "auc": 0.9964032421479229,
+            "parameters": 11309889
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "tenth"
+      },
+      "status": "ready",
+      "variant": "primary"
+    },
+    "A2": {
+      "batch": 64,
+      "budget": "matched (U's B1 recipe: 9 000 updates x batch 64)",
+      "cap_gpu_hours_per_seed": null,
+      "config": {
+        "learning_rate": 0.0003,
+        "updates": 9000
+      },
+      "configurations": {
+        "lr1e-3": {
+          "learning_rate": 0.001,
+          "updates": 9000
+        },
+        "lr1e-4": {
+          "learning_rate": 0.0001,
+          "updates": 9000
+        },
+        "lr3e-4": {
+          "learning_rate": 0.0003,
+          "updates": 9000
+        }
+      },
+      "deferred_scoring": false,
+      "deferred_selection": false,
+      "family": "phyre_dqn",
+      "input": "carrier",
+      "model_arm": "A2",
+      "parameters": 1838781,
+      "program_set": true,
+      "projected_gpu_hours_per_seed": 0.013411047415833714,
+      "reused_model_sha256": "sha256:dbc74be02ffff471bc3116b85652671bdec5f7fe6acbd48660439a9793003699",
+      "reused_run": ".local-artifacts/issue-128-direct-predictors-v1/selection/A2/lr3e-4/seed-20260908",
+      "role": "primary",
+      "score": "logit",
+      "selected_configuration": "lr3e-4",
+      "selection": {
+        "complete": true,
+        "results": {
+          "lr1e-3": {
+            "auc": 0.9704407294832829,
+            "parameters": 1838781
+          },
+          "lr1e-4": {
+            "auc": 0.9544072948328268,
+            "parameters": 1838781
+          },
+          "lr3e-4": {
+            "auc": 0.97322695035461,
+            "parameters": 1838781
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "lr3e-4"
+      },
+      "status": "ready",
+      "variant": "matched"
+    },
+    "A2-native": {
+      "batch": 64,
+      "budget": "native (PHYRE DQN schedule, A1-size MLP)",
+      "cap_gpu_hours_per_seed": null,
+      "config": {
+        "learning_rate": 0.0003,
+        "updates": 10000
+      },
+      "configurations": {
+        "hundredth": {
+          "learning_rate": 0.0003,
+          "updates": 1000
+        },
+        "native": {
+          "learning_rate": 0.0003,
+          "updates": 100000
+        },
+        "tenth": {
+          "learning_rate": 0.0003,
+          "updates": 10000
+        }
+      },
+      "deferred_scoring": false,
+      "deferred_selection": false,
+      "family": "phyre_dqn",
+      "input": "carrier",
+      "model_arm": "A2",
+      "parameters": 11333771,
+      "program_set": false,
+      "projected_gpu_hours_per_seed": 0.0149155996065949,
+      "reused_model_sha256": "sha256:82405dc4104213e0af281da4e264dca9736c8733a20c25ad4aeb19149117cefe",
+      "reused_run": ".local-artifacts/issue-128-direct-predictors-v1/selection/A2-native/tenth/seed-20260908",
+      "role": "secondary",
+      "score": "logit",
+      "selected_configuration": "tenth",
+      "selection": {
+        "complete": true,
+        "results": {
+          "hundredth": {
+            "auc": 0.9423252279635259,
+            "parameters": 11333771
+          },
+          "native": {
+            "auc": 0.965678824721378,
+            "parameters": 11333771
+          },
+          "tenth": {
+            "auc": 0.9694782168186427,
+            "parameters": 11333771
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "tenth"
+      },
+      "status": "ready",
+      "variant": "native_size"
+    },
+    "A3-img": {
+      "batch": 32,
+      "budget": "native Phy-Q",
+      "cap_gpu_hours_per_seed": null,
+      "config": {
+        "configuration": "native-paper",
+        "learning_rate": 0.0003,
+        "resets": [
+          4340,
+          8680,
+          13020,
+          17360,
+          21700,
+          26040,
+          30380,
+          34720,
+          39060,
+          43400,
+          47740,
+          52080,
+          56420,
+          60760,
+          65100,
+          69440,
+          73780,
+          78120,
+          82460,
+          86800,
+          91140,
+          95480,
+          99820,
+          104160,
+          108500,
+          112840,
+          117180,
+          121520,
+          125860,
+          130200,
+          134540,
+          138880,
+          143220,
+          147560,
+          151900,
+          156240,
+          160580,
+          164920,
+          169260,
+          173600,
+          177940,
+          182280,
+          186620,
+          190960,
+          195300,
+          199640,
+          203980,
+          208320,
+          212660,
+          217000,
+          221340,
+          225680,
+          230020,
+          234360,
+          238700,
+          243040,
+          247380,
+          251720,
+          256060,
+          260400,
+          264740,
+          269080,
+          273420,
+          277760,
+          282100,
+          286440,
+          290780,
+          295120,
+          299460,
+          303800,
+          308140,
+          312480,
+          316820,
+          321160,
+          325500,
+          329840,
+          334180,
+          338520,
+          342860,
+          347200,
+          351540,
+          355880,
+          360220,
+          364560,
+          368900,
+          373240,
+          377580,
+          381920,
+          386260,
+          390600,
+          394940,
+          399280,
+          403620,
+          407960,
+          412300
+        ],
+        "updates": 416640
+      },
+      "configurations": {
+        "native-code": {
+          "configuration": "native-code",
+          "learning_rate": 0.0003,
+          "resets": [
+            13888,
+            27342,
+            39928,
+            51212,
+            60760,
+            68138,
+            72912,
+            74648,
+            75082,
+            75516,
+            75950,
+            76384,
+            76818,
+            77252,
+            77686,
+            78120,
+            78554,
+            78988,
+            79422,
+            79856,
+            80290,
+            80724,
+            81158,
+            81592,
+            82026,
+            82460,
+            82894,
+            83328,
+            83762,
+            84196,
+            84630,
+            85064,
+            85498,
+            85932,
+            86366,
+            86800,
+            87234,
+            87668,
+            88102,
+            88536,
+            88970,
+            89404,
+            89838,
+            90272,
+            90706,
+            91140,
+            91574,
+            92008,
+            92442,
+            92876,
+            93310,
+            93744,
+            94178,
+            94612,
+            95046,
+            95480,
+            95914,
+            96348,
+            96782,
+            97216,
+            97650,
+            98084,
+            98518,
+            98952,
+            99386,
+            99820,
+            100254,
+            100688,
+            101122,
+            101556,
+            101990,
+            102424,
+            102858,
+            103292,
+            103726,
+            104160,
+            104594,
+            105028,
+            105462,
+            105896,
+            106330,
+            106764,
+            107198,
+            107632,
+            108066,
+            108500,
+            108934,
+            109368,
+            109802,
+            110236,
+            110670,
+            111104,
+            111538,
+            111972,
+            112406
+          ],
+          "updates": 112840
+        },
+        "native-paper": {
+          "configuration": "native-paper",
+          "learning_rate": 0.0003,
+          "resets": [
+            4340,
+            8680,
+            13020,
+            17360,
+            21700,
+            26040,
+            30380,
+            34720,
+            39060,
+            43400,
+            47740,
+            52080,
+            56420,
+            60760,
+            65100,
+            69440,
+            73780,
+            78120,
+            82460,
+            86800,
+            91140,
+            95480,
+            99820,
+            104160,
+            108500,
+            112840,
+            117180,
+            121520,
+            125860,
+            130200,
+            134540,
+            138880,
+            143220,
+            147560,
+            151900,
+            156240,
+            160580,
+            164920,
+            169260,
+            173600,
+            177940,
+            182280,
+            186620,
+            190960,
+            195300,
+            199640,
+            203980,
+            208320,
+            212660,
+            217000,
+            221340,
+            225680,
+            230020,
+            234360,
+            238700,
+            243040,
+            247380,
+            251720,
+            256060,
+            260400,
+            264740,
+            269080,
+            273420,
+            277760,
+            282100,
+            286440,
+            290780,
+            295120,
+            299460,
+            303800,
+            308140,
+            312480,
+            316820,
+            321160,
+            325500,
+            329840,
+            334180,
+            338520,
+            342860,
+            347200,
+            351540,
+            355880,
+            360220,
+            364560,
+            368900,
+            373240,
+            377580,
+            381920,
+            386260,
+            390600,
+            394940,
+            399280,
+            403620,
+            407960,
+            412300
+          ],
+          "updates": 416640
+        },
+        "native-template": {
+          "configuration": "native-template",
+          "learning_rate": 0.0003,
+          "resets": [
+            13888,
+            27342,
+            39928,
+            51212,
+            60760,
+            68138,
+            72912,
+            74648,
+            75082,
+            75516,
+            75950,
+            76384,
+            76818,
+            77252,
+            77686
+          ],
+          "updates": 78120
+        }
+      },
+      "deferred_scoring": true,
+      "deferred_selection": false,
+      "family": "phyq",
+      "input": "frame",
+      "model_arm": "A3-img",
+      "parameters": 11633920,
+      "program_set": false,
+      "projected_gpu_hours_per_seed": 1.7921188543456243,
+      "reused_model_sha256": "sha256:ad8250bdd0262fcd7047d94893652533a825c3aa1e724ab8d8fed3beef8c8c3d",
+      "reused_run": ".local-artifacts/issue-128-direct-predictors-v1/selection/A3-img/native-paper/seed-20260908",
+      "role": "secondary",
+      "score": "Q",
+      "selected_configuration": "native-paper",
+      "selection": {
+        "complete": true,
+        "results": {
+          "native-code": {
+            "auc": 0.9907548125633232,
+            "parameters": 11633920
+          },
+          "native-paper": {
+            "auc": 0.9952127659574469,
+            "parameters": 11633920
+          },
+          "native-template": {
+            "auc": 0.9925278622087134,
+            "parameters": 11633920
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "native-paper"
+      },
+      "status": "ready",
+      "variant": "primary"
+    },
+    "A3-sym": {
+      "batch": 32,
+      "budget": "native Phy-Q",
+      "cap_gpu_hours_per_seed": null,
+      "config": {
+        "configuration": "native-template",
+        "learning_rate": 0.0003,
+        "resets": [
+          13888,
+          27342,
+          39928,
+          51212,
+          60760,
+          68138,
+          72912,
+          74648,
+          75082,
+          75516,
+          75950,
+          76384,
+          76818,
+          77252,
+          77686
+        ],
+        "updates": 78120
+      },
+      "configurations": {
+        "native-code": {
+          "configuration": "native-code",
+          "learning_rate": 0.0003,
+          "resets": [
+            13888,
+            27342,
+            39928,
+            51212,
+            60760,
+            68138,
+            72912,
+            74648,
+            75082,
+            75516,
+            75950,
+            76384,
+            76818,
+            77252,
+            77686,
+            78120,
+            78554,
+            78988,
+            79422,
+            79856,
+            80290,
+            80724,
+            81158,
+            81592,
+            82026,
+            82460,
+            82894,
+            83328,
+            83762,
+            84196,
+            84630,
+            85064,
+            85498,
+            85932,
+            86366,
+            86800,
+            87234,
+            87668,
+            88102,
+            88536,
+            88970,
+            89404,
+            89838,
+            90272,
+            90706,
+            91140,
+            91574,
+            92008,
+            92442,
+            92876,
+            93310,
+            93744,
+            94178,
+            94612,
+            95046,
+            95480,
+            95914,
+            96348,
+            96782,
+            97216,
+            97650,
+            98084,
+            98518,
+            98952,
+            99386,
+            99820,
+            100254,
+            100688,
+            101122,
+            101556,
+            101990,
+            102424,
+            102858,
+            103292,
+            103726,
+            104160,
+            104594,
+            105028,
+            105462,
+            105896,
+            106330,
+            106764,
+            107198,
+            107632,
+            108066,
+            108500,
+            108934,
+            109368,
+            109802,
+            110236,
+            110670,
+            111104,
+            111538,
+            111972,
+            112406
+          ],
+          "updates": 112840
+        },
+        "native-paper": {
+          "configuration": "native-paper",
+          "learning_rate": 0.0003,
+          "resets": [
+            4340,
+            8680,
+            13020,
+            17360,
+            21700,
+            26040,
+            30380,
+            34720,
+            39060,
+            43400,
+            47740,
+            52080,
+            56420,
+            60760,
+            65100,
+            69440,
+            73780,
+            78120,
+            82460,
+            86800,
+            91140,
+            95480,
+            99820,
+            104160,
+            108500,
+            112840,
+            117180,
+            121520,
+            125860,
+            130200,
+            134540,
+            138880,
+            143220,
+            147560,
+            151900,
+            156240,
+            160580,
+            164920,
+            169260,
+            173600,
+            177940,
+            182280,
+            186620,
+            190960,
+            195300,
+            199640,
+            203980,
+            208320,
+            212660,
+            217000,
+            221340,
+            225680,
+            230020,
+            234360,
+            238700,
+            243040,
+            247380,
+            251720,
+            256060,
+            260400,
+            264740,
+            269080,
+            273420,
+            277760,
+            282100,
+            286440,
+            290780,
+            295120,
+            299460,
+            303800,
+            308140,
+            312480,
+            316820,
+            321160,
+            325500,
+            329840,
+            334180,
+            338520,
+            342860,
+            347200,
+            351540,
+            355880,
+            360220,
+            364560,
+            368900,
+            373240,
+            377580,
+            381920,
+            386260,
+            390600,
+            394940,
+            399280,
+            403620,
+            407960,
+            412300
+          ],
+          "updates": 416640
+        },
+        "native-template": {
+          "configuration": "native-template",
+          "learning_rate": 0.0003,
+          "resets": [
+            13888,
+            27342,
+            39928,
+            51212,
+            60760,
+            68138,
+            72912,
+            74648,
+            75082,
+            75516,
+            75950,
+            76384,
+            76818,
+            77252,
+            77686
+          ],
+          "updates": 78120
+        }
+      },
+      "deferred_scoring": true,
+      "deferred_selection": false,
+      "family": "phyq",
+      "input": "symbolic",
+      "model_arm": "A3-sym",
+      "parameters": 11662208,
+      "program_set": false,
+      "projected_gpu_hours_per_seed": 0.3087140665416761,
+      "reused_model_sha256": "sha256:282d59b82c9626ca0ae266d9ceed12b131614e1c1a1dbd2ce55c81b5fc2cda22",
+      "reused_run": ".local-artifacts/issue-128-direct-predictors-v1/selection/A3-sym/native-template/seed-20260908",
+      "role": "secondary",
+      "score": "Q",
+      "selected_configuration": "native-template",
+      "selection": {
+        "complete": true,
+        "results": {
+          "native-code": {
+            "auc": 0.9872340425531916,
+            "parameters": 11662208
+          },
+          "native-paper": {
+            "auc": 0.9684397163120567,
+            "parameters": 11662208
+          },
+          "native-template": {
+            "auc": 0.9879510560361624,
+            "parameters": 11662208
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "native-template"
+      },
+      "status": "ready",
+      "variant": "primary"
+    },
+    "A4": {
+      "batch": 512,
+      "budget": "native (Table-1 recipe: 100 000 updates x batch 512)",
+      "cap_gpu_hours_per_seed": 3.0,
+      "configurations": {
+        "hundredth": {
+          "learning_rate": 0.0003,
+          "updates": 1000
+        },
+        "native": {
+          "learning_rate": 0.0003,
+          "updates": 100000
+        },
+        "tenth": {
+          "learning_rate": 0.0003,
+          "updates": 10000
+        }
+      },
+      "deferred_scoring": false,
+      "deferred_selection": true,
+      "deferred_training_gpus": {
+        "20260909": 0,
+        "20260910": 1
+      },
+      "family": "dynamics_aware",
+      "input": "frame",
+      "model_arm": "A4",
+      "parameters": 12751957,
+      "program_set": true,
+      "projected_gpu_hours_per_seed": 6.90061186388549,
+      "role": "primary",
+      "score": "logit",
+      "selected_configuration": null,
+      "selection_rule": "after the freeze, once fidelity/a4/gfid.json passes: the configurations above at seed 20260908 (--selection --arms A4), --selection-readouts, then --select-deferred applies eb.select_configuration mechanically (policy split only) and writes selection-deferred.json; the selected run is main seed 20260908",
+      "status": "selection_after_gfid",
+      "variant": "primary"
+    }
+  },
+  "caps": {
+    "gpu_hours": 66.0,
+    "p_cap_arms": [
+      "A4"
+    ],
+    "per_seed": {
+      "A1": 2.0,
+      "A2": null,
+      "A2-native": null,
+      "A3-img": null,
+      "A3-sym": null,
+      "A4": 3.0
+    },
+    "wall_hours_on_4_gpus": 48.0
+  },
+  "contrasts": {
+    "both_directions": true,
+    "delta": 0.02,
+    "per_arm": [
+      "X-U",
+      "X-C*",
+      "X-P",
+      "X-J_dec"
+    ],
+    "within_family": {
+      "A2-A1": [
+        "A2",
+        "A1"
+      ],
+      "A4-A1": [
+        "A4",
+        "A1"
+      ]
+    }
+  },
+  "deferred_scoring": [
+    "A3-sym",
+    "A3-img"
+  ],
+  "disclosures": [
+    "A1 / A2 action MLP width 256 (official code and shipped checkpoints) where the paper text says 512",
+    "batch b of every run is drawn from PCG64([seed, b]) with the official sampler rule (resumable)",
+    "A2 / A2-native G-fid is inherited from A1's pipeline check",
+    "A3 (Phy-Q) is secondary, never in the program set; scored after its P-engine fidelity outcome; while its adapter is missing it is registered with status adapter_missing",
+    "the evaluation split was scored by earlier tickets for our models; it is pristine for these arms",
+    "fit / policy layout redundancy (#109 cohort: two generator templates; near-duplicate fit anchors): measured in smoke.json policy_fit_redundancy; it inflates policy-split selection AUCs for every arm alike; the NN-px / NN-car references measure the same effect on the evaluation split",
+    "frame 0 of a level's branches differs by capture noise (smoke.json accounting.anchor_frame_pre_launch); training and scoring use the anchor branch's frame 0 only"
+  ],
+  "dispositions": {
+    "1": "X ranks launches better than U on the sealed NovPhy grid (scoped)",
+    "2": "U ranks launches better than X (scoped)",
+    "3": "No AUC difference of 0.02 or more",
+    "4": "per-contrast tokens only"
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-25T09:26:24Z",
+  "frozen_before_training_and_evaluation": true,
+  "guards": {
+    "G_fid": "A1 Tier E (fidelity/gfid.json); A2 and A2-native inherit A1's; A4 Tier T (fidelity/a4/gfid.json, failing until it exists); A3 its P-engine fidelity outcome",
+    "G_port": "gport/gport.json (A1; A2 and A2-native: the A2 head path), gport/a4/gport.json (A4)",
+    "G_rank": "480 fit anchors x 16 grid launches per seed (eb.g_rank)",
+    "arm": [
+      "G_rank",
+      "G_nonfinite",
+      "G_trained",
+      "G_port",
+      "G_fid"
+    ],
+    "global": [
+      "G_isolation",
+      "G_chronology",
+      "G_scoring_policy",
+      "G_records"
+    ],
+    "thresholds": {
+      "action_sensitivity_min": 0.05,
+      "effective_rank_fraction_min": 0.1,
+      "g_rank_fully_tied_level_share_max": 0.1,
+      "g_rank_mean_tied_share_max": 0.5,
+      "g_rank_tie_rel": 1e-06,
+      "nonfinite_share_max": 0.1,
+      "readout_ceiling_auc_min": 0.65,
+      "within_episode_share_min": 0.05
+    }
+  },
+  "identity": "issue-128-direct-predictors-v1",
+  "inputs": [
+    {
+      "artifact": "scripts/external_baselines.py",
+      "name": "module",
+      "sha256": "sha256:6095277397f0210785cda78f50b4f45ff75e99a82a7abc08d756edc86d7b8b2f"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "scripts/run_hjepa_comparison.py",
+      "name": "issue_123_runner",
+      "sha256": "sha256:86e8ee9ecf35776200e16144f07dff8b578a7c197e7a87cae5af6e717eb8378e"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_gate_b.py",
+      "name": "gate_b_runner",
+      "sha256": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "chain_attribution_runner",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_controls.py",
+      "name": "controls_runner",
+      "sha256": "sha256:3b82ab2fb55179d29d1d97aa1c3c7aade059acd6cdf785181f8fadbab65a6345"
+    },
+    {
+      "artifact": "scripts/run_slot_encoder_fix.py",
+      "name": "slot_encoder_fix_runner",
+      "sha256": "sha256:e256d0908c459b403826b07a39fa4bfa7d50692ede7db692b000d322aa422ddf"
+    },
+    {
+      "artifact": "world_model/hjepa/novphy.py",
+      "name": "hjepa_module",
+      "sha256": "sha256:6a2a6670cf231a3c1f2d9c102f2d26a641deaffd477cc9b11a97d5d7aa1f1173"
+    },
+    {
+      "artifact": "scripts/run_launch_power_probe.py",
+      "name": "bootstrap_runner",
+      "sha256": "sha256:27b30063682d45846f894eadc898bf2093ca2f69ea9b82e569f519ec0c2ac774"
+    },
+    {
+      "artifact": "scripts/run_tau_ad_within_checkpoint.py",
+      "name": "tau_runner",
+      "sha256": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf"
+    },
+    {
+      "artifact": "world_model/training/matched_dynamics.py",
+      "name": "matched_dynamics_module",
+      "sha256": "sha256:6c96384926c205250f00dd67c9a21760215cc675b10fff82b5aa3ce314eb4bc6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/index.npz",
+      "name": "issue_123_pixels_fit_index",
+      "sha256": "sha256:335644909ce4f116a85f1ef637385931172524595d70072576e4c6b380baffcc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/MANIFEST.json",
+      "name": "issue_123_pixels_fit_manifest",
+      "sha256": "sha256:4f6c1789e8b6d9069b9742222267d48948e5145417bad29a4c7829b30badb5e5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-00.jsonl",
+      "name": "issue_123_pixels_fit_shard-00",
+      "sha256": "sha256:34f03197af457d7533d24a79378e038c7e591dcbc8bfa1b78a37d89681d9439f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-01.jsonl",
+      "name": "issue_123_pixels_fit_shard-01",
+      "sha256": "sha256:7aca28c7d421993468994b83534ef2d57cd10c7d27925d42e6f6d1129c8a7113"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-02.jsonl",
+      "name": "issue_123_pixels_fit_shard-02",
+      "sha256": "sha256:3bbe4f993cadbccedd4d11ec380c4a7c20d69ff06cae220183618d39df9f4560"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-03.jsonl",
+      "name": "issue_123_pixels_fit_shard-03",
+      "sha256": "sha256:6fb22448b1dc7217255ac803c733d9d47d2f8ac6ebad0dc95d3f894d2d16c018"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-04.jsonl",
+      "name": "issue_123_pixels_fit_shard-04",
+      "sha256": "sha256:d952082332dd2e72c704ea8245d9ecea07e9b0e4ca4a4869f0c8cdc069cb5746"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-05.jsonl",
+      "name": "issue_123_pixels_fit_shard-05",
+      "sha256": "sha256:c7b4a79903b580c65b226c6abc485aa772777a4f6b477e692382bb164c8bc8ee"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-06.jsonl",
+      "name": "issue_123_pixels_fit_shard-06",
+      "sha256": "sha256:fa8c80ecdf6bac2474a305563fd085f824187fadf585d87deab89672d5eb154a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-07.jsonl",
+      "name": "issue_123_pixels_fit_shard-07",
+      "sha256": "sha256:dc3b2476812eada174cfaef61538dfef0100eacd40f2e0c99bce70c90a972bf0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-08.jsonl",
+      "name": "issue_123_pixels_fit_shard-08",
+      "sha256": "sha256:05af8f78a212cffedb82db759f808cc2d7e40566f57c0be5dd2eba9381dbf133"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-09.jsonl",
+      "name": "issue_123_pixels_fit_shard-09",
+      "sha256": "sha256:3c316b0c654db9c5bc00dbfe6d8073e42aa9d541d548673624ce193a3ef64e7f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-10.jsonl",
+      "name": "issue_123_pixels_fit_shard-10",
+      "sha256": "sha256:18da30b8bee2b2847e0bc9799d4a930d4161428de9a5fb93add438bfc67c147a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-11.jsonl",
+      "name": "issue_123_pixels_fit_shard-11",
+      "sha256": "sha256:e9f7a75b06acb2ea151289d8d094caa4691f33579b07bf66972ca42eacbb4dc5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-12.jsonl",
+      "name": "issue_123_pixels_fit_shard-12",
+      "sha256": "sha256:619ca3c1a583f85ad5d9a133ef41e79533215df5c19a29d1218b3d0b4197adea"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-13.jsonl",
+      "name": "issue_123_pixels_fit_shard-13",
+      "sha256": "sha256:a72284a7ce8086c763176358c70e226e86ac5fc87e1148555c86bffb9b2abf64"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-14.jsonl",
+      "name": "issue_123_pixels_fit_shard-14",
+      "sha256": "sha256:41a8d45b156dc73a709fcbfc71fba071cf373ba38b0c1127534d3783583550f6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-15.jsonl",
+      "name": "issue_123_pixels_fit_shard-15",
+      "sha256": "sha256:21cc83344e9aa5eed4003a1f5d70ce3ead7cbe6d5166a5b33c8d3d1415d46c0d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-16.jsonl",
+      "name": "issue_123_pixels_fit_shard-16",
+      "sha256": "sha256:2fd6a2ec6419e3cfc48fb57bf05c5fdff543ca63dce96fef89cc8247a43e2c4a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/fit/shard-17.jsonl",
+      "name": "issue_123_pixels_fit_shard-17",
+      "sha256": "sha256:cf640100ca8c37ef1f18d2f7260ebdcb4247ba6aac0973dbc97a8072a15b2165"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/index.npz",
+      "name": "issue_123_pixels_policy_index",
+      "sha256": "sha256:c4804d354996c127a71d8a63a00068a795089617b93a11c351ac3067c0df117f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/MANIFEST.json",
+      "name": "issue_123_pixels_policy_manifest",
+      "sha256": "sha256:411594dd5f7465738fa0761f0e1846573891736ddbea314d4f331c8336103f82"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/shard-00.jsonl",
+      "name": "issue_123_pixels_policy_shard-00",
+      "sha256": "sha256:3ee8361d44bf6a9e19c55c0b97eb28052516805bc80c036a32435867ead818af"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/pixels/policy/shard-01.jsonl",
+      "name": "issue_123_pixels_policy_shard-01",
+      "sha256": "sha256:ee50ef0cf3ea8ddceecc09ae07433ee5010af2feceb9aa247cc3d369a19ccea5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/fit-index.npz",
+      "name": "issue_123_fit_index",
+      "sha256": "sha256:acee6381ca2cf784d861f4cf9d0ca3801a20bf256c6dcfa42a572cae3ff3e43c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/fit-carriers.bin",
+      "name": "issue_123_fit_carriers",
+      "sha256": "sha256:7f2c2a7026db91aeea39f9657de9388576189a74c693d4d01e68238db299ecd8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/carriers/policy.pt",
+      "name": "issue_123_policy_data",
+      "sha256": "sha256:2c4019df2f36b48793b840c82a3394b0f06c6f81a83ff841876514c58260000b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "retrain_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "retrain_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "power_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/plan.json",
+      "name": "gate_b_plan",
+      "sha256": "sha256:90bd1cce20c40ea825872b6c02d46ae393de45e6e3fa4dcd647f7ef39b2a9659"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/summary.json",
+      "name": "gate_b_summary",
+      "sha256": "sha256:a6cef412e0164cd6565d04884c07d7077f912d9da194a3a888a626cdf62a8539"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+      "name": "gate_b_anchors",
+      "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/plan.json",
+      "name": "issue_101_plan",
+      "sha256": "sha256:9674987323778442cd8537c45e71e64d04c78f5ed43b9d296eb011962e187f08"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260908.json",
+      "name": "gate_b_record_unit_20260908",
+      "sha256": "sha256:c81ad5cbfdec6f875d1f4396a7cef2e7b7acb8d4b9083b7b7a52aca3f514525a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group0.json",
+      "name": "retrain_training_hybrid_20260908",
+      "sha256": "sha256:79108cf84f7250d22d819b8845335e5ebe1c734593a86db2ce12287c31ff1deb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260909.json",
+      "name": "gate_b_record_unit_20260909",
+      "sha256": "sha256:412dabc64cf9b9b4aad035040fb19d8d2383373b128567b16b3ca0b58e8d5139"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group1.json",
+      "name": "retrain_training_hybrid_20260909",
+      "sha256": "sha256:020679021793c943235f5d7fbed613b4baae9e44ea1fbeacb46aa0a1c2549957"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260910.json",
+      "name": "gate_b_record_unit_20260910",
+      "sha256": "sha256:a56d08075232b1112a305f045ff208687fde8cb81b3f39df755809b37e770cfa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group2.json",
+      "name": "retrain_training_hybrid_20260910",
+      "sha256": "sha256:89d1e1e9bca8e4ef2d9229defde21f9f080a0509aa2cf80a9a0b72d49c9c385a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "name": "retrain_predictor_unit_20260908",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260908.json",
+      "name": "gate_b_record_c_star_20260908",
+      "sha256": "sha256:b96d768bb25ef79cde0e3eea27b070401cb555fa1bd6ca7aae3b730d1f0c33cb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group0.json",
+      "name": "retrain_training_continuous_20260908",
+      "sha256": "sha256:3333c89212cfad38b5b888108ccc9e060cb7594c2c7ef8c58f973d438509d292"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260909.json",
+      "name": "gate_b_record_c_star_20260909",
+      "sha256": "sha256:2e003d59b908ad68d34db11189653a90b243c8f089990f31d91291c1cdcdfb9f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group1.json",
+      "name": "retrain_training_continuous_20260909",
+      "sha256": "sha256:3909b4b9411290f6d640926382ab916f0f89bc7b0fbe64c734924a0422dbdd90"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260910.json",
+      "name": "gate_b_record_c_star_20260910",
+      "sha256": "sha256:438104bda7b121a3bd69c135fb4951abeca077d97289497d150794917a7c93b3"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group2.json",
+      "name": "retrain_training_continuous_20260910",
+      "sha256": "sha256:19c413cc7437caf82aee4a39d51ecf323db3c7ecedc85e48c0da511b032de22b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260908/predictor.pt",
+      "name": "retrain_predictor_c_star_20260908",
+      "sha256": "sha256:ab9f2fe73450e04d865b53231a5cc6522ce96c5267254f11074c7993d99f308b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260908.json",
+      "name": "issue_101_record_J_20260908",
+      "sha256": "sha256:c05bf14aec2ad0b42b4acb0cb389d192eab60d1d49f94c998339c522cfbd1082"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260909.json",
+      "name": "issue_101_record_J_20260909",
+      "sha256": "sha256:697591eb02a3bcf124359514b8c191973ce4439133389680251ea1d4bc823ea7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260910.json",
+      "name": "issue_101_record_J_20260910",
+      "sha256": "sha256:5360981b6b913f99e927f1f4a597fc8eac6aebbbd9bf9230a103b08477b7f9cc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-dec-1e-01--seed20260908.json",
+      "name": "issue_101_record_J_dec_20260908",
+      "sha256": "sha256:bcfd37aac31031cbaf89fb82dcdbebf0d1517100636a3f29e4990c9b5d3f0855"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-dec-1e-01--seed20260909.json",
+      "name": "issue_101_record_J_dec_20260909",
+      "sha256": "sha256:f9c4f3b966dbeba1e6461ef26200e7db9ed689649f2c65b3129541734b71ad34"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-dec-1e-01--seed20260910.json",
+      "name": "issue_101_record_J_dec_20260910",
+      "sha256": "sha256:fcd2d697c33d3692a3bb39d4e945154d6a3e386402a343aa61d6442eec5f28f7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/data/evaluation-positions.pt",
+      "name": "issue_123_eval_positions",
+      "sha256": "sha256:77d992d3a0d1c8a288589e6aa19824590275c74e2fe7c9a4aa34201788417ea2"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/records/curves-unit--seed20260908.json",
+      "name": "issue_123_curves_unit_20260908",
+      "sha256": "sha256:208808c3188f0cab48a3d87502c3cb0b165162b6039263f7a9ed03f15ba435cb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/records/curves-unit--seed20260909.json",
+      "name": "issue_123_curves_unit_20260909",
+      "sha256": "sha256:1afe488e2cb39790373fdca9e352933b72eb8053804fd57569fab1721317970f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/records/curves-unit--seed20260910.json",
+      "name": "issue_123_curves_unit_20260910",
+      "sha256": "sha256:53616abf60ee06320ac779f12660dedc0e4ee98750c85e606cb1f5d8ef7fa1c8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/records/curves-c_star--seed20260908.json",
+      "name": "issue_123_curves_c_star_20260908",
+      "sha256": "sha256:f0485be41e7a89da918a557201c040318b4fc5068f17a4dde88770fa4dbe75cf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/records/curves-c_star--seed20260909.json",
+      "name": "issue_123_curves_c_star_20260909",
+      "sha256": "sha256:a7d34a95826dae7cb322a79d95d33ebb79ef599ea81d71e7271930d9e694dc58"
+    },
+    {
+      "artifact": ".local-artifacts/issue-123-hjepa-comparison-v1/records/curves-c_star--seed20260910.json",
+      "name": "issue_123_curves_c_star_20260910",
+      "sha256": "sha256:5eee4e932544e8a71727046282e1279a78d7073381f6a2a9141ddf7a0bb17efc"
+    },
+    {
+      "artifact": "scripts/run_granularity_under_novelty.py",
+      "name": "issue_107_runner",
+      "sha256": "sha256:fbbf74624a4903ec0b7780dedcd16bc5c15809d5fec655c5e821aaf251a3431d"
+    },
+    {
+      "artifact": "scripts/run_novelty_coverage.py",
+      "name": "issue_110_runner",
+      "sha256": "sha256:57b2e1415c366d7c950fbd9972be82e14a9d09550cea73beafca3de812754bfe"
+    },
+    {
+      "artifact": "world_model/data/novelty_contract.py",
+      "name": "issue_110_novelty_contract",
+      "sha256": "sha256:cbfbd855293334d3dfce1e5f27805871e865ae6fda1582a50e0460d0a04bba15"
+    },
+    {
+      "artifact": "world_model/data/novelty_labels_v2.py",
+      "name": "issue_110_novelty_labels_v2",
+      "sha256": "sha256:edc74c70744e2675bbae1f3f2296f40b5c23bd6868f18d56bc53f561cf0346a6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-110-novelty-coverage-results-v1/handoff_107.json",
+      "name": "issue_110_handoff_107",
+      "sha256": "sha256:a6a54107a0d2fac2485a7fc6c1116715f4a3bf353d985b0253f19591d4377e91"
+    },
+    {
+      "artifact": ".local-artifacts/issue-110-novelty-coverage-v1/plan.json",
+      "name": "issue_110_design_plan",
+      "sha256": "sha256:9c3678e653b9a97e3bd2c432617e3efa726debf1bf17ec42e4791919363b9224"
+    },
+    {
+      "artifact": ".local-artifacts/issue-110-novelty-coverage-results-v1/labels/failures.json",
+      "name": "issue_110_label_failures",
+      "sha256": "sha256:5064eb8ad534bdcd3d3861bff3bc2fbceba8a387e756d6b760af78b2587af13d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-127-shared-v1/fit-anchor-frames.pt",
+      "name": "shared_fit-anchor-frames.pt",
+      "sha256": "sha256:fab36af2ed55a2f6d4500bc371c35abf36d023ebc7a1367d81d490709a2cb37e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-127-shared-v1/policy-anchor-frames.pt",
+      "name": "shared_policy-anchor-frames.pt",
+      "sha256": "sha256:5a7c0592f1dbf82122c6f62dfb400a7534945059f406abfaf62ae9a859b33b09"
+    },
+    {
+      "artifact": ".local-artifacts/issue-127-shared-v1/MANIFEST.json",
+      "name": "shared_MANIFEST.json",
+      "sha256": "sha256:0fcf7b76171d2074f508404e348f02800fc6ea55c1d6673b71e1638fa3edb4c7"
+    },
+    {
+      "artifact": "scripts/run_issue_128_direct_predictors.py",
+      "name": "runner",
+      "sha256": "sha256:a3064dd2dc86de4892ea738dd63d852e561396cb70a214fe8cb6143ff16b1d9d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:5e0563f3399c654cf3e58080d3e26fe5604c5a8b354627f9fcef1503ee2b95db"
+    },
+    {
+      "artifact": "scripts/b127_phyre_dqn_port_reference.py",
+      "name": "port_reference",
+      "sha256": "sha256:6b0fe5c31cf3674ba3c0ba590f9d588f2f272ba67038e5068904c0db26cda468"
+    },
+    {
+      "artifact": "scripts/b127_phyre_dqn_fidelity.py",
+      "name": "fidelity_runner",
+      "sha256": "sha256:5e8349326091c162387621878e272b3993d2d52927020fafd82515b96fc088b9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/gport/gport.json",
+      "name": "gport",
+      "sha256": "sha256:5595f2e8d177b58f78549286ba1ef789ceadd59338bb5cdd0986aff055a812e7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/fidelity/band.json",
+      "name": "gfid_band",
+      "sha256": "sha256:def37bb43436e786387d55966b675f11437fb8f7afa89510ff61c22f3ec7f426"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/fidelity/gfid.json",
+      "name": "gfid",
+      "sha256": "sha256:8842d5f91342c63aadb46bfc0dcac09ca93efd6dd0ff5a0d4f1930be181372b1"
+    },
+    {
+      "artifact": "tests/test_issue_128_direct_predictors.py",
+      "name": "tests_test_issue_128_direct_predictors",
+      "sha256": "sha256:47c81fce10fbc974ce6b736e664189b05a888c76b8dd6074ce4342c1105adec6"
+    },
+    {
+      "artifact": "tests/test_issue_128_phyre_dqn.py",
+      "name": "tests_test_issue_128_phyre_dqn",
+      "sha256": "sha256:68607013d9ab1d9bdb1e7c4fd84811b0e16b84aafa0301ebc359359b91424342"
+    },
+    {
+      "artifact": "tests/test_issue_128_dynamics_aware.py",
+      "name": "tests_test_issue_128_dynamics_aware",
+      "sha256": "sha256:2a3b569e84fca2d62faf72ad5a517a6cce7c64bd4e36e0efd706c8bc895cf5db"
+    },
+    {
+      "artifact": "tests/test_issue_128_phyq.py",
+      "name": "tests_test_issue_128_phyq",
+      "sha256": "sha256:91b78c4354f4976a92ec0ab8af4da7d6e06dcd821ac316559f06108623ff0d80"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/__init__.py",
+      "name": "phyre_dqn___init__.py",
+      "sha256": "sha256:42582305f4283d34401f24f2b36c7a5ffde9d37811872fca122e22a64f766785"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/novphy.py",
+      "name": "phyre_dqn_novphy.py",
+      "sha256": "sha256:0bed259efeea6c6e65f4a4add410d7a9d4b4e764ce1028b388bf42ac9ee4cfd7"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/VENDOR.json",
+      "name": "phyre_dqn_vendor_manifest",
+      "sha256": "sha256:6fa4a69c4823302912f9af2246284e7afa8188496c69fe08e727dbfcb1712c3d"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/LICENSE",
+      "name": "phyre_dqn_vendor_LICENSE",
+      "sha256": "sha256:50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/__init__.py",
+      "name": "phyre_dqn_vendor___init__.py",
+      "sha256": "sha256:7dfa44413b39dcc6825c901547d07c264d6722c32185a9ed4dc69a7d675b6748"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/nets.py",
+      "name": "phyre_dqn_vendor_nets.py",
+      "sha256": "sha256:b6ad7ac14fa47ad8150f6a93b13765d006a9dc0b264c04dbe2932cf8dd19b28e"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/neural_agent.py",
+      "name": "phyre_dqn_vendor_neural_agent.py",
+      "sha256": "sha256:8796fb56a9897630718e9ff142bce1ac938541e5a358ab938a6bcf1d607519e5"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/phyre_constants.py",
+      "name": "phyre_dqn_vendor_phyre_constants.py",
+      "sha256": "sha256:42905f9c5bae63c3ae92d14055a04204a95279ebfe5c1295e1711b2f81b333a7"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/torchvision/LICENSE",
+      "name": "phyre_dqn_vendor_torchvision/LICENSE",
+      "sha256": "sha256:6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/torchvision/__init__.py",
+      "name": "phyre_dqn_vendor_torchvision/__init__.py",
+      "sha256": "sha256:39763594e6258bb32fc3e9c7caffc269b62356ed9cd0642ffcb6766e40ce19c6"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/torchvision/models/__init__.py",
+      "name": "phyre_dqn_vendor_torchvision/models/__init__.py",
+      "sha256": "sha256:753240363e04ef7d017816d3f7bd9f798b0be33e0c2ecf5a5c6c713519723c61"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/torchvision/models/resnet.py",
+      "name": "phyre_dqn_vendor_torchvision/models/resnet.py",
+      "sha256": "sha256:e41ff540cd5ae3e5b5612370dd572c64039f13090deec16198a3be2286c4289a"
+    },
+    {
+      "artifact": "world_model/baselines/phyre_dqn/vendor/torchvision/models/utils.py",
+      "name": "phyre_dqn_vendor_torchvision/models/utils.py",
+      "sha256": "sha256:cf60594ea5662e1c679307f11b3fb99e5243cf20a247e6f3cc686cad000c9fee"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/__init__.py",
+      "name": "dynamics_aware___init__.py",
+      "sha256": "sha256:73315bfd52169eebc7278f5978bcbd81d0ec1c069ecc29e48ba26ba76cf969c3"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/novphy.py",
+      "name": "dynamics_aware_novphy.py",
+      "sha256": "sha256:9cc48078da1375df6c07acdb385cdc46551bfc4149c2e054859d6f1627c1324b"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/VENDOR.json",
+      "name": "dynamics_aware_vendor_manifest",
+      "sha256": "sha256:2e5e1e9950cfe542398cf87d30a889e2d2836c6ee53b49459d9d9e6fc76811f9"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/LICENSE",
+      "name": "dynamics_aware_vendor_LICENSE",
+      "sha256": "sha256:50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/__init__.py",
+      "name": "dynamics_aware_vendor___init__.py",
+      "sha256": "sha256:b97c5cd7bf90ad63aa2c02e859a29d98bb3db48a95ee5f2be7ff2f2031a91cd6"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/__init__.py",
+      "name": "dynamics_aware_vendor_agents/__init__.py",
+      "sha256": "sha256:b7981f6437c4963e9e2eedbb5da26618444d1dbaafa07e8b15990c86ebcb26f2"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/experiments/hand_crafted_experiments/06_hand_crafted_test_run_table_1.conf",
+      "name": "dynamics_aware_vendor_agents/experiments/hand_crafted_experiments/06_hand_crafted_test_run_table_1.conf",
+      "sha256": "sha256:e7b3a85357c373cca64750ccc52c78ec2fdbb71d648ba890d72d9fa92eb95d5d"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/extended_evaluation.py",
+      "name": "dynamics_aware_vendor_agents/extended_evaluation.py",
+      "sha256": "sha256:07cb5ad03bd54af49dfd16b5140136be2223e51b2edb81bfdace8cd8d7e17622"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/nets.py",
+      "name": "dynamics_aware_vendor_agents/nets.py",
+      "sha256": "sha256:95646c52476eef12164d7c62e186f712b3a44d33c9036e34d393580b8f587684"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/neural_agent.py",
+      "name": "dynamics_aware_vendor_agents/neural_agent.py",
+      "sha256": "sha256:33d2aef77769853b3e29a1052d6c1ba383a87e2f40da9b42580252e3341ae544"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/neural_agent_contrastive.py",
+      "name": "dynamics_aware_vendor_agents/neural_agent_contrastive.py",
+      "sha256": "sha256:42ae0bd527c5468aae0718abafd278e30a7bf4808e9e761e56565d8587635ff1"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/offline_agents.py",
+      "name": "dynamics_aware_vendor_agents/offline_agents.py",
+      "sha256": "sha256:4137d0796e28a5bb7c32d159282343625cecc2bfb5483bf4b50fd7be990385bb"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/psim.py",
+      "name": "dynamics_aware_vendor_agents/psim.py",
+      "sha256": "sha256:0b5f47aaf47f53c21eb233da64d26dd45fe046078501daeb5081379dbbc849f1"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/rollout_dist.py",
+      "name": "dynamics_aware_vendor_agents/rollout_dist.py",
+      "sha256": "sha256:77043cd83922bec2baf9907ff3a6c37d44ae82885b3ba507e61c6462a93c0ade"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/agents/train.py",
+      "name": "dynamics_aware_vendor_agents/train.py",
+      "sha256": "sha256:f822684050874c8f96eb70fd533cc08aaa52bf145b5a249c4944f2f01998c64a"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/phyre_constants.py",
+      "name": "dynamics_aware_vendor_phyre_constants.py",
+      "sha256": "sha256:a6d25edafb9a5f3c09b22d75a236e41ae4b68511a5b52710c92c08b4e3dcabab"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/torchvision/LICENSE",
+      "name": "dynamics_aware_vendor_torchvision/LICENSE",
+      "sha256": "sha256:6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/torchvision/__init__.py",
+      "name": "dynamics_aware_vendor_torchvision/__init__.py",
+      "sha256": "sha256:db636461ae0807ded3b8a5b0364490694747b40b0bb0ecd3b536cd041b77040b"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/torchvision/models/__init__.py",
+      "name": "dynamics_aware_vendor_torchvision/models/__init__.py",
+      "sha256": "sha256:717924d2b54d4c2a3ea4c9bb716fca3625fc47e3c4d0a89f6377b426cb4da2cd"
+    },
+    {
+      "artifact": "world_model/baselines/dynamics_aware/vendor/torchvision/models/resnet.py",
+      "name": "dynamics_aware_vendor_torchvision/models/resnet.py",
+      "sha256": "sha256:dcc566153c25057ff517ef658029305338696bd075d946d3717b214932d7d775"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/__init__.py",
+      "name": "phyq___init__.py",
+      "sha256": "sha256:332d6241b3d9477a1d032c9f5eeaeaf02af0ba5bc496ef2263be7a64b0d4066a"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/novphy.py",
+      "name": "phyq_novphy.py",
+      "sha256": "sha256:6616f300cc69b011c7f6cb08bdbc6ead7e66392c393f1b59c04f2bf2eacd387c"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/VENDOR.json",
+      "name": "phyq_vendor_manifest",
+      "sha256": "sha256:6a3d594bb675fb1b697724a37450c4d361ca085092b7944c6cd994fae9c098cb"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Client/__init__.py",
+      "name": "phyq_vendor_Client/__init__.py",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Client/agent_client.py",
+      "name": "phyq_vendor_Client/agent_client.py",
+      "sha256": "sha256:691a5d4176a3767a3231c5c727a87fac15b97196361cae5f87b40d6c1cbacefe"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/HeuristicAgents/HeuristicAgentThread.py",
+      "name": "phyq_vendor_HeuristicAgents/HeuristicAgentThread.py",
+      "sha256": "sha256:18074ce540bd310f9e4ed3f4d9c3643d3a0ff7fd07dbd7739d13fbdacef06198"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/HeuristicAgents/PigShooter.py",
+      "name": "phyq_vendor_HeuristicAgents/PigShooter.py",
+      "sha256": "sha256:292f2dc39732b1b59cc62bfc413d152ea4edd15b677a4e432fd50130fbb0ee8c"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/HeuristicAgents/__init__.py",
+      "name": "phyq_vendor_HeuristicAgents/__init__.py",
+      "sha256": "sha256:a7180fd19d258cd0817a6ab2ba2c5d3e5e4242eeb5636e23508f7c187f76c4d1"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LICENSE",
+      "name": "phyq_vendor_LICENSE",
+      "sha256": "sha256:ce90a0fac67404af0877eaa1c8370f07326d78784822891503102d4723b0bda7"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/DQNDiscreteAgent.py",
+      "name": "phyq_vendor_LearningAgents/DQNDiscreteAgent.py",
+      "sha256": "sha256:69646dd5834680073440d3bec400055b4cdfad9aae7a0d895c9112e1da66126f"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/LearningAgent.py",
+      "name": "phyq_vendor_LearningAgents/LearningAgent.py",
+      "sha256": "sha256:24d2f4a5220c182c04020ee0619c2ec7da06d17f8bee396f06fc6786c5a1ca17"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/LearningAgentThread.py",
+      "name": "phyq_vendor_LearningAgents/LearningAgentThread.py",
+      "sha256": "sha256:ffe4aa91225be87882bbaac081febd86d4cf0e89ba05ba3da2262d21c7fe231a"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/Memory.py",
+      "name": "phyq_vendor_LearningAgents/Memory.py",
+      "sha256": "sha256:586e041cadc2baa33250928acb3265ca998b38665e28704e5c23e933ec51c47e"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/MemoryDataset.py",
+      "name": "phyq_vendor_LearningAgents/MemoryDataset.py",
+      "sha256": "sha256:979ef975bee1ed4873b85513c06988e7561744b4807c6740043fc8f6d9ab4ff6"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/ActorNetwork.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/ActorNetwork.py",
+      "sha256": "sha256:a401c9c9a20d04a01a71038f192b1be001e0c8be14410daa850b3d525d18b2aa"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/CriticNetwork.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/CriticNetwork.py",
+      "sha256": "sha256:02c008a9c26fa6485dd73c03151620e691e094846f3709d82ff34f5f235c0732"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/DQNBase.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/DQNBase.py",
+      "sha256": "sha256:8f3c1b92a29bdb27e341cffb47f3382653bcb90b0912d5862ba0f7b4f679911b"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/DQNImageResnet.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/DQNImageResnet.py",
+      "sha256": "sha256:3ce5b6007cc219e3b08fec06bac5aea51fc776e98e35c2a26118b56d42880c89"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/DQNRelationalImage.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/DQNRelationalImage.py",
+      "sha256": "sha256:dcc72c91fd20886688520e70e6f0dae5f757fdce997c076c5cd845ec52530b0c"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/DQNRelationalSymbolic.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/DQNRelationalSymbolic.py",
+      "sha256": "sha256:dcc0607dc751375e717bdbc566ffd682f6c15fde7d625e79541e18c21be30f80"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/DQNSymbolicBase.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/DQNSymbolicBase.py",
+      "sha256": "sha256:84eb8ada39ac1f0d3122c2e55980e3e6e9ca659a48ffc8c08b3237ec41005e34"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/DQNSymbolicDuelingFC_v2.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/DQNSymbolicDuelingFC_v2.py",
+      "sha256": "sha256:24c28db135041637dee09e719bf0fba45e354757fc53f601f477cc9be1b93168"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/SACNetwork_New.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/SACNetwork_New.py",
+      "sha256": "sha256:3cbf628c1057a82aa5b70910b247e6bbe9ea725805bbb585129fff73098988e4"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/ValueNetwork.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/ValueNetwork.py",
+      "sha256": "sha256:ace950745a33cc8b141b436b545316478699a214b664501e35d5a56e4bc00a04"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/RLNetwork/__init__.py",
+      "name": "phyq_vendor_LearningAgents/RLNetwork/__init__.py",
+      "sha256": "sha256:a7180fd19d258cd0817a6ab2ba2c5d3e5e4242eeb5636e23508f7c187f76c4d1"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/LearningAgents/__init__.py",
+      "name": "phyq_vendor_LearningAgents/__init__.py",
+      "sha256": "sha256:a7180fd19d258cd0817a6ab2ba2c5d3e5e4242eeb5636e23508f7c187f76c4d1"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/SBAgent.py",
+      "name": "phyq_vendor_SBAgent.py",
+      "sha256": "sha256:9cee283fc695ccc53b94afef4c1ea0893200cb2f1c3decb27277f258c6316e6b"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/SBEnvironment/SBEnvironmentWrapper.py",
+      "name": "phyq_vendor_SBEnvironment/SBEnvironmentWrapper.py",
+      "sha256": "sha256:0575352fd957f48ea34e596fd263f5df2cb35886c1f7c12c61f3a1d7a735ae86"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/SBEnvironment/__init__.py",
+      "name": "phyq_vendor_SBEnvironment/__init__.py",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/StateReader/ColorMap.json",
+      "name": "phyq_vendor_StateReader/ColorMap.json",
+      "sha256": "sha256:08bb9e3c7f9f402cf570da8ffd8333b136b636c6613224f1d7419aafa52f4785"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/StateReader/SymbolicStateDevReader.py",
+      "name": "phyq_vendor_StateReader/SymbolicStateDevReader.py",
+      "sha256": "sha256:553086d174b367f21fe5f6aeb94f3642c450f08c8c6083007ab7c7657413c536"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/StateReader/SymbolicStateReader.py",
+      "name": "phyq_vendor_StateReader/SymbolicStateReader.py",
+      "sha256": "sha256:bbf7ccfab61fbd685767625f7544188a71c2a75739be495089da18bd2aebba12"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/StateReader/__init__.py",
+      "name": "phyq_vendor_StateReader/__init__.py",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/StateReader/cv_utils.py",
+      "name": "phyq_vendor_StateReader/cv_utils.py",
+      "sha256": "sha256:68f0060d314418271db50dbfec7252b4d28e65faa8da186f39eda845abfb97df"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/StateReader/game_object.py",
+      "name": "phyq_vendor_StateReader/game_object.py",
+      "sha256": "sha256:830ec03bba34980d4d055969c9c9e51801eb7148924c2d3b71d3d0cb4dd2bdf3"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/TrainLearningAgent.py",
+      "name": "phyq_vendor_TrainLearningAgent.py",
+      "sha256": "sha256:f7371f9b98b82b8f9d50b60685f2b9d198214f7c88f96aa2eee86d003f2ab333"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/Config.py",
+      "name": "phyq_vendor_Utils/Config.py",
+      "sha256": "sha256:f16f94df9f0872f9ce00b5ca5385fc01cb19bcc57e509f83fc4b704499f3d6f8"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/LevelSelection.py",
+      "name": "phyq_vendor_Utils/LevelSelection.py",
+      "sha256": "sha256:4e4da609b844ca9839e336ed3d7987c22808ac877e118e2fadf01275dbfefbde"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/NDSparseMatrix.py",
+      "name": "phyq_vendor_Utils/NDSparseMatrix.py",
+      "sha256": "sha256:33f355b4375bbd0920138c995dec56a66513cb43b7aa85e8430aed351b146de3"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/Parameters.py",
+      "name": "phyq_vendor_Utils/Parameters.py",
+      "sha256": "sha256:df527cfb8378f8b3fd9d241220c76c6b2e7d9d0990d8194302f618152798358e"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/__init__.py",
+      "name": "phyq_vendor_Utils/__init__.py",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/model",
+      "name": "phyq_vendor_Utils/model",
+      "sha256": "sha256:284ebbfb5fca90ace9affcf6422f192a13e7f3ceea9600f052c409b2fc70321c"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/point2D.py",
+      "name": "phyq_vendor_Utils/point2D.py",
+      "sha256": "sha256:f547efa3565dbb076871ae6f738aa181ba65637c98dd79ad379c26fd510349f7"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/server_client_config.json",
+      "name": "phyq_vendor_Utils/server_client_config.json",
+      "sha256": "sha256:9d280d9dcd6f24bd6eedaea5c38ad1f88ae9804408951bdaef210f5624c3126c"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/target_class",
+      "name": "phyq_vendor_Utils/target_class",
+      "sha256": "sha256:d5d7f6a1961dc3a2cb531fc239db430197dfacb0370693c51d2fe3555940a999"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/Utils/trajectory_planner.py",
+      "name": "phyq_vendor_Utils/trajectory_planner.py",
+      "sha256": "sha256:e8af3edcae40b2f7f836accf86f2f3f0e3b15f36705aa56ee378f612744e1f46"
+    },
+    {
+      "artifact": "world_model/baselines/phyq/vendor/__init__.py",
+      "name": "phyq_vendor___init__.py",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/gport/a4/gport.json",
+      "name": "gport/a4/gport.json",
+      "sha256": "sha256:4090dbe2178a83892455434d51891a28a2156c1db886e1f102a019aaa66badaf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/fidelity/a4/band.json",
+      "name": "fidelity/a4/band.json",
+      "sha256": "sha256:aba5a789931d25e9ffd6d0bb27144ee8fa07a31ff978af93fed350c9b7f2beea"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/gport/a3/gport.json",
+      "name": "gport/a3/gport.json",
+      "sha256": "sha256:d1d1ceca343715373007cf589ca7f61fc6345853330cfa681b9bafb0e2a2b569"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/a3/data/symbolic-fit.pt",
+      "name": "a3/data/symbolic-fit.pt",
+      "sha256": "sha256:88ee11a879579670f8fbeb481348766a10416f635aa75649bc0bb2347cbd1cf5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-128-direct-predictors-v1/a3/data/symbolic-policy.pt",
+      "name": "a3/data/symbolic-policy.pt",
+      "sha256": "sha256:06401547fa0c3e04818ae41b4e74e4f7dd5a21703a711e1d2a7b25ca7abe8b9c"
+    },
+    {
+      "artifact": "data/external/phyq/resnet18-5c106cde.pth",
+      "name": "phyq_imagenet_resnet18",
+      "sha256": "sha256:5c106cde386e87d4033832f2996f5493238eda96ccf559d1d62760c4de0613f8"
+    }
+  ],
+  "issue": 128,
+  "no_model_references": {
+    "coverage": "NN-px / NN-car are defined on grid and angle only; the fit split never executed offset or power launches, so those inventory columns are empty by construction",
+    "names": {
+      "NN-car": "nearest fit anchor by L2 distance between E99 anchor carriers (float64)",
+      "NN-px": "nearest fit anchor by mean absolute difference over the 320x240 RGB anchor frames (exact integer sums)"
+    },
+    "rule": "score of a candidate = the engine verdict (1 / 0) of the identical launch executed in the nearest fit level; cost = -score (eb.score_rows); distance ties -> lowest fit member id; if that fit level did not execute the launch, the next fit level in (distance, member) order that did",
+    "scored": "in the first scoring pass, on every mixed cell of every inventory from the Gate-B anchors (frames / carriers of anchors-evaluation.pt) against the 480 fit anchors -> references/NN-px.json, references/NN-car.json",
+    "seed_free": true,
+    "use": "DESCRIPTIVE rows beside U / C* / P (pooled AUC; X - NN-px, U - NN-px, X - NN-car, U - NN-car estimates without tokens); never in a disposition"
+  },
+  "program_issue": 127,
+  "program_set": [
+    "A1",
+    "A2",
+    "A4",
+    "B1",
+    "C1-dino",
+    "D1"
+  ],
+  "question": "Q1: does U rank launches better than direct success predictors trained on the same fit shots (A1 pixels, A2 the same carrier, A4 + trajectory supervision; A3 Phy-Q secondary)?",
+  "runner": "scripts/run_issue_128_direct_predictors.py",
+  "schema": "issue_128_plan_v1",
+  "score": {
+    "key": "neg_score",
+    "rule": "primary score = success logit (Q for A3); cost = -score (eb.score_rows); every mixed cell of every inventory from its Gate-B anchor"
+  },
+  "scoring_groups": {
+    "a3": [
+      "A3-sym",
+      "A3-img"
+    ],
+    "primary": [
+      "A1",
+      "A2",
+      "A2-native",
+      "A4"
+    ]
+  },
+  "scoring_rule": "one readout freeze and one scoring pass per group, in order; group 'primary' after every seed of A1, A2, A2-native and A4 is trained and read out; group 'a3' after A3's P-engine fidelity outcome; the publication is re-derived after each pass, existing records are never re-scored",
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "selection_rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+  "smoke_evidence": {
+    "accounting": {
+      "anchor_frame_pre_launch": {
+        "fit": {
+          "anchor_exact": true,
+          "branches": 13919,
+          "branches_differing": 293,
+          "branches_over_tolerance": 0,
+          "levels": 480,
+          "levels_differing": 43,
+          "levels_over_tolerance": 0,
+          "pass": true,
+          "split": "fit",
+          "worst_differing_pixels": 24,
+          "worst_mean_abs_diff": 0.002026909722222222
+        },
+        "pass": true,
+        "policy": {
+          "anchor_exact": true,
+          "branches": 3480,
+          "branches_differing": 43,
+          "branches_over_tolerance": 0,
+          "levels": 120,
+          "levels_differing": 15,
+          "levels_over_tolerance": 0,
+          "pass": true,
+          "split": "policy",
+          "worst_differing_pixels": 18,
+          "worst_mean_abs_diff": 0.0019574652777777776
+        },
+        "tolerance": {
+          "max_differing_pixels": 32,
+          "max_mean_abs_diff": 0.01
+        }
+      },
+      "fit_anchor_carriers": 480,
+      "fit_anchor_frames": 480,
+      "fit_examples_declared": true,
+      "fit_keys_are_fit_stream": true,
+      "fit_levels": 480,
+      "fit_positives": 838,
+      "fit_shots": 13919,
+      "policy_anchor_frames": 120,
+      "policy_fit_level_overlap": 0,
+      "policy_grid_mixed_cells": 94,
+      "policy_levels": 120,
+      "u_parameters": 1837690
+    },
+    "at": "2026-10-25T09:25:45Z",
+    "gport": {
+      "A1": true,
+      "A2": true,
+      "A2-native": true,
+      "A3-img": true,
+      "A3-sym": true,
+      "A4": true
+    },
+    "ok": true,
+    "policy_fit_redundancy": {
+      "launch_coverage": {
+        "angle": [
+          949,
+          949
+        ],
+        "grid": [
+          1504,
+          1504
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "power": [
+          0,
+          0
+        ]
+      },
+      "nearest_fit_car_l2": {
+        "max": 0.4217157164417305,
+        "min": 0.004451304982924561,
+        "p50": 0.10077442205996663,
+        "p95": 0.25772254566492264
+      },
+      "nearest_fit_px_mean_abs_diff": {
+        "max": 1.1116883680555556,
+        "min": 0.07499565972222222,
+        "p50": 0.40744574652777776,
+        "p95": 0.872423828125
+      },
+      "nearest_other_policy_car_l2": {
+        "max": 1.8884038785291393,
+        "min": 0.04030748420275413,
+        "p50": 0.13890713481592099,
+        "p95": 1.5468826019256274
+      },
+      "nearest_other_policy_px_mean_abs_diff": {
+        "max": 2.4678776041666666,
+        "min": 0.2546788194444444,
+        "p50": 0.5958810763888889,
+        "p95": 1.892751302083333
+      },
+      "nn_policy_auc": {
+        "NN-car": {
+          "angle": 0.8201535907015359,
+          "grid": 0.8095997973657548,
+          "offset": null,
+          "power": null
+        },
+        "NN-px": {
+          "angle": 0.944634703196347,
+          "grid": 0.9458206686930093,
+          "offset": null,
+          "power": null
+        }
+      },
+      "policy_levels": 120,
+      "policy_levels_closer_to_a_fit_level_than_to_any_other_policy_level_px": 100,
+      "rule": "score of a candidate = the engine verdict (1 / 0) of the identical launch executed in the nearest fit level; cost = -score (eb.score_rows); distance ties -> lowest fit member id; if that fit level did not execute the launch, the next fit level in (distance, member) order that did"
+    },
+    "projection": {
+      "cap_gpu_hours": 66.0,
+      "cap_wall_hours": 48.0,
+      "deferred_gpu_hours": {
+        "A4": 21.460902896683873
+      },
+      "fidelity_gpu_hours": {
+        "A1_tier_e": 0.23891922619607714,
+        "A4_tier_t": 36.0,
+        "A4_tier_t_source": "estimate"
+      },
+      "over_child_cap_gpu_hours": 9.25230597178711,
+      "p_cap": {
+        "decision": "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6386804015",
+        "drawn_gpu_hours": 20.0
+      },
+      "p_cap_arms": [
+        "A4"
+      ],
+      "per_seed": {
+        "A1": {
+          "cap_gpu_hours_per_seed": 2.0,
+          "config": "tenth",
+          "gpu_hours_per_seed": 0.07476107945691587,
+          "over_per_seed_cap": false,
+          "source": "measured"
+        },
+        "A2": {
+          "cap_gpu_hours_per_seed": null,
+          "config": "lr3e-4",
+          "gpu_hours_per_seed": 0.013411047415833714,
+          "over_per_seed_cap": false,
+          "source": "measured"
+        },
+        "A2-native": {
+          "cap_gpu_hours_per_seed": null,
+          "config": "tenth",
+          "gpu_hours_per_seed": 0.0149155996065949,
+          "over_per_seed_cap": false,
+          "source": "measured"
+        },
+        "A3-img": {
+          "cap_gpu_hours_per_seed": null,
+          "config": "native-paper",
+          "gpu_hours_per_seed": 1.7921188543456243,
+          "over_per_seed_cap": false,
+          "source": "measured"
+        },
+        "A3-sym": {
+          "cap_gpu_hours_per_seed": null,
+          "config": "native-template",
+          "gpu_hours_per_seed": 0.3087140665416761,
+          "over_per_seed_cap": false,
+          "source": "measured"
+        },
+        "A4": {
+          "cap_gpu_hours_per_seed": 3.0,
+          "config": null,
+          "gpu_hours_per_seed": 6.90061186388549,
+          "over_per_seed_cap": true,
+          "selection_gpu_hours": 7.659679168912893,
+          "source": "measured"
+        }
+      },
+      "projected_wall_hours": 16.852409887144006,
+      "queue_hours": [
+        1.7921188543456243,
+        1.7921188543456243,
+        0.4118017930210206,
+        0.4118017930210206
+      ],
+      "queues": [
+        [
+          "A3-img/20260909"
+        ],
+        [
+          "A3-img/20260910"
+        ],
+        [
+          "A3-sym/20260909",
+          "A1/20260909",
+          "A2-native/20260909",
+          "A2/20260909"
+        ],
+        [
+          "A3-sym/20260910",
+          "A1/20260910",
+          "A2-native/20260910",
+          "A2/20260910"
+        ]
+      ],
+      "remaining_gpu_hours": 27.868744191417164,
+      "spent_ledger_gpu_hours": 11.144642554173867,
+      "total_gpu_hours": 75.25230597178711,
+      "within_cap": true
+    },
+    "tests": {
+      "command": "CUDA_VISIBLE_DEVICES='' python -m pytest -q tests/test_issue_128_direct_predictors.py tests/test_issue_128_phyre_dqn.py tests/test_issue_128_dynamics_aware.py tests/test_issue_128_phyq.py",
+      "exit_code": 0,
+      "tail": "52 passed, 8 warnings in 177.47s (0:02:57)"
+    }
+  },
+  "training": {
+    "batches": "batch b drawn from eb.batch_rng(seed, b)",
+    "checkpoint_every": 2000,
+    "queue_projected_hours": [
+      1.7921188543456243,
+      1.7921188543456243,
+      0.4118017930210206,
+      0.4118017930210206
+    ],
+    "queues": [
+      [
+        "A3-img/20260909"
+      ],
+      [
+        "A3-img/20260910"
+      ],
+      [
+        "A3-sym/20260909",
+        "A1/20260909",
+        "A2-native/20260909",
+        "A2/20260909"
+      ],
+      [
+        "A3-sym/20260910",
+        "A1/20260910",
+        "A2-native/20260910",
+        "A2/20260910"
+      ]
+    ],
+    "reuse": "the selected configuration's seed-20260908 selection run is main seed 20260908",
+    "typed_failure": "a nonfinite loss ends the run (model.pt complete False); never retried"
+  },
+  "validation_command": "python -u -m scripts.run_issue_128_direct_predictors --validate"
+}

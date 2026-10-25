@@ -1,0 +1,358 @@
+{
+  "accounting": {
+    "anchor_frame_pre_launch": {
+      "fit": {
+        "anchor_exact": true,
+        "branches": 13919,
+        "branches_differing": 293,
+        "branches_over_tolerance": 0,
+        "levels": 480,
+        "levels_differing": 43,
+        "levels_over_tolerance": 0,
+        "pass": true,
+        "split": "fit",
+        "worst_differing_pixels": 24,
+        "worst_mean_abs_diff": 0.002026909722222222
+      },
+      "pass": true,
+      "policy": {
+        "anchor_exact": true,
+        "branches": 3480,
+        "branches_differing": 43,
+        "branches_over_tolerance": 0,
+        "levels": 120,
+        "levels_differing": 15,
+        "levels_over_tolerance": 0,
+        "pass": true,
+        "split": "policy",
+        "worst_differing_pixels": 18,
+        "worst_mean_abs_diff": 0.0019574652777777776
+      },
+      "tolerance": {
+        "max_differing_pixels": 32,
+        "max_mean_abs_diff": 0.01
+      }
+    },
+    "fit_anchor_carriers": 480,
+    "fit_anchor_frames": 480,
+    "fit_examples_declared": true,
+    "fit_keys_are_fit_stream": true,
+    "fit_levels": 480,
+    "fit_positives": 838,
+    "fit_shots": 13919,
+    "policy_anchor_frames": 120,
+    "policy_fit_level_overlap": 0,
+    "policy_grid_mixed_cells": 94,
+    "policy_levels": 120,
+    "u_parameters": 1837690
+  },
+  "adapter_missing": [],
+  "arms": [
+    "A1",
+    "A2",
+    "A2-native",
+    "A4",
+    "A3-sym",
+    "A3-img"
+  ],
+  "at": "2026-10-25T09:25:45Z",
+  "deferred_selection": [
+    "A4"
+  ],
+  "gfid": {
+    "A1": true,
+    "A2": true,
+    "A2-native": true,
+    "A3-img": null,
+    "A3-sym": null,
+    "A4": null
+  },
+  "gport": {
+    "A1": true,
+    "A2": true,
+    "A2-native": true,
+    "A3-img": true,
+    "A3-sym": true,
+    "A4": true
+  },
+  "ok": true,
+  "policy_fit_redundancy": {
+    "launch_coverage": {
+      "angle": [
+        949,
+        949
+      ],
+      "grid": [
+        1504,
+        1504
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "power": [
+        0,
+        0
+      ]
+    },
+    "nearest_fit_car_l2": {
+      "max": 0.4217157164417305,
+      "min": 0.004451304982924561,
+      "p50": 0.10077442205996663,
+      "p95": 0.25772254566492264
+    },
+    "nearest_fit_px_mean_abs_diff": {
+      "max": 1.1116883680555556,
+      "min": 0.07499565972222222,
+      "p50": 0.40744574652777776,
+      "p95": 0.872423828125
+    },
+    "nearest_other_policy_car_l2": {
+      "max": 1.8884038785291393,
+      "min": 0.04030748420275413,
+      "p50": 0.13890713481592099,
+      "p95": 1.5468826019256274
+    },
+    "nearest_other_policy_px_mean_abs_diff": {
+      "max": 2.4678776041666666,
+      "min": 0.2546788194444444,
+      "p50": 0.5958810763888889,
+      "p95": 1.892751302083333
+    },
+    "nn_policy_auc": {
+      "NN-car": {
+        "angle": 0.8201535907015359,
+        "grid": 0.8095997973657548,
+        "offset": null,
+        "power": null
+      },
+      "NN-px": {
+        "angle": 0.944634703196347,
+        "grid": 0.9458206686930093,
+        "offset": null,
+        "power": null
+      }
+    },
+    "policy_levels": 120,
+    "policy_levels_closer_to_a_fit_level_than_to_any_other_policy_level_px": 100,
+    "rule": "score of a candidate = the engine verdict (1 / 0) of the identical launch executed in the nearest fit level; cost = -score (eb.score_rows); distance ties -> lowest fit member id; if that fit level did not execute the launch, the next fit level in (distance, member) order that did"
+  },
+  "projection": {
+    "cap_gpu_hours": 66.0,
+    "cap_wall_hours": 48.0,
+    "deferred_gpu_hours": {
+      "A4": 21.460902896683873
+    },
+    "fidelity_gpu_hours": {
+      "A1_tier_e": 0.23891922619607714,
+      "A4_tier_t": 36.0,
+      "A4_tier_t_source": "estimate"
+    },
+    "over_child_cap_gpu_hours": 9.25230597178711,
+    "p_cap": {
+      "decision": "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6386804015",
+      "drawn_gpu_hours": 20.0
+    },
+    "p_cap_arms": [
+      "A4"
+    ],
+    "per_seed": {
+      "A1": {
+        "cap_gpu_hours_per_seed": 2.0,
+        "config": "tenth",
+        "gpu_hours_per_seed": 0.07476107945691587,
+        "over_per_seed_cap": false,
+        "source": "measured"
+      },
+      "A2": {
+        "cap_gpu_hours_per_seed": null,
+        "config": "lr3e-4",
+        "gpu_hours_per_seed": 0.013411047415833714,
+        "over_per_seed_cap": false,
+        "source": "measured"
+      },
+      "A2-native": {
+        "cap_gpu_hours_per_seed": null,
+        "config": "tenth",
+        "gpu_hours_per_seed": 0.0149155996065949,
+        "over_per_seed_cap": false,
+        "source": "measured"
+      },
+      "A3-img": {
+        "cap_gpu_hours_per_seed": null,
+        "config": "native-paper",
+        "gpu_hours_per_seed": 1.7921188543456243,
+        "over_per_seed_cap": false,
+        "source": "measured"
+      },
+      "A3-sym": {
+        "cap_gpu_hours_per_seed": null,
+        "config": "native-template",
+        "gpu_hours_per_seed": 0.3087140665416761,
+        "over_per_seed_cap": false,
+        "source": "measured"
+      },
+      "A4": {
+        "cap_gpu_hours_per_seed": 3.0,
+        "config": null,
+        "gpu_hours_per_seed": 6.90061186388549,
+        "over_per_seed_cap": true,
+        "selection_gpu_hours": 7.659679168912893,
+        "source": "measured"
+      }
+    },
+    "projected_wall_hours": 16.852409887144006,
+    "queue_hours": [
+      1.7921188543456243,
+      1.7921188543456243,
+      0.4118017930210206,
+      0.4118017930210206
+    ],
+    "queues": [
+      [
+        "A3-img/20260909"
+      ],
+      [
+        "A3-img/20260910"
+      ],
+      [
+        "A3-sym/20260909",
+        "A1/20260909",
+        "A2-native/20260909",
+        "A2/20260909"
+      ],
+      [
+        "A3-sym/20260910",
+        "A1/20260910",
+        "A2-native/20260910",
+        "A2/20260910"
+      ]
+    ],
+    "remaining_gpu_hours": 27.868744191417164,
+    "spent_ledger_gpu_hours": 11.144642554173867,
+    "total_gpu_hours": 75.25230597178711,
+    "within_cap": true
+  },
+  "schema": "issue_128_smoke_v1",
+  "selection": {
+    "A1": {
+      "complete": true,
+      "results": {
+        "hundredth": {
+          "auc": 0.9907801418439716,
+          "parameters": 11309889
+        },
+        "native": {
+          "auc": 0.9959726443768998,
+          "parameters": 11309889
+        },
+        "tenth": {
+          "auc": 0.9964032421479229,
+          "parameters": 11309889
+        }
+      },
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "tenth"
+    },
+    "A2": {
+      "complete": true,
+      "results": {
+        "lr1e-3": {
+          "auc": 0.9704407294832829,
+          "parameters": 1838781
+        },
+        "lr1e-4": {
+          "auc": 0.9544072948328268,
+          "parameters": 1838781
+        },
+        "lr3e-4": {
+          "auc": 0.97322695035461,
+          "parameters": 1838781
+        }
+      },
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "lr3e-4"
+    },
+    "A2-native": {
+      "complete": true,
+      "results": {
+        "hundredth": {
+          "auc": 0.9423252279635259,
+          "parameters": 11333771
+        },
+        "native": {
+          "auc": 0.965678824721378,
+          "parameters": 11333771
+        },
+        "tenth": {
+          "auc": 0.9694782168186427,
+          "parameters": 11333771
+        }
+      },
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "tenth"
+    },
+    "A3-img": {
+      "complete": true,
+      "results": {
+        "native-code": {
+          "auc": 0.9907548125633232,
+          "parameters": 11633920
+        },
+        "native-paper": {
+          "auc": 0.9952127659574469,
+          "parameters": 11633920
+        },
+        "native-template": {
+          "auc": 0.9925278622087134,
+          "parameters": 11633920
+        }
+      },
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "native-paper"
+    },
+    "A3-sym": {
+      "complete": true,
+      "results": {
+        "native-code": {
+          "auc": 0.9872340425531916,
+          "parameters": 11662208
+        },
+        "native-paper": {
+          "auc": 0.9684397163120567,
+          "parameters": 11662208
+        },
+        "native-template": {
+          "auc": 0.9879510560361624,
+          "parameters": 11662208
+        }
+      },
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "native-template"
+    }
+  },
+  "selection_missing": [],
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES='' python -m pytest -q tests/test_issue_128_direct_predictors.py tests/test_issue_128_phyre_dqn.py tests/test_issue_128_dynamics_aware.py tests/test_issue_128_phyq.py",
+    "exit_code": 0,
+    "tail": "52 passed, 8 warnings in 177.47s (0:02:57)"
+  },
+  "throughput": {
+    "A1/hundredth": 0.026496934668160974,
+    "A1/native": 0.027727337186438963,
+    "A1/tenth": 0.026913988604489715,
+    "A2-native/hundredth": 0.00527286089817062,
+    "A2-native/native": 0.004786077426141128,
+    "A2-native/tenth": 0.005369615858374164,
+    "A2/lr1e-3": 0.0052168348368981645,
+    "A2/lr1e-4": 0.007258921509246445,
+    "A2/lr3e-4": 0.005364418966333486,
+    "A3-img/native-code": 0.014146904380094407,
+    "A3-img/native-paper": 0.015484897935014036,
+    "A3-img/native-template": 0.014488953440731483,
+    "A3-sym/native-code": 0.1832015981986065,
+    "A3-sym/native-paper": 0.01264508506647409,
+    "A3-sym/native-template": 0.014226454679339912
+  },
+  "wall_seconds": 220.54084403719753
+}

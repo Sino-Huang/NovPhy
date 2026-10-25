@@ -1,0 +1,28 @@
+{
+  "schema": "issue_127_gfid_band_v1",
+  "arm": "A3",
+  "template": "3_02_01",
+  "figure_slot": "08_3",
+  "source": "arXiv 2108.13696 v3 Supp. D Fig_within_template_submission_2_avg_pass_rates.PNG; a3/within-template-digitised.json",
+  "statistic": "pass rate on the template's 20 test tasks after one Phy-Q within-template training run (released code)",
+  "band_rule": "published +- (2*sqrt(2 p(1-p)/20) + 0.01 readout allowance); test-sampling noise only (training variance unreported)",
+  "bands": {
+    "Relational-Symbolic": {
+      "published": 0.5,
+      "half_width": 0.3262,
+      "band": [
+        0.1738,
+        0.8262
+      ]
+    },
+    "Relational-Image": {
+      "published": 0.6,
+      "half_width": 0.3198,
+      "band": [
+        0.2802,
+        0.9198
+      ]
+    }
+  },
+  "frozen_at": "2026-10-25"
+}

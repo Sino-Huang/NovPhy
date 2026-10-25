@@ -1,0 +1,50 @@
+{
+  "arm": "A3-sym",
+  "batch": 32,
+  "complete": true,
+  "config": {
+    "configuration": "native-template",
+    "learning_rate": 0.0003,
+    "resets": [
+      13888,
+      27342,
+      39928,
+      51212,
+      60760,
+      68138,
+      72912,
+      74648,
+      75082,
+      75516,
+      75950,
+      76384,
+      76818,
+      77252,
+      77686
+    ],
+    "updates": 78120
+  },
+  "device": "NVIDIA GeForce RTX 5090",
+  "final": {
+    "grad_norm": 0.0153926070779562,
+    "loss": 5.6216627854155377e-05,
+    "lr": 0.0003,
+    "q_mean": 0.626630961894989,
+    "seconds": 1111.3703149021603,
+    "step": 78119
+  },
+  "finished_at": "2026-10-24T18:31:07Z",
+  "gpu_seconds": 1111.370639550034,
+  "model_sha256": "sha256:282d59b82c9626ca0ae266d9ceed12b131614e1c1a1dbd2ce55c81b5fc2cda22",
+  "parameters": 11662208,
+  "peak_gib": 1.6867413520812988,
+  "seconds_per_update": 0.014226454679339912,
+  "seed": 20260908,
+  "tf32": {
+    "cudnn": true,
+    "matmul": false
+  },
+  "typed_failure": null,
+  "updates": 78120,
+  "wall_seconds": 1111.370639550034
+}
