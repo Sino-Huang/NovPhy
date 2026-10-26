@@ -1,0 +1,622 @@
+{
+ "schema": "issue_127_vendor_v1",
+ "upstream": "https://github.com/buoyancy99/diffusion-forcing",
+ "branch": "paper",
+ "commit": "dd65516a470b0eda08dcc0f9cb55c87d6527eb9e",
+ "commit_date": "2025-02-17T14:33:59-05:00",
+ "main_branch_commit_not_used": "475e0bcab87545e48b24b39fb46a81fe59d80594 (v1.5 temporal-attention reimplementation; Decision P-route)",
+ "license": "MIT with an added fork-credit clause (vendor/LICENSE, Copyright (c) 2024 Boyuan Chen); GitHub API spdx NOASSERTION because of the added paragraph",
+ "license_file": "LICENSE",
+ "license_sha256": "sha256:175f1460b72c329ad8d716aebbeaf619c2d24087c8a00a9a87d314789fa9a581",
+ "fork_credit_clause": "\"This repo is forked from [Boyuan Chen](https://boyuan.space/)'s research template [repo](https://github.com/buoyancy99/research-template). By its license, you must keep the above sentence in `README.md` and the `LICENSE` file to credit the author.\" -- kept: vendor/README.md and vendor/LICENSE are verbatim; the adapter, the G-port reference and the fidelity runner repeat the sentence in their docstrings.",
+ "policy": "verbatim copies of LICENSE, README.md, main.py, requirements.txt and the full algorithms/, configurations/, datasets/, experiments/, utils/ trees of the paper branch (the official `python -m main` pipeline imports all of them at start-up; the G-fid runs it unchanged from this directory). No edits. The adapter loads algorithms/diffusion_forcing/models/ (torch + einops + packaging only) by file location, so the package __init__ files (Lightning, wandb, GluonTS) are not imported in novphy. Not vendored: scripts/ (gif, slurm and wandb helpers), teaser.png, extra_requirements.txt (d4rl / mujoco, maze only), .gitignore. Decision P-license: https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6412925640; P-route: https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6412971124",
+ "env": "b127-dforce (py3.11, torch 2.13.0+cu130 = the novphy build, lightning 2.1.4, gluonts 0.13.1, hydra-core 1.3.2, omegaconf 2.3, torchmetrics 0.11.4, numpy 1.26, setuptools<70); .local-artifacts/issue-136-diffusion-forcing-v1/envs/b127-dforce.txt",
+ "files": {
+  "LICENSE": {
+   "upstream_path": "LICENSE",
+   "upstream_sha256": "sha256:175f1460b72c329ad8d716aebbeaf619c2d24087c8a00a9a87d314789fa9a581",
+   "vendored_sha256": "sha256:175f1460b72c329ad8d716aebbeaf619c2d24087c8a00a9a87d314789fa9a581",
+   "edits": []
+  },
+  "README.md": {
+   "upstream_path": "README.md",
+   "upstream_sha256": "sha256:a9cd13401038d0d9b6cd614a43f9fa439e4fceb0ff1e3047064a1664124e102a",
+   "vendored_sha256": "sha256:a9cd13401038d0d9b6cd614a43f9fa439e4fceb0ff1e3047064a1664124e102a",
+   "edits": []
+  },
+  "algorithms/__init__.py": {
+   "upstream_path": "algorithms/__init__.py",
+   "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "edits": []
+  },
+  "algorithms/common/README.md": {
+   "upstream_path": "algorithms/common/README.md",
+   "upstream_sha256": "sha256:3558fd4c9ef6af07b9bf1433051f3482b135aeef2894215c2943c18ef28072bd",
+   "vendored_sha256": "sha256:3558fd4c9ef6af07b9bf1433051f3482b135aeef2894215c2943c18ef28072bd",
+   "edits": []
+  },
+  "algorithms/common/__init__.py": {
+   "upstream_path": "algorithms/common/__init__.py",
+   "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "edits": []
+  },
+  "algorithms/common/base_algo.py": {
+   "upstream_path": "algorithms/common/base_algo.py",
+   "upstream_sha256": "sha256:9f0a3811ecac0cd27c2fdaa7cf2705dbf0ed1360b0011769739efb6d20bc64cd",
+   "vendored_sha256": "sha256:9f0a3811ecac0cd27c2fdaa7cf2705dbf0ed1360b0011769739efb6d20bc64cd",
+   "edits": []
+  },
+  "algorithms/common/base_pytorch_algo.py": {
+   "upstream_path": "algorithms/common/base_pytorch_algo.py",
+   "upstream_sha256": "sha256:b034a576336d78a1d03573cb3d47e21a81dd912a6d40cbbcde911481298099a2",
+   "vendored_sha256": "sha256:b034a576336d78a1d03573cb3d47e21a81dd912a6d40cbbcde911481298099a2",
+   "edits": []
+  },
+  "algorithms/common/metrics/__init__.py": {
+   "upstream_path": "algorithms/common/metrics/__init__.py",
+   "upstream_sha256": "sha256:eb2de1217d9594a9d6278f5a8d198cd60085e1a2db56a8e1987b70d855e05fb7",
+   "vendored_sha256": "sha256:eb2de1217d9594a9d6278f5a8d198cd60085e1a2db56a8e1987b70d855e05fb7",
+   "edits": []
+  },
+  "algorithms/common/metrics/crps_empirical.py": {
+   "upstream_path": "algorithms/common/metrics/crps_empirical.py",
+   "upstream_sha256": "sha256:6fc09fb07b4156781150763660d8b389b25c9c164a13d586e5609d34a11e36bb",
+   "vendored_sha256": "sha256:6fc09fb07b4156781150763660d8b389b25c9c164a13d586e5609d34a11e36bb",
+   "edits": []
+  },
+  "algorithms/common/metrics/crps_quantile.py": {
+   "upstream_path": "algorithms/common/metrics/crps_quantile.py",
+   "upstream_sha256": "sha256:3bbc4c3f62d9925a18401fdbc2f1ac40d77f538c4cb0c6731be720b8abd76a04",
+   "vendored_sha256": "sha256:3bbc4c3f62d9925a18401fdbc2f1ac40d77f538c4cb0c6731be720b8abd76a04",
+   "edits": []
+  },
+  "algorithms/common/metrics/fid.py": {
+   "upstream_path": "algorithms/common/metrics/fid.py",
+   "upstream_sha256": "sha256:8b437a3f122c43f6827e67303db3530aeaa1619438c604789cc8f3cbe61dd095",
+   "vendored_sha256": "sha256:8b437a3f122c43f6827e67303db3530aeaa1619438c604789cc8f3cbe61dd095",
+   "edits": []
+  },
+  "algorithms/common/metrics/fvd.py": {
+   "upstream_path": "algorithms/common/metrics/fvd.py",
+   "upstream_sha256": "sha256:433555a7b14070c8515699bfb266a77bc1f132fe11d7e8c0a500f78c9e6cbd57",
+   "vendored_sha256": "sha256:433555a7b14070c8515699bfb266a77bc1f132fe11d7e8c0a500f78c9e6cbd57",
+   "edits": []
+  },
+  "algorithms/common/metrics/lpips.py": {
+   "upstream_path": "algorithms/common/metrics/lpips.py",
+   "upstream_sha256": "sha256:547e60551c55f66ec47e24d5f408ad72e476c9e2019654edde34670802793286",
+   "vendored_sha256": "sha256:547e60551c55f66ec47e24d5f408ad72e476c9e2019654edde34670802793286",
+   "edits": []
+  },
+  "algorithms/common/models/__init__.py": {
+   "upstream_path": "algorithms/common/models/__init__.py",
+   "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "edits": []
+  },
+  "algorithms/common/models/bottle.py": {
+   "upstream_path": "algorithms/common/models/bottle.py",
+   "upstream_sha256": "sha256:6db4a7c88930522c2a46edf4ff8127e11cf5b21cc7eab8806e84ff81e28b3697",
+   "vendored_sha256": "sha256:6db4a7c88930522c2a46edf4ff8127e11cf5b21cc7eab8806e84ff81e28b3697",
+   "edits": []
+  },
+  "algorithms/common/models/cnn.py": {
+   "upstream_path": "algorithms/common/models/cnn.py",
+   "upstream_sha256": "sha256:6496feec7ed9767e0d3e4370e157504f99e708fd9560254ad7ffaff7cc54cdcf",
+   "vendored_sha256": "sha256:6496feec7ed9767e0d3e4370e157504f99e708fd9560254ad7ffaff7cc54cdcf",
+   "edits": []
+  },
+  "algorithms/common/models/mlp.py": {
+   "upstream_path": "algorithms/common/models/mlp.py",
+   "upstream_sha256": "sha256:0a4e493e12e5f64d5488d159a0b12d323f31f01e8b96d38652007fa48bffc9d1",
+   "vendored_sha256": "sha256:0a4e493e12e5f64d5488d159a0b12d323f31f01e8b96d38652007fa48bffc9d1",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/__init__.py": {
+   "upstream_path": "algorithms/diffusion_forcing/__init__.py",
+   "upstream_sha256": "sha256:08fec34015386b0f82f3f04d834d8e067805a6e82ccf30536dc03d3f6de5e4b6",
+   "vendored_sha256": "sha256:08fec34015386b0f82f3f04d834d8e067805a6e82ccf30536dc03d3f6de5e4b6",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/df_base.py": {
+   "upstream_path": "algorithms/diffusion_forcing/df_base.py",
+   "upstream_sha256": "sha256:bd5ad33faf5a1fd6af5f38bea347980dde8616473943ef76cec084f2171a6dfe",
+   "vendored_sha256": "sha256:bd5ad33faf5a1fd6af5f38bea347980dde8616473943ef76cec084f2171a6dfe",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/df_planning.py": {
+   "upstream_path": "algorithms/diffusion_forcing/df_planning.py",
+   "upstream_sha256": "sha256:419021b504444f526525f4e515702a5d962dbcdbc5a464744c3f72dbcda057c6",
+   "vendored_sha256": "sha256:419021b504444f526525f4e515702a5d962dbcdbc5a464744c3f72dbcda057c6",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/df_prediction.py": {
+   "upstream_path": "algorithms/diffusion_forcing/df_prediction.py",
+   "upstream_sha256": "sha256:d10fc3fd6d44d91ce6f5bfae5eec09912cd84f34e8965254f96bcd2a37fb07d5",
+   "vendored_sha256": "sha256:d10fc3fd6d44d91ce6f5bfae5eec09912cd84f34e8965254f96bcd2a37fb07d5",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/df_robot.py": {
+   "upstream_path": "algorithms/diffusion_forcing/df_robot.py",
+   "upstream_sha256": "sha256:9fe719458164890f93c581cbebab6ebe3642b348521adb1c2f27879a12fb15a9",
+   "vendored_sha256": "sha256:9fe719458164890f93c581cbebab6ebe3642b348521adb1c2f27879a12fb15a9",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/df_video.py": {
+   "upstream_path": "algorithms/diffusion_forcing/df_video.py",
+   "upstream_sha256": "sha256:31d08b3e112a7a5d4b5cfe8dd82ee8cf117e6f5be94bc7db68c58a2636cd6ba4",
+   "vendored_sha256": "sha256:31d08b3e112a7a5d4b5cfe8dd82ee8cf117e6f5be94bc7db68c58a2636cd6ba4",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/__init__.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/__init__.py",
+   "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/attend.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/attend.py",
+   "upstream_sha256": "sha256:2275032b1c6343192b1007cc08889deacafdc58c696228597e555f11c6c8166f",
+   "vendored_sha256": "sha256:2275032b1c6343192b1007cc08889deacafdc58c696228597e555f11c6c8166f",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/diffusion_transition.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/diffusion_transition.py",
+   "upstream_sha256": "sha256:e19dc62a3fa6cc94f5fc87c8ebda8a2501099299f335e8b9e700d92c3cf992e2",
+   "vendored_sha256": "sha256:e19dc62a3fa6cc94f5fc87c8ebda8a2501099299f335e8b9e700d92c3cf992e2",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/gru.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/gru.py",
+   "upstream_sha256": "sha256:e86d89087606c35f9b0dd7eb900e6fc83bb27f64aad922eface28d66593f1b67",
+   "vendored_sha256": "sha256:e86d89087606c35f9b0dd7eb900e6fc83bb27f64aad922eface28d66593f1b67",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/resnet.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/resnet.py",
+   "upstream_sha256": "sha256:c425552b88ea2c53855d454075c53e36bfa99cff50a4a0257b8e5b4c228def87",
+   "vendored_sha256": "sha256:c425552b88ea2c53855d454075c53e36bfa99cff50a4a0257b8e5b4c228def87",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/sin_emb.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/sin_emb.py",
+   "upstream_sha256": "sha256:99d2c188e93287a0749ef27bba1aa663d189c5440a3026f4bb40778b193efdf7",
+   "vendored_sha256": "sha256:99d2c188e93287a0749ef27bba1aa663d189c5440a3026f4bb40778b193efdf7",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/unet.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/unet.py",
+   "upstream_sha256": "sha256:a2a88f5dd56a624bea8d3fb910283c41d6a88b9b5758d677743c865dae097500",
+   "vendored_sha256": "sha256:a2a88f5dd56a624bea8d3fb910283c41d6a88b9b5758d677743c865dae097500",
+   "edits": []
+  },
+  "algorithms/diffusion_forcing/models/utils.py": {
+   "upstream_path": "algorithms/diffusion_forcing/models/utils.py",
+   "upstream_sha256": "sha256:2ec922198d9c4913930cd48fe31c34ea522eb1f1f87a306485fe8e4f8f7fc5d8",
+   "vendored_sha256": "sha256:2ec922198d9c4913930cd48fe31c34ea522eb1f1f87a306485fe8e4f8f7fc5d8",
+   "edits": []
+  },
+  "configurations/README.md": {
+   "upstream_path": "configurations/README.md",
+   "upstream_sha256": "sha256:629134d5fd0b8bf6b4eab42d43712b6e12cb3a43d16750c95c731ecf4bb81983",
+   "vendored_sha256": "sha256:629134d5fd0b8bf6b4eab42d43712b6e12cb3a43d16750c95c731ecf4bb81983",
+   "edits": []
+  },
+  "configurations/algorithm/base_algo.yaml": {
+   "upstream_path": "configurations/algorithm/base_algo.yaml",
+   "upstream_sha256": "sha256:cf7967020a934604374720d05752bc8ae26c4837a942b6eb3fc9568b3dcd26e3",
+   "vendored_sha256": "sha256:cf7967020a934604374720d05752bc8ae26c4837a942b6eb3fc9568b3dcd26e3",
+   "edits": []
+  },
+  "configurations/algorithm/base_pytorch_algo.yaml": {
+   "upstream_path": "configurations/algorithm/base_pytorch_algo.yaml",
+   "upstream_sha256": "sha256:cf35a1c1b9e9f0bd5ef285a2f0d2878b29765e40e86d1b6b6df2347200a7215f",
+   "vendored_sha256": "sha256:cf35a1c1b9e9f0bd5ef285a2f0d2878b29765e40e86d1b6b6df2347200a7215f",
+   "edits": []
+  },
+  "configurations/algorithm/df_base.yaml": {
+   "upstream_path": "configurations/algorithm/df_base.yaml",
+   "upstream_sha256": "sha256:a6ebb5f9754578adfebfaad29b6f9079b5877e5435c64eb3af7782dc84172653",
+   "vendored_sha256": "sha256:a6ebb5f9754578adfebfaad29b6f9079b5877e5435c64eb3af7782dc84172653",
+   "edits": []
+  },
+  "configurations/algorithm/df_planning.yaml": {
+   "upstream_path": "configurations/algorithm/df_planning.yaml",
+   "upstream_sha256": "sha256:58a660db8235119879287fde5d7bf8adde111c9c7bcc74dda468763e2c343b01",
+   "vendored_sha256": "sha256:58a660db8235119879287fde5d7bf8adde111c9c7bcc74dda468763e2c343b01",
+   "edits": []
+  },
+  "configurations/algorithm/df_prediction.yaml": {
+   "upstream_path": "configurations/algorithm/df_prediction.yaml",
+   "upstream_sha256": "sha256:7404e842d233a497f8184049d97645ccb3b5e215e2a5ec3faefb28785fb48c05",
+   "vendored_sha256": "sha256:7404e842d233a497f8184049d97645ccb3b5e215e2a5ec3faefb28785fb48c05",
+   "edits": []
+  },
+  "configurations/algorithm/df_robot.yaml": {
+   "upstream_path": "configurations/algorithm/df_robot.yaml",
+   "upstream_sha256": "sha256:568f365633343f929f8671bb3ffdc945222a363212342abe92849f9749c7294c",
+   "vendored_sha256": "sha256:568f365633343f929f8671bb3ffdc945222a363212342abe92849f9749c7294c",
+   "edits": []
+  },
+  "configurations/algorithm/df_video.yaml": {
+   "upstream_path": "configurations/algorithm/df_video.yaml",
+   "upstream_sha256": "sha256:5fcad82aa40cf8eff5fa7da9e4f1c8c0b98dce78a57732569bf1740af7130ddb",
+   "vendored_sha256": "sha256:5fcad82aa40cf8eff5fa7da9e4f1c8c0b98dce78a57732569bf1740af7130ddb",
+   "edits": []
+  },
+  "configurations/cluster/base_slurm.yaml": {
+   "upstream_path": "configurations/cluster/base_slurm.yaml",
+   "upstream_sha256": "sha256:35d059e513971165a37b82140dd301c674122ee6dc46c10183ac35bf2ebeb71b",
+   "vendored_sha256": "sha256:35d059e513971165a37b82140dd301c674122ee6dc46c10183ac35bf2ebeb71b",
+   "edits": []
+  },
+  "configurations/cluster/mit_satori.yaml": {
+   "upstream_path": "configurations/cluster/mit_satori.yaml",
+   "upstream_sha256": "sha256:628c75d055d9034bee5b8f019bda961bf1881fc88e425cee2b3bf5b58a551c8a",
+   "vendored_sha256": "sha256:628c75d055d9034bee5b8f019bda961bf1881fc88e425cee2b3bf5b58a551c8a",
+   "edits": []
+  },
+  "configurations/cluster/mit_supercloud.yaml": {
+   "upstream_path": "configurations/cluster/mit_supercloud.yaml",
+   "upstream_sha256": "sha256:e9ec50eb2619492545a99fb1e488c0e9a9a580c4f904f31fd950ece0c66182cc",
+   "vendored_sha256": "sha256:e9ec50eb2619492545a99fb1e488c0e9a9a580c4f904f31fd950ece0c66182cc",
+   "edits": []
+  },
+  "configurations/cluster/mit_vision.yaml": {
+   "upstream_path": "configurations/cluster/mit_vision.yaml",
+   "upstream_sha256": "sha256:257052f657c401d7cd311eeaaccec1281fa0792668199faddc6cb1865ad6725d",
+   "vendored_sha256": "sha256:257052f657c401d7cd311eeaaccec1281fa0792668199faddc6cb1865ad6725d",
+   "edits": []
+  },
+  "configurations/config.yaml": {
+   "upstream_path": "configurations/config.yaml",
+   "upstream_sha256": "sha256:0593d6e7581d9719e9aee65b7e1411c997be887ea7426636e67a87b216aaf22f",
+   "vendored_sha256": "sha256:0593d6e7581d9719e9aee65b7e1411c997be887ea7426636e67a87b216aaf22f",
+   "edits": []
+  },
+  "configurations/dataset/base_dataset.yaml": {
+   "upstream_path": "configurations/dataset/base_dataset.yaml",
+   "upstream_sha256": "sha256:559b962bbbc5e48605e9540e9c140c60cb56013206d590abfb47cad3479822dd",
+   "vendored_sha256": "sha256:559b962bbbc5e48605e9540e9c140c60cb56013206d590abfb47cad3479822dd",
+   "edits": []
+  },
+  "configurations/dataset/base_robot.yaml": {
+   "upstream_path": "configurations/dataset/base_robot.yaml",
+   "upstream_sha256": "sha256:10401830859e00b7648e1a64cf78c6cde87ee274b91425fec23675e2892e7bb2",
+   "vendored_sha256": "sha256:10401830859e00b7648e1a64cf78c6cde87ee274b91425fec23675e2892e7bb2",
+   "edits": []
+  },
+  "configurations/dataset/base_timeseries.yaml": {
+   "upstream_path": "configurations/dataset/base_timeseries.yaml",
+   "upstream_sha256": "sha256:3fe5ef1abe54a36e9a12a77477097226580a3c8dc051ebd653be649b155873ee",
+   "vendored_sha256": "sha256:3fe5ef1abe54a36e9a12a77477097226580a3c8dc051ebd653be649b155873ee",
+   "edits": []
+  },
+  "configurations/dataset/base_video.yaml": {
+   "upstream_path": "configurations/dataset/base_video.yaml",
+   "upstream_sha256": "sha256:cad40976f2e4a07f2a7963018300052595eae7e2819270e4fa4b0febace59cf2",
+   "vendored_sha256": "sha256:cad40976f2e4a07f2a7963018300052595eae7e2819270e4fa4b0febace59cf2",
+   "edits": []
+  },
+  "configurations/dataset/maze2d_large.yaml": {
+   "upstream_path": "configurations/dataset/maze2d_large.yaml",
+   "upstream_sha256": "sha256:c405c5d003885e067d3373ebf3ee71fb2c702465155c2a9e83a707e859cbbbe3",
+   "vendored_sha256": "sha256:c405c5d003885e067d3373ebf3ee71fb2c702465155c2a9e83a707e859cbbbe3",
+   "edits": []
+  },
+  "configurations/dataset/maze2d_medium.yaml": {
+   "upstream_path": "configurations/dataset/maze2d_medium.yaml",
+   "upstream_sha256": "sha256:5e33caa3da23a36b4e9a47eea9ef81c7783ea7d342ad3891141189cd9741e419",
+   "vendored_sha256": "sha256:5e33caa3da23a36b4e9a47eea9ef81c7783ea7d342ad3891141189cd9741e419",
+   "edits": []
+  },
+  "configurations/dataset/maze2d_umaze.yaml": {
+   "upstream_path": "configurations/dataset/maze2d_umaze.yaml",
+   "upstream_sha256": "sha256:d90ef45112de9089f044c8e65f9994e7474f334490f605bdab8878b5cae4b2ea",
+   "vendored_sha256": "sha256:d90ef45112de9089f044c8e65f9994e7474f334490f605bdab8878b5cae4b2ea",
+   "edits": []
+  },
+  "configurations/dataset/robot_swap.yaml": {
+   "upstream_path": "configurations/dataset/robot_swap.yaml",
+   "upstream_sha256": "sha256:7d5fcd694017c31168ad3c838eb1593c92291543f8e64e0d20c04f371a05f4f3",
+   "vendored_sha256": "sha256:7d5fcd694017c31168ad3c838eb1593c92291543f8e64e0d20c04f371a05f4f3",
+   "edits": []
+  },
+  "configurations/dataset/ts_electricity.yaml": {
+   "upstream_path": "configurations/dataset/ts_electricity.yaml",
+   "upstream_sha256": "sha256:15f1b96e44ce950ed2eef64d8757e009c0bab6cf8d728f7dc445284be1ecfda6",
+   "vendored_sha256": "sha256:15f1b96e44ce950ed2eef64d8757e009c0bab6cf8d728f7dc445284be1ecfda6",
+   "edits": []
+  },
+  "configurations/dataset/ts_exchange.yaml": {
+   "upstream_path": "configurations/dataset/ts_exchange.yaml",
+   "upstream_sha256": "sha256:a87cab3dd71ac3c61d77dd7574744f814b468ea70ab81bfab6c4c4c07dcb5871",
+   "vendored_sha256": "sha256:a87cab3dd71ac3c61d77dd7574744f814b468ea70ab81bfab6c4c4c07dcb5871",
+   "edits": []
+  },
+  "configurations/dataset/ts_solar.yaml": {
+   "upstream_path": "configurations/dataset/ts_solar.yaml",
+   "upstream_sha256": "sha256:1a4fe8971f3d3632b09fd069ebf28e9d51cc6e6d1670712c1ee7b5c170f231de",
+   "vendored_sha256": "sha256:1a4fe8971f3d3632b09fd069ebf28e9d51cc6e6d1670712c1ee7b5c170f231de",
+   "edits": []
+  },
+  "configurations/dataset/ts_taxi.yaml": {
+   "upstream_path": "configurations/dataset/ts_taxi.yaml",
+   "upstream_sha256": "sha256:82c8daaf440b533bfef84dc58880ec6bbaa18fab19ea2986252e3bb4be5b90c7",
+   "vendored_sha256": "sha256:82c8daaf440b533bfef84dc58880ec6bbaa18fab19ea2986252e3bb4be5b90c7",
+   "edits": []
+  },
+  "configurations/dataset/ts_traffic.yaml": {
+   "upstream_path": "configurations/dataset/ts_traffic.yaml",
+   "upstream_sha256": "sha256:321d8fa6870220e587d3f07e05b00444e957585b70849426d9c5f29335261c04",
+   "vendored_sha256": "sha256:321d8fa6870220e587d3f07e05b00444e957585b70849426d9c5f29335261c04",
+   "edits": []
+  },
+  "configurations/dataset/ts_wikipedia.yaml": {
+   "upstream_path": "configurations/dataset/ts_wikipedia.yaml",
+   "upstream_sha256": "sha256:4aa6c07ec742de619f64f844f0f555fd0213e22f11dd8630fa2548ab15fb0914",
+   "vendored_sha256": "sha256:4aa6c07ec742de619f64f844f0f555fd0213e22f11dd8630fa2548ab15fb0914",
+   "edits": []
+  },
+  "configurations/dataset/video_dmlab.yaml": {
+   "upstream_path": "configurations/dataset/video_dmlab.yaml",
+   "upstream_sha256": "sha256:5e97b45fcd3ff3f47bf0b6fabc776830fae507034acf4b562e40b1275d238b60",
+   "vendored_sha256": "sha256:5e97b45fcd3ff3f47bf0b6fabc776830fae507034acf4b562e40b1275d238b60",
+   "edits": []
+  },
+  "configurations/dataset/video_minecraft.yaml": {
+   "upstream_path": "configurations/dataset/video_minecraft.yaml",
+   "upstream_sha256": "sha256:213170658181910755a7c9b66fb5cbb754fabbac3baf5f1fd27c1e89d596979a",
+   "vendored_sha256": "sha256:213170658181910755a7c9b66fb5cbb754fabbac3baf5f1fd27c1e89d596979a",
+   "edits": []
+  },
+  "configurations/experiment/base_experiment.yaml": {
+   "upstream_path": "configurations/experiment/base_experiment.yaml",
+   "upstream_sha256": "sha256:e463934ecccdbaaa51b0fb440d6692258b7bba8da3a185f86861f90ed4d49d7f",
+   "vendored_sha256": "sha256:e463934ecccdbaaa51b0fb440d6692258b7bba8da3a185f86861f90ed4d49d7f",
+   "edits": []
+  },
+  "configurations/experiment/base_pytorch.yaml": {
+   "upstream_path": "configurations/experiment/base_pytorch.yaml",
+   "upstream_sha256": "sha256:1e84512b98565781086952048942adf181f617ad03e02bf0d22b396cdeb8583a",
+   "vendored_sha256": "sha256:1e84512b98565781086952048942adf181f617ad03e02bf0d22b396cdeb8583a",
+   "edits": []
+  },
+  "configurations/experiment/exp_image.yaml": {
+   "upstream_path": "configurations/experiment/exp_image.yaml",
+   "upstream_sha256": "sha256:a71dcce07abcca1957c8737ffeeb8535032ff5c4dbb6f284c85db530fdcc3d03",
+   "vendored_sha256": "sha256:a71dcce07abcca1957c8737ffeeb8535032ff5c4dbb6f284c85db530fdcc3d03",
+   "edits": []
+  },
+  "configurations/experiment/exp_planning.yaml": {
+   "upstream_path": "configurations/experiment/exp_planning.yaml",
+   "upstream_sha256": "sha256:d9540d0260baae75259189abefe9e66831f1a7e3e2ede697ab619efb1454726f",
+   "vendored_sha256": "sha256:d9540d0260baae75259189abefe9e66831f1a7e3e2ede697ab619efb1454726f",
+   "edits": []
+  },
+  "configurations/experiment/exp_prediction.yaml": {
+   "upstream_path": "configurations/experiment/exp_prediction.yaml",
+   "upstream_sha256": "sha256:48e43dd032ad71839daaee20d74cb633b45e7523bc3cd780064d42b78b2a33b4",
+   "vendored_sha256": "sha256:48e43dd032ad71839daaee20d74cb633b45e7523bc3cd780064d42b78b2a33b4",
+   "edits": []
+  },
+  "configurations/experiment/exp_robot.yaml": {
+   "upstream_path": "configurations/experiment/exp_robot.yaml",
+   "upstream_sha256": "sha256:d2559af4d230125289503a58b642739ff3a78cb9bf2b54743d8d6ac85f64d38d",
+   "vendored_sha256": "sha256:d2559af4d230125289503a58b642739ff3a78cb9bf2b54743d8d6ac85f64d38d",
+   "edits": []
+  },
+  "configurations/experiment/exp_video.yaml": {
+   "upstream_path": "configurations/experiment/exp_video.yaml",
+   "upstream_sha256": "sha256:cbe28210e9bd03a5e5e0ba72341a785cbb417c542aadd15c371399b4365862bf",
+   "vendored_sha256": "sha256:cbe28210e9bd03a5e5e0ba72341a785cbb417c542aadd15c371399b4365862bf",
+   "edits": []
+  },
+  "datasets/README.md": {
+   "upstream_path": "datasets/README.md",
+   "upstream_sha256": "sha256:f0dca852cc20fd13a2a0886e8edaee1bf035f177b7d1dcf2ee25db9d62999217",
+   "vendored_sha256": "sha256:f0dca852cc20fd13a2a0886e8edaee1bf035f177b7d1dcf2ee25db9d62999217",
+   "edits": []
+  },
+  "datasets/__init__.py": {
+   "upstream_path": "datasets/__init__.py",
+   "upstream_sha256": "sha256:c88b5a9d324358a4ef19f20c28cff0002f349f35c54dfdd507f7482f2fb0f36a",
+   "vendored_sha256": "sha256:c88b5a9d324358a4ef19f20c28cff0002f349f35c54dfdd507f7482f2fb0f36a",
+   "edits": []
+  },
+  "datasets/offline_rl/__init__.py": {
+   "upstream_path": "datasets/offline_rl/__init__.py",
+   "upstream_sha256": "sha256:a8106d92069019c17a890b48f9b2cb1d334356779401acf09938e584c0c90a23",
+   "vendored_sha256": "sha256:a8106d92069019c17a890b48f9b2cb1d334356779401acf09938e584c0c90a23",
+   "edits": []
+  },
+  "datasets/offline_rl/maze2d.py": {
+   "upstream_path": "datasets/offline_rl/maze2d.py",
+   "upstream_sha256": "sha256:080ba60b68556b5a34899e067f1da94839894ae7efd7b9326c50b8c133011b6f",
+   "vendored_sha256": "sha256:080ba60b68556b5a34899e067f1da94839894ae7efd7b9326c50b8c133011b6f",
+   "edits": []
+  },
+  "datasets/robot/__init__.py": {
+   "upstream_path": "datasets/robot/__init__.py",
+   "upstream_sha256": "sha256:74ca7f2ab19e31e53daf04b94baffa5f3adbf1f042b01b7d8ff51e322031761e",
+   "vendored_sha256": "sha256:74ca7f2ab19e31e53daf04b94baffa5f3adbf1f042b01b7d8ff51e322031761e",
+   "edits": []
+  },
+  "datasets/robot/robot_dataset.py": {
+   "upstream_path": "datasets/robot/robot_dataset.py",
+   "upstream_sha256": "sha256:ecb9bb4b832c7175056e75e880e8222fef8289dde46734f41802dcb0ca9a5818",
+   "vendored_sha256": "sha256:ecb9bb4b832c7175056e75e880e8222fef8289dde46734f41802dcb0ca9a5818",
+   "edits": []
+  },
+  "datasets/timeseries/__init__.py": {
+   "upstream_path": "datasets/timeseries/__init__.py",
+   "upstream_sha256": "sha256:f39c9a1a0175f17edf269158e86b69e3ebb8c15f8963ef241f0dc7abf0a940bf",
+   "vendored_sha256": "sha256:f39c9a1a0175f17edf269158e86b69e3ebb8c15f8963ef241f0dc7abf0a940bf",
+   "edits": []
+  },
+  "datasets/timeseries/covariates/__init__.py": {
+   "upstream_path": "datasets/timeseries/covariates/__init__.py",
+   "upstream_sha256": "sha256:d250129ad2019c03aed96939952420cb3b6346914621b767686a19c23a40bae9",
+   "vendored_sha256": "sha256:d250129ad2019c03aed96939952420cb3b6346914621b767686a19c23a40bae9",
+   "edits": []
+  },
+  "datasets/timeseries/covariates/fourier_date_feature.py": {
+   "upstream_path": "datasets/timeseries/covariates/fourier_date_feature.py",
+   "upstream_sha256": "sha256:3fec24e8d75b60ffa7b71b27790c7aee9e7226ce9e3676393644cb361e821157",
+   "vendored_sha256": "sha256:3fec24e8d75b60ffa7b71b27790c7aee9e7226ce9e3676393644cb361e821157",
+   "edits": []
+  },
+  "datasets/timeseries/covariates/holiday.py": {
+   "upstream_path": "datasets/timeseries/covariates/holiday.py",
+   "upstream_sha256": "sha256:a5d707d5ed7048ff3b56bb9675de1a12826d20c439d2d1fe6222c78fa330b9b4",
+   "vendored_sha256": "sha256:a5d707d5ed7048ff3b56bb9675de1a12826d20c439d2d1fe6222c78fa330b9b4",
+   "edits": []
+  },
+  "datasets/timeseries/covariates/lags.py": {
+   "upstream_path": "datasets/timeseries/covariates/lags.py",
+   "upstream_sha256": "sha256:e9ca263682b54ee0d7351a9d4bacfc6fc509bb0e10109e2d9f2a8212e4936a54",
+   "vendored_sha256": "sha256:e9ca263682b54ee0d7351a9d4bacfc6fc509bb0e10109e2d9f2a8212e4936a54",
+   "edits": []
+  },
+  "datasets/timeseries/gluonts_dataset.py": {
+   "upstream_path": "datasets/timeseries/gluonts_dataset.py",
+   "upstream_sha256": "sha256:a4fe61f59bfaba4b25eac7f446849993c7f1d8e68c379a13e7bf0319076052fb",
+   "vendored_sha256": "sha256:a4fe61f59bfaba4b25eac7f446849993c7f1d8e68c379a13e7bf0319076052fb",
+   "edits": []
+  },
+  "datasets/video/__init__.py": {
+   "upstream_path": "datasets/video/__init__.py",
+   "upstream_sha256": "sha256:39f6f804f82ffa5d6ce93fc663fe0df649ebbf1f867c1cf2ec8175814fec4f5e",
+   "vendored_sha256": "sha256:39f6f804f82ffa5d6ce93fc663fe0df649ebbf1f867c1cf2ec8175814fec4f5e",
+   "edits": []
+  },
+  "datasets/video/base_video_dataset.py": {
+   "upstream_path": "datasets/video/base_video_dataset.py",
+   "upstream_sha256": "sha256:ecdd954430a67a286d14c53d46457c1c4c9061d884a8605106d4efc535abcffe",
+   "vendored_sha256": "sha256:ecdd954430a67a286d14c53d46457c1c4c9061d884a8605106d4efc535abcffe",
+   "edits": []
+  },
+  "datasets/video/dmlab_video_dataset.py": {
+   "upstream_path": "datasets/video/dmlab_video_dataset.py",
+   "upstream_sha256": "sha256:3db4574d98a39d62ae0306f6cebb3c7ff12fbffb0cf4fc0620a878cc58eaab55",
+   "vendored_sha256": "sha256:3db4574d98a39d62ae0306f6cebb3c7ff12fbffb0cf4fc0620a878cc58eaab55",
+   "edits": []
+  },
+  "datasets/video/minecraft_video_dataset.py": {
+   "upstream_path": "datasets/video/minecraft_video_dataset.py",
+   "upstream_sha256": "sha256:d45fd5b0819f03d474bffac82cf246ffd67e53895c8b5ee8ec385983659b6747",
+   "vendored_sha256": "sha256:d45fd5b0819f03d474bffac82cf246ffd67e53895c8b5ee8ec385983659b6747",
+   "edits": []
+  },
+  "experiments/README.md": {
+   "upstream_path": "experiments/README.md",
+   "upstream_sha256": "sha256:b09327ff213524d733513607bc9b176f877ca5277b6fc06a851241b5637299ff",
+   "vendored_sha256": "sha256:b09327ff213524d733513607bc9b176f877ca5277b6fc06a851241b5637299ff",
+   "edits": []
+  },
+  "experiments/__init__.py": {
+   "upstream_path": "experiments/__init__.py",
+   "upstream_sha256": "sha256:cba0cc99f239ec07d41fd61af609c9f05fcbdd6cbbbf24b5bc2a56bb2bb4dfd2",
+   "vendored_sha256": "sha256:cba0cc99f239ec07d41fd61af609c9f05fcbdd6cbbbf24b5bc2a56bb2bb4dfd2",
+   "edits": []
+  },
+  "experiments/exp_base.py": {
+   "upstream_path": "experiments/exp_base.py",
+   "upstream_sha256": "sha256:d566773ca643c03664ea764ea3f59c121bc8a11d2d25707f5120d984d890930a",
+   "vendored_sha256": "sha256:d566773ca643c03664ea764ea3f59c121bc8a11d2d25707f5120d984d890930a",
+   "edits": []
+  },
+  "experiments/exp_planning.py": {
+   "upstream_path": "experiments/exp_planning.py",
+   "upstream_sha256": "sha256:14c22808d6ba4373aec10bddcfe4f7c89b5395eb95d7056c90b21bd2848638ac",
+   "vendored_sha256": "sha256:14c22808d6ba4373aec10bddcfe4f7c89b5395eb95d7056c90b21bd2848638ac",
+   "edits": []
+  },
+  "experiments/exp_prediction.py": {
+   "upstream_path": "experiments/exp_prediction.py",
+   "upstream_sha256": "sha256:7f6a8b96285c429d1a4e024126ec184ba74a90d9a8989b076aa3b7c72e4730c6",
+   "vendored_sha256": "sha256:7f6a8b96285c429d1a4e024126ec184ba74a90d9a8989b076aa3b7c72e4730c6",
+   "edits": []
+  },
+  "experiments/exp_robot.py": {
+   "upstream_path": "experiments/exp_robot.py",
+   "upstream_sha256": "sha256:5c412fc89cc1986c0ab905c456d91dd6f5145c51f805859f20497b29d5ef0e5b",
+   "vendored_sha256": "sha256:5c412fc89cc1986c0ab905c456d91dd6f5145c51f805859f20497b29d5ef0e5b",
+   "edits": []
+  },
+  "experiments/exp_video.py": {
+   "upstream_path": "experiments/exp_video.py",
+   "upstream_sha256": "sha256:b88f6ed68bf72df3776ac71f33bd51d5c4256374a03daa4b88880ae7086ac5ee",
+   "vendored_sha256": "sha256:b88f6ed68bf72df3776ac71f33bd51d5c4256374a03daa4b88880ae7086ac5ee",
+   "edits": []
+  },
+  "main.py": {
+   "upstream_path": "main.py",
+   "upstream_sha256": "sha256:f983b7e87f5c4d3a2e57ca8c871321b0bb3a4e8521f1bd9776265ec32222541b",
+   "vendored_sha256": "sha256:f983b7e87f5c4d3a2e57ca8c871321b0bb3a4e8521f1bd9776265ec32222541b",
+   "edits": []
+  },
+  "requirements.txt": {
+   "upstream_path": "requirements.txt",
+   "upstream_sha256": "sha256:27259dc3ed3aec17c3a960aa29b8fd56183cb3f6ec0ed37808780da845d4b098",
+   "vendored_sha256": "sha256:27259dc3ed3aec17c3a960aa29b8fd56183cb3f6ec0ed37808780da845d4b098",
+   "edits": []
+  },
+  "utils/README.md": {
+   "upstream_path": "utils/README.md",
+   "upstream_sha256": "sha256:a406d2028de63890de3d3b2577b536cdc40ef77a48b9a95f0eb5123fde2cec10",
+   "vendored_sha256": "sha256:a406d2028de63890de3d3b2577b536cdc40ef77a48b9a95f0eb5123fde2cec10",
+   "edits": []
+  },
+  "utils/__init__.py": {
+   "upstream_path": "utils/__init__.py",
+   "upstream_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "edits": []
+  },
+  "utils/ckpt_utils.py": {
+   "upstream_path": "utils/ckpt_utils.py",
+   "upstream_sha256": "sha256:8b5e409d2153f727ba33fdd4211ee45557b045b85dd5351f4e2fd08fc10019b9",
+   "vendored_sha256": "sha256:8b5e409d2153f727ba33fdd4211ee45557b045b85dd5351f4e2fd08fc10019b9",
+   "edits": []
+  },
+  "utils/cluster_utils.py": {
+   "upstream_path": "utils/cluster_utils.py",
+   "upstream_sha256": "sha256:e3b56d2a6988a65842d2f766500899d898d2c923797ddf6986ad4e8bb078cc11",
+   "vendored_sha256": "sha256:e3b56d2a6988a65842d2f766500899d898d2c923797ddf6986ad4e8bb078cc11",
+   "edits": []
+  },
+  "utils/distributed_utils.py": {
+   "upstream_path": "utils/distributed_utils.py",
+   "upstream_sha256": "sha256:0d144c54304bacc8f18642fa3d7309d2b16b9e7b03562318bb933d32dc7c5ef9",
+   "vendored_sha256": "sha256:0d144c54304bacc8f18642fa3d7309d2b16b9e7b03562318bb933d32dc7c5ef9",
+   "edits": []
+  },
+  "utils/logging_utils.py": {
+   "upstream_path": "utils/logging_utils.py",
+   "upstream_sha256": "sha256:c2688f0a4e4ed7cee2e6f89500f02160a6852f646cf955f2975690664cbe0bb1",
+   "vendored_sha256": "sha256:c2688f0a4e4ed7cee2e6f89500f02160a6852f646cf955f2975690664cbe0bb1",
+   "edits": []
+  },
+  "utils/print_utils.py": {
+   "upstream_path": "utils/print_utils.py",
+   "upstream_sha256": "sha256:0909f9f46a364261ce8bc725508c2ccbc7e6b6a5d8f67e17213c39cb61457d33",
+   "vendored_sha256": "sha256:0909f9f46a364261ce8bc725508c2ccbc7e6b6a5d8f67e17213c39cb61457d33",
+   "edits": []
+  },
+  "utils/robot_utils.py": {
+   "upstream_path": "utils/robot_utils.py",
+   "upstream_sha256": "sha256:9929986c0d10852ede60e978ba287121f2659ac502ab75f14ce77df8bf426422",
+   "vendored_sha256": "sha256:9929986c0d10852ede60e978ba287121f2659ac502ab75f14ce77df8bf426422",
+   "edits": []
+  },
+  "utils/wandb_utils.py": {
+   "upstream_path": "utils/wandb_utils.py",
+   "upstream_sha256": "sha256:18dc1c76fc09787eb26928a4a46d77a99815e5b1f39ce32844fe760205f26d5f",
+   "vendored_sha256": "sha256:18dc1c76fc09787eb26928a4a46d77a99815e5b1f39ce32844fe760205f26d5f",
+   "edits": []
+  }
+ }
+}

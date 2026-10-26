@@ -1,0 +1,45 @@
+{
+ "band_reported_precision": [
+  0.001,
+  0.005
+ ],
+ "code": {
+  "branch": "paper",
+  "command": "python vendor/main.py +name=gfid_exchange experiment=exp_prediction dataset=ts_exchange algorithm=df_prediction",
+  "commit": "dd65516a470b0eda08dcc0f9cb55c87d6527eb9e",
+  "runtime_settings": [
+   "wandb.mode=disabled",
+   "wandb.entity=novphy (required by main.py; unused when disabled)",
+   "lightning.seed_everything(seed) before main (upstream sets no seed)",
+   "experiment.training.checkpointing.save_last=true (resume after SIGTERM via load=last.ckpt)",
+   "GluonTS dataset directory -> data/external/diffusion_forcing (HOME sandbox)",
+   "precision: official 16-mixed on a GPU; fp32 on a CPU (Lightning has no CPU fp16-mixed)"
+  ],
+  "upstream": "https://github.com/buoyancy99/diffusion-forcing"
+ },
+ "decision": "Decision P-fid on #136 (posted with this file's sha256)",
+ "experiment": "multivariate probabilistic time-series forecasting, Exchange (GluonTS exchange_rate_nips: 8 series, business-day, context = prediction = 30)",
+ "frozen_at": "2026-10-26T09:55:23Z",
+ "high": 0.0055,
+ "issue": 136,
+ "low": 0.0005,
+ "metric": "test CRPS-sum (official crps_quantile_sum: 19 quantiles of 100 sampled paths, summed over the 8 series), printed as test/crps_sum by the official test task on the best (validation CRPS-sum) checkpoint",
+ "paper": "Chen et al., Diffusion Forcing: Next-token Prediction Meets Full-Sequence Diffusion (NeurIPS 2024, arXiv 2407.01392), Table 2",
+ "repairs": "at most two logged repair attempts, each fixing a diagnosed port / environment defect, never the band; then fidelity_not_reproduced",
+ "reported": {
+  "decimals": 3,
+  "mean": 0.003,
+  "runs": 5,
+  "sd": 0.001,
+  "statistic": "mean \u00b1 SD over five seeds"
+ },
+ "rule": "pass iff low <= crps_sum < high (our value rounded to the paper's 3 decimals lies in the paper's mean \u00b1 2 SD, [0.001, 0.005])",
+ "runs": {
+  "seeds": [
+   20260908
+  ],
+  "statistic": "the single run's test/crps_sum"
+ },
+ "schema": "issue_136_band_v1",
+ "tier": "T"
+}

@@ -1,0 +1,347 @@
+{
+ "G_port_rule": "#123 tolerances (loss / pre-clip grad-norm relative 1e-4, per-tensor post-clip gradient relative L2 1e-3, parameters |delta| <= 1e-7 on >= 99.9 % after each of two optimizer steps, step-0 LR equal) + forward predictions, DDIM steps and the full sampling loop max abs <= 1e-5, CRPS-sum relative 1e-4; reference = official DiffusionForcingBase under lightning.Trainer (precision 32) in env b127-dforce; same torch build",
+ "adapter_sha256": "sha256:339ccb2babd483774f3601b5f85cafd4f06b0c712f7951ea56e3e6027bf78763",
+ "arm": "T4 DF-car",
+ "arms": {
+  "planning": {
+   "adapter_parameters": 12034060,
+   "configuration": "planning",
+   "ddim": {
+    "pass": true,
+    "steps": [
+     {
+      "index": 0,
+      "x_max_abs": 0.0,
+      "z_max_abs": 0.0
+     },
+     {
+      "index": 25,
+      "x_max_abs": 0.0,
+      "z_max_abs": 0.0
+     },
+     {
+      "index": 49,
+      "x_max_abs": 0.0,
+      "z_max_abs": 0.0
+     }
+    ]
+   },
+   "exact": true,
+   "forward": {
+    "loss": [
+     0.6398031115531921,
+     0.6398031115531921
+    ],
+    "loss_rel": 0.0,
+    "pass": true,
+    "xs_pred_max_abs": 0.0
+   },
+   "init_state_equal": true,
+   "official_parameters": 12034060,
+   "pass": true,
+   "sampling": {
+    "crps_rel": 0.0,
+    "crps_sum": [
+     0.09604758769273758,
+     0.09604758769273758
+    ],
+    "frame225_max_abs": 0.0,
+    "frames": 46,
+    "pass": true,
+    "paths_max_abs": 0.0,
+    "pyramid_rows": 95,
+    "rows": 80
+   },
+   "steps": [
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      null,
+      0.18966726958751678
+     ],
+     "grad_norm_rel": null,
+     "index": 0,
+     "loss": [
+      0.6398127675056458,
+      0.6398127675056458
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      0.0002,
+      0.0002
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    },
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      null,
+      0.18809950351715088
+     ],
+     "grad_norm_rel": null,
+     "index": 1,
+     "loss": [
+      0.6326272487640381,
+      0.6326272487640381
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      2.0000000000000003e-06,
+      2.0000000000000003e-06
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    }
+   ]
+  },
+  "ts": {
+   "adapter_parameters": 7367468,
+   "configuration": "ts-native",
+   "ddim": {
+    "pass": true,
+    "steps": [
+     {
+      "index": 0,
+      "x_max_abs": 0.0,
+      "z_max_abs": 0.0
+     },
+     {
+      "index": 25,
+      "x_max_abs": 0.0,
+      "z_max_abs": 0.0
+     },
+     {
+      "index": 49,
+      "x_max_abs": 0.0,
+      "z_max_abs": 0.0
+     }
+    ]
+   },
+   "exact": true,
+   "forward": {
+    "loss": [
+     1.5441449880599976,
+     1.5441449880599976
+    ],
+    "loss_rel": 0.0,
+    "pass": true,
+    "xs_pred_max_abs": 0.0
+   },
+   "init_state_equal": true,
+   "official_parameters": 7367468,
+   "pass": true,
+   "sampling": {
+    "crps_rel": 0.0,
+    "crps_sum": [
+     0.090488500893116,
+     0.090488500893116
+    ],
+    "frame225_max_abs": 0.0,
+    "frames": 46,
+    "pass": true,
+    "paths_max_abs": 0.0,
+    "pyramid_rows": 95,
+    "rows": 80
+   },
+   "steps": [
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      0.1550905704498291,
+      0.1550905704498291
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 0,
+     "loss": [
+      1.5683650970458984,
+      1.5683650970458984
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      0.0003,
+      0.0003
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    },
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      0.15190987288951874,
+      0.15190987288951874
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 1,
+     "loss": [
+      1.5877892971038818,
+      1.5877892971038818
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      1.5e-07,
+      1.5e-07
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    }
+   ]
+  }
+ },
+ "branch": "paper",
+ "checked_at": "2026-10-26T10:11:42Z",
+ "commit": "dd65516a470b0eda08dcc0f9cb55c87d6527eb9e",
+ "device": "cpu float32",
+ "exact": true,
+ "injected_defects": {
+  "full_sequence_noise_schedule": {
+   "detected": true,
+   "paths_max_abs": 7.7301435470581055
+  },
+  "shared_noise_level": {
+   "detected": true,
+   "loss_rel": 0.13905739473260215
+  },
+  "warmup_before_step": {
+   "detected": true,
+   "param_max_abs": 0.0002999305725097656
+  }
+ },
+ "inputs_sha256": "sha256:dbd8ee06f646af7fa1496182cbd1238fa5db011a8421006c4dfd6e7461420e62",
+ "issue": 136,
+ "not_checked_on_cpu": "16-mixed (fp16 autocast + GradScaler) runs on CUDA only; the adapter follows Lightning's MixedPrecisionPlugin order (scale, backward, unscale, clip, step, update)",
+ "pass": true,
+ "reference_lightning": "2.1.4",
+ "reference_script_sha256": "sha256:e542700c22822bb2dd373938c87e1fc625ed338dd2b4e2595145016e197f3681",
+ "reference_sha256": "sha256:2ed6c21460f48e84aa844ddb68d155e097f0aa7ca59cf2f1132d65dd2bb3a08c",
+ "reference_torch": "2.13.0+cu130",
+ "same_torch": true,
+ "schema": "issue_127_gport_v1",
+ "threads": 4,
+ "tolerance": {
+  "forward_max_abs": 1e-05,
+  "grad_norm_relative": 0.0001,
+  "grad_tensor_relative_l2": 0.001,
+  "loss_relative": 0.0001,
+  "param_close_abs": 1e-07,
+  "param_close_share": 0.999,
+  "sample_max_abs": 1e-05
+ },
+ "torch": "2.13.0+cu130",
+ "upstream": "https://github.com/buoyancy99/diffusion-forcing",
+ "vendor_hashes_match": {
+  "LICENSE": true,
+  "README.md": true,
+  "algorithms/__init__.py": true,
+  "algorithms/common/README.md": true,
+  "algorithms/common/__init__.py": true,
+  "algorithms/common/base_algo.py": true,
+  "algorithms/common/base_pytorch_algo.py": true,
+  "algorithms/common/metrics/__init__.py": true,
+  "algorithms/common/metrics/crps_empirical.py": true,
+  "algorithms/common/metrics/crps_quantile.py": true,
+  "algorithms/common/metrics/fid.py": true,
+  "algorithms/common/metrics/fvd.py": true,
+  "algorithms/common/metrics/lpips.py": true,
+  "algorithms/common/models/__init__.py": true,
+  "algorithms/common/models/bottle.py": true,
+  "algorithms/common/models/cnn.py": true,
+  "algorithms/common/models/mlp.py": true,
+  "algorithms/diffusion_forcing/__init__.py": true,
+  "algorithms/diffusion_forcing/df_base.py": true,
+  "algorithms/diffusion_forcing/df_planning.py": true,
+  "algorithms/diffusion_forcing/df_prediction.py": true,
+  "algorithms/diffusion_forcing/df_robot.py": true,
+  "algorithms/diffusion_forcing/df_video.py": true,
+  "algorithms/diffusion_forcing/models/__init__.py": true,
+  "algorithms/diffusion_forcing/models/attend.py": true,
+  "algorithms/diffusion_forcing/models/diffusion_transition.py": true,
+  "algorithms/diffusion_forcing/models/gru.py": true,
+  "algorithms/diffusion_forcing/models/resnet.py": true,
+  "algorithms/diffusion_forcing/models/sin_emb.py": true,
+  "algorithms/diffusion_forcing/models/unet.py": true,
+  "algorithms/diffusion_forcing/models/utils.py": true,
+  "configurations/README.md": true,
+  "configurations/algorithm/base_algo.yaml": true,
+  "configurations/algorithm/base_pytorch_algo.yaml": true,
+  "configurations/algorithm/df_base.yaml": true,
+  "configurations/algorithm/df_planning.yaml": true,
+  "configurations/algorithm/df_prediction.yaml": true,
+  "configurations/algorithm/df_robot.yaml": true,
+  "configurations/algorithm/df_video.yaml": true,
+  "configurations/cluster/base_slurm.yaml": true,
+  "configurations/cluster/mit_satori.yaml": true,
+  "configurations/cluster/mit_supercloud.yaml": true,
+  "configurations/cluster/mit_vision.yaml": true,
+  "configurations/config.yaml": true,
+  "configurations/dataset/base_dataset.yaml": true,
+  "configurations/dataset/base_robot.yaml": true,
+  "configurations/dataset/base_timeseries.yaml": true,
+  "configurations/dataset/base_video.yaml": true,
+  "configurations/dataset/maze2d_large.yaml": true,
+  "configurations/dataset/maze2d_medium.yaml": true,
+  "configurations/dataset/maze2d_umaze.yaml": true,
+  "configurations/dataset/robot_swap.yaml": true,
+  "configurations/dataset/ts_electricity.yaml": true,
+  "configurations/dataset/ts_exchange.yaml": true,
+  "configurations/dataset/ts_solar.yaml": true,
+  "configurations/dataset/ts_taxi.yaml": true,
+  "configurations/dataset/ts_traffic.yaml": true,
+  "configurations/dataset/ts_wikipedia.yaml": true,
+  "configurations/dataset/video_dmlab.yaml": true,
+  "configurations/dataset/video_minecraft.yaml": true,
+  "configurations/experiment/base_experiment.yaml": true,
+  "configurations/experiment/base_pytorch.yaml": true,
+  "configurations/experiment/exp_image.yaml": true,
+  "configurations/experiment/exp_planning.yaml": true,
+  "configurations/experiment/exp_prediction.yaml": true,
+  "configurations/experiment/exp_robot.yaml": true,
+  "configurations/experiment/exp_video.yaml": true,
+  "datasets/README.md": true,
+  "datasets/__init__.py": true,
+  "datasets/offline_rl/__init__.py": true,
+  "datasets/offline_rl/maze2d.py": true,
+  "datasets/robot/__init__.py": true,
+  "datasets/robot/robot_dataset.py": true,
+  "datasets/timeseries/__init__.py": true,
+  "datasets/timeseries/covariates/__init__.py": true,
+  "datasets/timeseries/covariates/fourier_date_feature.py": true,
+  "datasets/timeseries/covariates/holiday.py": true,
+  "datasets/timeseries/covariates/lags.py": true,
+  "datasets/timeseries/gluonts_dataset.py": true,
+  "datasets/video/__init__.py": true,
+  "datasets/video/base_video_dataset.py": true,
+  "datasets/video/dmlab_video_dataset.py": true,
+  "datasets/video/minecraft_video_dataset.py": true,
+  "experiments/README.md": true,
+  "experiments/__init__.py": true,
+  "experiments/exp_base.py": true,
+  "experiments/exp_planning.py": true,
+  "experiments/exp_prediction.py": true,
+  "experiments/exp_robot.py": true,
+  "experiments/exp_video.py": true,
+  "main.py": true,
+  "requirements.txt": true,
+  "utils/README.md": true,
+  "utils/__init__.py": true,
+  "utils/ckpt_utils.py": true,
+  "utils/cluster_utils.py": true,
+  "utils/distributed_utils.py": true,
+  "utils/logging_utils.py": true,
+  "utils/print_utils.py": true,
+  "utils/robot_utils.py": true,
+  "utils/wandb_utils.py": true
+ }
+}

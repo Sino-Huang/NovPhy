@@ -1,0 +1,167 @@
+{
+  "calls_per_path": 4321,
+  "cpu": {
+    "planning": {
+      "batch": 2048,
+      "cpu_seconds_per_update": 24.278819339582697,
+      "parameters": 12034060,
+      "sampler_call_flops_per_row": 24036672.0,
+      "sampler_call_ops": 92,
+      "update_flops": 6792915976192,
+      "update_ops": 11001
+    },
+    "ts-100k": {
+      "batch": 32,
+      "cpu_seconds_per_update": 0.4285855954512954,
+      "parameters": 7367468,
+      "sampler_call_flops_per_row": 14713472.0,
+      "sampler_call_ops": 112,
+      "update_flops": 64911360000,
+      "update_ops": 12145
+    },
+    "ts-native": {
+      "batch": 32,
+      "cpu_seconds_per_update": 0.4285855954512954,
+      "parameters": 7367468,
+      "sampler_call_flops_per_row": 14713472.0,
+      "sampler_call_ops": 112,
+      "update_flops": 64911360000,
+      "update_ops": 12145
+    }
+  },
+  "gpu_model": {
+    "lower": {
+      "combine": "max",
+      "launch_us": 5.0,
+      "score_tflops": 60.0,
+      "train_tflops": 150.0
+    },
+    "upper": {
+      "combine": "sum",
+      "launch_us": 15.0,
+      "score_tflops": 20.0,
+      "train_tflops": 40.0
+    }
+  },
+  "label": "[INFERENCE] CPU micro-benchmark (synthetic carrier-shaped batches, 4 threads): op and FLOP counts of one update / one sampler call mapped to an RTX 5090 by GPU_MODEL (lower: max(ops x 5 us, FLOPs / 150 TFLOP/s fp16 or 60 fp32); upper: ops x 15 us + FLOPs / 40 fp16 or 20 fp32); ts-native assumes no early stop before the 200 000-update cap",
+  "measured_at": "2026-10-26T10:24:10Z",
+  "plan_identity": "issue-136-diffusion-forcing-v1",
+  "policy_cells": 94,
+  "primary": "projection_upper",
+  "projection_lower": {
+    "child_cap_gpu_h": 184.0,
+    "decision_counts": {
+      "readouts_per_arm_seed": 574,
+      "score_per_seed": 1767,
+      "selection_readouts": 282
+    },
+    "fidelity_gpu_h": 8.653046175907244,
+    "fidelity_rates": {
+      "update": 0.07920652173913043,
+      "validation": 7.65100544
+    },
+    "gpu_seconds_per_update": {
+      "planning": 0.055005,
+      "ts-100k": 0.060724999999999994,
+      "ts-native": 0.060724999999999994
+    },
+    "native_per_seed_gpu_h": 4.717922222222222,
+    "policy_cells": 94,
+    "readouts_gpu_h": 0.4239434799977813,
+    "score_gpu_h": 1.3050664271011838,
+    "seconds_per_decision": 0.8862929895424,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "planning": 1.833576395833333,
+      "ts-100k": 1.6868055555555552,
+      "ts-native": 4.717922222222222
+    },
+    "selection_readouts_gpu_h": 0.06942628418082133,
+    "steps": {
+      "planning": 120005,
+      "ts-100k": 100000,
+      "ts-native": 200000
+    },
+    "total_gpu_h": 28.12563098524258,
+    "training_gpu_h": 9.435844444444443,
+    "training_queue_loads_h": [
+      4.717922222222222,
+      4.717922222222222,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T4--seed20260909"
+      ],
+      "1": [
+        "T4--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "validation_seconds": 2.4197599999999997,
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 19.569369201633133,
+    "within_caps": true
+  },
+  "projection_upper": {
+    "child_cap_gpu_h": 184.0,
+    "decision_counts": {
+      "readouts_per_arm_seed": 574,
+      "score_per_seed": 1767,
+      "selection_readouts": 282
+    },
+    "fidelity_gpu_h": 30.722972464,
+    "fidelity_rates": {
+      "update": 0.23973624000000002,
+      "validation": 31.3120704
+    },
+    "gpu_seconds_per_update": {
+      "planning": 0.3348378994048,
+      "ts-100k": 0.183797784,
+      "ts-native": 0.183797784
+    },
+    "native_per_seed_gpu_h": 15.656741611377777,
+    "policy_cells": 94,
+    "readouts_gpu_h": 1.628366952493344,
+    "score_gpu_h": 5.012760287553552,
+    "seconds_per_decision": 3.4042514686272,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "planning": 11.161728366131396,
+      "ts-100k": 5.105494,
+      "ts-native": 15.656741611377777
+    },
+    "selection_readouts_gpu_h": 0.266666365042464,
+    "steps": {
+      "planning": 120005,
+      "ts-100k": 100000,
+      "ts-native": 200000
+    },
+    "total_gpu_h": 100.86821326935409,
+    "training_gpu_h": 31.313483222755554,
+    "training_queue_loads_h": [
+      15.656741611377777,
+      15.656741611377777,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T4--seed20260909"
+      ],
+      "1": [
+        "T4--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "validation_seconds": 9.802356500479998,
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 67.72297407747492,
+    "within_caps": false
+  },
+  "schema": "issue_136_projection_v1",
+  "threads": 4
+}

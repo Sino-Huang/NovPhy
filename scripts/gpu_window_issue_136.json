@@ -1,0 +1,173 @@
+{
+  "note": "#136 T4 Diffusion Forcing (coverage arm, P-coverage / Tier-C), phase A: the Table 2 Exchange G-fid (official pipeline, env b127-dforce) then the NovPhy selection + smoke. PREPARED, NOT ENQUEUED: enqueue only after the orchestrator's Decision P-coverage (funding) and its funded.json marker (selection refuses without funded.json, a passing gport.json and a passing gfid.json). est_minutes = the upper [INFERENCE] projection (projection.json; no early stop assumed) until timing.json exists. Phase B (after the --prepare freeze commit): scripts/gpu_window_issue_136_main.json.",
+  "jobs": [
+    {
+      "id": "136-gfid",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 1845,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dforce/bin/python",
+        "-u",
+        "scripts/b127_dforce_fidelity.py",
+        "--run",
+        "--device",
+        "cuda"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "G-fid (Decision P-fid #136 issuecomment-6413164397 + addendum issuecomment-6413855182): the vendored official pipeline, python vendor/main.py experiment=exp_prediction dataset=ts_exchange algorithm=df_prediction (16-mixed; early stopping on validation CRPS-sum every 100 updates, each validation 50 000 sampled rows x 1560 DDIM calls; <= 200 000 updates), then the official test on the best checkpoint; seed 20260908. Resumable: SIGTERM -> the child is stopped -> exit 75; resumes from the last validation's last.ckpt (load=). Data: data/external/diffusion_forcing (MANIFEST.json; already downloaded). GPU < 4 GB [INFERENCE]. est = the upper [INFERENCE] projection at the 200 000-update cap with no early stop (8.7-30.7 GPU-h); the paper reports convergence at 50k-100k updates."
+    },
+    {
+      "id": "136-gfid-collect",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 2,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-gfid"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-dforce/bin/python",
+        "-u",
+        "scripts/b127_dforce_fidelity.py",
+        "--collect"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "CPU: fidelity/gfid.json from the run's test/crps_sum and the frozen band [0.0005, 0.0055) (exit 1 if outside: then the orchestrator posts the P-fid repair / drop decision)."
+    },
+    {
+      "id": "136-select-ts-native",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 940,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-gfid-collect"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--selection",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "T4 selection run 'ts-native' (time-series recipe, batch 32, early stopping every 100 updates on 16 fit shots x 100 paths, patience 6, <= 200 000 updates, best checkpoint), seed 20260908 (reused as main seed 20260908 if selected); refuses unless funded.json, gport.json and gfid.json pass; resume.pt every 2000 updates and on SIGTERM -> exit 75."
+    },
+    {
+      "id": "136-select-ts-100k",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 310,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-gfid-collect"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--selection",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "T4 selection run 'ts-100k' (time-series recipe, batch 32, fixed 100 000 updates), seed 20260908; same gates and resume."
+    },
+    {
+      "id": "136-select-planning",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 670,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-gfid-collect"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--selection",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "T4 selection run 'planning' (maze-planning recipe, batch 2048, 120 005 updates; GPU ~3-4 GB [INFERENCE]), seed 20260908; same gates and resume."
+    },
+    {
+      "id": "136-selro",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-select-ts-native",
+        "136-select-ts-100k",
+        "136-select-planning"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Policy-split pooled grid AUC per configuration (94 mixed cells x 16 candidates x 32 paths) under deterministic_scoring(); selection.json (eb.select_configuration: largest AUC at 4 d.p., ties -> fewer parameters)."
+    },
+    {
+      "id": "136-smoke",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-selro"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Data accounting, G-port record check, CPU tests (CUDA_VISIBLE_DEVICES='' subprocess), measured throughput of the selection runs, the selection, the projection of everything left against the child cap (184 GPU-h) and 48 h wall on 4 GPUs (P-cap if over); smoke.json."
+    }
+  ]
+}

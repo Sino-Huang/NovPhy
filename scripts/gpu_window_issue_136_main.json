@@ -1,0 +1,220 @@
+{
+  "note": "#136 T4 Diffusion Forcing (coverage arm), phase B: main seeds, readouts, freeze of readouts, the one scoring pass, the novelty pass, publish + validate. PREPARED, NOT ENQUEUED: enqueue only after phase A (scripts/gpu_window_issue_136.json), a passing smoke and the orchestrator's --prepare freeze commit (every stage re-verifies plan.json pins). est_minutes = the upper [INFERENCE] projection.",
+  "jobs": [
+    {
+      "id": "136-train-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 940,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--train",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Frozen train queue 0 (T4 seed 20260909 at the selected configuration); resume.pt every 2000 updates and on SIGTERM -> exit 75."
+    },
+    {
+      "id": "136-train-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 940,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--train",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Frozen train queue 1 (T4 seed 20260910)."
+    },
+    {
+      "id": "136-readouts-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 35,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-train-q0",
+        "136-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--readouts",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Fit / policy readouts of the frozen readout queue (G-rank on the 480 x 16 expected-cost matrix, G-action on the per-candidate sample-mean frame-225 carriers, policy AUC, MACs per candidate) under deterministic_scoring(); readouts.json written last."
+    },
+    {
+      "id": "136-readouts-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 35,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-train-q0",
+        "136-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--readouts",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Fit / policy readouts of the frozen readout queue (G-rank on the 480 x 16 expected-cost matrix, G-action on the per-candidate sample-mean frame-225 carriers, policy AUC, MACs per candidate) under deterministic_scoring(); readouts.json written last."
+    },
+    {
+      "id": "136-readouts-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 35,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-train-q0",
+        "136-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--readouts",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "Fit / policy readouts of the frozen readout queue (G-rank on the 480 x 16 expected-cost matrix, G-action on the per-candidate sample-mean frame-225 carriers, policy AUC, MACs per candidate) under deterministic_scoring(); readouts.json written last."
+    },
+    {
+      "id": "136-freeze-readouts",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 5,
+      "shares_gpu": true,
+      "depends_on": [
+        "136-readouts-q0",
+        "136-readouts-q1",
+        "136-readouts-q2"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--freeze-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "CPU: readouts-manifest.json (sha256 of every model.pt and readouts.json) before any evaluation anchor is read."
+    },
+    {
+      "id": "136-score",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 230,
+      "shares_gpu": false,
+      "depends_on": [
+        "136-freeze-readouts"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--score"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "The one scoring pass (a process that did not train; deterministic_scoring()); refuses unless G-fid passed; every mixed cell of every inventory, wrong anchors, positions (descriptive), wall per decision; records/<arm>--seed<s>.json written atomically, resumable per record."
+    },
+    {
+      "id": "136-score-novelty",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 80,
+      "shares_gpu": false,
+      "depends_on": [
+        "136-score"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--score-novelty"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "P-novelty (descriptive): T4 if its guards pass, every seed, on the mixed #110 novelty levels; refuses before the primary records; resumable per record."
+    },
+    {
+      "id": "136-publish-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 80,
+      "shares_gpu": false,
+      "depends_on": [
+        "136-score-novelty"
+      ],
+      "command": [
+        "bash",
+        "-c",
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_136_diffusion_forcing.py --publish && /srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_136_diffusion_forcing.py --validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "records-manifest, summary.json (eb.child_summary), compute.json, findings.md; then --validate re-scores T4 seed 20260908 (exact row equality, same chunking and device class as --score) and re-derives the publication byte for byte."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "note": "#136 timing probe only (Decision P-coverage timing probe, DRAFTED for the orchestrator to post on #136 before enqueue); enqueued alone so that no funded-only job is queued. Exclusive GPU (shares_gpu false): the measured rates are the projection's primary input.",
+  "jobs": [
+    {
+      "id": "136-timing",
+      "gpu": 2,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "depends_on": [
+        "130-gfid-tier-e-r"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_136_diffusion_forcing.py",
+        "--timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B127_T4_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "GPU timing probe (#136; no funded.json needed; <= 1 GPU-h): fit store load (~15 s CPU), 300 official updates of the time-series model (ts-native / ts-100k; batch 32 x 46 frames, 16-mixed) and 100 of the planning model (batch 2048), one ts-native early-stopping validation pass (16 fit shots x 100 paths, 95 x 45 pyramid sampler calls), and the scoring cost of 16 fit anchors per model (16 candidates x 32 paths, chunks of 128 candidates, deterministic scoring); writes .local-artifacts/issue-136-diffusion-forcing-v1/timing.json + ledger/timing.json and makes the measured projection primary in projection.json; keeps no model, exit 0. est [INFERENCE, projection.json]: 0.06-0.18 s/update (time series), 0.06-0.33 s/update (planning), 2-10 s per validation, 0.9-3.4 s per scored level -> ~5-12 min + data load; GPU < 8 GB [INFERENCE]; host RSS 13.4 GB peak (reduced CPU dry run on the real fit data, 2026-10-26: every stage ran, exit 0)."
+    }
+  ]
+}
