@@ -51,6 +51,7 @@ CHILDREN = {
     134: {"slug": "gamma-models", "kind": "grid", "label": "T3 gamma-models (coverage)"},
     135: {"slug": "ddlp", "kind": "grid", "label": "T2 DDLP (Tier C, triggered)"},
     136: {"slug": "diffusion-forcing", "kind": "grid", "label": "T4 Diffusion Forcing (coverage)"},
+    137: {"slug": "diamond", "kind": "grid", "label": "T5 DIAMOND (coverage)"},
 }
 JOB_ID = re.compile(r"^1(2[89]|3[0-9])-")
 WORLD_MODEL_ARMS = ("B1", "C1-dino", "C1-car", "D1")

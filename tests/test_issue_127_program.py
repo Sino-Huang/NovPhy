@@ -11,7 +11,7 @@ from scripts import run_issue_127_program as rp
 
 ARMS = {128: {"A1": "primary", "A2": "primary", "A4": "primary", "A3": "secondary"}, 129: {"B1": "primary"},
         130: {"C1-dino": "primary", "C1-car": "secondary"}, 131: {"D1": "primary"}, 133: {"T1": "secondary"},
-        134: {"T3": "secondary"}, 135: {}, 136: {"T4": "secondary"}}
+        134: {"T3": "secondary"}, 135: {}, 136: {"T4": "secondary"}, 137: {"T5": "secondary"}}
 # a Tier-C child dropped before training publishes no arm block, only its pending arm (as #135 did)
 EXTRAS = {135: {"pending_arms": {"T2": "fidelity_not_reproduced"}, "tier_c_arm": True}}
 
