@@ -1187,19 +1187,56 @@ def frozen_entry(output, arm, seed):
     return None, None
 
 
+# Post-freeze amendment #128 A1 (Decision P-other 2026-10-27, issuecomment-6426445961): an arm of a scoring group
+# dropped with a typed reason under a posted decision is recorded as dropped in its group's freeze entry (no models,
+# readouts or records); the rest of the group freezes and scores as frozen. Markers are written by the orchestrator.
+SCHEMA_DROPPED = "issue_128_dropped_v1"
+DROP_REASONS = ("fidelity_not_reproduced", "nonfinite_loss")  # P-fid drop; the runner's typed terminal failure
+DROP_DECISION_PREFIX = "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-"
+
+
+def drop_marker_path(output, arm):
+    return Path(output) / "dropped" / f"{arm}.json"
+
+
+def drop_marker(output, arm):
+    """The arm's validated drop marker ({arm, typed_reason, decision, written_at}), or None if there is none."""
+    path = drop_marker_path(output, arm)
+    if not path.is_file():
+        return None
+    marker = eb.read_json(path)
+    if (marker.get("schema") != SCHEMA_DROPPED or marker.get("arm") != arm
+            or marker.get("typed_reason") not in DROP_REASONS
+            or not str(marker.get("decision", "")).startswith(DROP_DECISION_PREFIX) or not marker.get("written_at")):
+        raise ValueError(f"{path}: not a valid {SCHEMA_DROPPED} drop marker")
+    return marker
+
+
+def dropped_arms(output):
+    """{arm: {typed_reason, decision, marker, marker_sha256}} recorded in the readout-freeze groups."""
+    return {arm: info for group in frozen_groups(output) for arm, info in group.get("dropped", {}).items()}
+
+
 def freeze_readouts(output, arms=None):
     """Append a freeze group: sha256 of every model.pt and readouts.json of one scoring group (default: the first
-    group not yet frozen); a group is frozen as a whole, never twice, and only when all its arm-seeds have
-    readouts."""
+    group not yet frozen); a group is frozen as a whole, never twice, and only when every arm-seed has readouts or
+    the arm has a valid drop marker (recorded as dropped: reason, decision, marker sha256; no models / readouts)."""
     plan = load_plan(output)
-    done = {name.split("/")[0] for group in frozen_groups(output) for name in group["entries"]}
+    done = {name.split("/")[0] for group in frozen_groups(output) for name in group["entries"]} | set(
+        dropped_arms(output))
     groups = [list(g) for g in plan["scoring_groups"].values()]
     if arms is None:
         arms = next((g for g in groups if not set(g) & done), None)
     if arms is None or sorted(arms) not in [sorted(g) for g in groups] or set(arms) & done:
         raise ValueError(f"freeze one whole scoring group not yet frozen ({plan['scoring_groups']}); got {arms}")
-    entries = {}
+    entries, dropped = {}, {}
     for arm in arms:
+        marker = drop_marker(output, arm)
+        if marker is not None:
+            path = drop_marker_path(output, arm)
+            dropped[arm] = {"typed_reason": marker["typed_reason"], "decision": marker["decision"],
+                            "marker": str(path.relative_to(eb.ROOT)), "marker_sha256": eb.sha256_of(path)}
+            continue
         for seed in SEEDS:
             run = model_dir(output, plan, arm, seed)
             report = eb.read_json(run / "readouts.json")
@@ -1210,9 +1247,12 @@ def freeze_readouts(output, arms=None):
                                         "readouts": str((run / "readouts.json").relative_to(eb.ROOT)),
                                         "readouts_sha256": eb.sha256_of(run / "readouts.json"),
                                         "typed_failure": report["typed_failure"]}
-    groups = frozen_groups(output) + [{"arms": arms, "frozen_at": eb.utc_now(), "entries": entries}]
+    group = {"arms": arms, "frozen_at": eb.utc_now(), "entries": entries}
+    if dropped:
+        group["dropped"] = dropped
+    groups = frozen_groups(output) + [group]
     eb.write_json(freeze_path(output), {"schema": SCHEMA_FREEZE, "plan_identity": IDENTITY, "groups": groups})
-    log(f"readouts frozen: {arms}")
+    log(f"readouts frozen: {arms}" + (f" (dropped: {sorted(dropped)})" if dropped else ""))
     return 0
 
 
@@ -1309,11 +1349,16 @@ def score(output, arms=None):
     output = Path(output)
     plan = load_plan(output)
     groups = [g["arms"] for g in frozen_groups(output)]
+    dropped = dropped_arms(output)
     if arms is None:
         arms = next((g for g in groups
-                     if not all(record_path(output, a, s).is_file() for a in g for s in SEEDS)), None)
+                     if not all(record_path(output, a, s).is_file() for a in g if a not in dropped
+                                for s in SEEDS)), None)
     if arms is None or sorted(arms) not in [sorted(g) for g in groups]:
         raise ValueError(f"score one whole frozen scoring group ({groups}); got {arms}")
+    if dropped:
+        log(f"not scored (dropped): {sorted(a for a in arms if a in dropped)}")
+        arms = [a for a in arms if a not in dropped]
     device = device_name()
     cells = eb.evaluation_cells()
     with harness.deterministic_scoring() as policy:
@@ -1425,6 +1470,10 @@ def score_novelty(output, arms=None):
     passes_path = novelty_dir(output) / "passes.json"
     passes = eb.read_json(passes_path)["passes"] if passes_path.is_file() else []
     done = {a for p in passes for a in p["arms"]}
+    dropped = dropped_arms(output)
+    if arms and set(arms) & set(dropped):
+        log(f"novelty: not scored (dropped): {sorted(set(arms) & set(dropped))}")
+        arms = [a for a in arms if a not in dropped]
     arms = arms or [a for a in scored if a not in done]
     missing = [a for a in arms if a not in scored]
     if missing or not arms:
@@ -1586,17 +1635,29 @@ def compute_tables(output, plan):
     nn = nn_views(output)
     arm_views = {**{arm: (records[arm], SCORE_KEY) for arm in arms}, **nn}
     rows = {inventory: eb.view_rows(cells, inventory, arm_views, references) for inventory in eb.INVENTORIES}
+    dropped = dropped_arms(output)
+    if dropped:  # #128 A1: dropped arms' stand-in records (typed reason, no rows) as a view of their own
+        stand_in = {arm: dropped_records(arm, info) for arm, info in dropped.items()}
+        drop_rows = eb.view_rows(cells, "grid", {**arm_views, **{a: (r, SCORE_KEY) for a, r in stand_in.items()}},
+                                 references)
     blocks, gfid = {}, {}
     for arm in arms:
         guards, extra, gfid[arm] = arm_guards(output, plan, arm, records[arm])
         blocks[arm] = eb.arm_block(rows["grid"], arm, records[arm], SCORE_KEY, guards, global_ok,
                                    arm_compute(output, plan, arm, records[arm]), ARMS[arm]["role"],
                                    ARMS[arm]["program_set"], extra_guards=extra)
+    for arm, info in dropped.items():
+        guards, extra, gfid[arm] = dropped_guards(output, plan, arm, info, stand_in[arm])
+        blocks[arm] = eb.arm_block(drop_rows, arm, stand_in[arm], SCORE_KEY, guards, global_ok,
+                                   {"trainable_parameters": plan["arms"][arm].get("parameters"),
+                                    "training_gpu_seconds": {}, "macs_per_candidate": None, "wall_per_decision": None},
+                                   ARMS[arm]["role"], ARMS[arm]["program_set"], extra_guards=extra,
+                                   dropped=info["typed_reason"])
     within = {}
     for label, (first, second) in WITHIN_FAMILY.items():
         if first in blocks and second in blocks:
             guarded = global_ok and blocks[first]["guards"]["pass"] and blocks[second]["guards"]["pass"]
-            within[label] = eb.within_family(rows["grid"], first, second, guarded)
+            within[label] = eb.within_family(drop_rows if dropped else rows["grid"], first, second, guarded)
     descriptive = {inventory: eb.ranker_table(rows[inventory], ["U", "C*", "P", "J", "J_dec", *nn, *arms])
                    for inventory in eb.INVENTORIES}
     nn_block = {"label": "DESCRIPTIVE no-model references (never in a disposition; estimates without tokens)",
@@ -1605,12 +1666,15 @@ def compute_tables(output, plan):
                                             if k not in ("token", "reverse_token", "guards_pass")}
                               for n in nn for x in (*arms, "U")}}
     entries, gpu, wall = eb.ledger_totals(output, lambda phase: ledger_report(output, plan, phase))
-    pending = [a for a in plan["arms"] if a not in arms]
+    pending = [a for a in plan["arms"] if a not in arms and a not in dropped]
+    extra_summary = {"selection": {a: plan["arms"][a].get("selection") for a in arms},
+                     "selection_deferred": (eb.read_json(deferred_selection_path(output))["arms"]
+                                            if deferred_selection_path(output).is_file() else {}),
+                     "pending_arms": {a: plan["arms"][a]["status"] for a in pending}}
+    if dropped:
+        extra_summary["dropped"] = dropped
     summary = eb.child_summary(ISSUE, IDENTITY, plan["frozen_at"], blocks, within, guards_global, gfid,
-                               {"selection": {a: plan["arms"][a].get("selection") for a in arms},
-                                "selection_deferred": (eb.read_json(deferred_selection_path(output))["arms"]
-                                                       if deferred_selection_path(output).is_file() else {}),
-                                "pending_arms": {a: plan["arms"][a]["status"] for a in pending}})
+                               extra_summary)
     compute = {"schema": "issue_128_compute_v1", "identity": IDENTITY, "frozen_at": plan["frozen_at"],
                "summary": summary, "inventories": descriptive,
                "ledger": {"phases": entries, "gpu_seconds": gpu, "wall_seconds": wall,
@@ -1621,6 +1685,23 @@ def compute_tables(output, plan):
     if novelty is not None:
         compute["novelty"] = novelty
     return compute
+
+
+def dropped_records(arm, info):
+    """A dropped arm's stand-in records: its typed reason on every seed (no rows; view_rows yields no estimate)."""
+    return {seed: {"arm": arm, "seed": seed, "typed_failure": info["typed_reason"]} for seed in SEEDS}
+
+
+def dropped_guards(output, plan, arm, info, stand_in):
+    """A dropped arm's guards: every seed a typed failure (G-rank / G-nonfinite / G-trained fail), G_fid False; the
+    drop marker must still be the bytes recorded at the readout freeze."""
+    if eb.sha256_of(eb.ROOT / info["marker"]) != info["marker_sha256"]:
+        raise ValueError(f"{arm}: drop marker differs from the one recorded at the readout freeze")
+    guards = eb.arm_guard_block({seed: {"typed_failure": r["typed_failure"]} for seed, r in stand_in.items()},
+                                ["G_rank", "G_nonfinite", "G_trained"], None)
+    gfid = {"pass": False, "source": GFID_SOURCE[arm], "inherited_from": None, "dropped": info["typed_reason"],
+            "decision": info["decision"]}
+    return guards, {"G_port": gport_pass(output, arm) is True, "G_fid": False}, gfid
 
 
 def ledger_report(output, plan, phase):
@@ -1653,12 +1734,17 @@ def findings_md(plan, compute):
     for arm, block in summary["arms"].items():
         c = block["compute"]
         per = ", ".join(f"{s}: {v:.0f}" for s, v in c["training_gpu_seconds"].items())
-        lines.append(f"| {arm} | {c['trainable_parameters']:,} | {per} | {eb.rc.fmt_num(c['macs_per_candidate'], 0)} | "
+        params = "n/a" if c["trainable_parameters"] is None else f"{c['trainable_parameters']:,}"
+        lines.append(f"| {arm} | {params} | {per} | {eb.rc.fmt_num(c['macs_per_candidate'], 0)} | "
                      f"{eb.rc.fmt_num(c['wall_per_decision'], 4)} |")
     pending = summary["extra"]["pending_arms"]
     if pending:
         lines += ["", "Not yet scored: " + ", ".join(f"{a} ({s})" for a, s in pending.items())
                   + " (A3 is added by a later scoring pass; nothing above is re-scored)."]
+    dropped = summary["extra"].get("dropped")
+    if dropped:
+        lines += ["", "Dropped (no records; every token the stop token; disposition 4; vetoes the program claim): "
+                  + ", ".join(f"{a} ({d['typed_reason']}; {d['decision']})" for a, d in dropped.items()) + "."]
     nn = compute["no_model_references"]
     if nn["pooled_grid_auc"]:
         lines += ["", "## No-model nearest-fit references (DESCRIPTIVE, never in a disposition, no tokens)", "",

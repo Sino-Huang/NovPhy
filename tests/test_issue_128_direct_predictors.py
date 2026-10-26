@@ -1,4 +1,5 @@
 """#128 runner: CPU checks of the uncertain code (arm registry, resumable training, typed failure, readouts)."""
+import json
 import math
 
 import numpy as np
@@ -291,3 +292,177 @@ def test_phyq_score_passes_cpu_launches(monkeypatch):
         (obs.device, launches.device)) or torch.zeros(len(launches)))
     family.score(None, torch.zeros(3, 240, 320, dtype=torch.uint8), r128.launch_matrix(eb.grid_items()))
     assert seen == [(torch.device("cpu"), torch.device("cpu"))]
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# post-freeze amendment #128 A1: a scoring-group arm dropped with a typed reason (drop marker)
+# ---------------------------------------------------------------------------------------------------------------
+
+REAL_PLAN = eb.ROOT / ".local-artifacts/issue-128-direct-predictors-v1/plan.json"
+FREEZE_COMMIT = "a3decdc6"  # the #128 freeze commit (plan.json frozen 2026-10-25T09:26:24Z)
+DECISION = "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6426445961"
+
+
+def _fake_scores(arm, model, observation, items, device):
+    """Cheap deterministic scores (no network forward): the amendment is about bookkeeping, not scoring."""
+    return r128.launch_matrix(items).sum(1) * (1.0 + float(observation.float().mean()) % 1.0)
+
+
+def _stand_ins(monkeypatch, output, modules, group_arm="A2"):
+    """Policy split standing in for the evaluation split and the reference records (no evaluation data read)."""
+    grid = eb.policy_cells("grid")
+    cells = {inv: {"mixed": grid if inv in ("offset", "power") else eb.policy_cells(inv)} for inv in eb.INVENTORIES}
+    monkeypatch.setattr(eb, "evaluation_cells", lambda: cells)
+    clock = iter(f"2026-10-27T00:{m:02d}:{s:02d}+00:00" for m in range(60) for s in range(60))
+    monkeypatch.setattr(eb, "utc_now", lambda: next(clock))
+    monkeypatch.setattr(eb, "mark", lambda *a, **k: None)  # timing only (kept out of the byte comparison)
+    monkeypatch.setattr(eb, "wall_per_decision", lambda fn, decisions: 0.001)
+
+    def anchors(out, policy):
+        payload = {"carriers": eb.policy_anchors()["carriers"], "frames": eb.policy_anchor_frames(),
+                   "keys": dict(eb.policy_anchors()["keys"]), "read_at": "2026-10-27T00:00:30+00:00",
+                   "scoring_policy": policy}
+        eb.atomic_torch(eb.evaluation_anchors_path(out), payload)
+        return payload
+
+    monkeypatch.setattr(eb, "read_evaluation_anchors", anchors)
+    fit = eb.read_json(eb.rt.verdicts_path(eb.RETRAIN))["branches"]
+    prior = {inv: eb.gb.prior_stats(fit, inv) for inv in eb.INVENTORIES}
+
+    def as_reference(record):  # the arm's rows under the references' tie-free cost key
+        return {**record, "inventories": {inv: {m: {"rows": [{**row, eb.PRIMARY_COST: row[r128.SCORE_KEY]}
+                                                             for row in cell["rows"]]}
+                                                for m, cell in cells_.items()}
+                                          for inv, cells_ in record["inventories"].items()}}
+
+    def references():
+        stand = {s: as_reference(eb.read_json(r128.record_path(output, group_arm, s))) for s in eb.SEEDS}
+        return {"U": stand, "C*": stand, "J": stand, "J_dec": stand, "prior": prior}
+
+    monkeypatch.setattr(eb, "references", references)
+    for module in modules:
+        monkeypatch.setattr(module, "scores_for", _fake_scores)
+        monkeypatch.setattr(module, "score_nn_references", lambda *a: None)
+        monkeypatch.setattr(module, "global_guards", lambda out, plan, records: {
+            name: {"pass": True} for name in ("G_isolation", "G_chronology", "G_scoring_policy", "G_records")})
+
+
+def _train_group(output, plan, arms, context):
+    """model.pt / report.json from one CPU update per arm-seed; readouts.json binding each model (synthetic G-rank)."""
+    for arm in arms:
+        for seed in eb.SEEDS:
+            run = r128.model_dir(output, plan, arm, seed)
+            r128.train_run(arm, {"updates": 1, "learning_rate": 3e-4}, seed, run, context)
+            eb.write_json(run / "readouts.json", {
+                "schema": r128.SCHEMA_READOUTS, "arm": arm, "seed": seed, "typed_failure": None,
+                "model_sha256": eb.sha256_of(run / "model.pt"), "parameters": 1, "policy_grid_auc": 0.5,
+                "G_rank": eb.g_rank(np.random.default_rng(seed).normal(size=(480, 16))), "macs_per_candidate": 1.0})
+
+
+def _synthetic_output():
+    import uuid
+    return eb.ROOT / ".local-artifacts" / f"issue-128-test-{uuid.uuid4().hex[:8]}"
+
+
+def test_dropped_arm_freeze_score_and_publication(context, monkeypatch):
+    """With the real frozen plan: the primary group (A1, A2, A2-native, A4) is refused while A4 has neither models
+    nor a drop marker; with a valid marker it freezes (A4 recorded as dropped, no entries), --score writes no A4
+    record, and the publication carries A4's block: dropped = typed reason, no estimates, guards failing (G_fid
+    False), every token the stop token, disposition 4, a program-claim veto."""
+    import shutil
+
+    output = _synthetic_output()
+    plan = eb.read_json(REAL_PLAN)
+    assert plan["scoring_groups"]["primary"] == ["A1", "A2", "A2-native", "A4"]
+    assert plan["arms"]["A4"]["status"] == "selection_after_gfid"
+    monkeypatch.setattr(r128, "load_plan", lambda out: plan)
+    group = ["A1", "A2", "A2-native", "A4"]
+    try:
+        _train_group(output, plan, ["A1", "A2", "A2-native"], context)
+        _stand_ins(monkeypatch, output, [r128])
+        with pytest.raises(ValueError):  # A4: no selection, no models, no marker
+            r128.freeze_readouts(output, group)
+        assert not r128.freeze_path(output).exists()
+        marker = r128.drop_marker_path(output, "A4")
+        eb.write_json(marker, {"schema": r128.SCHEMA_DROPPED, "arm": "A4", "typed_reason": "made_up",
+                               "decision": DECISION, "written_at": "2026-10-28T00:00:00+00:00"})
+        with pytest.raises(ValueError):  # an untyped reason is not a drop
+            r128.freeze_readouts(output, group)
+        eb.write_json(marker, {"schema": r128.SCHEMA_DROPPED, "arm": "A4", "typed_reason": "fidelity_not_reproduced",
+                               "decision": DECISION, "written_at": "2026-10-28T00:00:00+00:00"})
+        assert r128.freeze_readouts(output, group) == 0
+        frozen = eb.read_json(r128.freeze_path(output))["groups"][0]
+        assert frozen["arms"] == group and not any(k.startswith("A4/") for k in frozen["entries"])
+        assert len(frozen["entries"]) == 9 and frozen["dropped"]["A4"]["typed_reason"] == "fidelity_not_reproduced"
+        assert frozen["dropped"]["A4"]["marker_sha256"] == eb.sha256_of(marker)
+        with pytest.raises(ValueError):  # never frozen twice
+            r128.freeze_readouts(output, group)
+        assert r128.score(output) == 0
+        assert not any(r128.record_path(output, "A4", s).exists() for s in eb.SEEDS)
+        assert all(r128.record_path(output, a, s).is_file() for a in group[:3] for s in eb.SEEDS)
+        monkeypatch.setattr(r128, "novelty_section", lambda *a: None)
+        compute = r128.compute_tables(output, plan)
+        summary = compute["summary"]
+        a4 = summary["arms"]["A4"]
+        assert a4["dropped"] == "fidelity_not_reproduced" and a4["guards"]["G_fid"] is False
+        assert a4["guards"]["pass"] is False and a4["guards_pass"] is False
+        assert a4["disposition"]["disposition"] == 4 and a4["ranker"]["auc"] is None
+        assert all(c["estimate"] is None and c["token"] == eb.STOP_TOKEN and c["reverse_token"] == eb.STOP_TOKEN
+                   for c in a4["contrasts"].values())
+        within = summary["within_family"]["A4-A1"]
+        assert within["estimate"] is None and within["token"] == eb.STOP_TOKEN
+        assert summary["program_claim_entries"]["A4"]["dropped"] == "fidelity_not_reproduced"
+        claim = eb.program_claim(summary["program_claim_entries"])
+        assert {"arm": "A4", "reason": "dropped: fidelity_not_reproduced"} in claim["vetoes"]
+        assert "A4" not in summary["extra"]["pending_arms"] and summary["extra"]["dropped"]["A4"]["decision"] == DECISION
+        assert summary["arms"]["A2"]["dropped"] is None and summary["arms"]["A2"]["ranker"]["auc"] is not None
+        text = r128.findings_md(plan, compute)
+        assert "Dropped (no records" in text and "A4 (fidelity_not_reproduced" in text
+        eb.write_json(marker, {**eb.read_json(marker), "written_at": "2026-10-29T00:00:00+00:00"})
+        with pytest.raises(ValueError):  # the marker is bound to the freeze by its sha256
+            r128.compute_tables(output, plan)
+    finally:
+        shutil.rmtree(output, ignore_errors=True)
+
+
+def test_no_marker_path_byte_identical_to_frozen_runner(context, monkeypatch, tmp_path):
+    """Without a drop marker the amended runner writes the same readout-freeze manifest, records and publication
+    bytes as the runner frozen in the #128 plan (loaded from the freeze commit) on the same synthetic inputs."""
+    import hashlib
+    import importlib.util
+    import shutil
+    import subprocess
+
+    source = subprocess.run(["git", "show", f"{FREEZE_COMMIT}:{r128.RUNNER}"], cwd=eb.ROOT, capture_output=True,
+                            check=True).stdout
+    pinned = {e["artifact"]: e["sha256"] for e in eb.read_json(REAL_PLAN)["inputs"]}
+    assert "sha256:" + hashlib.sha256(source).hexdigest() == pinned[r128.RUNNER]
+    (tmp_path / "r128_frozen.py").write_bytes(source)
+    spec = importlib.util.spec_from_file_location("r128_frozen", tmp_path / "r128_frozen.py")
+    frozen = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(frozen)
+    plan = {**eb.read_json(REAL_PLAN), "scoring_groups": {"t": ["A2"]}}
+    outputs = {"frozen": _synthetic_output(), "amended": _synthetic_output()}
+    try:
+        _train_group(outputs["frozen"], plan, ["A2"], context)
+        shutil.copytree(outputs["frozen"], outputs["amended"])  # the same model bytes for both runners
+        for name, module in (("frozen", frozen), ("amended", r128)):
+            output = outputs[name]
+            monkeypatch.setattr(module, "load_plan", lambda out: plan)
+            monkeypatch.setattr(module, "novelty_section", lambda *a: None)
+            _stand_ins(monkeypatch, output, [module])
+            assert module.freeze_readouts(output, ["A2"]) == 0
+            assert module.score(output, ["A2"]) == 0
+            text = module.rendered(plan, module.compute_tables(output, plan))
+            (output / "rendered.json").write_text(json.dumps(text, sort_keys=True))
+        a, b = outputs["frozen"], outputs["amended"]
+        assert (a / "readouts-manifest.json").read_text().replace(a.name, "X") == \
+            (b / "readouts-manifest.json").read_text().replace(b.name, "X")
+        for seed in eb.SEEDS:
+            ra, rb = (eb.read_json(r128.record_path(o, "A2", seed)) for o in (a, b))
+            assert ra["inventories"] == rb["inventories"] and ra["typed_failure"] == rb["typed_failure"]
+        assert (a / "rendered.json").read_text().replace(a.name, "X") == \
+            (b / "rendered.json").read_text().replace(b.name, "X")
+    finally:
+        for output in outputs.values():
+            shutil.rmtree(output, ignore_errors=True)

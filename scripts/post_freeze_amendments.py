@@ -197,6 +197,28 @@ AMENDMENTS = {
                    "and the RNG streams never use the decoder, so the MPC-iteration checkpoint resumes unchanged. "
                    "replaces = the frozen bytes and the A1 bytes; the frozen band, planner, checkpoint, cases and "
                    "metric unchanged")},
+    "scripts/run_issue_128_direct_predictors.py": {
+        "issue": 128, "replaces": ("sha256:a3064dd2dc86de4892ea738dd63d852e561396cb70a214fe8cb6143ff16b1d9d",),
+        "sha256": "sha256:5b99b0c78a997bfd1a29587f522d86bda148cc1e99320970bce6a484a6fb9ecc",
+        "change": ("A1 (after the #128 freeze, before A4's Tier-T G-fid outcome, any primary-group readout freeze or any "
+                   "evaluation read; Decision P-other issuecomment-6426445961): an arm of a scoring group dropped with "
+                   "a typed reason under a posted decision (orchestrator-written dropped/<arm>.json, schema "
+                   "issue_128_dropped_v1, reason fidelity_not_reproduced or the typed terminal training failure "
+                   "nonfinite_loss) is recorded in its group's readout freeze (reason, decision, marker sha256; no "
+                   "models, readouts or records); --score / --score-novelty skip it; the publication carries its arm "
+                   "block (dropped = the reason, stand-in typed-failure records, guards failing with G_fid False, every "
+                   "token the stop token, disposition 4, program-claim veto) as #130 did for C1-dino; the marker is "
+                   "re-checked against the frozen sha256 at publication / validation. Without a marker the freeze, "
+                   "records and publication are byte-identical to the frozen runner (tested against the freeze-commit "
+                   "bytes); training, anchors, scoring, guards, tokens, contrasts, the one-pass rule and G-chronology "
+                   "unchanged")},
+    "tests/test_issue_128_direct_predictors.py": {
+        "issue": 128, "replaces": ("sha256:47c81fce10fbc974ce6b736e664189b05a888c76b8dd6074ce4342c1105adec6",),
+        "sha256": "sha256:396daef3782fa4ace30f0ba73b4762823b85a670da79ed31c7570c5e4ca2bf88",
+        "change": ("A1: tests of the drop marker with the real frozen plan (partial primary group refused without a "
+                   "valid marker, accepted with one; no A4 record; the dropped block's stop tokens, disposition 4 and "
+                   "program-claim veto; marker sha256 binding) and of the no-marker path against the freeze-commit "
+                   "runner bytes; the frozen tests unchanged")},
 }
 
 

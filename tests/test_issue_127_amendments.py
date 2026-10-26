@@ -37,3 +37,16 @@ def test_issue_130_fidelity_runner_amendment():
     assert pfa.matches(path, frozen, current) and not pfa.matches(path, frozen, a1)
     from scripts import run_issue_130_dino_wm as r130
     assert r130.load_plan(r130.OUTPUT)["plan_identity"] == r130.IDENTITY
+
+
+def test_issue_128_runner_amendment():
+    """#128 A1 (drop marker): the runner and its tests replace exactly the bytes frozen in the #128 plan, and the
+    #128 load_plan accepts the amended files."""
+    frozen = _frozen(".local-artifacts/issue-128-direct-predictors-v1/plan.json")
+    for path in ("scripts/run_issue_128_direct_predictors.py", "tests/test_issue_128_direct_predictors.py"):
+        current = "sha256:" + hashlib.sha256(open(path, "rb").read()).hexdigest()
+        entry = pfa.AMENDMENTS[path]
+        assert entry["issue"] == 128 and entry["replaces"] == (frozen[path],) and entry["sha256"] == current
+        assert pfa.matches(path, frozen[path], current)
+    from scripts import run_issue_128_direct_predictors as r128
+    assert r128.load_plan(r128.OUTPUT)["identity"] == r128.IDENTITY
