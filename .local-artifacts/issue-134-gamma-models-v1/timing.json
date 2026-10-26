@@ -1,0 +1,82 @@
+{
+  "decision": "P-coverage timing probe (#134)",
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "fit_store_seconds": 2.298078670166433,
+  "host_peak_rss_gib": 5.161659240722656,
+  "host_rss_gib": 2.0619354248046875,
+  "plan_identity": "issue-134-gamma-models-v1",
+  "schema": "issue_134_timing_v1",
+  "scoring": {
+    "decisions": 8,
+    "samples": 64,
+    "seconds": [
+      0.0416685501113534,
+      0.04016200266778469,
+      0.045421114191412926,
+      0.04383758967742324,
+      0.04156938102096319,
+      0.040338137187063694,
+      0.04338041506707668,
+      0.04308510199189186
+    ],
+    "seconds_per_decision_median": 0.04308510199189186
+  },
+  "seconds": 34.32241772674024,
+  "t3": {
+    "batch": 1024,
+    "batch_build_seconds_per_update": 0.0009753850428387522,
+    "chunks": [
+      {
+        "seconds": 3.3993866639211774,
+        "updates": 50
+      },
+      {
+        "seconds": 3.058169011026621,
+        "updates": 50
+      },
+      {
+        "seconds": 3.0343732140026987,
+        "updates": 50
+      },
+      {
+        "seconds": 3.0483132428489625,
+        "updates": 50
+      },
+      {
+        "seconds": 2.9960084441117942,
+        "updates": 50
+      },
+      {
+        "seconds": 2.998356261756271,
+        "updates": 50
+      },
+      {
+        "seconds": 3.0294241779483855,
+        "updates": 50
+      },
+      {
+        "seconds": 3.040570921264589,
+        "updates": 50
+      },
+      {
+        "seconds": 2.9663802357390523,
+        "updates": 50
+      },
+      {
+        "seconds": 3.0379296732135117,
+        "updates": 50
+      }
+    ],
+    "finite": true,
+    "first_loss": 396887.25,
+    "last_loss": 5915.06787109375,
+    "parameters": 10230696,
+    "peak_gpu_allocated_gib": 1.0475959777832031,
+    "peak_gpu_reserved_gib": 1.318359375,
+    "seconds_per_update_steady_median": 0.060687464280053977
+  },
+  "torch": "2.13.0+cu130",
+  "updates": 500,
+  "written_at": "2026-10-26T08:20:57Z"
+}

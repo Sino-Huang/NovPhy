@@ -23,7 +23,7 @@
   "measured_at": "2026-10-24T23:41:10Z",
   "parameters": 10230696,
   "plan_identity": "issue-134-gamma-models-v1",
-  "primary": "projection_upper",
+  "primary": "projection_measured",
   "projection_lower": {
     "child_cap_gpu_h": 12.0,
     "fidelity_gpu_h": 0.0,
@@ -62,6 +62,50 @@
     "wall_cap_h": 48.0,
     "wall_h_on_4_gpus_serial_ladder": 1.5071978796894352,
     "within_caps": true
+  },
+  "projection_measured": {
+    "child": {
+      "child_cap_gpu_h": 12.0,
+      "fidelity_gpu_h": 0.0,
+      "native_per_seed_gpu_h": 0.842881448334083,
+      "readouts_gpu_h_estimate": 0.024414891128738722,
+      "score_gpu_h_estimate": 0.5,
+      "seed_cap_gpu_h": 24.0,
+      "selection_gpu_h": {
+        "g0.95": 0.842881448334083,
+        "g0.978": 0.842881448334083,
+        "g0.99": 0.842881448334083
+      },
+      "steps": {
+        "g0.95": 50000,
+        "g0.978": 50000,
+        "g0.99": 50000
+      },
+      "total_gpu_h": 4.738822132799154,
+      "training_gpu_h": 1.685762896668166,
+      "training_queue_loads_h": [
+        0.842881448334083,
+        0.842881448334083,
+        0.0,
+        0.0
+      ],
+      "training_queues": {
+        "0": [
+          "T3--seed20260909"
+        ],
+        "1": [
+          "T3--seed20260910"
+        ],
+        "2": [],
+        "3": []
+      },
+      "wall_cap_h": 48.0,
+      "wall_h_on_4_gpus_serial_ladder": 2.1918666194503507,
+      "within_caps": true
+    },
+    "seconds_per_decision": 0.04308510199189186,
+    "source": "timing.json (measured)",
+    "t3_seconds_per_update": 0.060687464280053977
   },
   "projection_upper": {
     "child_cap_gpu_h": 12.0,
@@ -104,5 +148,6 @@
   },
   "schema": "issue_134_projection_v1",
   "t3_cpu_seconds_per_update": 1.1186374556273222,
-  "threads": 4
+  "threads": 4,
+  "timing_sha256": "sha256:7a6abffa8ad35975f18e7cd9fc22c7a278cfb879cf81c8daabc8b41382a55ce8"
 }

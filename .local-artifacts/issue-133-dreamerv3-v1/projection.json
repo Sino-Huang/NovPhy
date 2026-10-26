@@ -27,7 +27,7 @@
   "measured_at": "2026-10-24T20:12:11Z",
   "parameters": 14671084,
   "plan_identity": "issue-133-dreamerv3-v1",
-  "primary": "projection_upper",
+  "primary": "projection_measured",
   "projection_latency_model": {
     "child_cap_gpu_h": 76.0,
     "fidelity_gpu_h": 20.802780744579284,
@@ -66,6 +66,56 @@
     "wall_cap_h": 48.0,
     "wall_h_on_4_gpus_serial_ladder": 77.64860385694344,
     "within_caps": false
+  },
+  "projection_measured": {
+    "child": {
+      "child_cap_gpu_h": 76.0,
+      "fidelity_gpu_h": 8.754330235001527,
+      "native_per_seed_gpu_h": 11.410993087906693,
+      "readouts_gpu_h_estimate": 1.5,
+      "score_gpu_h_estimate": 1.0,
+      "seed_cap_gpu_h": 24.0,
+      "selection_gpu_h": {
+        "lr3e-4": 11.410993087906693,
+        "native": 11.410993087906693,
+        "rr128": 2.852739360953355
+      },
+      "steps": {
+        "lr3e-4": 320137,
+        "native": 320137,
+        "rr128": 80034
+      },
+      "total_gpu_h": 59.751041947581655,
+      "training_gpu_h": 22.821986175813386,
+      "training_queue_loads_h": [
+        11.410993087906693,
+        11.410993087906693,
+        0.0,
+        0.0
+      ],
+      "training_queues": {
+        "0": [
+          "T1--seed20260909"
+        ],
+        "1": [
+          "T1--seed20260910"
+        ],
+        "2": [],
+        "3": []
+      },
+      "wall_cap_h": 48.0,
+      "wall_h_on_4_gpus_serial_ladder": 32.95131641081491,
+      "within_caps": true
+    },
+    "fidelity": {
+      "native_updates": 233674,
+      "plan_gpu_h": 0.28737470088526607,
+      "seconds_per_update": 0.13044258207082748,
+      "total_gpu_h": 8.754330235001527,
+      "train_gpu_h": 8.466955534116261
+    },
+    "source": "timing.json (measured)",
+    "t1_seconds_per_update": 0.1283187357801944
   },
   "projection_upper": {
     "child_cap_gpu_h": 76.0,
@@ -117,5 +167,6 @@
     "lr3e-4": 0.2733730688883556,
     "native": 0.2733730688883556,
     "rr128": 0.2733730688883556
-  }
+  },
+  "timing_sha256": "sha256:8e064f2f76fa8aca5430ec6c83b7863b1600165e94205abc802a520b8bbcba89"
 }

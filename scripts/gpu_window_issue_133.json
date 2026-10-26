@@ -23,7 +23,7 @@
     },
     {
       "id": "133-gfid-cache",
-      "gpu": 0,
+      "gpu": null,
       "resumable": true,
       "est_minutes": 60,
       "shares_gpu": true,
@@ -44,7 +44,7 @@
       "id": "133-gfid-train",
       "gpu": 3,
       "resumable": true,
-      "est_minutes": 2720,
+      "est_minutes": 510,
       "shares_gpu": true,
       "depends_on": [
         "133-gfid-cache"
@@ -89,7 +89,7 @@
       "id": "133-select-native",
       "gpu": 0,
       "resumable": true,
-      "est_minutes": 1660,
+      "est_minutes": 685,
       "shares_gpu": true,
       "depends_on": [
         "133-gfid-plan"
@@ -113,7 +113,7 @@
       "id": "133-select-lr3e-4",
       "gpu": 1,
       "resumable": true,
-      "est_minutes": 1660,
+      "est_minutes": 685,
       "shares_gpu": true,
       "depends_on": [
         "133-gfid-plan"
@@ -135,9 +135,9 @@
     },
     {
       "id": "133-select-rr128",
-      "gpu": 2,
+      "gpu": 3,
       "resumable": true,
-      "est_minutes": 420,
+      "est_minutes": 171,
       "shares_gpu": true,
       "depends_on": [
         "133-gfid-plan"
@@ -152,7 +152,7 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "2",
+        "CUDA_VISIBLE_DEVICES": "3",
         "B127_T1_CPU_THREADS": "8"
       },
       "note": "T1 selection run 'rr128' (train_ratio 128: 80 034 updates), seed 20260908; gates and resumability as 133-select-native."
