@@ -1,0 +1,242 @@
+{
+ "G_port_rule": "#123 tolerances (loss / pre-clip grad-norm relative 1e-4, per-tensor post-clip gradient relative L2 1e-3, parameters |delta| <= 1e-7 on >= 99.9 % after each of two optimizer steps, LR equal) + initial state and the official batch (Episode / make_segment / collate) equal + one sampler call and the 45-step WorldModelEnv rollout max abs <= 1e-5; reference = the official code (Trainer.train_component, configure_opt, get_lr_sched, DiffusionSampler.sample, WorldModelEnv.step) in env b127-diamond; same torch build",
+ "adapter_sha256": "sha256:5a057857f5b21cc3c2c63775caccea8e5e802d4a8d860b40870984783df813cc",
+ "arm": "T5 DIAMOND-px",
+ "cases": {
+  "atari-discrete": {
+   "batch0_equal": true,
+   "exact": true,
+   "forward": {
+    "loss": [
+     1.318784236907959,
+     1.318784236907959
+    ],
+    "loss_rel": 0.0,
+    "pass": true
+   },
+   "init_state_equal": true,
+   "parameters": [
+    4406083,
+    4406083
+   ],
+   "pass": true,
+   "sample": {
+    "max_abs": 0.0,
+    "pass": true
+   },
+   "steps": [
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      0.9730685949325562,
+      0.9730685949325562
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 0,
+     "loss": [
+      1.2278631925582886,
+      1.2278631925582886
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      0.0001,
+      0.0001
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    },
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      0.7358689904212952,
+      0.7358689904212952
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 1,
+     "loss": [
+      1.2154159545898438,
+      1.2154159545898438
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      0.0001,
+      0.0001
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    }
+   ]
+  },
+  "launch": {
+   "batch0_equal": true,
+   "exact": true,
+   "forward": {
+    "loss": [
+     2.213169813156128,
+     2.213169813156128
+    ],
+    "loss_rel": 0.0,
+    "pass": true
+   },
+   "init_state_equal": true,
+   "parameters": [
+    4406019,
+    4406019
+   ],
+   "pass": true,
+   "rollout": {
+    "frame225_max_abs": 0.0,
+    "max_abs": 0.0,
+    "pass": true,
+    "steps": 45
+   },
+   "sample": {
+    "max_abs": 0.0,
+    "pass": true
+   },
+   "steps": [
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      13.95518970489502,
+      13.95518970489502
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 0,
+     "loss": [
+      2.1872050762176514,
+      2.1872050762176514
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      0.0,
+      0.0
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    },
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      14.697623252868652,
+      14.697623252868652
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 1,
+     "loss": [
+      2.1977639198303223,
+      2.1977639198303223
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      1.0000000000000002e-06,
+      1.0000000000000002e-06
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    }
+   ]
+  },
+  "launch-ar4": {
+   "batch0_equal": true,
+   "exact": true,
+   "forward": {
+    "loss": [
+     2.1637485027313232,
+     2.1637485027313232
+    ],
+    "loss_rel": 0.0,
+    "pass": true
+   },
+   "init_state_equal": true,
+   "parameters": [
+    4406019,
+    4406019
+   ],
+   "pass": true,
+   "sample": {
+    "max_abs": 0.0,
+    "pass": true
+   },
+   "steps": [
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      11.033419609069824,
+      11.033419609069824
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 0,
+     "loss": [
+      2.1716160774230957,
+      2.1716160774230957
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      0.0,
+      0.0
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    },
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm_preclip": [
+      11.786636352539062,
+      11.786636352539062
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 1,
+     "loss": [
+      2.0419890880584717,
+      2.0419890880584717
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      1.0000000000000002e-06,
+      1.0000000000000002e-06
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true
+    }
+   ]
+  }
+ },
+ "inputs_sha256": "sha256:fe0a635eec19ff869bb0be00d28e58564ea7ba5d361e3c1069decf13b5f7f412",
+ "issue": 137,
+ "pass": true,
+ "reference_script_sha256": "sha256:4d3b8fa530592d9a6f79159b6ad9d269573aebf0e51460968c4aa6e997616822",
+ "reference_sha256": "sha256:5bf77478acd959e0a898a6aaf27c9fdb337017ff7eec6f4b1613945130b3f42f",
+ "schema": "issue_127_gport_v1",
+ "tolerance": {
+  "grad_norm_relative": 0.0001,
+  "grad_tensor_relative_l2": 0.001,
+  "loss_relative": 0.0001,
+  "param_close_abs": 1e-07,
+  "param_close_share": 0.999,
+  "sample_max_abs": 1e-05
+ },
+ "torch": [
+  "2.13.0+cu130",
+  "2.13.0+cu130"
+ ],
+ "written_at": "2026-10-26T20:37:31Z"
+}

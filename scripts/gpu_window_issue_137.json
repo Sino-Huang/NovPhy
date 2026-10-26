@@ -1,0 +1,119 @@
+{
+  "note": "#137 T5 DIAMOND (coverage arm, P-coverage), phase A: the NovPhy selection (three pre-declared configurations, seed 20260908, full native budget) + selection readouts + smoke. PREPARED, NOT ENQUEUED: enqueue only after the orchestrator's Decision P-coverage (funding) and its funded.json marker; --selection refuses unless funded.json, gport/gport.json (passed), fidelity/gfid.json (CPU Tier E, passed) and readiness/readiness.json (passed) are all present. est_minutes = the pessimistic paper anchor of projection.json (RTX 4090 App. I timings unscaled: 88 ms / update at AR 1, 4.2 ms / denoising step of 32 rows) until timing.json exists; replace them with the measured projection. Resumable: SIGTERM -> resume.pt -> exit 75. Phase B (after the --prepare freeze commit): scripts/gpu_window_issue_137_main.json.",
+  "jobs": [
+    {
+      "id": "137-select-native",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 601,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--selection",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "native: 409 600 updates, batch 32, AR 1 (paper anchor 10.0 GPU-h); GPU < 4 GB [INFERENCE]"
+    },
+    {
+      "id": "137-select-ar4",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 1502,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--selection",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "ar4: 409 600 updates, batch 32, num_autoregressive_steps 4 (paper anchor x 2.5 = 25.0 GPU-h); GPU < 6 GB [INFERENCE]"
+    },
+    {
+      "id": "137-select-native-2x",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 1202,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--selection",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "native-2x: 819 200 updates (paper anchor 20.0 GPU-h)"
+    },
+    {
+      "id": "137-selro",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "137-select-native",
+        "137-select-ar4",
+        "137-select-native-2x"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "policy-split pooled grid AUC per configuration (94 cells x 16 candidates x 8 paths; deterministic scoring) -> selection.json"
+    },
+    {
+      "id": "137-smoke",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": [
+        "137-selro"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "accounting, G-port record, CPU tests (~10 min), throughput, selection, projection of what is left vs the caps (P-cap applies when over) -> smoke.json"
+    }
+  ]
+}

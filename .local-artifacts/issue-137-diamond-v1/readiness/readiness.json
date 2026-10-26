@@ -1,0 +1,51 @@
+{
+  "arm": "T5",
+  "ceiling_auc": 0.6782538383602212,
+  "consequence": "T5 Phase 0 continues",
+  "data": {
+    "ceiling": "policy split: eb.policy_cells('grid') mixed cells; anchor frame 0; true endpoint min(225, end) from the #123 policy pixel store, 64 x 64",
+    "evaluation": "not read",
+    "readout_fit": "fit split only: every fit shot at 0, 15, ..., 225 (clamped), 64 x 64 frames, E99 targets"
+  },
+  "decision": "https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6426541110",
+  "e99_true_carrier_ceiling_auc": 0.7222624892837659,
+  "pass": true,
+  "policy_candidates": 1504,
+  "policy_grid_cells": 94,
+  "readout": {
+    "artifact": ".local-artifacts/issue-137-diamond-v1/readiness/readout.pt",
+    "batch": 128,
+    "device": "cpu",
+    "dim": 256,
+    "epochs": 25,
+    "final_loss": 0.05103594437241554,
+    "fit_frames": 220887,
+    "fit_seconds": 4496.2397077609785,
+    "fit_shots": 13919,
+    "heads": 8,
+    "hidden": 512,
+    "lr": 0.001,
+    "patch": 8,
+    "samples": 220887,
+    "seed": 20260908,
+    "sha256": "sha256:7c6d6bbb82071aa3e0d11f524fc643a12548795207aa4f3c2555c7d7fbeb0b70",
+    "steps": 43125,
+    "weight_decay": 0.0001
+  },
+  "readout_error_vs_e99_on_policy_endpoints": {
+    "carrier_mae": 0.015729708597064018,
+    "pig_center_mae": 0.021051783114671707,
+    "pig_presence_mae": 0.0012273486936464906
+  },
+  "schema": "issue_137_readiness_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "seconds": 4497.61587896524,
+  "threshold": 0.65,
+  "typed_reason": null,
+  "written_at": "2026-10-26T21:51:54Z"
+}

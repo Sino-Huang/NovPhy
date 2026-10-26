@@ -1,0 +1,216 @@
+{
+  "note": "#137 T5 DIAMOND (coverage arm), phase B: main seeds, readouts, freeze of readouts, the one scoring pass, the novelty pass, publish + validate. PREPARED, NOT ENQUEUED: enqueue only after phase A (scripts/gpu_window_issue_137.json), a passing smoke and the orchestrator's --prepare freeze commit. Queue indices are plan.json's (train: 2 seeds over queues 0/1; readouts: 3 arm-seeds over queues 0/1/2). est_minutes = the paper anchor at the most expensive configuration (ar4); replace with the measured projection.",
+  "jobs": [
+    {
+      "id": "137-train-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 1502,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--train",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "id": "137-train-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 1502,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--train",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "id": "137-readouts-q0",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 25,
+      "shares_gpu": true,
+      "depends_on": [
+        "137-train-q0",
+        "137-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--readouts",
+        "--gpu",
+        "0"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "480 fit anchors x 16 grid (G-rank, G-action) + 94 policy cells, 8 paths each (~574 decisions)"
+    },
+    {
+      "id": "137-readouts-q1",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 25,
+      "shares_gpu": true,
+      "depends_on": [
+        "137-train-q0",
+        "137-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--readouts",
+        "--gpu",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "480 fit anchors x 16 grid (G-rank, G-action) + 94 policy cells, 8 paths each (~574 decisions)"
+    },
+    {
+      "id": "137-readouts-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 25,
+      "shares_gpu": true,
+      "depends_on": [
+        "137-train-q0",
+        "137-train-q1"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--readouts",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "480 fit anchors x 16 grid (G-rank, G-action) + 94 policy cells, 8 paths each (~574 decisions)"
+    },
+    {
+      "id": "137-freeze-readouts",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 5,
+      "shares_gpu": true,
+      "depends_on": [
+        "137-readouts-q0",
+        "137-readouts-q1",
+        "137-readouts-q2"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--freeze-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "id": "137-score",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 150,
+      "shares_gpu": false,
+      "depends_on": [
+        "137-freeze-readouts"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--score"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "evaluation anchors read here, once; 3 records (512 mixed cells, 480 wrong anchors, ~311 position branches each); resumable per record; refuses unless G-fid passed"
+    },
+    {
+      "id": "137-score-novelty",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 55,
+      "shares_gpu": false,
+      "depends_on": [
+        "137-score"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_137_diamond.py",
+        "--score-novelty"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "P-novelty (descriptive): 464 novelty levels x 3 seeds if the guards pass"
+    },
+    {
+      "id": "137-publish-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "depends_on": [
+        "137-score-novelty"
+      ],
+      "command": [
+        "bash",
+        "-c",
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_137_diamond.py --publish && /srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_137_diamond.py --validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      }
+    }
+  ]
+}

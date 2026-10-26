@@ -1,0 +1,88 @@
+{
+ "arm": "T5 DIAMOND-px",
+ "band": ".local-artifacts/issue-137-diamond-v1/fidelity/band.json",
+ "band_sha256": "sha256:a21b44eca6e9b7962a674c66a1a0fbf0d9a60d3ba49f4ee5f2f458d4f1fc0cca",
+ "games": {
+  "Boxing": {
+   "band": [
+    63.67587461280835,
+    110.12412538719167
+   ],
+   "episodes": 100,
+   "mean_length": 1452.43,
+   "ours_mean_return": 90.74,
+   "ours_sd_episodes": 4.892005434555155,
+   "ours_se": 0.48920054345551545,
+   "paper_mean": 86.9,
+   "paper_seed_returns": [
+    99.4,
+    84.0,
+    97.5,
+    71.4,
+    82.2
+   ],
+   "paper_table1": 86.9,
+   "pass": true,
+   "run": ".local-artifacts/issue-137-diamond-v1/fidelity/run/Boxing.json",
+   "run_sha256": "sha256:d06e4f6f8d8fe7a7583cfd2e64af32471fa3958eba7987e2a29b63c185116c4c",
+   "seconds": 1016.1155705251731
+  },
+  "Freeway": {
+   "band": [
+    32.10838950153112,
+    34.53161049846888
+   ],
+   "episodes": 100,
+   "mean_length": 2044.31,
+   "ours_mean_return": 32.22,
+   "ours_sd_episodes": 0.7987363757710036,
+   "ours_se": 0.07987363757710036,
+   "paper_mean": 33.32,
+   "paper_seed_returns": [
+    33.8,
+    33.7,
+    32.4,
+    33.0,
+    33.7
+   ],
+   "paper_table1": 33.3,
+   "pass": true,
+   "run": ".local-artifacts/issue-137-diamond-v1/fidelity/run/Freeway.json",
+   "run_sha256": "sha256:ed8de0d946e326a40b8fca6cc0e66a30ef631f5a51f9706685f53ca218c2ad36",
+   "seconds": 1008.7190835811198
+  },
+  "Pong": {
+   "band": [
+    18.962860064274164,
+    21.757139935725835
+   ],
+   "episodes": 100,
+   "mean_length": 1709.61,
+   "ours_mean_return": 20.89,
+   "ours_sd_episodes": 0.5298179599702815,
+   "ours_se": 0.052981795997028146,
+   "paper_mean": 20.36,
+   "paper_seed_returns": [
+    19.3,
+    20.9,
+    20.9,
+    20.7,
+    20.0
+   ],
+   "paper_table1": 20.4,
+   "pass": true,
+   "run": ".local-artifacts/issue-137-diamond-v1/fidelity/run/Pong.json",
+   "run_sha256": "sha256:3ca0a5279eb2808864c8607b904ddcb4a3cd6528aa2f167a1ab4bed3cec30c62",
+   "seconds": 1041.2932779709809
+  }
+ },
+ "issue": 137,
+ "pass": true,
+ "protocol": "Trainer.collect_test(final=True) semantics: the official make_atari_env test env (NoFrameskip-v4, frame skip 4 with max-pooling, up to 30 no-op starts, 64 x 64 INTER_AREA, done_on_life_loss False, max_episode_steps null), the official collector / env loop (actions sampled from the actor-critic's Categorical, epsilon 0.0), 100 episodes; the number = mean episode return",
+ "repair_attempts": 0,
+ "rule": "band per game = the paper's 5-seed mean +/- 2 SD (sample SD over seeds); a game passes iff its 100-episode mean return lies inside its band (full precision); G-fid passes iff all three games pass",
+ "schema": "issue_127_gfid_v1",
+ "target": "Atari 100k returns of the released DIAMOND agents (paper Table 1; per-seed values in the repository's results/data/DIAMOND.json) with the paper's evaluation protocol",
+ "tier": "E",
+ "written_at": "2026-10-26T21:52:06Z"
+}

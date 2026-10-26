@@ -1,0 +1,175 @@
+{
+  "cpu": {
+    "ar4": {
+      "cpu_seconds_per_update": 11.767588750924915,
+      "update_flops": 2923640954880
+    },
+    "native": {
+      "cpu_seconds_per_update": 4.657735769171268,
+      "update_flops": 1169456381952
+    },
+    "native-2x": {
+      "cpu_seconds_per_update": 4.235870500095189,
+      "update_flops": 1169456381952
+    }
+  },
+  "decision_cpu_seconds": 253.29170756050735,
+  "decision_flops": 105257113818624.0,
+  "gpu_model": {
+    "lower": {
+      "score_tflops": 40.0,
+      "train_tflops": 40.0
+    },
+    "upper": {
+      "score_tflops": 10.0,
+      "train_tflops": 10.0
+    }
+  },
+  "label": "[INFERENCE] CPU micro-benchmark (synthetic 64 x 64 batches, 4 threads): FLOPs of one official update / one decision (16 candidates x 8 paths x 45 steps x 3 denoising steps + readouts) mapped to an RTX 5090 at 40 (lower) / 10 (upper) sustained TFLOP/s; paper anchor = App. I RTX 4090 timings (88 ms / update at AR 1, 4.2 ms / denoising step of 32 rows) unscaled",
+  "measured_at": "2026-10-26T20:49:21Z",
+  "paper_4090": {
+    "denoising_step_seconds_batch32": 0.0042,
+    "update_seconds_batch32_ar1": 0.088
+  },
+  "plan_identity": "issue-137-diamond-v1",
+  "primary": "projection_paper_anchor",
+  "projection_lower": {
+    "child_cap_gpu_h": 136.0,
+    "gfid_gpu_h": 0.0,
+    "native_per_seed_gpu_h_max": 8.316134271658667,
+    "readouts_gpu_h": 1.258699652747712,
+    "score_gpu_h": 3.874777502448096,
+    "seconds_per_decision": 2.6314278454656,
+    "seconds_per_update": {
+      "ar4": 0.073091023872,
+      "native": 0.0292364095488,
+      "native-2x": 0.0292364095488
+    },
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "ar4": 8.316134271658667,
+      "native": 3.326453708663467,
+      "native-2x": 6.652907417326934
+    },
+    "selection_readouts_gpu_h": 0.20612851456147202,
+    "steps": {
+      "ar4": 409600,
+      "native": 409600,
+      "native-2x": 819200
+    },
+    "total_gpu_h": 40.267369610723684,
+    "training_gpu_h": 16.632268543317334,
+    "training_queue_loads_h": [
+      8.316134271658667,
+      8.316134271658667,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T5--seed20260909"
+      ],
+      "1": [
+        "T5--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 21.132741111242808,
+    "within_caps": true
+  },
+  "projection_paper_anchor": {
+    "child_cap_gpu_h": 136.0,
+    "gfid_gpu_h": 0.0,
+    "native_per_seed_gpu_h_max": 25.031111111111105,
+    "readouts_gpu_h": 1.08486,
+    "score_gpu_h": 3.33963,
+    "seconds_per_decision": 2.268,
+    "seconds_per_update": {
+      "ar4": 0.21999999999999997,
+      "native": 0.088,
+      "native-2x": 0.088
+    },
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "ar4": 25.031111111111105,
+      "native": 10.012444444444442,
+      "native-2x": 20.024888888888885
+    },
+    "selection_readouts_gpu_h": 0.17765999999999998,
+    "steps": {
+      "ar4": 409600,
+      "native": 409600,
+      "native-2x": 819200
+    },
+    "total_gpu_h": 109.73281666666664,
+    "training_gpu_h": 50.06222222222221,
+    "training_queue_loads_h": [
+      25.031111111111105,
+      25.031111111111105,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T5--seed20260909"
+      ],
+      "1": [
+        "T5--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 53.941132222222215,
+    "within_caps": false
+  },
+  "projection_upper": {
+    "child_cap_gpu_h": 136.0,
+    "gfid_gpu_h": 0.0,
+    "native_per_seed_gpu_h_max": 33.26453708663467,
+    "readouts_gpu_h": 5.034798610990848,
+    "score_gpu_h": 15.499110009792384,
+    "seconds_per_decision": 10.5257113818624,
+    "seconds_per_update": {
+      "ar4": 0.292364095488,
+      "native": 0.1169456381952,
+      "native-2x": 0.1169456381952
+    },
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "ar4": 33.26453708663467,
+      "native": 13.305814834653868,
+      "native-2x": 26.611629669307735
+    },
+    "selection_readouts_gpu_h": 0.8245140582458881,
+    "steps": {
+      "ar4": 409600,
+      "native": 409600,
+      "native-2x": 819200
+    },
+    "total_gpu_h": 161.06947844289473,
+    "training_gpu_h": 66.52907417326934,
+    "training_queue_loads_h": [
+      33.26453708663467,
+      33.26453708663467,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T5--seed20260909"
+      ],
+      "1": [
+        "T5--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 84.53096444497123,
+    "within_caps": false
+  },
+  "schema": "issue_137_projection_v1"
+}
