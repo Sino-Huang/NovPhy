@@ -10,7 +10,10 @@ from scripts import external_baselines as eb
 from scripts import run_issue_127_program as rp
 
 ARMS = {128: {"A1": "primary", "A2": "primary", "A4": "primary", "A3": "secondary"}, 129: {"B1": "primary"},
-        130: {"C1-dino": "primary", "C1-car": "secondary"}, 131: {"D1": "primary"}}
+        130: {"C1-dino": "primary", "C1-car": "secondary"}, 131: {"D1": "primary"}, 133: {"T1": "secondary"},
+        134: {"T3": "secondary"}, 135: {}, 136: {"T4": "secondary"}}
+# a Tier-C child dropped before training publishes no arm block, only its pending arm (as #135 did)
+EXTRAS = {135: {"pending_arms": {"T2": "fidelity_not_reproduced"}, "tier_c_arm": True}}
 
 
 def est(mean, lo, hi):
@@ -58,7 +61,7 @@ def setup(tmp_path, overrides=None, extras=None, skip=()):
     overrides, extras = overrides or {}, extras or {}
     for issue in ARMS:
         if issue not in skip:
-            write_child(artifacts, issue, overrides.get(issue), extras.get(issue))
+            write_child(artifacts, issue, overrides.get(issue), extras.get(issue, EXTRAS.get(issue)))
     eb.write_json(rp.child_dir(artifacts, 132) / "summary.json",
                   {"agents": {"datalab": {"pass1": 0.25, "pass3": None}}, "engine_worker_hours": 50.0})
     queue = tmp_path / "queue.json"
@@ -149,6 +152,9 @@ def test_partial_and_native_action(tmp_path):
     assert summary["native_action"]["issue_102_n1"]["random"]["pass3"]["mean"] == 0.198
     assert "| E1 datalab | 0.2500 | n/a |" in findings and "**Partial summary**" in findings
     assert summary["compute"]["engine_worker_hours"]["132"] == 50.0
+    # a Tier-C child dropped before training is listed as not run with its typed reason; coverage rows stay secondary
+    assert {"child": 135, "arm": "T2", "status": "not_run", "reason": "fidelity_not_reproduced"} in summary["not_run"]
+    assert all(a["arm"] not in ("T1", "T3", "T4") for a in summary["program_claim"]["U"]["vetoes"])
 
 
 def test_summary_validate_roundtrip(tmp_path):

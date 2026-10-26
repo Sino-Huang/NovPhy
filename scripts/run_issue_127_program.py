@@ -47,6 +47,10 @@ CHILDREN = {
     130: {"slug": "dino-wm", "kind": "grid", "label": "C1 DINO-WM"},
     131: {"slug": "thick", "kind": "grid", "label": "D1 THICK"},
     132: {"slug": "aibirds-agents", "kind": "native_action", "label": "E1 AIBIRDS agents"},
+    133: {"slug": "dreamerv3", "kind": "grid", "label": "T1 DreamerV3 (coverage)"},
+    134: {"slug": "gamma-models", "kind": "grid", "label": "T3 gamma-models (coverage)"},
+    135: {"slug": "ddlp", "kind": "grid", "label": "T2 DDLP (Tier C, triggered)"},
+    136: {"slug": "diffusion-forcing", "kind": "grid", "label": "T4 Diffusion Forcing (coverage)"},
 }
 JOB_ID = re.compile(r"^1(2[89]|3[0-9])-")
 WORLD_MODEL_ARMS = ("B1", "C1-dino", "C1-car", "D1")
