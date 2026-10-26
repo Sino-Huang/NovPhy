@@ -529,3 +529,17 @@ Addendum to Decision P-other 2026-10-25 (https://github.com/Sino-Huang/NovPhy/is
 **Reason.** This is the cheapest faithful design: one template, Phy-Q's own protocol and budget, a target read reproducibly from the paper's figure and calibrated against known values, and a band whose statistic matches the published one. Funding follows P-engine's E1-first order without weakening E1.
 
 **Frozen band file.** `.local-artifacts/issue-128-direct-predictors-v1/a3/fidelity-band.json`, sha256 `84b17d0914791dcde3ae54899b0373064bd564c77c7de73f7c53a90eaa99077f`.
+
+## Decision P-other (2026-10-27): the primary scoring group can be frozen and scored with A4 recorded as dropped (post-freeze amendment, decided before A4's G-fid outcome)
+
+**Trigger.** A4's Tier-T G-fid (folds 0–2) finishes overnight 27→28 Oct; its outcome is not known to anyone yet (no fold result has been read). The frozen #128 plan scores the group `primary` "after every seed of A1, A2, A2-native and A4 is trained and read out", and `--freeze-readouts` refuses a partial group. If A4 were dropped under P-fid (`fidelity_not_reproduced` after the permitted repair attempts), A1, A2 and A2-native could then never be scored — a gap in the frozen runner, not a choice anyone made.
+
+**Decision.** Close the gap now, before the outcome, so that no later step depends on it:
+- A primary-group arm that is **dropped with a typed reason** under a posted decision (P-fid `fidelity_not_reproduced`, or a typed terminal training failure) is recorded in the group's readouts manifest as dropped (reason + decision URL), with no models, readouts or records.
+- The remaining arms of the group freeze and score exactly as frozen; nothing else changes (anchors, scoring, guards, tokens, contrasts, the one-pass rule, G-chronology).
+- The dropped arm is published with no records, every token the stop token, disposition 4, and it vetoes the program claim (as C1-dino).
+- Implemented as a registered post-freeze amendment of `scripts/run_issue_128_direct_predictors.py` (and its tests), with the A4 G-fid gate job unchanged: on a pass, nothing in the amendment is exercised.
+
+**Reason.** This is a mechanical completion of the frozen dropping rule (P-fid already defines the drop and its reporting); it does not depend on any result, and it keeps A1/A2/A2-native — trained and read out on 25 Oct — reportable whatever A4's fidelity outcome.
+
+**Also:** the post-G-fid chain is enqueued as `scripts/gpu_window_issue_128_a4_post.json` (gate on `fidelity/a4/gfid.json` pass → A4 deferred selection → selection readouts → `--select-deferred` → A4 seeds 20260909/10 → A4 readouts → `--freeze-readouts --arms A1,A2,A2-native,A4` → score → score-novelty → publish → validate). It supersedes `scripts/gpu_window_issue_128_scoring.json` (same scoring jobs without dependencies), which is removed.

@@ -1,0 +1,291 @@
+{
+ "jobs": [
+  {
+   "id": "128-a4-gfid-gate",
+   "gpu": null,
+   "resumable": false,
+   "est_minutes": 1,
+   "depends_on": [
+    "128-gfid-a4-table"
+   ],
+   "command": [
+    "python",
+    "-c",
+    "import json, pathlib, sys; p = pathlib.Path('.local-artifacts/issue-128-direct-predictors-v1/fidelity/a4/gfid.json'); r = json.loads(p.read_text()) if p.is_file() else {}; ok = r.get('pass') is True; print('A4 G-fid Tier T:', 'pass' if ok else 'NOT passed', {k: r.get(k) for k in ('mean', 'band', 'per_fold')}); sys.exit(0 if ok else 1)"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": ""
+   },
+   "note": "#128 A4 readiness gate: exits 0 iff fidelity/a4/gfid.json has top-level pass True (G-fid Tier T inside the frozen band [82.8, 87.2]); exit 1 blocks every A4 job below and the primary-group freeze / scoring"
+  },
+  {
+   "id": "128-sel-a4",
+   "gpu": 2,
+   "resumable": true,
+   "est_minutes": 460,
+   "shares_gpu": true,
+   "depends_on": [
+    "128-a4-gfid-gate"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--selection",
+    "--arms",
+    "A4",
+    "--gpu",
+    "0",
+    "--workers",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#128 A4 deferred selection (frozen plan: configurations hundredth / tenth / native at seed 20260908, in sequence on one GPU; 7.66 GPU-h measured); no PHYRE simulator (NovPhy fit labels), peak ~20 GiB; the runner's own deferred_gate also refuses unless gfid passes; resume.pt, SIGTERM -> exit 75"
+  },
+  {
+   "id": "128-selro-a4",
+   "gpu": 2,
+   "resumable": true,
+   "est_minutes": 20,
+   "shares_gpu": true,
+   "depends_on": [
+    "128-sel-a4"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--selection-readouts",
+    "--arms",
+    "A4",
+    "--gpu",
+    "0",
+    "--workers",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#128 A4 selection readouts: policy grid AUC, G-rank, MACs per configuration (fit / policy only)"
+  },
+  {
+   "id": "128-select-deferred",
+   "gpu": null,
+   "resumable": false,
+   "est_minutes": 2,
+   "depends_on": [
+    "128-selro-a4"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--select-deferred"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": ""
+   },
+   "note": "#128 mechanical eb.select_configuration over A4's selection readouts -> selection-deferred.json (CPU)"
+  },
+  {
+   "id": "128-train-a4-s20260909",
+   "gpu": 2,
+   "resumable": true,
+   "est_minutes": 415,
+   "shares_gpu": true,
+   "depends_on": [
+    "128-select-deferred"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--train",
+    "--gpu",
+    "0"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#128 frozen train queue 0 = (already trained A3-img/20260909, skipped) + A4 seed 20260909 (plan deferred_training_gpus: 20260909 -> queue 0) on physical GPU 2; 6.90 GPU-h measured; resumable"
+  },
+  {
+   "id": "128-train-a4-s20260910",
+   "gpu": 3,
+   "resumable": true,
+   "est_minutes": 415,
+   "shares_gpu": true,
+   "depends_on": [
+    "128-select-deferred"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--train",
+    "--gpu",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "3",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#128 frozen train queue 1 = (already trained A3-img/20260910, skipped) + A4 seed 20260910 (-> queue 1) on physical GPU 3; 6.90 GPU-h measured; resumable"
+  },
+  {
+   "id": "128-readouts-a4",
+   "gpu": 2,
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": true,
+   "depends_on": [
+    "128-train-a4-s20260909",
+    "128-train-a4-s20260910"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--readouts",
+    "--gpu",
+    "0",
+    "--workers",
+    "1"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "2",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+   },
+   "note": "#128 readouts of every ready arm-seed lacking readouts.json (only A4 x 3 seeds remain): G-rank, policy AUC, MACs"
+  },
+  {
+   "id": "128-freeze-primary",
+   "gpu": null,
+   "resumable": false,
+   "est_minutes": 5,
+   "depends_on": [
+    "128-readouts-a4"
+   ],
+   "command": [
+    "python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--freeze-readouts",
+    "--arms",
+    "A1,A2,A2-native,A4"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": ""
+   },
+   "note": "#128 readouts-manifest.json group 'primary' (A1, A2, A2-native, A4; explicit: the default would pick the first unfrozen group in plan order, 'a3') before any evaluation anchor is read (CPU)"
+  },
+  {
+   "id": "128-score",
+   "gpu": 0,
+   "resumable": true,
+   "est_minutes": 30,
+   "shares_gpu": false,
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--score"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0"
+   },
+   "note": "#128 single primary scoring pass of the next frozen scoring group (group 'primary' = A1, A2, A2-native, A4) after --freeze-readouts; reads the Gate-B evaluation anchors once; resumable per record (an interrupted record is redone deterministically). ENQUEUE ONLY AFTER the plan freeze, every primary arm-seed's readouts and --freeze-readouts.",
+   "depends_on": [
+    "128-freeze-primary"
+   ]
+  },
+  {
+   "id": "128-score-novelty",
+   "gpu": 0,
+   "resumable": true,
+   "est_minutes": 40,
+   "shares_gpu": false,
+   "depends_on": [
+    "128-score"
+   ],
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--score-novelty"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0"
+   },
+   "note": "#128 P-novelty pass (Decision P-novelty issuecomment-6386830623; DESCRIPTIVE): guard-passing arms with primary records on the mixed #110 novelty levels; reads anchors-novelty.pt once (E99 parses of 455 levels) and writes the U / C* / P novelty references; resumable per record. A3 later: --score-novelty --arms A3-sym,A3-img after A3's own primary pass."
+  },
+  {
+   "id": "128-publish",
+   "gpu": null,
+   "resumable": true,
+   "est_minutes": 20,
+   "shares_gpu": false,
+   "depends_on": [
+    "128-score-novelty"
+   ],
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--publish"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": ""
+   },
+   "note": "#128 publication (CPU): records manifest (primary + novelty records and references), compute.json, summary.json, findings.md with the descriptive novelty section; every token is the stop token until --validate"
+  },
+  {
+   "id": "128-validate",
+   "gpu": 0,
+   "resumable": false,
+   "est_minutes": 60,
+   "shares_gpu": false,
+   "depends_on": [
+    "128-publish"
+   ],
+   "command": [
+    "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+    "-u",
+    "-m",
+    "scripts.run_issue_128_direct_predictors",
+    "--validate"
+   ],
+   "cwd": ".",
+   "env": {
+    "CUDA_VISIBLE_DEVICES": "0"
+   },
+   "note": "#128 validation: hash-checks the records, re-derives every table byte for byte, re-scores a spot-check record under deterministic_scoring() on GPU 0 (the --score device class), writes validation.json (binds G-records) and re-derives the publication"
+  }
+ ]
+}
