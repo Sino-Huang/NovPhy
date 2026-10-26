@@ -3,9 +3,9 @@
   "jobs": [
     {
       "id": "136-gfid",
-      "gpu": 3,
+      "gpu": 2,
       "resumable": true,
-      "est_minutes": 1845,
+      "est_minutes": 570,
       "shares_gpu": true,
       "command": [
         "/srv/home/shua0171/miniconda3/envs/b127-dforce/bin/python",
@@ -17,7 +17,7 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "3",
+        "CUDA_VISIBLE_DEVICES": "2",
         "B127_T4_CPU_THREADS": "4",
         "OMP_NUM_THREADS": "4"
       },
@@ -50,7 +50,7 @@
       "id": "136-select-ts-native",
       "gpu": 0,
       "resumable": true,
-      "est_minutes": 940,
+      "est_minutes": 290,
       "shares_gpu": true,
       "depends_on": [
         "136-gfid-collect"
@@ -75,7 +75,7 @@
       "id": "136-select-ts-100k",
       "gpu": 1,
       "resumable": true,
-      "est_minutes": 310,
+      "est_minutes": 112,
       "shares_gpu": true,
       "depends_on": [
         "136-gfid-collect"
@@ -100,7 +100,7 @@
       "id": "136-select-planning",
       "gpu": 2,
       "resumable": true,
-      "est_minutes": 670,
+      "est_minutes": 205,
       "shares_gpu": true,
       "depends_on": [
         "136-gfid-collect"

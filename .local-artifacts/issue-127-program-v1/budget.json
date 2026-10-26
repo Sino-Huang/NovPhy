@@ -3,8 +3,8 @@
   "children": {
     "128": {
       "cpu_runs": 0,
-      "device_gpu_hours": 28.349830164166665,
-      "device_seconds": 102059.388591,
+      "device_gpu_hours": 38.60861111111111,
+      "device_seconds": 138991.0,
       "ledger": {
         "gpu_hours": 14.753864193025253,
         "gpu_seconds": 53113.91109489091,
@@ -12,18 +12,16 @@
         "wall_seconds": 53113.91106998501
       },
       "per_gpu_device_seconds": {
-        "0": 91668.388591,
+        "0": 128600.0,
         "1": 4615.0,
         "3": 5776.0
       },
-      "process_gpu_hours": 34.48788571972222,
-      "process_seconds": 124156.388591,
+      "process_gpu_hours": 44.74666666666667,
+      "process_seconds": 161088.0,
       "projected_remaining_gpu_h": 27.868744191417164,
       "projection_source": ".local-artifacts/issue-128-direct-predictors-v1/smoke.json: #128 smoke.json projection.remaining_gpu_hours (everything left after the spent ledger).",
-      "running": [
-        "128-gfid-a4-fold1#3"
-      ],
-      "runs": 27
+      "running": [],
+      "runs": 28
     },
     "129": {
       "cpu_runs": 1,
@@ -48,53 +46,47 @@
       "runs": 24
     },
     "130": {
-      "cpu_runs": 1,
-      "device_gpu_hours": 21.932052386388886,
-      "device_seconds": 78955.388591,
+      "cpu_runs": 2,
+      "device_gpu_hours": 29.849444444444444,
+      "device_seconds": 107458.0,
       "ledger": {
-        "gpu_hours": 27.660784651808207,
-        "gpu_seconds": 99578.82474650955,
-        "source": ".local-artifacts/issue-130-dino-wm-v1/ledger (raw ledger sums, pre-publication)",
-        "wall_seconds": 99759.5645684246
+        "gpu_hours": 38.01641599927615,
+        "gpu_seconds": 136859.09759739414,
+        "source": ".local-artifacts/issue-130-dino-wm-v1/compute.json"
       },
       "per_gpu_device_seconds": {
+        "0": 692.0,
         "1": 1790.0,
-        "2": 77165.388591
+        "2": 104976.0
       },
-      "process_gpu_hours": 30.20149683083333,
-      "process_seconds": 108725.388591,
+      "process_gpu_hours": 38.11888888888889,
+      "process_seconds": 137228.0,
       "projected_remaining_gpu_h": null,
       "projection_source": "no projection mapping (no smoke.json projection published yet)",
-      "running": [
-        "130-gfid-tier-e-r#4"
-      ],
-      "runs": 16
+      "running": [],
+      "runs": 19
     },
     "131": {
-      "cpu_runs": 1,
-      "device_gpu_hours": 64.64799366166666,
-      "device_seconds": 232732.777182,
+      "cpu_runs": 2,
+      "device_gpu_hours": 80.27944444444445,
+      "device_seconds": 289006.0,
       "ledger": {
-        "gpu_hours": 86.91607602636576,
-        "gpu_seconds": 312897.8736949167,
-        "source": ".local-artifacts/issue-131-thick-v1/ledger (raw ledger sums, pre-publication)",
-        "wall_seconds": 312897.8736949167
+        "gpu_hours": 107.41674703492265,
+        "gpu_seconds": 386700.28932572156,
+        "source": ".local-artifacts/issue-131-thick-v1/compute.json"
       },
       "per_gpu_device_seconds": {
-        "0": 54276.388591,
-        "1": 54344.388591,
+        "0": 84949.0,
+        "1": 79891.0,
         "2": 43597.0,
-        "3": 80515.0
+        "3": 80569.0
       },
-      "process_gpu_hours": 92.43160477277777,
-      "process_seconds": 332753.777182,
+      "process_gpu_hours": 108.07583333333334,
+      "process_seconds": 389073.0,
       "projected_remaining_gpu_h": null,
       "projection_source": "no projection mapping (no smoke.json projection published yet)",
-      "running": [
-        "131-train-q0#1",
-        "131-train-q1#1"
-      ],
-      "runs": 36
+      "running": [],
+      "runs": 44
     },
     "132": {
       "cpu_runs": 0,
@@ -110,62 +102,100 @@
       "runs": 0
     },
     "133": {
-      "cpu_runs": 0,
-      "device_gpu_hours": 0.49527777777777776,
-      "device_seconds": 1783.0,
-      "ledger": null,
-      "per_gpu_device_seconds": {
-        "3": 1783.0
+      "cpu_runs": 1,
+      "device_gpu_hours": 10.406666666666666,
+      "device_seconds": 37464.0,
+      "ledger": {
+        "gpu_hours": 10.82151338661193,
+        "gpu_seconds": 38957.44819180295,
+        "source": ".local-artifacts/issue-133-dreamerv3-v1/ledger (raw ledger sums, pre-publication)",
+        "wall_seconds": 38957.44819180295
       },
-      "process_gpu_hours": 0.49527777777777776,
-      "process_seconds": 1783.0,
+      "per_gpu_device_seconds": {
+        "3": 37464.0
+      },
+      "process_gpu_hours": 10.406666666666666,
+      "process_seconds": 37464.0,
       "projected_remaining_gpu_h": null,
-      "projection_source": "unregistered",
+      "projection_source": "no projection mapping (no smoke.json projection published yet)",
       "running": [],
-      "runs": 2
+      "runs": 3
     },
     "134": {
       "cpu_runs": 0,
       "device_gpu_hours": 0.0661111111111111,
       "device_seconds": 238.0,
-      "ledger": null,
+      "ledger": {
+        "gpu_hours": 0.11838271203114548,
+        "gpu_seconds": 426.1777633121237,
+        "source": ".local-artifacts/issue-134-gamma-models-v1/ledger (raw ledger sums, pre-publication)",
+        "wall_seconds": 426.1777633121237
+      },
       "per_gpu_device_seconds": {
         "3": 238.0
       },
       "process_gpu_hours": 0.0661111111111111,
       "process_seconds": 238.0,
       "projected_remaining_gpu_h": null,
-      "projection_source": "unregistered",
+      "projection_source": "no projection mapping (no smoke.json projection published yet)",
       "running": [],
       "runs": 2
+    },
+    "135": {
+      "cpu_runs": 0,
+      "device_gpu_hours": 0.0,
+      "device_seconds": 0,
+      "ledger": null,
+      "per_gpu_device_seconds": {},
+      "process_gpu_hours": 0.0,
+      "process_seconds": 0,
+      "projected_remaining_gpu_h": null,
+      "projection_source": "no projection mapping (no smoke.json projection published yet)",
+      "running": [],
+      "runs": 0
+    },
+    "136": {
+      "cpu_runs": 0,
+      "device_gpu_hours": 0.02388888888888889,
+      "device_seconds": 86.0,
+      "ledger": {
+        "gpu_hours": 0.023132461455857588,
+        "gpu_seconds": 83.27686124108732,
+        "source": ".local-artifacts/issue-136-diffusion-forcing-v1/ledger (raw ledger sums, pre-publication)",
+        "wall_seconds": 83.27686124108732
+      },
+      "per_gpu_device_seconds": {
+        "2": 86.0
+      },
+      "process_gpu_hours": 0.02388888888888889,
+      "process_seconds": 86.0,
+      "projected_remaining_gpu_h": null,
+      "projection_source": "no projection mapping (no smoke.json projection published yet)",
+      "running": [],
+      "runs": 1
     }
   },
   "note": "children share GPUs at the same time, so per-child device times can sum to more than the program device time; per-process GPU-h counts every run's own wall time",
-  "now": "2026-10-26T09:31:08Z",
+  "now": "2026-10-26T20:08:36Z",
   "program": {
-    "cpu_runs": 3,
-    "device_gpu_hours": 93.2681016036111,
-    "device_seconds": 335765.165773,
+    "cpu_runs": 6,
+    "device_gpu_hours": 128.33444444444444,
+    "device_seconds": 462004.0,
     "per_gpu_device_seconds": {
-      "0": 91668.388591,
-      "1": 80646.388591,
-      "2": 81945.388591,
-      "3": 81505.0
+      "0": 128783.0,
+      "1": 106193.0,
+      "2": 109842.0,
+      "3": 117186.0
     },
-    "process_gpu_hours": 172.70848732333332,
-    "process_seconds": 621750.554364,
-    "running": [
-      "128-gfid-a4-fold1#3",
-      "130-gfid-tier-e-r#4",
-      "131-train-q0#1",
-      "131-train-q1#1"
-    ],
-    "runs": 107
+    "process_gpu_hours": 216.46416666666667,
+    "process_seconds": 779271.0,
+    "running": [],
+    "runs": 121
   },
   "projected_remaining_gpu_h_total": 52.50485838031568,
   "queue": ".local-artifacts/gpu-window/queue.json",
-  "remaining_gpu_hours": 306.7318983963889,
+  "remaining_gpu_hours": 271.66555555555556,
   "rule": "program budget = device time: per GPU the union of the intervals in which at least one #127 run was running, summed over GPUs (Decision P-budget, #127 issuecomment-6388410336); a still-running run counts up to now",
   "schema": "issue_127_program_budget_v1",
-  "sum_child_device_gpu_hours": 129.80265398999995
+  "sum_child_device_gpu_hours": 173.54555555555552
 }

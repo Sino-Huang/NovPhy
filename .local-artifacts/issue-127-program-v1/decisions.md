@@ -55,3 +55,27 @@ The 0.05 threshold was set on #123's latent states. In carrier space it is not a
 2. **Diffusion Forcing** is next in order. It has no implementation or projection yet; the scout's estimate (88–184 GPU-h [INFERENCE]) straddles the remainder, so neither funding nor skipping is decidable. Its Phase 0 (vendoring, port, G-port, fidelity band, a ≤ 1 GPU-h timing probe) starts now on CPU in its own child ticket; it is funded only if its measured projection fits the remainder then.
 3. **γ-models (#134)** comes after Diffusion Forcing in the order, so its funding is decided right after Diffusion Forcing's (it is small, 4.74 GPU-h; waiting costs no wall time because the GPUs are busy with the program set and #133 for the next nights).
 4. DIAMOND, V-JEPA 2-AC and DeepPHY are decided in order after that, each by a measured projection against the remainder; any arm that does not fit is listed in the summary as not run, typed `cap`.
+
+## Decision P-coverage (2026-10-27): Diffusion Forcing (#136) and γ-models (#134) funded; DIAMOND's projection measured next
+
+**Inputs (as of 2026-10-27 07:08 AEDT).**
+- Program device time used **128.33 GPU-h**; remaining **271.67 GPU-h** (`run_issue_127_program --budget`).
+- #130 and #131 are published and validated (no further GPU time). #129 published earlier.
+- Still to run under P-budget (1)–(4): #128 ≈ 36 GPU-h (A4 Tier-T fold 2 ≈ 11.8 h left; A4 selection and two seeds 21.5; readouts and scoring ≈ 3).
+- U-native reserve (item 2), re-derived from the arms still unscored: it can fire only for A1, A2 or A4 (B1, C1-car and D1 have X − U well below zero and stop tokens). Three seeds at A4's native budget (6.9 GPU-h) plus scoring: **25 GPU-h** (was 40 while D1 was unscored).
+- Tier-C triggers, now evaluable for the world models: **Diffusion Forcing / γ-models** (D1 − U or D1 − J_dec `supported`): does not fire (D1 − U −0.2456, D1 − J_dec −0.2471, stop tokens). **DreamerV3 / DIAMOND / V-JEPA 2-AC** (a world-model arm at disposition 1): does not fire (B1, C1-car, D1 at disposition 4; C1-dino dropped). So all three stay coverage arms.
+- Already funded: #133 DreamerV3, 59.75 GPU-h projected, 10.41 used; its G-fid training is running ~15 % slower than the probe (real batches), so ≈ 52 GPU-h is committed.
+- **Remainder for further coverage arms: 271.67 − 36 − 25 − 52 ≈ 158.7 GPU-h.**
+
+**Measured projections.**
+
+| arm | probe | projection (measured) | within caps |
+| --- | --- | --- | --- |
+| #136 T4 Diffusion Forcing | exclusive GPU 2 (issuecomment-6413975265): ts 0.0674 s/update, planning 0.1024, 1.22 s/decision | **31.7 GPU-h** (G-fid 9.5; selection 4.8 + 1.9 + 3.4; two seeds 9.7; readouts 0.6; scoring 1.8); wall 21.2 h | yes (cap 184, 48 h) |
+| #134 T3 γ-models | exclusive GPU 3 (issuecomment-6402603433) | **4.74 GPU-h** | yes |
+
+**Decision (P-coverage order).**
+1. **Diffusion Forcing (#136) is funded** (31.7 ≤ 158.7); remainder ≈ 127.
+2. **γ-models (#134) is funded** (4.74 ≤ 127); remainder ≈ 122.
+3. **DDLP** (next in order) was already run as the triggered Tier-C arm and dropped (`fidelity_not_reproduced`); it is not re-run as a coverage arm.
+4. **DIAMOND** is next: no implementation or projection yet; the scout estimate (64–136 GPU-h [INFERENCE]) straddles the remainder, so its Phase 0 (vendoring, port, G-port, fidelity band, timing probe) starts now on CPU in a new child ticket; funded only if its measured projection fits then. V-JEPA 2-AC and DeepPHY follow in order the same way.

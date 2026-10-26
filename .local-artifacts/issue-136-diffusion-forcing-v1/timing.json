@@ -1,0 +1,161 @@
+{
+  "configs": {
+    "planning": {
+      "batch": 2048,
+      "chunks": [
+        {
+          "seconds": 2.608281146734953,
+          "updates": 25
+        },
+        {
+          "seconds": 2.558690883219242,
+          "updates": 25
+        },
+        {
+          "seconds": 2.560419647023082,
+          "updates": 25
+        },
+        {
+          "seconds": 2.591593540739268,
+          "updates": 25
+        }
+      ],
+      "finite": true,
+      "first_loss": 1.160501480102539,
+      "last_loss": 0.8678920865058899,
+      "mixed": true,
+      "parameters": 12034060,
+      "peak_gpu_allocated_gib": 5.643409729003906,
+      "peak_gpu_reserved_gib": 5.83984375,
+      "scoring": {
+        "decisions": 16,
+        "rows_per_call": 128,
+        "samples": 32,
+        "seconds": 19.581201171968132,
+        "seconds_per_decision": 1.2238250732480083
+      },
+      "seconds_per_update_steady_median": 0.10241678588092328,
+      "updates": 100
+    },
+    "ts-native": {
+      "batch": 32,
+      "chunks": [
+        {
+          "seconds": 2.0292056128382683,
+          "updates": 25
+        },
+        {
+          "seconds": 1.6556747211143374,
+          "updates": 25
+        },
+        {
+          "seconds": 1.7067513559013605,
+          "updates": 25
+        },
+        {
+          "seconds": 1.6843785690143704,
+          "updates": 25
+        },
+        {
+          "seconds": 1.6937786173075438,
+          "updates": 25
+        },
+        {
+          "seconds": 1.7215729597955942,
+          "updates": 25
+        },
+        {
+          "seconds": 1.655578664969653,
+          "updates": 25
+        },
+        {
+          "seconds": 1.7003054711967707,
+          "updates": 25
+        },
+        {
+          "seconds": 1.712288845796138,
+          "updates": 25
+        },
+        {
+          "seconds": 1.6471239160746336,
+          "updates": 25
+        },
+        {
+          "seconds": 1.673106721136719,
+          "updates": 25
+        },
+        {
+          "seconds": 1.642779546789825,
+          "updates": 25
+        }
+      ],
+      "finite": true,
+      "first_loss": 1.719070315361023,
+      "last_loss": 1.8019883632659912,
+      "mixed": true,
+      "parameters": 7367468,
+      "peak_gpu_allocated_gib": 0.24400806427001953,
+      "peak_gpu_reserved_gib": 0.271484375,
+      "scoring": {
+        "decisions": 16,
+        "rows_per_call": 128,
+        "samples": 32,
+        "seconds": 13.31661851098761,
+        "seconds_per_decision": 0.8322886569367256
+      },
+      "seconds_per_update_steady_median": 0.06737514276057482,
+      "updates": 300,
+      "validation": {
+        "crps_sum": 0.06845518946647644,
+        "rows": 1600,
+        "seconds": 1.9485213495790958
+      }
+    }
+  },
+  "decision": "P-coverage timing probe (#136)",
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "fit_store_seconds": 8.233419773168862,
+  "gfid": {
+    "chunks": [
+      {
+        "seconds": 2.0832674386911094,
+        "updates": 25
+      },
+      {
+        "seconds": 2.126624829135835,
+        "updates": 25
+      },
+      {
+        "seconds": 2.0649545448832214,
+        "updates": 25
+      },
+      {
+        "seconds": 2.019157183356583,
+        "updates": 25
+      }
+    ],
+    "parameters": 6667784,
+    "rows": 50000,
+    "seconds_per_sampler_call": 0.005651995539665222,
+    "seconds_per_update_steady_median": 0.08259818179532885,
+    "shape": {
+      "batch": 32,
+      "calls": 1560,
+      "cond_dim": 20,
+      "frames": 60,
+      "max_updates": 200000,
+      "rows": 50000,
+      "validations": 2001,
+      "x_dim": 8
+    },
+    "updates": 100
+  },
+  "host_peak_rss_gib": 5.720241546630859,
+  "host_rss_gib": 2.6462020874023438,
+  "plan_identity": "issue-136-diffusion-forcing-v1",
+  "schema": "issue_136_timing_v1",
+  "seconds": 83.27686124108732,
+  "torch": "2.13.0+cu130",
+  "written_at": "2026-10-26T17:16:46Z"
+}

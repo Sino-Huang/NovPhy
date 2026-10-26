@@ -69,3 +69,7 @@ Posted: https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6391005347
 ## Decision P-coverage (2026-10-26): timing probe repeated on an exclusive GPU
 
 The first timing probe (25 Oct) ran on GPU 3 beside Plan2Explore and B1 training (GPU util 99%), so its s/update is contended and cannot serve as the funding projection. The probe is repeated once, unchanged (same `--timing` mode, same update counts), as job `134-timing-clean` on GPU 3 tonight after #131's THICK G-fid runs and D1-m queue finish, with `shares_gpu: false` and no other job on GPU 3 while it runs (#133 first, then #134, sequentially). The contended record is kept as `timing-contended.json` (and `ledger/timing-contended.json`, so its GPU seconds stay counted); the clean probe rewrites `timing.json` and `projection.json`. Funding (`funded.json`) is decided afterwards under P-coverage on #127 from the clean projection against the program remainder; no NovPhy data beyond the probe's fit-split batches are read. Cost ≤ 1 GPU-h (#133) / ≤ 0.5 GPU-h (#134).
+
+## Decision P-coverage (2026-10-27): T3 funded
+
+Funded under P-coverage (program decision https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6426185139): the measured projection (exclusive-GPU timing probe) is **4.739 GPU-h**, within the child caps and the program remainder (≈ 158.7 GPU-h before #136 and #134). `funded.json` written by the orchestrator. The G-fid / selection queue is enqueued; selection runs refuse unless G-port and G-fid pass.

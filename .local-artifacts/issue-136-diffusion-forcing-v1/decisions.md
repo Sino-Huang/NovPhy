@@ -113,3 +113,7 @@ Posted: https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6413855182
 4. the Exchange G-fid model at its official shape (8 series, 20 covariates; synthetic inputs): s/update on 60-frame batches of 32 and s per sampler call at the official validation's 50 000 rows.
 
 `timing.json` then becomes the primary (measured) projection in `projection.json` (`projection_measured`; G-fid and `ts-native` still bounded by the 200 000-update cap, an upper bound). **Cap: 1 GPU-h of device time, charged to #136.** Nothing from the probe is reused by a later run. The funding decision (`funded.json`, or `not-run.json` with typed reason `cap`) stays separate and follows the measured projection.
+
+## Decision P-coverage (2026-10-27): T4 funded
+
+Funded under P-coverage (program decision https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6426185139): the measured projection (exclusive-GPU timing probe) is **31.735 GPU-h**, within the child caps and the program remainder (≈ 158.7 GPU-h before #136 and #134). `funded.json` written by the orchestrator. The G-fid / selection queue is enqueued; selection runs refuse unless G-port and G-fid pass.

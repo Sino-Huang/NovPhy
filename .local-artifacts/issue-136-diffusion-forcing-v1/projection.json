@@ -47,7 +47,7 @@
   "measured_at": "2026-10-26T10:24:10Z",
   "plan_identity": "issue-136-diffusion-forcing-v1",
   "policy_cells": 94,
-  "primary": "projection_upper",
+  "primary": "projection_measured",
   "projection_lower": {
     "child_cap_gpu_h": 184.0,
     "decision_counts": {
@@ -104,6 +104,73 @@
     "wall_cap_h": 48.0,
     "wall_h_on_4_gpus_serial_ladder": 19.569369201633133,
     "within_caps": true
+  },
+  "projection_measured": {
+    "child": {
+      "child_cap_gpu_h": 184.0,
+      "decision_counts": {
+        "readouts_per_arm_seed": 574,
+        "score_per_seed": 1767,
+        "selection_readouts": 282
+      },
+      "fidelity_gpu_h": 9.489633209961983,
+      "gpu_seconds_per_update": {
+        "planning": 0.10241678588092328,
+        "ts-100k": 0.06737514276057482,
+        "ts-native": 0.06737514276057482
+      },
+      "native_per_seed_gpu_h": 4.825575347575876,
+      "policy_cells": 94,
+      "readouts_gpu_h": 0.5853963267036306,
+      "score_gpu_h": 1.8020824203576922,
+      "seconds_per_decision": 1.2238250732480083,
+      "seed_cap_gpu_h": 24.0,
+      "selection_gpu_h": {
+        "planning": 3.414035108233388,
+        "ts-100k": 1.8715317433493008,
+        "ts-native": 4.825575347575876
+      },
+      "selection_readouts_gpu_h": 0.09586629740442731,
+      "steps": {
+        "planning": 120005,
+        "ts-100k": 100000,
+        "ts-native": 200000
+      },
+      "total_gpu_h": 31.735271148738054,
+      "training_gpu_h": 9.651150695151753,
+      "training_queue_loads_h": [
+        4.825575347575876,
+        4.825575347575876,
+        0.0,
+        0.0
+      ],
+      "training_queues": {
+        "0": [
+          "T4--seed20260909"
+        ],
+        "1": [
+          "T4--seed20260910"
+        ],
+        "2": [],
+        "3": []
+      },
+      "validation_seconds": 1.9485213495790958,
+      "wall_cap_h": 48.0,
+      "wall_h_on_4_gpus_serial_ladder": 21.185081704551763,
+      "within_caps": true
+    },
+    "fidelity_rates": {
+      "update": 0.08259818179532885,
+      "validation": 8.817113041877747
+    },
+    "gpu_seconds_per_update": {
+      "planning": 0.10241678588092328,
+      "ts-100k": 0.06737514276057482,
+      "ts-native": 0.06737514276057482
+    },
+    "seconds_per_decision": 1.2238250732480083,
+    "source": "timing.json (measured)",
+    "validation_seconds": 1.9485213495790958
   },
   "projection_upper": {
     "child_cap_gpu_h": 184.0,
@@ -163,5 +230,6 @@
     "within_caps": false
   },
   "schema": "issue_136_projection_v1",
-  "threads": 4
+  "threads": 4,
+  "timing_sha256": "sha256:d75393e488c3975d756eaa3847d7906ad0393cce1b08a1c65774cdee12d33e9f"
 }
