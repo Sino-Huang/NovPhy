@@ -1,0 +1,93 @@
+{
+  "G_action": 0.004607925069001347,
+  "G_collapse": {
+    "dim": 1296,
+    "effective_rank": 170.3032331518744,
+    "latent": "rssm.get_feat (posterior)",
+    "rows": 222704,
+    "within_episode_share": 0.32487104268313916
+  },
+  "G_rank": {
+    "fully_tied_level_share": 0.0,
+    "levels": 480,
+    "mean_tied_pair_share": 0.12404513888888886,
+    "pass": true
+  },
+  "arm": "D1",
+  "exploratory": {
+    "commit_points_fit_anchors": {
+      "candidates": 7680,
+      "commit_step_histogram": [
+        7680,
+        7680,
+        7680,
+        7632,
+        7421,
+        7562,
+        7578,
+        7530,
+        7038,
+        7542,
+        7010,
+        7410,
+        6848,
+        7462,
+        6516,
+        7468,
+        6455,
+        7366,
+        6359,
+        7229,
+        6410,
+        7297,
+        6342,
+        7224,
+        6306,
+        7257,
+        6329,
+        7180,
+        6154,
+        7211,
+        6007,
+        7173,
+        6016,
+        7053,
+        5989,
+        7082,
+        6008,
+        7072,
+        5967,
+        7082,
+        5949,
+        7098,
+        5933,
+        7065,
+        5925
+      ],
+      "mean_commits": 40.442057291666664,
+      "share_with_commit": 1.0
+    },
+    "hl_time_mean_fit_anchors": 0.0
+  },
+  "fit_anchor_nonfinite_share": 0.0,
+  "macs_per_candidate": 147182336.0,
+  "model": ".local-artifacts/issue-131-thick-v1/models/D1/seed-20260909/model.pt",
+  "model_sha256": "sha256:888e9a2b9833e267747b96a20117a34595fc7f28b802f5bca7232ed8479905af",
+  "plan_identity": "issue-131-thick-v1",
+  "policy_auc": 0.4970598550385785,
+  "policy_auc_exploratory": {
+    "D1-coarse": 0.5043644298963448,
+    "D1-hl": 0.5246103187592549
+  },
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "seconds": 29.449346750974655,
+  "seed": 20260909,
+  "trainable_parameters": 21852337,
+  "typed_failure": null,
+  "written_at": "2026-10-26T17:51:02Z"
+}
