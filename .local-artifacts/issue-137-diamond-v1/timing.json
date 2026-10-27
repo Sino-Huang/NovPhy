@@ -1,0 +1,129 @@
+{
+  "configs": {
+    "ar4": {
+      "batch_load_seconds_per_update": 0.016135988192011914,
+      "chunks": [
+        {
+          "seconds": 7.047716652043164,
+          "updates": 50
+        },
+        {
+          "seconds": 7.03431089874357,
+          "updates": 50
+        },
+        {
+          "seconds": 6.94470695592463,
+          "updates": 50
+        },
+        {
+          "seconds": 6.964842127170414,
+          "updates": 50
+        },
+        {
+          "seconds": 7.012762586120516,
+          "updates": 50
+        },
+        {
+          "seconds": 6.971499173901975,
+          "updates": 50
+        }
+      ],
+      "finite": true,
+      "first_loss": 2.06840443611145,
+      "last_loss": 0.1530553698539734,
+      "parameters": 4406019,
+      "peak_gpu_allocated_gib": 12.189631462097168,
+      "seconds_per_update_steady_median": 0.1394299834780395,
+      "updates": 300
+    },
+    "native": {
+      "batch_load_seconds_per_update": 0.007401718430531522,
+      "chunks": [
+        {
+          "seconds": 3.6597059913910925,
+          "updates": 50
+        },
+        {
+          "seconds": 2.986655696760863,
+          "updates": 50
+        },
+        {
+          "seconds": 2.9707511640153825,
+          "updates": 50
+        },
+        {
+          "seconds": 2.8968838211148977,
+          "updates": 50
+        },
+        {
+          "seconds": 2.8724470511078835,
+          "updates": 50
+        },
+        {
+          "seconds": 2.833643504884094,
+          "updates": 50
+        }
+      ],
+      "finite": true,
+      "first_loss": 2.0673398971557617,
+      "last_loss": 0.13476760685443878,
+      "parameters": 4406019,
+      "peak_gpu_allocated_gib": 5.074075698852539,
+      "seconds_per_update_steady_median": 0.057937676422297954,
+      "updates": 300
+    },
+    "native-2x": {
+      "batch_load_seconds_per_update": 0.007401718430531522,
+      "chunks": [
+        {
+          "seconds": 3.6597059913910925,
+          "updates": 50
+        },
+        {
+          "seconds": 2.986655696760863,
+          "updates": 50
+        },
+        {
+          "seconds": 2.9707511640153825,
+          "updates": 50
+        },
+        {
+          "seconds": 2.8968838211148977,
+          "updates": 50
+        },
+        {
+          "seconds": 2.8724470511078835,
+          "updates": 50
+        },
+        {
+          "seconds": 2.833643504884094,
+          "updates": 50
+        }
+      ],
+      "finite": true,
+      "first_loss": 2.0673398971557617,
+      "last_loss": 0.13476760685443878,
+      "note": "same update as native (2x updates)",
+      "parameters": 4406019,
+      "peak_gpu_allocated_gib": 5.074075698852539,
+      "seconds_per_update_steady_median": 0.057937676422297954,
+      "updates": 300
+    }
+  },
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "plan_identity": "issue-137-diamond-v1",
+  "schema": "issue_137_timing_v1",
+  "scoring": {
+    "candidates": 16,
+    "decisions": 16,
+    "paths": 8,
+    "rows_per_call": 128,
+    "seconds": 102.09486544271931,
+    "seconds_per_decision": 6.38092913775472
+  },
+  "seconds": 170.29043409600854,
+  "torch": "2.13.0+cu130",
+  "updates": 300,
+  "written_at": "2026-10-27T07:03:13Z"
+}

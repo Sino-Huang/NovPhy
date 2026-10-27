@@ -32,7 +32,7 @@
     "update_seconds_batch32_ar1": 0.088
   },
   "plan_identity": "issue-137-diamond-v1",
-  "primary": "projection_paper_anchor",
+  "primary": "projection_measured",
   "projection_lower": {
     "child_cap_gpu_h": 136.0,
     "gfid_gpu_h": 0.0,
@@ -77,6 +77,53 @@
     },
     "wall_cap_h": 48.0,
     "wall_h_on_4_gpus_serial_ladder": 21.132741111242808,
+    "within_caps": true
+  },
+  "projection_measured": {
+    "child_cap_gpu_h": 136.0,
+    "gfid_gpu_h": 0.0,
+    "native_per_seed_gpu_h_max": 15.864033675723606,
+    "readouts_gpu_h": 3.0522111042260076,
+    "score_gpu_h": 9.395918155343825,
+    "seconds_per_decision": 6.38092913775472,
+    "seconds_per_update": {
+      "ar4": 0.1394299834780395,
+      "native": 0.057937676422297954,
+      "native-2x": 0.057937676422297954
+    },
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "ar4": 15.864033675723606,
+      "native": 6.592020072937012,
+      "native-2x": 13.184040145874024
+    },
+    "selection_readouts_gpu_h": 0.4998394491241197,
+    "source": "timing.json (measured)",
+    "steps": {
+      "ar4": 409600,
+      "native": 409600,
+      "native-2x": 819200
+    },
+    "total_gpu_h": 80.3161299546758,
+    "training_gpu_h": 31.728067351447212,
+    "training_queue_loads_h": [
+      15.864033675723606,
+      15.864033675723606,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T5--seed20260909"
+      ],
+      "1": [
+        "T5--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 42.64122865732382,
     "within_caps": true
   },
   "projection_paper_anchor": {
@@ -171,5 +218,6 @@
     "wall_h_on_4_gpus_serial_ladder": 84.53096444497123,
     "within_caps": false
   },
-  "schema": "issue_137_projection_v1"
+  "schema": "issue_137_projection_v1",
+  "timing_sha256": "sha256:58b9fae2674aa75b647554c2744041a0381ebfd9965fbb28d4a3ebf18c83cf28"
 }

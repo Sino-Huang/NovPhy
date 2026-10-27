@@ -79,3 +79,17 @@ The 0.05 threshold was set on #123's latent states. In carrier space it is not a
 2. **γ-models (#134) is funded** (4.74 ≤ 127); remainder ≈ 122.
 3. **DDLP** (next in order) was already run as the triggered Tier-C arm and dropped (`fidelity_not_reproduced`); it is not re-run as a coverage arm.
 4. **DIAMOND** is next: no implementation or projection yet; the scout estimate (64–136 GPU-h [INFERENCE]) straddles the remainder, so its Phase 0 (vendoring, port, G-port, fidelity band, timing probe) starts now on CPU in a new child ticket; funded only if its measured projection fits then. V-JEPA 2-AC and DeepPHY follow in order the same way.
+
+## Decision P-coverage (2026-10-27, evening): Diffusion Forcing dropped (fidelity); DIAMOND (#137) funded; V-JEPA 2-AC's projection measured next
+
+**Inputs (2026-10-27 18:18 AEDT).**
+- Program device time used **129.35 GPU-h**; remaining **270.65 GPU-h**.
+- Committed: #128 ≈ 36 (A4 fold 2 running; A4 selection and seeds; scoring); U-native reserve 25; #133 DreamerV3 ≈ 52; #134 γ-models 4.74 (selection running tonight).
+- **#136 Diffusion Forcing dropped**, typed `fidelity_not_reproduced` (issuecomment-6436060220): the official pipeline (paper branch, unedited) gave Exchange CRPS-sum 0.0489 against the frozen band [0.0005, 0.0055); no port defect was diagnosed, so P-fid allows no repair. It used 0.19 GPU-h; ≈ 31.5 GPU-h return to the remainder.
+- **Remainder for further coverage arms: 270.65 − 36 − 25 − 52 − 4.74 ≈ 153 GPU-h.**
+
+**DIAMOND (#137) measured projection** (exclusive GPU 1 tonight, issuecomment-6428331215): native 0.058 s/update, ar4 0.139, 6.38 s/decision → **80.3 GPU-h** (selection 6.6 + 15.9 + 13.2; two seeds at the most expensive configuration 31.7; selection readouts 0.5; readouts 3.1; scoring incl. novelty 9.4; G-fid 0, done on CPU); serial-ladder wall 42.6 h on 4 GPUs; within the child cap (136), the seed cap (24) and the 48 h wall cap. Phase 0 had passed readiness (0.6783 ≥ 0.65), G-port (exact) and G-fid (Tier E: Pong 20.89, Freeway 32.22, Boxing 90.74, inside the frozen bands).
+
+**Decision (P-coverage order).**
+1. **DIAMOND (#137) is funded** (80.3 ≤ 153); remainder ≈ 73 GPU-h. Its selection runs are placed on GPUs 0, 1 and 3 (GPU 2 carries #128's A4 selection and seeds, the program set's critical path).
+2. **V-JEPA 2-AC** is next: no implementation or projection yet; the scout estimate (44–90 GPU-h [INFERENCE]) straddles the remainder, so its Phase 0 starts now on CPU in a new child ticket, funded only if its measured projection fits then. **DeepPHY** (scout 4–18 GPU-h, open-weight VLMs run locally) follows in order the same way.

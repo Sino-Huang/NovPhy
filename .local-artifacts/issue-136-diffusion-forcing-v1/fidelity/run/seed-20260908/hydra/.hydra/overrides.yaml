@@ -1,0 +1,9 @@
+- +name=gfid_exchange_s20260908
+- experiment=exp_prediction
+- dataset=ts_exchange
+- algorithm=df_prediction
+- wandb.mode=disabled
+- wandb.entity=novphy
+- experiment.tasks=[test]
+- +experiment.training.checkpointing.save_last=true
+- load='/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-136-diffusion-forcing-v1/fidelity/run/seed-20260908/hydra/checkpoints/epoch=15-step=1600.ckpt'

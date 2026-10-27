@@ -1,0 +1,63 @@
+{
+ "G_fid": false,
+ "addendum": "https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6413855182",
+ "arm": "T4 DF-car",
+ "band": [
+  0.0005,
+  0.0055
+ ],
+ "band_rule": "pass iff low <= crps_sum < high (our value rounded to the paper's 3 decimals lies in the paper's mean \u00b1 2 SD, [0.001, 0.005])",
+ "band_sha256": "sha256:00fc7bfcea677cecd9c2833755dad3a9f7254919597714a915218c0797384af7",
+ "commit": "dd65516a470b0eda08dcc0f9cb55c87d6527eb9e",
+ "complete": true,
+ "compute": {
+  "cpu_seconds_wall": 0.0,
+  "gpu_seconds": 594.0422286810353
+ },
+ "decision": "https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6413164397",
+ "deviations": [
+  "wandb.mode=disabled",
+  "wandb.entity=novphy (required by main.py; unused when disabled)",
+  "lightning.seed_everything(seed) before main (upstream sets no seed)",
+  "experiment.training.checkpointing.save_last=true (resume after SIGTERM via load=last.ckpt)",
+  "GluonTS dataset directory -> data/external/diffusion_forcing (HOME sandbox)",
+  "precision: official 16-mixed on a GPU; fp32 on a CPU (Lightning has no CPU fp16-mixed)"
+ ],
+ "environment": "multivariate probabilistic time-series forecasting, Exchange (GluonTS exchange_rate_nips: 8 series, business-day, context = prediction = 30)",
+ "issue": 136,
+ "paper_value": 0.003,
+ "pass": false,
+ "repairs": [],
+ "runs": {
+  "20260908": {
+   "best_checkpoint": "hydra/checkpoints/epoch=15-step=1600.ckpt",
+   "crps_sum": 0.04892401397228241,
+   "finished_at": "2026-10-27T07:10:15Z",
+   "phase": "done",
+   "segments": [
+    {
+     "device": "cuda",
+     "ended_at": "2026-10-27T07:09:57Z",
+     "exit": 0,
+     "phase": "train",
+     "seconds": 576.0369447800331
+    },
+    {
+     "device": "cuda",
+     "ended_at": "2026-10-27T07:10:15Z",
+     "exit": 0,
+     "phase": "test",
+     "seconds": 18.005283901002258
+    }
+   ],
+   "started_at": "2026-10-27T07:00:21Z"
+  }
+ },
+ "schema": "issue_127_gfid_v1",
+ "script_sha256": "sha256:6baf3e66a7790a64632bb71d3cd887c3d5e2714c956bc3f0123e0880e0f59d85",
+ "statistic": "test CRPS-sum (official crps_quantile_sum: 19 quantiles of 100 sampled paths, summed over the 8 series), printed as test/crps_sum by the official test task on the best (validation CRPS-sum) checkpoint",
+ "tier": "T",
+ "torch": "2.13.0+cu130",
+ "value": 0.04892401397228241,
+ "written_at": "2026-10-27T07:10:21Z"
+}

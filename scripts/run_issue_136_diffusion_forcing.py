@@ -68,6 +68,7 @@ DECISIONS = {
     "band": "https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6413164397",
     "adapter": "https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6413489211",
     "band_addendum": "https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6413855182",
+    "gfid_result": "https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6436060220",
 }
 
 CONFIGS = dict(dn.CONFIGURATIONS)  # ts-native / ts-100k / planning (pre-declared)

@@ -117,3 +117,17 @@ Posted: https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6413855182
 ## Decision P-coverage (2026-10-27): T4 funded
 
 Funded under P-coverage (program decision https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6426185139): the measured projection (exclusive-GPU timing probe) is **31.735 GPU-h**, within the child caps and the program remainder (≈ 158.7 GPU-h before #136 and #134). `funded.json` written by the orchestrator. The G-fid / selection queue is enqueued; selection runs refuse unless G-port and G-fid pass.
+
+## Decision P-fid (2026-10-27): G-fid fails (Exchange test CRPS-sum 0.0489, band [0.0005, 0.0055)); T4 is dropped, `fidelity_not_reproduced`; no repair attempt
+
+**Trigger.** The frozen G-fid of #136 (issuecomment-6413164397, addendum issuecomment-6413855182; `band.json` sha256:00fc7bfcea677cecd9c2833755dad3a9f7254919597714a915218c0797384af7) ran tonight: job `136-gfid` (scheduler, GPU 2, 18:00–18:10 AEDT, 594 GPU-s), the vendored official pipeline (`paper` @ dd65516, `experiment=exp_prediction dataset=ts_exchange algorithm=df_prediction`, 16-mixed, seed 20260908), then the official test on the best checkpoint.
+
+**Result** (`fidelity/gfid.json`, `fidelity/run/seed-20260908/`).
+- Test CRPS-sum **0.04892** (paper Table 2: 0.003 ± 0.001). Band [0.0005, 0.0055): **fail**. `136-gfid-collect` exited 1, so the selection jobs never started.
+- Training: the official early stopping (validation CRPS-sum every 100 updates, patience 6) stopped at update 2 200; best validation CRPS-sum 0.0108 at update 1 600 (the checkpoint tested). Validation trajectory per 100 updates: 0.091, 0.144, 0.083, 0.098, 0.034, 0.042, 0.053, 0.019, 0.023, 0.014, 0.036, 0.011, 0.028, 0.068, 0.027, **0.011**, 0.025, 0.044, 0.015, 0.018, 0.021, 0.012.
+
+**Diagnosis.** No port or environment defect is identified. The run is the official code and configuration, unedited (VENDOR.json: 101 files, no edits); the run-time settings (wandb disabled, a seed, `save_last`, the dataset directory) do not touch the method; the T4 adapter is not involved (its G-port is bit-exact, but G-fid tests the official pipeline). The only visible departure from the paper is in the paper itself: App. D.10 says the time-series models "usually converge between 50k to 100k steps", while the released configuration's early stopping (patience 6 epochs of 100 batches, warm-up 2 000) ends this run at 2 200 updates. Changing the training-length rule would change the recipe, not fix a defect, so it is not a repair under P-fid. Other environment differences (torch 2.13 instead of ~2.0, an RTX 5090) are not diagnosed causes.
+
+**Decision.** No repair attempt; the band is unchanged. **T4 is dropped with typed reason `fidelity_not_reproduced`.** `not-run.json` is written now, and `--publish` writes the not-run child summary: T4 is listed as not run in the program summary, with G-port passing and G-fid failing. Queued #136 jobs (`136-select-*`, `136-selro`, `136-smoke`) are blocked by the failed dependency and are removed by the orchestrator. GPU spent on #136: timing probe 0.02 h + G-fid 0.17 h. The rest of the funded 31.7 GPU-h goes back to the P-coverage remainder.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/136#issuecomment-6436060220

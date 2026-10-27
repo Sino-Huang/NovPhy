@@ -5,7 +5,7 @@
       "id": "137-select-native",
       "gpu": 0,
       "resumable": true,
-      "est_minutes": 601,
+      "est_minutes": 396,
       "shares_gpu": true,
       "command": [
         "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
@@ -27,7 +27,7 @@
       "id": "137-select-ar4",
       "gpu": 1,
       "resumable": true,
-      "est_minutes": 1502,
+      "est_minutes": 952,
       "shares_gpu": true,
       "command": [
         "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
@@ -47,9 +47,9 @@
     },
     {
       "id": "137-select-native-2x",
-      "gpu": 2,
+      "gpu": 3,
       "resumable": true,
-      "est_minutes": 1202,
+      "est_minutes": 791,
       "shares_gpu": true,
       "command": [
         "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
@@ -61,7 +61,7 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "2",
+        "CUDA_VISIBLE_DEVICES": "3",
         "B137_CPU_THREADS": "4",
         "OMP_NUM_THREADS": "4"
       },
