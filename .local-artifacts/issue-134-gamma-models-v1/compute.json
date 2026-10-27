@@ -1,0 +1,180 @@
+{
+  "arms": {
+    "T3": {
+      "macs_per_candidate": 646439496.0,
+      "trainable_parameters": 10230696,
+      "training_gpu_seconds": {
+        "20260908": 21568.580914685037,
+        "20260909": 10279.852541429922,
+        "20260910": 15739.292117225938
+      },
+      "wall_per_decision": 0.040963826002553105
+    }
+  },
+  "gpu_seconds_total": 63746.370488082524,
+  "ledger": {
+    "readouts-T3-seed20260908": {
+      "gpu_seconds": 56.345703531987965,
+      "last_at": "2026-10-27T18:01:30Z",
+      "wall_seconds": 56.345703531987965
+    },
+    "readouts-T3-seed20260909": {
+      "gpu_seconds": 74.09056744072586,
+      "last_at": "2026-10-27T18:01:48Z",
+      "wall_seconds": 74.09056744072586
+    },
+    "readouts-T3-seed20260910": {
+      "gpu_seconds": 41.72213461995125,
+      "last_at": "2026-10-27T18:01:16Z",
+      "wall_seconds": 41.72213461995125
+    },
+    "score-T3-seed20260908": {
+      "gpu_seconds": 93.19768801378086,
+      "last_at": "2026-10-27T18:12:12Z",
+      "wall_seconds": 93.19768801378086
+    },
+    "score-T3-seed20260909": {
+      "gpu_seconds": 69.76017494639382,
+      "last_at": "2026-10-27T18:13:22Z",
+      "wall_seconds": 69.76017494639382
+    },
+    "score-T3-seed20260910": {
+      "gpu_seconds": 57.40967077901587,
+      "last_at": "2026-10-27T18:14:20Z",
+      "wall_seconds": 57.40967077901587
+    },
+    "selection-readouts": {
+      "gpu_seconds": 28.04116908973083,
+      "last_at": "2026-10-27T13:00:50Z",
+      "wall_seconds": 28.04116908973083
+    },
+    "timing": {
+      "gpu_seconds": 230.25009051943198,
+      "last_at": "2026-10-26T08:20:57Z",
+      "wall_seconds": 230.25009051943198
+    },
+    "timing-contended": {
+      "gpu_seconds": 195.92767279269174,
+      "last_at": "2026-10-25T07:03:40Z",
+      "wall_seconds": 195.92767279269174
+    },
+    "train-g0.95-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 21568.580914685037,
+      "last_at": "2026-10-27T13:00:04Z",
+      "ledger_gpu_seconds": 21569.90531230392,
+      "ledger_wall_seconds": 21569.90531230392,
+      "report": ".local-artifacts/issue-134-gamma-models-v1/selection/g0.95/seed-20260908/report.json",
+      "wall_seconds": 21568.580914685037
+    },
+    "train-g0.95-seed20260909": {
+      "complete": true,
+      "gpu_seconds": 10279.852541429922,
+      "last_at": "2026-10-27T16:26:56Z",
+      "ledger_gpu_seconds": 10281.25756711606,
+      "ledger_wall_seconds": 10281.25756711606,
+      "report": ".local-artifacts/issue-134-gamma-models-v1/models/T3/seed-20260909/report.json",
+      "wall_seconds": 10279.852541429922
+    },
+    "train-g0.95-seed20260910": {
+      "complete": true,
+      "gpu_seconds": 15739.292117225938,
+      "last_at": "2026-10-27T17:57:56Z",
+      "ledger_gpu_seconds": 15740.726412595715,
+      "ledger_wall_seconds": 15740.726412595715,
+      "report": ".local-artifacts/issue-134-gamma-models-v1/models/T3/seed-20260910/report.json",
+      "wall_seconds": 15739.292117225938
+    },
+    "train-g0.978-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 11994.932227632962,
+      "last_at": "2026-10-27T10:25:24Z",
+      "ledger_gpu_seconds": 11996.258804332,
+      "ledger_wall_seconds": 11996.258804332,
+      "report": ".local-artifacts/issue-134-gamma-models-v1/selection/g0.978/seed-20260908/report.json",
+      "wall_seconds": 11994.932227632962
+    },
+    "train-g0.99-seed20260908": {
+      "complete": true,
+      "gpu_seconds": 3316.9678153749555,
+      "last_at": "2026-10-27T07:55:52Z",
+      "ledger_gpu_seconds": 3318.2499110400677,
+      "ledger_wall_seconds": 3318.2499110400677,
+      "report": ".local-artifacts/issue-134-gamma-models-v1/selection/g0.99/seed-20260908/report.json",
+      "wall_seconds": 3316.9678153749555
+    }
+  },
+  "plan_identity": "issue-134-gamma-models-v1",
+  "reference": {
+    "C*": {
+      "inference_macs_per_candidate": 27264600.0,
+      "linear_macs_per_candidate": 27783000,
+      "model_class": "ContinuousDynamics",
+      "name": "c_star",
+      "request": "C-F-15",
+      "rollout": {
+        "delta": 15,
+        "endpoint": 225,
+        "steps": 15
+      },
+      "trainable_parameters": 1862396,
+      "training": {
+        "20260908": {
+          "parameters_per_member": 1862396,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group0.json",
+          "steps": 9000,
+          "training_gpu_seconds": 984.8691363630351
+        },
+        "20260909": {
+          "parameters_per_member": 1862396,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group1.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1044.1844274359755
+        },
+        "20260910": {
+          "parameters_per_member": 1862396,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--continuous--group2.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1043.799301308114
+        }
+      },
+      "training_gpu_seconds_mean": 1024.2842883690416
+    },
+    "U": {
+      "inference_macs_per_candidate": 20991360.0,
+      "linear_macs_per_candidate": 21970560,
+      "model_class": "CNNHybridPredictor",
+      "name": "unit",
+      "request": "F-15-macro",
+      "rollout": {
+        "delta": 15,
+        "endpoint": 225,
+        "steps": 15
+      },
+      "trainable_parameters": 1837690,
+      "training": {
+        "20260908": {
+          "parameters_per_member": 1837690,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group0.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1290.2939926690888
+        },
+        "20260909": {
+          "parameters_per_member": 1837690,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group1.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1299.884319175966
+        },
+        "20260910": {
+          "parameters_per_member": 1837690,
+          "report": ".local-artifacts/issue-112-v3-retrain-v1/training/LC--hybrid--group2.json",
+          "steps": 9000,
+          "training_gpu_seconds": 1292.3847305669915
+        }
+      },
+      "training_gpu_seconds_mean": 1294.1876808040154
+    }
+  },
+  "schema": "issue_134_compute_v1",
+  "wall_seconds_total": 63746.370488082524
+}

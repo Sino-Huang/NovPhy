@@ -101,3 +101,7 @@ All three runs completed 50 000 updates (exit 0; no nonfinite loss). The selecte
 **Smoke** (`smoke.json`, pass): data accounting (13 919 fit shots, 640 274 transitions, 480 fit anchors, 94 policy cells), G-port current and passing, G-fid passed (pendulum, CPU), 29 CPU tests. Projection (exclusive-equivalent device time, Decision P-budget issuecomment-6438810533): 5.0 GPU-h total, within the 12 GPU-h cap; the process-seconds basis (23.0 GPU-h, inflated by GPU sharing) is recorded beside it.
 
 **Frozen plan**: `plan.json` sha256 `4ef3ac5fc5212787d12e9e5b564d7d4700819ad9e41f37ceb368fa3ee1eccfa9`, 131 pins, frozen_at 2026-10-27T13:32:33Z. Training queues: q0 T3 s20260909 (placed on GPU 2), q1 T3 s20260910 (GPU 1); readouts, freeze-readouts, one scoring pass (GPU 0), novelty, publish and validate follow automatically (`scripts/gpu_window_issue_134_main.json`).
+
+## Result posted (2026-10-28)
+
+https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6450454439
