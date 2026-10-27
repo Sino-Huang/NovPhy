@@ -197,6 +197,18 @@ def test_budget_interval_union(tmp_path):
     assert "|" in rp.budget_lines(b)[0]
 
 
+def test_budget_moved_job_keeps_each_runs_gpu(tmp_path):
+    """A job moved to another GPU between runs: its earlier run stays on the GPU it ran on (run-level "gpu")."""
+    queue = tmp_path / "queue.json"
+    eb.write_json(queue, {"jobs": [
+        {"id": "137-a", "gpu": 2, "runs": [{"tag": "137-a#1", "gpu": 0, "launched_at": iso(0), "ended_at": iso(2)},
+                                           {"tag": "137-a#2", "launched_at": iso(2), "ended_at": iso(3)}]},
+        {"id": "128-b", "gpu": 0, "runs": [{"tag": "128-b#1", "launched_at": iso(1), "ended_at": iso(2)}]},
+    ]})
+    p = rp.budget(queue, tmp_path, datetime(2026, 10, 25, 3, tzinfo=timezone.utc))["program"]
+    assert p["per_gpu_device_seconds"] == {"0": 2 * 3600.0, "2": 3600.0}
+
+
 def test_projection_mapping(tmp_path):
     eb.write_json(rp.child_dir(tmp_path, 128) / "smoke.json", {"projection": {"remaining_gpu_hours": 23.5}})
     eb.write_json(rp.child_dir(tmp_path, 129) / "smoke.json", {"projection": {"total_gpu_h": 33.0, "selection_gpu_h": 8.0}})

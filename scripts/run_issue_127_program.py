@@ -107,7 +107,8 @@ def run_intervals(queue, now):
             if not run.get("launched_at"):
                 continue
             ended = run.get("ended_at") or run.get("window_killed_at") or run.get("killed_at")
-            out.append({"child": child, "gpu": job.get("gpu"), "job": job["id"], "tag": run.get("tag"),
+            # a run records its own GPU when its job was moved to another GPU between runs
+            out.append({"child": child, "gpu": run.get("gpu", job.get("gpu")), "job": job["id"], "tag": run.get("tag"),
                         "start": parse_time(run["launched_at"]), "end": parse_time(ended) if ended else now,
                         "running": ended is None})
     return out
