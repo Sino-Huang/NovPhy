@@ -1,0 +1,37 @@
+{
+ "G_fid": true,
+ "arm": "A4",
+ "band": [
+  82.8,
+  87.2
+ ],
+ "band_sha256": "sha256:aba5a789931d25e9ffd6d0bb27144ee8fa07a31ff978af93fed350c9b7f2beea",
+ "in_band": true,
+ "issue": 128,
+ "mean": 85.58370115363117,
+ "paper": {
+  "citation": "Ahmed, Bakhtin, van der Maaten, Girdhar. Physical Reasoning Using Dynamics-Aware Models. arXiv 2102.10336v2 (ICML Workshop 2021)",
+  "mean": 85.0,
+  "pdf": "data/external/dynamics_aware/arxiv-2102.10336v2.pdf",
+  "pdf_sha256": "sha256:d0b5c830545db9dee424a0ae8923ab3510c6c4f730f04300847470b12b8de282",
+  "quote_caption": "Table 1: AUCCESS of dynamics-aware DQNs compared to state-of-the-art models on the PHYRE-1B and 2B tiers in the within-template and cross-template generalization settings. Results reported are averaged over 10 test folds.",
+  "quote_row": "Ours (Hand-crafted) 85.0\u00b11.1 38.6\u00b18.4 74.0\u00b11.5 23.3\u00b18.8",
+  "spread": 1.1,
+  "spread_statistic": "standard deviation of the per-fold AUCCESS over the 10 test folds (population SD, numpy.std ddof=0)",
+  "spread_statistic_source": "The paper prints '\u00b11.1' without naming the statistic. The official repo's summary for exactly this run (agents/experiments/hand_crafted_experiments/06_hand_crafted_test_run_table_1.conf, 'fmt EVALSETUP->MEAN\u00b1STD') is agents/run_sweep_file.py, which replaces STD with np.std over the per-fold results.json scores (seed = fold id, folds 0-9). PHYRE (Bakhtin et al. 2019) reports its DQN row the same way (77.6\u00b11.1).",
+  "table": "Table 1, row 'Ours (Hand-crafted)', column PHYRE-1B Within"
+ },
+ "pass": true,
+ "per_fold": {
+  "0": 85.7019539425176,
+  "1": 85.93309731895853,
+  "2": 85.11605219941735
+ },
+ "rule": "G-fid Tier T passes iff the mean AUCCESS x 100 over folds 0, 1, 2 (one training run per fold, test split, trained on train + dev) lies in [85.0 - 2 x 1.1, 85.0 + 2 x 1.1] = [82.8, 87.2]. +-2 SD of single folds is wider than +-2 SE of a three-fold mean (2 x 1.1 / sqrt 3 = 1.27); the per-fold SD also covers the systematic difference between the folds 0-2 mean and the 10-fold mean.",
+ "runner_sha256": "sha256:2c60aa3405340397619a56db274531f0122519366dd2b58d2f05d69d38137c72",
+ "runs": 7,
+ "schema": "issue_127_gfid_v1",
+ "tier": "T",
+ "vendor_json_sha256": "sha256:2e5e1e9950cfe542398cf87d30a889e2d2836c6ee53b49459d9d9e6fc76811f9",
+ "wall_seconds": 147445.95535564423
+}
