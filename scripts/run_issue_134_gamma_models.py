@@ -64,6 +64,8 @@ DECISIONS = {
     "license": "https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6390841265",
     "band": "https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6390881384",
     "adapter": "https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6391005347",
+    "funding": "https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6426185139",
+    "smoke_cap_basis": "https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6438810533",
 }
 
 CONFIGS = dict(gn.CONFIGURATIONS)  # g0.95 / g0.978 / g0.99 (pre-declared)
@@ -614,25 +616,7 @@ def smoke(output, device=None):
                             "gpu_seconds": report["gpu_seconds"]}
     gfid = eb.read_json(output / "fidelity/gfid.json")
     remaining = remaining_items(output, selected)
-    rate = throughput[selected]["seconds_per_step"]
-    training = [(f"{arm}--seed{seed}", spec["steps"] * rate) for arm, seed, spec, _ in remaining]
-    selection_seconds = sum(t["gpu_seconds"] for t in throughput.values())
-    readout_seconds = READOUT_HOURS_PER_ARM_SEED * 3600 * len(eb.SEEDS)
-    score_seconds = SCORE_HOURS * 3600
-    queues, loads = lpt(training)
-    total = selection_seconds + sum(s for _, s in training) + readout_seconds + score_seconds
-    per_seed = arm_spec(ARM, selected)["steps"] * rate
-    wall = max(loads) + readout_seconds / 4 + score_seconds
-    projection = {"fidelity_gpu_h_spent": gfid.get("compute", {}).get("gpu_seconds", 0.0) / 3600,
-                  "fidelity_cpu_h_spent": gfid.get("compute", {}).get("cpu_seconds_wall", 0.0) / 3600,
-                  "selection_gpu_h": selection_seconds / 3600, "training_gpu_h": sum(s for _, s in training) / 3600,
-                  "readouts_gpu_h_estimate": readout_seconds / 3600, "score_gpu_h_estimate": score_seconds / 3600,
-                  "total_gpu_h": total / 3600, "child_cap_gpu_h": CHILD_CAP_GPU_HOURS,
-                  "native_per_seed_gpu_h": per_seed / 3600, "seed_cap_gpu_h": SEED_CAP_GPU_HOURS,
-                  "wall_h_on_4_gpus": wall / 3600, "wall_cap_h": WALL_CAP_HOURS, "training_queues": queues,
-                  "training_queue_loads_h": [x / 3600 for x in loads]}
-    projection["within_caps"] = bool(total / 3600 <= CHILD_CAP_GPU_HOURS and per_seed / 3600 <= SEED_CAP_GPU_HOURS
-                                     and wall / 3600 <= WALL_CAP_HOURS)
+    projection = smoke_projection(throughput, remaining, selected, gfid, exclusive_rate(output))
     smoke_record = {"schema": SCHEMA_SMOKE, "plan_identity": IDENTITY, "accounting": accounting, "gport": gport_check,
                     "readiness": readiness(output), "tests": tests_record, "throughput": throughput,
                     "selection": selection_record, "selected": selected, "projection": projection, "device": device,
@@ -641,9 +625,55 @@ def smoke(output, device=None):
                                  and accounting["launch5_abs_max"] <= 1.0),
                     "written_at": eb.utc_now()}
     eb.write_json(output / "smoke.json", smoke_record)
-    log(f"smoke: pass {smoke_record['pass']}; projection {projection['total_gpu_h']:.1f} GPU-h, wall "
-        f"{projection['wall_h_on_4_gpus']:.1f} h; selected {selected}")
+    log(f"smoke: pass {smoke_record['pass']}; projection ({projection['basis']}) {projection['total_gpu_h']:.1f} GPU-h, "
+        f"wall {projection['wall_h_on_4_gpus']:.1f} h; selected {selected}")
     return 0 if smoke_record["pass"] else 1
+
+
+def exclusive_rate(output):
+    """The clean exclusive-GPU s/update of timing.json (a CUDA probe), else None."""
+    path = Path(output) / "timing.json"
+    if not path.is_file():
+        return None
+    record = eb.read_json(path)
+    return record["t3"]["seconds_per_update_steady_median"] if str(record.get("device", "")).startswith("cuda") else None
+
+
+def _projection_block(selection_seconds, rate, remaining, selected):
+    training = [(f"{arm}--seed{seed}", spec["steps"] * rate) for arm, seed, spec, _ in remaining]
+    readout_seconds = READOUT_HOURS_PER_ARM_SEED * 3600 * len(eb.SEEDS)
+    score_seconds = SCORE_HOURS * 3600
+    queues, loads = lpt(training)
+    total = selection_seconds + sum(s for _, s in training) + readout_seconds + score_seconds
+    per_seed = arm_spec(ARM, selected)["steps"] * rate
+    wall = max(loads) + readout_seconds / 4 + score_seconds
+    block = {"seconds_per_step": rate, "selection_gpu_h": selection_seconds / 3600,
+             "training_gpu_h": sum(s for _, s in training) / 3600,
+             "readouts_gpu_h_estimate": readout_seconds / 3600, "score_gpu_h_estimate": score_seconds / 3600,
+             "total_gpu_h": total / 3600, "native_per_seed_gpu_h": per_seed / 3600, "wall_h_on_4_gpus": wall / 3600,
+             "training_queues": queues, "training_queue_loads_h": [x / 3600 for x in loads]}
+    block["within_caps"] = bool(total / 3600 <= CHILD_CAP_GPU_HOURS and per_seed / 3600 <= SEED_CAP_GPU_HOURS
+                                and wall / 3600 <= WALL_CAP_HOURS)
+    return block
+
+
+def smoke_projection(throughput, remaining, selected, gfid, exclusive=None):
+    """The projection of everything left against the child cap. Two bases (Decision P-budget on #127: the program
+    budget is device time; shared-GPU wall seconds overstate it): ``process`` = the selection runs' recorded process
+    GPU-s and the selected run's process s/step (inflated when the GPU was shared); ``exclusive_equivalent`` = every
+    update at timing.json's clean exclusive-GPU s/update. The cap check uses ``exclusive_equivalent`` when a CUDA
+    timing record exists, else ``process``."""
+    process = _projection_block(sum(t["gpu_seconds"] for t in throughput.values()),
+                                throughput[selected]["seconds_per_step"], remaining, selected)
+    blocks = {"process": process}
+    if exclusive is not None:
+        blocks["exclusive_equivalent"] = _projection_block(
+            sum(t["steps"] for t in throughput.values()) * exclusive, exclusive, remaining, selected)
+    basis = "exclusive_equivalent" if exclusive is not None else "process"
+    return {**blocks[basis], "basis": basis, "bases": blocks,
+            "fidelity_gpu_h_spent": gfid.get("compute", {}).get("gpu_seconds", 0.0) / 3600,
+            "fidelity_cpu_h_spent": gfid.get("compute", {}).get("cpu_seconds_wall", 0.0) / 3600,
+            "child_cap_gpu_h": CHILD_CAP_GPU_HOURS, "seed_cap_gpu_h": SEED_CAP_GPU_HOURS, "wall_cap_h": WALL_CAP_HOURS}
 
 
 # ---------------------------------------------------------------------------------------------------------------

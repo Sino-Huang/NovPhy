@@ -313,6 +313,26 @@ def test_funding_marker_gates_selection_and_training(tmp_path):
     assert not runner.readiness(tmp_path)["pass"] and runner.guard_extras(tmp_path) == {"G_port": True, "G_fid": False}
 
 
+def test_smoke_projection_uses_exclusive_equivalent_device_time(tmp_path):
+    throughput = {"g0.95": {"seconds_per_step": 0.5, "steps": 50_000, "gpu_seconds": 25_000.0},
+                  "g0.978": {"seconds_per_step": 0.3, "steps": 50_000, "gpu_seconds": 15_000.0},
+                  "g0.99": {"seconds_per_step": 0.066, "steps": 50_000, "gpu_seconds": 3_300.0}}
+    remaining = runner.remaining_items(tmp_path, "g0.95")
+    gfid = {"compute": {"gpu_seconds": 0.0, "cpu_seconds_wall": 4689.0}}
+    shared = runner.smoke_projection(throughput, remaining, "g0.95", gfid)
+    assert shared["basis"] == "process" and not shared["within_caps"]  # shared-GPU wall seconds: 12.0 + 13.9 GPU-h
+    assert shared["total_gpu_h"] == pytest.approx((43_300 + 2 * 50_000 * 0.5) / 3600 + 0.3 + 0.5)
+    p = runner.smoke_projection(throughput, remaining, "g0.95", gfid, exclusive=0.06)
+    assert p["basis"] == "exclusive_equivalent" and p["within_caps"]
+    assert p["selection_gpu_h"] == pytest.approx(150_000 * 0.06 / 3600)
+    assert p["training_gpu_h"] == pytest.approx(2 * 50_000 * 0.06 / 3600)
+    assert p["bases"]["process"] == shared["bases"]["process"]
+    assert p["training_queues"] == {0: ["T3--seed20260909"], 1: ["T3--seed20260910"], 2: [], 3: []}
+    assert runner.exclusive_rate(tmp_path) is None
+    eb.write_json(tmp_path / "timing.json", {"device": "cuda", "t3": {"seconds_per_update_steady_median": 0.061}})
+    assert runner.exclusive_rate(tmp_path) == 0.061
+
+
 def test_timing_probe_needs_no_funding_and_keeps_only_its_record(tmp_path):
     assert not runner.funded(tmp_path)
     assert runner.timing(tmp_path, updates=2, device="cpu", data=tiny_data(), decisions=2) == 0

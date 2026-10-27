@@ -73,3 +73,15 @@ The first timing probe (25 Oct) ran on GPU 3 beside Plan2Explore and B1 training
 ## Decision P-coverage (2026-10-27): T3 funded
 
 Funded under P-coverage (program decision https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6426185139): the measured projection (exclusive-GPU timing probe) is **4.739 GPU-h**, within the child caps and the program remainder (≈ 158.7 GPU-h before #136 and #134). `funded.json` written by the orchestrator. The G-fid / selection queue is enqueued; selection runs refuse unless G-port and G-fid pass.
+
+## Decision P-budget (2026-10-27): the smoke's cap check uses exclusive-equivalent device time, not shared-GPU process seconds
+
+**Trigger.** The three selection runs (launched 18:00) share GPUs with other jobs (`shares_gpu`; GPU 0: 128-gfid-a4-fold2 + 137-select-native; GPU 1: 137-select-ar4). Their process seconds per update are 0.066 (g0.99), about 0.3 (g0.978) and about 0.5 (g0.95). The clean exclusive probe (`timing.json`, GPU 3) measured 0.061. The runner's smoke used process seconds for its cap check. With sharing, that projection is about 12 GPU-h (selection) + up to about 14 GPU-h (two seeds at a shared rate). That would fail `within_caps` (12 GPU-h) through contention alone. Under Decision P-budget on #127 (https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6388410336), the program budget is device time, and per-process GPU-s on a shared GPU overstate it. The smoke has not run. No selection result has been read: this decision is outcome-blind and concerns accounting only.
+
+**Decision.** `--smoke` (`smoke_projection`) records two bases.
+- `process`: the recorded process GPU-s, as before.
+- `exclusive_equivalent`: every update at `timing.json`'s clean exclusive rate (0.0607 s/update): 3 × 50 000 selection updates + 2 × 50 000 main updates, plus the declared readout (0.3 h) and score (0.5 h) estimates.
+
+The cap check (12 GPU-h child, 24 GPU-h per seed, 48 h wall) uses `exclusive_equivalent` when a CUDA timing record exists, else `process`. The training queues come from the same basis. The ledger is unchanged: process GPU-s per run, counted once from each `report.json`. The publication still reports both. Test: `test_smoke_projection_uses_exclusive_equivalent_device_time`.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6438810533
