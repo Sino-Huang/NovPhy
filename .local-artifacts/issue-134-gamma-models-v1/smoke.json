@@ -1,0 +1,202 @@
+{
+  "accounting": {
+    "episode_states": 46,
+    "fit_anchors": 480,
+    "fit_levels": 480,
+    "fit_positive": 838,
+    "fit_shots": 13919,
+    "fit_shots_expected": 13919,
+    "launch5_abs_max": 1.0,
+    "policy_grid_mixed_cells": 94,
+    "shots_ending_before_225": 601,
+    "transitions": 640274
+  },
+  "device": "cuda",
+  "gport": {
+    "adapter_current": true,
+    "pass": true
+  },
+  "pass": true,
+  "plan_identity": "issue-134-gamma-models-v1",
+  "projection": {
+    "bases": {
+      "exclusive_equivalent": {
+        "native_per_seed_gpu_h": 0.842881448334083,
+        "readouts_gpu_h_estimate": 0.3,
+        "score_gpu_h_estimate": 0.5,
+        "seconds_per_step": 0.060687464280053977,
+        "selection_gpu_h": 2.528644345002249,
+        "total_gpu_h": 5.014407241670415,
+        "training_gpu_h": 1.685762896668166,
+        "training_queue_loads_h": [
+          0.842881448334083,
+          0.842881448334083,
+          0.0,
+          0.0
+        ],
+        "training_queues": {
+          "0": [
+            "T3--seed20260909"
+          ],
+          "1": [
+            "T3--seed20260910"
+          ],
+          "2": [],
+          "3": []
+        },
+        "wall_h_on_4_gpus": 1.417881448334083,
+        "within_caps": true
+      },
+      "process": {
+        "native_per_seed_gpu_h": 5.9912724763014,
+        "readouts_gpu_h_estimate": 0.3,
+        "score_gpu_h_estimate": 0.5,
+        "seconds_per_step": 0.43137161829370074,
+        "selection_gpu_h": 10.244578043803598,
+        "total_gpu_h": 23.027122996406398,
+        "training_gpu_h": 11.9825449526028,
+        "training_queue_loads_h": [
+          5.9912724763014,
+          5.9912724763014,
+          0.0,
+          0.0
+        ],
+        "training_queues": {
+          "0": [
+            "T3--seed20260909"
+          ],
+          "1": [
+            "T3--seed20260910"
+          ],
+          "2": [],
+          "3": []
+        },
+        "wall_h_on_4_gpus": 6.566272476301399,
+        "within_caps": false
+      }
+    },
+    "basis": "exclusive_equivalent",
+    "child_cap_gpu_h": 12.0,
+    "fidelity_cpu_h_spent": 1.302548662928942,
+    "fidelity_gpu_h_spent": 0.0,
+    "native_per_seed_gpu_h": 0.842881448334083,
+    "readouts_gpu_h_estimate": 0.3,
+    "score_gpu_h_estimate": 0.5,
+    "seconds_per_step": 0.060687464280053977,
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": 2.528644345002249,
+    "total_gpu_h": 5.014407241670415,
+    "training_gpu_h": 1.685762896668166,
+    "training_queue_loads_h": [
+      0.842881448334083,
+      0.842881448334083,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T3--seed20260909"
+      ],
+      "1": [
+        "T3--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus": 1.417881448334083,
+    "within_caps": true
+  },
+  "readiness": {
+    "fidelity/gfid.json": true,
+    "funded.json": true,
+    "gport/gport.json": true,
+    "pass": true
+  },
+  "schema": "issue_134_smoke_v1",
+  "selected": "g0.95",
+  "selection": {
+    "configs": {
+      "g0.95": {
+        "discount": 0.95
+      },
+      "g0.978": {
+        "discount": 0.9777777777777777
+      },
+      "g0.99": {
+        "discount": 0.99
+      }
+    },
+    "details": {
+      "g0.95": {
+        "cells": 94,
+        "model_sha256": "sha256:c83e7519aa81ab883d9eb705b35d6e82b947fe593097b93196094078eec2495b",
+        "typed_failure": null,
+        "typed_rows": 0
+      },
+      "g0.978": {
+        "cells": 94,
+        "model_sha256": "sha256:8f55db4159e8ef61b75f40e6cc804c5aca3ccc486243b8ee0b383804dfe348ad",
+        "typed_failure": null,
+        "typed_rows": 0
+      },
+      "g0.99": {
+        "cells": 94,
+        "model_sha256": "sha256:5c91db937d846ccf8bc39f6a3316911dd1c9044963aa77b7207f980f3e1ddb1f",
+        "typed_failure": null,
+        "typed_rows": 0
+      }
+    },
+    "plan_identity": "issue-134-gamma-models-v1",
+    "policy_cells": 94,
+    "results": {
+      "g0.95": {
+        "auc": 0.6375399423271765,
+        "parameters": 10230696
+      },
+      "g0.978": {
+        "auc": 0.6212181435585692,
+        "parameters": 10230696
+      },
+      "g0.99": {
+        "auc": 0.6116943340347596,
+        "parameters": 10230696
+      }
+    },
+    "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+    "schema": "issue_134_selection_v1",
+    "scoring_policy": {
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false
+    },
+    "selected": "g0.95",
+    "written_at": "2026-10-27T13:00:50Z"
+  },
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES= python -m pytest -q tests/test_issue_134_gamma_models.py",
+    "exit_code": 0,
+    "tail": [
+      "29 passed, 1 warning in 18.90s"
+    ]
+  },
+  "throughput": {
+    "g0.95": {
+      "gpu_seconds": 21568.580914685037,
+      "seconds_per_step": 0.43137161829370074,
+      "steps": 50000
+    },
+    "g0.978": {
+      "gpu_seconds": 11994.932227632962,
+      "seconds_per_step": 0.23989864455265925,
+      "steps": 50000
+    },
+    "g0.99": {
+      "gpu_seconds": 3316.9678153749555,
+      "seconds_per_step": 0.06633935630749911,
+      "steps": 50000
+    }
+  },
+  "written_at": "2026-10-27T13:05:43Z"
+}

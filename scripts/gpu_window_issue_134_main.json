@@ -3,9 +3,9 @@
   "jobs": [
     {
       "id": "134-train-q0",
-      "gpu": 0,
+      "gpu": 2,
       "resumable": true,
-      "est_minutes": 340,
+      "est_minutes": 51,
       "shares_gpu": true,
       "command": [
         "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
@@ -17,7 +17,7 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "0",
+        "CUDA_VISIBLE_DEVICES": "2",
         "B127_T3_CPU_THREADS": "4",
         "OMP_NUM_THREADS": "4"
       },
@@ -27,7 +27,7 @@
       "id": "134-train-q1",
       "gpu": 1,
       "resumable": true,
-      "est_minutes": 340,
+      "est_minutes": 51,
       "shares_gpu": true,
       "command": [
         "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",

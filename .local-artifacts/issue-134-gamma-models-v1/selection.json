@@ -1,0 +1,59 @@
+{
+  "configs": {
+    "g0.95": {
+      "discount": 0.95
+    },
+    "g0.978": {
+      "discount": 0.9777777777777777
+    },
+    "g0.99": {
+      "discount": 0.99
+    }
+  },
+  "details": {
+    "g0.95": {
+      "cells": 94,
+      "model_sha256": "sha256:c83e7519aa81ab883d9eb705b35d6e82b947fe593097b93196094078eec2495b",
+      "typed_failure": null,
+      "typed_rows": 0
+    },
+    "g0.978": {
+      "cells": 94,
+      "model_sha256": "sha256:8f55db4159e8ef61b75f40e6cc804c5aca3ccc486243b8ee0b383804dfe348ad",
+      "typed_failure": null,
+      "typed_rows": 0
+    },
+    "g0.99": {
+      "cells": 94,
+      "model_sha256": "sha256:5c91db937d846ccf8bc39f6a3316911dd1c9044963aa77b7207f980f3e1ddb1f",
+      "typed_failure": null,
+      "typed_rows": 0
+    }
+  },
+  "plan_identity": "issue-134-gamma-models-v1",
+  "policy_cells": 94,
+  "results": {
+    "g0.95": {
+      "auc": 0.6375399423271765,
+      "parameters": 10230696
+    },
+    "g0.978": {
+      "auc": 0.6212181435585692,
+      "parameters": 10230696
+    },
+    "g0.99": {
+      "auc": 0.6116943340347596,
+      "parameters": 10230696
+    }
+  },
+  "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+  "schema": "issue_134_selection_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "selected": "g0.95",
+  "written_at": "2026-10-27T13:00:50Z"
+}

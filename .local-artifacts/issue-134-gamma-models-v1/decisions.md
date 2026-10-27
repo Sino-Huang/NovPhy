@@ -85,3 +85,19 @@ Funded under P-coverage (program decision https://github.com/Sino-Huang/NovPhy/i
 The cap check (12 GPU-h child, 24 GPU-h per seed, 48 h wall) uses `exclusive_equivalent` when a CUDA timing record exists, else `process`. The training queues come from the same basis. The ledger is unchanged: process GPU-s per run, counted once from each `report.json`. The publication still reports both. Test: `test_smoke_projection_uses_exclusive_equivalent_device_time`.
 
 Posted: https://github.com/Sino-Huang/NovPhy/issues/134#issuecomment-6438810533
+
+## Decision P-freeze (2026-10-28): #134 frozen — T3 selected γ = 0.95
+
+**Selection** (frozen rule: largest policy-split pooled grid AUC at 4 d.p.; ties → fewer parameters → declaration order), seed 20260908, 94 policy grid cells, 64 occupancy samples per candidate, deterministic scoring:
+
+| configuration | γ | policy grid AUC |
+| --- | --- | --- |
+| **g0.95 (selected)** | 0.95 | **0.6375** |
+| g0.978 | 1 − 1/45 | 0.6212 |
+| g0.99 | 0.99 | 0.6117 |
+
+All three runs completed 50 000 updates (exit 0; no nonfinite loss). The selected run (seed 20260908) is reused as the first T3 seed.
+
+**Smoke** (`smoke.json`, pass): data accounting (13 919 fit shots, 640 274 transitions, 480 fit anchors, 94 policy cells), G-port current and passing, G-fid passed (pendulum, CPU), 29 CPU tests. Projection (exclusive-equivalent device time, Decision P-budget issuecomment-6438810533): 5.0 GPU-h total, within the 12 GPU-h cap; the process-seconds basis (23.0 GPU-h, inflated by GPU sharing) is recorded beside it.
+
+**Frozen plan**: `plan.json` sha256 `4ef3ac5fc5212787d12e9e5b564d7d4700819ad9e41f37ceb368fa3ee1eccfa9`, 131 pins, frozen_at 2026-10-27T13:32:33Z. Training queues: q0 T3 s20260909 (placed on GPU 2), q1 T3 s20260910 (GPU 1); readouts, freeze-readouts, one scoring pass (GPU 0), novelty, publish and validate follow automatically (`scripts/gpu_window_issue_134_main.json`).

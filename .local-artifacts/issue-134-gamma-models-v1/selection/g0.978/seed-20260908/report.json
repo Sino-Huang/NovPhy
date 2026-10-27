@@ -1,0 +1,59 @@
+{
+  "complete": true,
+  "device": "cuda",
+  "final": {
+    "log_prob_model_mean": -927.8197021484375,
+    "log_prob_target_mean": -847.7046508789062,
+    "loss": 16024.505859375,
+    "seconds": 11994.92891397886,
+    "step": 49999
+  },
+  "finished_at": "2026-10-27T10:25:24Z",
+  "gpu_seconds": 11994.932227632962,
+  "model_sha256": "sha256:8f55db4159e8ef61b75f40e6cc804c5aca3ccc486243b8ee0b383804dfe348ad",
+  "parameters": 10230696,
+  "peak_gib": 1.0491456985473633,
+  "precision": {
+    "cudnn_allow_tf32": true,
+    "device": "cuda",
+    "dtype": "float32",
+    "flags": "torch defaults (upstream float32)",
+    "matmul_allow_tf32": false
+  },
+  "seconds_per_step": 0.23989864455265925,
+  "seed": 20260908,
+  "spec": {
+    "arm": "T3",
+    "batch": 1024,
+    "config": {
+      "B": 10,
+      "K": 16,
+      "batch_size": 1024,
+      "burnin_discount": 0.5,
+      "decay": 1e-05,
+      "delta": false,
+      "discount": 0.9777777777777777,
+      "hidden_dims": [
+        256,
+        256,
+        256
+      ],
+      "lr": 0.0001,
+      "n_burnin": 2000,
+      "n_steps": 50000,
+      "num_layers": 3,
+      "sample_discount": 0.9,
+      "sigma": 0.1,
+      "tau": 0.005
+    },
+    "configuration": "g0.978",
+    "name": "g0.978",
+    "sample_seed": 20261025,
+    "samples": 64,
+    "size": "native",
+    "steps": 50000
+  },
+  "steps": 50000,
+  "typed_failure": null,
+  "wall_seconds": 11994.932227632962
+}
