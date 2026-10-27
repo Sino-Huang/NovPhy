@@ -73,6 +73,10 @@ def run_setup(setup, model, run_dir):
             raise Paused()
         return official(*args, **kwargs)
 
+    runner.process_single_task_with_retries = guarded  # main() looks the task function up in the module globals
+    summary = Path(run_dir) / "summary_results.json"
+    if summary.is_file():
+        json.loads(summary.read_text())  # the official resume restarts from scratch on an unreadable summary: fail loudly
     seed = SEED + done_tasks(run_dir)
     random.seed(seed)
     import numpy as np
