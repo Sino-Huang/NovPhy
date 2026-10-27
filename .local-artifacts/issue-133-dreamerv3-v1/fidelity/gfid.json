@@ -1,0 +1,173 @@
+{
+  "arm_family": "dreamerv3",
+  "band": [
+    0.18,
+    0.42
+  ],
+  "band_rule": "paper 0.30 +/- 2 binomial SE on 50 cases (SE = sqrt(0.3*0.7/50) = 0.0648; +/-2SE = [0.1704, 0.4296]), on the 1/50 success grid: 9..21 successes, i.e. [0.18, 0.42] inclusive",
+  "band_sha256": "sha256:656ea9238476e528441ef91ceac3d2ee14404b32ac9c5d910d771151456f9e66",
+  "decided_by_run": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/runs/tier-t-1",
+  "environment": {
+    "device": "NVIDIA GeForce RTX 5090",
+    "python": "3.10.22",
+    "torch": "2.7.1+cu128"
+  },
+  "harness": {
+    "decisions": [
+      "https://github.com/Sino-Huang/NovPhy/issues/133#issuecomment-6388719519",
+      "https://github.com/Sino-Huang/NovPhy/issues/133#issuecomment-6388719795"
+    ],
+    "dino_wm": {
+      "commit": "0a9492fa12044b852ae9e001cc74604b79c8bb0c",
+      "repo": "https://github.com/gaoyuezhou/dino_wm"
+    },
+    "script": "scripts/b127_dreamerv3_fidelity.py",
+    "script_sha256": "sha256:40f21cd0155a11a839fef5ece3c212230dcf66b545d0b36c539e4e6afde3438d"
+  },
+  "issue": 133,
+  "model": {
+    "path": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/model/model.pt",
+    "report": {
+      "cache_manifest": {
+        "action_bytes": 18693888,
+        "action_sha256": "sha256:244540d5b0822803fda9ccafb0a437e10d5fae843d85035132eb9809fb03a8e8",
+        "built_at": "2026-10-26T09:51:02Z",
+        "frames_bytes": 28713811968,
+        "frames_sha256": "sha256:d07b15a75acaaae8eddff0337bd8772ef7f5d56e2eb05fe78a6c8a15ed8963a2",
+        "index_sha256": "sha256:96a932b5b359e9a693d37ff7aea15d2eb85c3b44034c3d63f3c6a959013e0cd3",
+        "proprio_bytes": 37387776,
+        "proprio_sha256": "sha256:c02b1fee4e30160fcc4a714ff9d3519914af50fde6ba310c6643c66f87233a78",
+        "schema": "issue_133_pusht64_cache_v1",
+        "seconds_last_launch": 940.1819428238086
+      },
+      "complete": true,
+      "device": "cuda",
+      "final": {
+        "dyn_loss": 4.734625339508057,
+        "dyn_scale": 0.5,
+        "image_loss": 1.0438133478164673,
+        "kl": 4.685005187988281,
+        "kl_free": 1.0,
+        "model_grad_norm": 31.376331329345703,
+        "model_loss": 3.8972408771514893,
+        "post_ent": 40.860862731933594,
+        "prior_ent": 45.268592834472656,
+        "proprio_loss": 0.012652166187763214,
+        "rep_loss": 4.734625339508057,
+        "rep_scale": 0.1,
+        "seconds": 59507.4109126227,
+        "step": 233673
+      },
+      "finished_at": "2026-10-27T13:47:34Z",
+      "gpu_seconds": 59507.41122285882,
+      "model_sha256": "sha256:463744e14c689ee5d9382768d79c5741f215c3722f06c7c6038456f8e5eb2b4e",
+      "native_updates": 233674,
+      "parameters": 23971719,
+      "seconds_per_update": 0.25465995884376874,
+      "torch": "2.13.0+cu130",
+      "typed_failure": null,
+      "updates": 233674,
+      "wall_seconds": 59507.41122285882
+    },
+    "sha256": "sha256:463744e14c689ee5d9382768d79c5741f215c3722f06c7c6038456f8e5eb2b4e"
+  },
+  "paper": {
+    "n_cases": 50,
+    "source": "Zhou, Pan, LeCun, Pinto, DINO-WM, ICML 2025, arXiv 2411.04983v2, Table 1 (PushT SR, row 'DreamerV3'); Sec. 4.2: IRIS / DreamerV3 / TD-MPC2 trained on DINO-WM's offline datasets without reward or task information, MPC on the learned world model; appendix A.9 credits https://github.com/NM512/dreamerv3-torch",
+    "value": 0.3
+  },
+  "pass": false,
+  "protocol": {
+    "config": "dino_wm @ 0a9492f conf/plan_pusht.yaml, the official planning/ code unchanged (MPCPlanner + CEMPlanner + PlanEvaluator + PlanWorkspace targets); the world model is the rebuilt DreamerV3 (Decision P-other, fidelity reconstruction)",
+    "frameskip": 5,
+    "goal_H": 5,
+    "goal_source": "dset",
+    "max_iter": 12,
+    "max_iter_reason": "as #130's frozen Tier-E band: plan_pusht.yaml sets planner.max_iter null (MPC ends only when all 50 cases succeed); capped at 12 MPC iterations = 300 env steps (12 x 5 planning steps x frameskip 5), the official gym registration's max_episode_steps=300 for 'pusht'. Frozen before the run; never changed after it.",
+    "n_evals": 50,
+    "objective": "create_objective_fn alpha 1, base 2, mode last",
+    "planner": "MPC-CEM: sub_planner CEM horizon 5, num_samples 300, topk 30, opt_steps 30, var_scale 1, eval_every 1; n_taken_actions 5",
+    "runs": 1,
+    "seed": 99
+  },
+  "runs": [
+    {
+      "exit_code": 0,
+      "final_eval": {
+        "final_eval/mean_div_proprio_emb": 0.0,
+        "final_eval/mean_div_visual_emb": 29.98424530029297,
+        "final_eval/mean_proprio_dist": 119.4388656616211,
+        "final_eval/mean_state_dist": 308.2886657714844,
+        "final_eval/mean_visual_dist": 6.656610198767007,
+        "final_eval/success_rate": 0.02
+      },
+      "in_band": false,
+      "mpc_curve": [
+        {
+          "mpc_iteration": 1,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 2,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 3,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 4,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 5,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 6,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 7,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 8,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 9,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 10,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 11,
+          "success_rate": 0.02
+        },
+        {
+          "mpc_iteration": 12,
+          "success_rate": 0.02
+        }
+      ],
+      "mpc_iterations_run": 12,
+      "n_evals": 50,
+      "recorded_at": "2026-10-27T14:09:51Z",
+      "run_dir": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/runs/tier-t-1",
+      "success_rate": 0.02,
+      "successes": 1,
+      "wall_seconds": 1169.8744466379285
+    }
+  ],
+  "schema": "issue_127_gfid_v1",
+  "shims": [
+    "sys.modules stand-ins for mujoco_py and d4rl.offline_env (import-only, #130)",
+    "WANDB_MODE=disabled (DummyWandbRun)",
+    "SDL_VIDEODRIVER=dummy",
+    "PlanningModel.decoder = None (the evaluator's plots are skipped; never in success)",
+    "MPC-iteration checkpoint/resume (#130 install_mpc_checkpointing)"
+  ],
+  "tier": "T"
+}

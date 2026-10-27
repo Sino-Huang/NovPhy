@@ -1238,9 +1238,103 @@ def findings_text(summary):
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# --drop (P-fid: G-fid not reproduced, no diagnosed defect) and the dropped-arm publication
+# ---------------------------------------------------------------------------------------------------------------
+
+SCHEMA_NOT_RUN = "issue_133_not_run_v1"
+DROP_REASON = "fidelity_not_reproduced"
+DROP_DECISION = "https://github.com/Sino-Huang/NovPhy/issues/133#issuecomment-6444334625"
+
+
+def drop(output, decision=DROP_DECISION):
+    """not-run.json: T1 dropped with the typed reason fidelity_not_reproduced. Refuses unless a G-fid record exists and
+    failed; never touches evaluation data; idempotent (an existing record is kept)."""
+    output = Path(output)
+    path = output / "not-run.json"
+    if path.is_file():
+        log("not-run.json exists; kept")
+        return 0
+    gfid_path = output / "fidelity/gfid.json"
+    if not gfid_path.is_file() or eb.read_json(gfid_path).get("pass") is not False:
+        log("drop refused: fidelity/gfid.json absent or not failed")
+        return 1
+    gfid = eb.read_json(gfid_path)
+    diagnosis = sorted((output / "fidelity/diagnosis").glob("*")) if (output / "fidelity/diagnosis").is_dir() else []
+    eb.write_json(path, {
+        "schema": SCHEMA_NOT_RUN, "plan_identity": IDENTITY, "arm": ARM, "status": "dropped", "reason": DROP_REASON,
+        "rule": "P-fid", "decision": decision, "repair_attempts": 0,
+        "gfid": {"record": str(gfid_path.relative_to(ROOT)), "sha256": eb.sha256_of(gfid_path),
+                 "paper": gfid["paper"]["value"], "band": gfid["band"],
+                 "success_rate": gfid["runs"][-1]["success_rate"], "successes": gfid["runs"][-1]["successes"],
+                 "n_evals": gfid["runs"][-1]["n_evals"], "decided_by_run": gfid["decided_by_run"]},
+        "diagnosis": [{"artifact": str(p.relative_to(ROOT)), "sha256": eb.sha256_of(p)} for p in diagnosis],
+        "evaluation_read": eb.evaluation_anchors_path(output).is_file(), "written_at": eb.utc_now()})
+    log(f"T1 dropped ({DROP_REASON}); not-run.json written")
+    return 0
+
+
+def _json_if(path):
+    return eb.read_json(path) if Path(path).is_file() else None
+
+
+def dropped_publication(output):
+    """summary.json / compute.json of the dropped child (no arm block: T1 never ran on NovPhy; the program runner lists
+    it from extra.pending_arms). Reads no evaluation data."""
+    output = Path(output)
+    record = eb.read_json(output / "not-run.json")
+    gfid = record["gfid"]
+    gfid_block = {ARM: {"pass": False, "record": gfid["record"], "sha256": gfid["sha256"]}}
+    guards_global = {"G_isolation": {"pass": not record["evaluation_read"],
+                                     "rule": "T1 was dropped before selection; no evaluation data was read"}}
+    ledger, gpu_total, wall_total = eb.ledger_totals(output, lambda phase: None)
+    fidelity_report = _json_if(output / "fidelity/model/report.json")
+    compute = {"schema": "issue_133_compute_v1", "plan_identity": IDENTITY, "ledger": ledger,
+               "gpu_seconds_total": gpu_total, "wall_seconds_total": wall_total,
+               "fidelity_world_model": {k: fidelity_report[k] for k in ("updates", "gpu_seconds", "parameters")}
+               if fidelity_report else None, "arms": {}}
+    summary = eb.child_summary(ISSUE, IDENTITY, None, {}, {}, guards_global, gfid_block, {
+        "coverage_arm": True,
+        "pending_arms": {ARM: f"dropped ({record['reason']}, P-fid {record['decision']}): PushT G-fid "
+                              f"{gfid['success_rate']} ({gfid['successes']}/{gfid['n_evals']}) outside "
+                              f"{gfid['band']} (paper {gfid['paper']})"},
+        "dropped": {ARM: record},
+        "fidelity": _json_if(output / "fidelity/gfid.json"),
+        "diagnosis": {p.stem: eb.read_json(p) for p in sorted((output / "fidelity/diagnosis").glob("*.json"))},
+        "gport": {"pass": gport_pass(output)}})
+    return summary, compute
+
+
+def dropped_findings(summary):
+    record = summary["extra"]["dropped"][ARM]
+    gfid, diagnosis = record["gfid"], summary["extra"]["diagnosis"]
+    lines = [f"# #{ISSUE} T1 DreamerV3 (coverage arm): findings", "",
+             f"T1 was **dropped** ({record['reason']}, rule P-fid, {record['decision']}) before any NovPhy selection, "
+             "training or scoring; no evaluation data was read. It never enters the program claim.", "",
+             f"- G-port: pass {summary['extra']['gport']['pass']} (exact against NM512/dreamerv3-torch @ 6ef8646).",
+             f"- G-fid (DINO-WM Table 1 DreamerV3 PushT, paper {gfid['paper']}; frozen band {gfid['band']}): "
+             f"{gfid['success_rate']} ({gfid['successes']}/{gfid['n_evals']}), run {gfid['decided_by_run']}.",
+             "- Diagnosis (no port defect): open-loop prediction follows the actions; the paper's latent objective "
+             "ranks the dataset's ground-truth actions weakly. arXiv v1 of DINO-WM reports 0.04 for the same row.", ""]
+    ranking = diagnosis.get("objective_ranking") or {}
+    for key in ("probs", "stoch_mode", "feat", "image", "proprio_dec"):
+        if key in ranking:
+            lines.append(f"  - {key}: median rank of the ground-truth actions among 301 = "
+                         f"{ranking[key]['median_rank_of_gt_among_301']}, top-30 share {ranking[key]['share_gt_top30']}")
+    lines += ["", "Repair attempts used: 0 of 2; the band was never changed.", ""]
+    return "\n".join(lines)
+
+
 def publish(output):
     output = Path(output)
     eb.write_json(output / "records-manifest.json", eb.records_manifest(output, IDENTITY, RECORD_PATTERNS))
+    if (output / "not-run.json").is_file():
+        summary, compute = dropped_publication(output)
+        eb.write_json(output / "compute.json", compute)
+        eb.write_json(output / "summary.json", summary)
+        (output / "findings.md").write_text(dropped_findings(summary))
+        log("published (T1 dropped: fidelity_not_reproduced)")
+        return 0
     summary, compute = publication(output)
     eb.write_json(output / "compute.json", compute)
     eb.write_json(output / "summary.json", summary)
@@ -1249,10 +1343,33 @@ def publish(output):
     return 0
 
 
+def validate_dropped(output):
+    """The dropped child: not-run.json still binds the failed G-fid record, nothing was scored, and the publication
+    re-derives byte for byte; validation.json."""
+    output = Path(output)
+    record = eb.read_json(output / "not-run.json")
+    binding = eb.sha256_of(ROOT / record["gfid"]["record"]) == record["gfid"]["sha256"]
+    unscored = not any((output / "records").glob("*.json")) and not eb.evaluation_anchors_path(output).is_file()
+    publish(output)
+    first = {name: (output / name).read_bytes() for name in ("summary.json", "compute.json", "findings.md")}
+    publish(output)
+    stable = first == {name: (output / name).read_bytes() for name in first}
+    ok = bool(binding and unscored and stable)
+    eb.write_json(output / "validation.json", {"schema": "issue_133_validation_v1", "mode": "dropped",
+                                                "gfid_binding": binding, "unscored": unscored,
+                                                "publication_stable": stable, "pass": ok,
+                                                "summary_sha256": eb.sha256_of(output / "summary.json"),
+                                                "validated_at": eb.utc_now()})
+    log(f"validate (dropped): binding {binding}, unscored {unscored}, stable {stable}")
+    return 0 if ok else 1
+
+
 def validate(output, device=None):
     """Hash-check the records against the manifest, re-score one record (exact row equality), write the receipt,
-    then re-derive the publication twice and require byte-identical files."""
+    then re-derive the publication twice and require byte-identical files (dropped child: validate_dropped)."""
     output = Path(output)
+    if (output / "not-run.json").is_file():
+        return validate_dropped(output)
     plan = load_plan(output)
     load_manifest(output)
     manifest = eb.read_json(output / "records-manifest.json")
@@ -1288,7 +1405,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     modes = parser.add_mutually_exclusive_group(required=True)
     for mode in ("project", "timing", "selection", "selection-readouts", "smoke", "prepare", "train", "readouts",
-                 "freeze-readouts", "score", "score-novelty", "publish", "validate"):
+                 "freeze-readouts", "score", "score-novelty", "drop", "publish", "validate"):
         modes.add_argument(f"--{mode}", action="store_true")
     parser.add_argument("--gpu", type=int, default=0, help="queue index (the job's CUDA_VISIBLE_DEVICES picks the GPU)")
     parser.add_argument("--workers", type=int, default=0, help="accepted for the contract; data live in memory")
@@ -1298,6 +1415,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     output = Path(args.output)
     torch.set_num_threads(int(os.environ.get("B127_T1_CPU_THREADS", "8")))  # shared host: avoid oversubscription
+    if args.drop:
+        return drop(output)
     if args.timing:
         return timing(output, args.timing_updates, device=args.device)
     if args.project:

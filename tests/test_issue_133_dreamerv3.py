@@ -238,6 +238,52 @@ def test_nonfinite_loss_is_a_typed_terminal_failure(tmp_path):
     assert again == eb.read_json(tmp_path / "report.json") and (tmp_path / "model.pt").read_bytes() == before
 
 
+def test_drop_publishes_t1_as_not_run_without_evaluation_reads(tmp_path, monkeypatch):
+    assert runner.drop(tmp_path) == 1 and not (tmp_path / "not-run.json").exists()  # no G-fid record
+    eb.write_json(tmp_path / "fidelity/gfid.json", {"pass": True})
+    assert runner.drop(tmp_path) == 1  # a passing G-fid is never dropped
+    gfid = {"pass": False, "paper": {"value": 0.3}, "band": [0.18, 0.42], "decided_by_run": "r",
+            "runs": [{"success_rate": 0.02, "successes": 1, "n_evals": 50}]}
+    monkeypatch.setattr(runner, "ROOT", tmp_path)
+    eb.write_json(tmp_path / "fidelity/gfid.json", gfid)
+    eb.write_json(tmp_path / "fidelity/diagnosis/objective_ranking.json",
+                  {"probs": {"median_rank_of_gt_among_301": 38.0, "share_gt_top30": 0.48, "share_gt_best": 0.16}})
+    eb.write_json(tmp_path / "gport/gport.json", {"pass": True})
+    forbidden = lambda *a, **k: (_ for _ in ()).throw(AssertionError("evaluation read"))  # noqa: E731
+    for name in ("evaluation_cells", "read_evaluation_anchors", "references", "reference_position_curves"):
+        monkeypatch.setattr(eb, name, forbidden)
+    assert runner.drop(tmp_path) == 0
+    record = eb.read_json(tmp_path / "not-run.json")
+    assert (record["reason"], record["repair_attempts"], record["evaluation_read"]) == ("fidelity_not_reproduced", 0, False)
+    assert runner.drop(tmp_path) == 0 and eb.read_json(tmp_path / "not-run.json") == record  # idempotent
+    assert runner.validate(tmp_path) == 0
+    summary = eb.load_child_summary(tmp_path / "summary.json")
+    assert summary["arms"] == {} and summary["program_set_members"] == [] and summary["gfid"]["T1"]["pass"] is False
+    assert summary["extra"]["pending_arms"]["T1"].startswith("dropped (fidelity_not_reproduced")
+    assert eb.read_json(tmp_path / "validation.json")["pass"] and "dropped" in (tmp_path / "findings.md").read_text()
+
+
+def test_resume_checkpoint_is_mapped_to_cpu(tmp_path, monkeypatch):
+    """P-crash (#133): resume.pt is loaded with map_location='cpu' (RNG states must stay CPU ByteTensors; a GPU map
+    made torch.set_rng_state fail on the first GPU resume), and the restore accepts the saved tensors."""
+    data, spec = tiny_data(), tiny_spec()
+    eb.STOP_REQUESTED.append(15)
+    with pytest.raises(eb.TrainingPaused):
+        runner.train_run(tmp_path, spec, 3, data, "cpu", max_steps=None)
+    eb.STOP_REQUESTED.clear()
+    seen, original = [], torch.load
+
+    def spy(path, *args, **kwargs):
+        seen.append((Path(path).name, kwargs.get("map_location")))
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(dn.torch, "load", spy)
+    assert runner.train_run(tmp_path, spec, 3, data, "cpu")["complete"]
+    assert ("resume.pt", "cpu") in seen
+    state = {"cpu": torch.get_rng_state().float().to(torch.uint8), "cuda": None}
+    dn.set_rng_state(state, "cuda:0")  # no CUDA here: only the CPU generator is restored
+
+
 def test_timing_probe_needs_no_funding_and_keeps_only_its_record(tmp_path, monkeypatch):
     real = fid.OVERRIDES
     monkeypatch.setattr(fid, "OVERRIDES", FID_TINY)

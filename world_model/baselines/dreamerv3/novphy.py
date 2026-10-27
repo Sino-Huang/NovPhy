@@ -203,9 +203,10 @@ def rng_state(device):
 
 
 def set_rng_state(state, device):
-    torch.set_rng_state(state["cpu"])
+    """Restore the generators; RNG states are CPU ByteTensors whatever device a checkpoint was mapped to."""
+    torch.set_rng_state(state["cpu"].cpu())
     if state.get("cuda") is not None and str(device).startswith("cuda") and torch.cuda.is_available():
-        torch.cuda.set_rng_state(state["cuda"], device)
+        torch.cuda.set_rng_state(state["cuda"].cpu(), device)
 
 
 def train_loop(model, out_dir, steps, batch_fn, should_stop, device, max_steps=None, log_every=100,
@@ -222,7 +223,9 @@ def train_loop(model, out_dir, steps, batch_fn, should_stop, device, max_steps=N
     resume = out_dir / "resume.pt"
     start, elapsed = 0, 0.0
     if resume.is_file():
-        state = torch.load(resume, map_location=device, weights_only=False)
+        # CPU map: load_state_dict copies weights onto the run device, the optimizer casts its state to its
+        # parameters' device, and the RNG states stay CPU ByteTensors (P-crash on #133, issuecomment-6435923485)
+        state = torch.load(resume, map_location="cpu", weights_only=False)
         model.load_state_dict(state["model"])
         model.load_optimizer_state_dict(state["optimizer"])
         set_rng_state(state["rng"], device)

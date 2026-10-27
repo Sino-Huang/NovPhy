@@ -1,0 +1,43 @@
+{
+  "arm": "T1",
+  "decision": "https://github.com/Sino-Huang/NovPhy/issues/133#issuecomment-6444334625",
+  "diagnosis": [
+    {
+      "artifact": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/diagnosis/objective_ranking.json",
+      "sha256": "sha256:6bfcbfca198b5890967bb3b1336ab57c9e538ac3e0c1c86a047bc20521d66fc0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/diagnosis/objective_ranking.py",
+      "sha256": "sha256:1c48dfbfa43066a2156749776a53c76acaad623a5f17598f4609726c76d5c1f3"
+    },
+    {
+      "artifact": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/diagnosis/representation_consistency.json",
+      "sha256": "sha256:319331d08baf77a71b15bcd641cfc66b23297a62b6f6910929f19f20f3598079"
+    },
+    {
+      "artifact": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/diagnosis/representation_consistency.py",
+      "sha256": "sha256:d3ced1865bd6d7068cab2f1b4a889832fb930c6b4dfb6c0a126ba70d5d3a83e9"
+    }
+  ],
+  "evaluation_read": false,
+  "gfid": {
+    "band": [
+      0.18,
+      0.42
+    ],
+    "decided_by_run": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/runs/tier-t-1",
+    "n_evals": 50,
+    "paper": 0.3,
+    "record": ".local-artifacts/issue-133-dreamerv3-v1/fidelity/gfid.json",
+    "sha256": "sha256:dac08d8358a26ce9c600f4ca126953c94d6866907aa30bf797ac2674e9b04f1f",
+    "success_rate": 0.02,
+    "successes": 1
+  },
+  "plan_identity": "issue-133-dreamerv3-v1",
+  "reason": "fidelity_not_reproduced",
+  "repair_attempts": 0,
+  "rule": "P-fid",
+  "schema": "issue_133_not_run_v1",
+  "status": "dropped",
+  "written_at": "2026-10-27T14:17:03Z"
+}
