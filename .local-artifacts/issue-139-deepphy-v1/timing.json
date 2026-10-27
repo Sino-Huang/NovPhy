@@ -1,0 +1,107 @@
+{
+  "candidates": 16,
+  "decisions": 8,
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "fit_anchors": [
+    "issue-109-sc-fit-type010103-001",
+    "issue-109-sc-fit-type010103-002",
+    "issue-109-sc-fit-type010103-003",
+    "issue-109-sc-fit-type010103-004",
+    "issue-109-sc-fit-type010103-005",
+    "issue-109-sc-fit-type010103-006",
+    "issue-109-sc-fit-type010103-007",
+    "issue-109-sc-fit-type010103-008"
+  ],
+  "models": {
+    "Qwen2.5-VL-3B-Instruct": {
+      "configs": [
+        "q3b"
+      ],
+      "flops": {
+        "candidates": 16,
+        "decision_flops": 239339287388160
+      },
+      "load_seconds": 16.733355425763875,
+      "prompt_tokens": [
+        1202
+      ],
+      "seconds_per_decision": [
+        3.107503485865891,
+        3.100225761998445,
+        3.112585656810552,
+        3.104710503015667,
+        3.1054627457633615,
+        3.107373684179038,
+        3.11260775802657
+      ],
+      "seconds_per_decision_median": 3.107373684179038,
+      "warmup_seconds": 3.109375178348273,
+      "worker": {
+        "batch": 16,
+        "device": "cuda",
+        "device_name": "NVIDIA GeForce RTX 5090",
+        "dtype": "float16",
+        "load_seconds": 16.733355425763875,
+        "model_dir": "/mnt/array/sukaih/Project/NovPhy/data/external/deepphy/Qwen2.5-VL-3B-Instruct",
+        "policy": {
+          "cudnn_allow_tf32": false,
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": true,
+          "matmul_allow_tf32": false
+        },
+        "seconds_total": 46.23580508120358,
+        "torch": "2.7.1+cu128",
+        "transformers": "4.52.4"
+      },
+      "worker_seconds": 46.23580508120358
+    },
+    "Qwen2.5-VL-7B-Instruct": {
+      "configs": [
+        "q7b",
+        "q7b-t01"
+      ],
+      "flops": {
+        "candidates": 16,
+        "decision_flops": 387151399526400
+      },
+      "load_seconds": 33.64424034487456,
+      "prompt_tokens": [
+        1202
+      ],
+      "seconds_per_decision": [
+        3.791388387326151,
+        3.7730352841317654,
+        3.782770825084299,
+        3.784178340341896,
+        3.7782341791316867,
+        3.789758546743542,
+        3.776483702007681
+      ],
+      "seconds_per_decision_median": 3.782770825084299,
+      "warmup_seconds": 3.7845676480792463,
+      "worker": {
+        "batch": 16,
+        "device": "cuda",
+        "device_name": "NVIDIA GeForce RTX 5090",
+        "dtype": "float16",
+        "load_seconds": 33.64424034487456,
+        "model_dir": "/mnt/array/sukaih/Project/NovPhy/data/external/deepphy/Qwen2.5-VL-7B-Instruct",
+        "policy": {
+          "cudnn_allow_tf32": false,
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": true,
+          "matmul_allow_tf32": false
+        },
+        "seconds_total": 69.374522539787,
+        "torch": "2.7.1+cu128",
+        "transformers": "4.52.4"
+      },
+      "worker_seconds": 69.374522539787
+    }
+  },
+  "plan_identity": "issue-139-deepphy-v1",
+  "schema": "issue_139_timing_v1",
+  "seconds": 120.06249234220013,
+  "written_at": "2026-10-27T09:07:22Z"
+}

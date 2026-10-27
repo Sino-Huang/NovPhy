@@ -93,3 +93,11 @@ The 0.05 threshold was set on #123's latent states. In carrier space it is not a
 **Decision (P-coverage order).**
 1. **DIAMOND (#137) is funded** (80.3 ≤ 153); remainder ≈ 73 GPU-h. Its selection runs are placed on GPUs 0, 1 and 3 (GPU 2 carries #128's A4 selection and seeds, the program set's critical path).
 2. **V-JEPA 2-AC** is next: no implementation or projection yet; the scout estimate (44–90 GPU-h [INFERENCE]) straddles the remainder, so its Phase 0 starts now on CPU in a new child ticket, funded only if its measured projection fits then. **DeepPHY** (scout 4–18 GPU-h, open-weight VLMs run locally) follows in order the same way.
+
+## Decision P-coverage (2026-10-28): V-JEPA 2-AC not run (`cap`); DeepPHY (#139) funded — the P-coverage list is exhausted
+
+**V-JEPA 2-AC (#138)** was not run, typed `cap` (issuecomment-6436855469): its FLOP-count projection from the official native budget (94 500 updates × 256 clips on the ViT-g AC predictor) is 2 109–5 271 GPU-h; one native seed alone (≥ 285 GPU-h) is ≈ 4× the remainder (≈ 73 GPU-h) and ≈ 12× the 24 GPU-h seed cap. Cutting the native budget would weaken the baseline, which #127 forbids. Phase 0 (licences, route, adapter, G-port exact, G-fid band) is committed and reported.
+
+**DeepPHY (#139)**, the last arm in P-coverage, measured on an exclusive GPU (issuecomment-6437800465): Qwen2.5-VL-7B 3.78 s per decision, 3B 3.11 s → **8.8 GPU-h** in total (G-fid on PHYRE 4.5; selection 0.2; readouts 0.5; scoring 1.05; novelty 0.5; validation 1.05), within the 18 GPU-h child cap and the remainder. **Funded**; remainder after it ≈ 64 GPU-h.
+
+**The P-coverage list is exhausted** (DreamerV3, γ-models, DIAMOND and DeepPHY funded; Diffusion Forcing and DDLP dropped at fidelity; V-JEPA 2-AC `cap`). The leftover (≈ 64 GPU-h, minus any overrun of the funded children) stays as headroom for the funded children's own overruns (#133's G-fid training is running ≈ 1.8× its probe projection under GPU sharing) and for P-budget item (6), a P-follow-up ticket, which fires only if an arm reaches disposition 1. No further arm is added.

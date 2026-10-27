@@ -50,7 +50,7 @@
   },
   "measured_at": "2026-10-27T08:59:29Z",
   "plan_identity": "issue-139-deepphy-v1",
-  "primary": "projection_upper",
+  "primary": "projection_measured",
   "projection_lower": {
     "child_cap_gpu_h": 18.0,
     "fits_remainder": true,
@@ -74,6 +74,32 @@
     "validate_gpu_h": 0.8929382187834481,
     "wall_cap_h": 48.0,
     "wall_h_sequential_one_gpu": 5.942623724116196,
+    "within_caps": true
+  },
+  "projection_measured": {
+    "child_cap_gpu_h": 18.0,
+    "fits_remainder": true,
+    "gfid_gpu_h": 4.5,
+    "load_seconds": {
+      "Qwen2.5-VL-3B-Instruct": 16.733355425763875,
+      "Qwen2.5-VL-7B-Instruct": 33.64424034487456
+    },
+    "projected_model": "Qwen2.5-VL-7B-Instruct",
+    "readouts_gpu_h": 0.5137150656625938,
+    "remainder_gpu_h": 73.0,
+    "score_gpu_h": 1.051709138563472,
+    "score_novelty_gpu_h": 0.49690275088444147,
+    "seconds_per_decision": {
+      "Qwen2.5-VL-3B-Instruct": 3.107373684179038,
+      "Qwen2.5-VL-7B-Instruct": 3.782770825084299
+    },
+    "selection_gpu_h": 0.19390310545594225,
+    "source": "timing.json (measured)",
+    "timing_probe_gpu_h": 1.0,
+    "total_gpu_h": 8.80793919912992,
+    "validate_gpu_h": 1.051709138563472,
+    "wall_cap_h": 48.0,
+    "wall_h_sequential_one_gpu": 8.80793919912992,
     "within_caps": true
   },
   "projection_upper": {
@@ -101,5 +127,6 @@
     "wall_h_sequential_one_gpu": 12.331559310290487,
     "within_caps": true
   },
-  "schema": "issue_139_projection_v1"
+  "schema": "issue_139_projection_v1",
+  "timing_sha256": "sha256:4218dfd067304164aa6f69148744f3ef5d064573876fbd65be38b977ebcf04a4"
 }
