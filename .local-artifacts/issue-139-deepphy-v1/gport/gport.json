@@ -1,0 +1,1046 @@
+{
+ "G_port_rule": "prompts, image list, messages and parser byte-identical to the official code executed from the vendored source; model inputs exactly equal to the official pipeline's generate inputs; teacher-forced log p of the generated tokens <= 0.001 nats from generate's logits; the adapter's logits processing (repetition penalty, temperature) at the official effective decoding config within 0.001 relative to max(1, max |score|) of generate's processed scores at their finite entries; candidate scores batch-invariant <= 0.0001; exact ties for equal answers",
+ "adapter_sha256": "sha256:c7b565b799270785dfc9a8e54e73d866abdf123e77602268009bb40c03f31202",
+ "arm": "T7 DeepPHY-VLM",
+ "cases": {
+  "prompt_parse": {
+   "crop_note": "the official runner crops 1.10 cm off the current screenshot (iPhone-mirroring title bar); not applied to NovPhy frames (Decision P-adapter item 1)",
+   "grid_roundtrip": [
+    {
+     "answer": "[shoot(angle=7, power=1.0)]",
+     "ordinal": 0,
+     "parsed": [
+      7.0,
+      1.0
+     ],
+     "rendered": [
+      7,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=37, power=1.0)]",
+     "ordinal": 1,
+     "parsed": [
+      37.0,
+      1.0
+     ],
+     "rendered": [
+      37,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=54, power=1.0)]",
+     "ordinal": 2,
+     "parsed": [
+      54.0,
+      1.0
+     ],
+     "rendered": [
+      54,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=63, power=1.0)]",
+     "ordinal": 3,
+     "parsed": [
+      63.0,
+      1.0
+     ],
+     "rendered": [
+      63,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=4, power=1.0)]",
+     "ordinal": 4,
+     "parsed": [
+      4.0,
+      1.0
+     ],
+     "rendered": [
+      4,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=21, power=1.0)]",
+     "ordinal": 5,
+     "parsed": [
+      21.0,
+      1.0
+     ],
+     "rendered": [
+      21,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=35, power=1.0)]",
+     "ordinal": 6,
+     "parsed": [
+      35.0,
+      1.0
+     ],
+     "rendered": [
+      35,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=45, power=1.0)]",
+     "ordinal": 7,
+     "parsed": [
+      45.0,
+      1.0
+     ],
+     "rendered": [
+      45,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=2, power=1.0)]",
+     "ordinal": 8,
+     "parsed": [
+      2.0,
+      1.0
+     ],
+     "rendered": [
+      2,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=14, power=1.0)]",
+     "ordinal": 9,
+     "parsed": [
+      14.0,
+      1.0
+     ],
+     "rendered": [
+      14,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=25, power=1.0)]",
+     "ordinal": 10,
+     "parsed": [
+      25.0,
+      1.0
+     ],
+     "rendered": [
+      25,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=34, power=1.0)]",
+     "ordinal": 11,
+     "parsed": [
+      34.0,
+      1.0
+     ],
+     "rendered": [
+      34,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=2, power=1.0)]",
+     "ordinal": 12,
+     "parsed": [
+      2.0,
+      1.0
+     ],
+     "rendered": [
+      2,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=11, power=1.0)]",
+     "ordinal": 13,
+     "parsed": [
+      11.0,
+      1.0
+     ],
+     "rendered": [
+      11,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=19, power=1.0)]",
+     "ordinal": 14,
+     "parsed": [
+      19.0,
+      1.0
+     ],
+     "rendered": [
+      19,
+      1.0
+     ]
+    },
+    {
+     "answer": "[shoot(angle=27, power=1.0)]",
+     "ordinal": 15,
+     "parsed": [
+      27.0,
+      1.0
+     ],
+     "rendered": [
+      27,
+      1.0
+     ]
+    }
+   ],
+   "official_crop_calls": [
+    {
+     "crop_top_cm": 1.1,
+     "path": "/tmp/frame-0.png"
+    },
+    {
+     "crop_top_cm": 1.1,
+     "path": "/tmp/frame-0.png"
+    },
+    {
+     "crop_top_cm": 1.1,
+     "path": "/tmp/b.png"
+    },
+    {
+     "crop_top_cm": 1.1,
+     "path": "/tmp/frame-0.png"
+    }
+   ],
+   "parses": [
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=7, power=1.0)",
+      "shoot": [
+       7.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=7, power=1.0)",
+      "angle": 7.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=7, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=37, power=1.0)",
+      "shoot": [
+       37.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=37, power=1.0)",
+      "angle": 37.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=37, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=54, power=1.0)",
+      "shoot": [
+       54.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=54, power=1.0)",
+      "angle": 54.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=54, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=63, power=1.0)",
+      "shoot": [
+       63.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=63, power=1.0)",
+      "angle": 63.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=63, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=4, power=1.0)",
+      "shoot": [
+       4.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=4, power=1.0)",
+      "angle": 4.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=4, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=21, power=1.0)",
+      "shoot": [
+       21.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=21, power=1.0)",
+      "angle": 21.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=21, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=35, power=1.0)",
+      "shoot": [
+       35.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=35, power=1.0)",
+      "angle": 35.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=35, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=45, power=1.0)",
+      "shoot": [
+       45.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=45, power=1.0)",
+      "angle": 45.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=45, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=2, power=1.0)",
+      "shoot": [
+       2.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=2, power=1.0)",
+      "angle": 2.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=2, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=14, power=1.0)",
+      "shoot": [
+       14.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=14, power=1.0)",
+      "angle": 14.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=14, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=25, power=1.0)",
+      "shoot": [
+       25.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=25, power=1.0)",
+      "angle": 25.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=25, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=34, power=1.0)",
+      "shoot": [
+       34.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=34, power=1.0)",
+      "angle": 34.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=34, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=2, power=1.0)",
+      "shoot": [
+       2.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=2, power=1.0)",
+      "angle": 2.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=2, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=11, power=1.0)",
+      "shoot": [
+       11.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=11, power=1.0)",
+      "angle": 11.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=11, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=19, power=1.0)",
+      "shoot": [
+       19.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=19, power=1.0)",
+      "angle": 19.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=19, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=27, power=1.0)",
+      "shoot": [
+       27.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=27, power=1.0)",
+      "angle": 27.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=27, power=1.0)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=45, power=0.8)",
+      "shoot": [
+       45.0,
+       0.8
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=45, power=0.8)",
+      "angle": 45.0,
+      "power": 0.8,
+      "success": false
+     },
+     "raw": "[shoot(angle=45, power=0.8)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=30, power=1.0)",
+      "shoot": [
+       30.0,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=30, power=1.0)",
+      "angle": 30.0,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "```python\n[shoot(angle=30, power=1.0)]\n```"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=20, power=0.9)",
+      "shoot": [
+       20.0,
+       0.9
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=20, power=0.9)",
+      "angle": 20.0,
+      "power": 0.9,
+      "success": false
+     },
+     "raw": "Plan: [shoot(angle=10, power=0.5)] then [shoot(angle=20, power=0.9)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "success()",
+      "shoot": null,
+      "terminal": true
+     },
+     "ours": {
+      "action": "success()",
+      "angle": null,
+      "power": null,
+      "success": true
+     },
+     "raw": "[success()]"
+    },
+    {
+     "equal": true,
+     "official": null,
+     "ours": null,
+     "raw": "no action here"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle = 45, power=0.8)",
+      "shoot": null,
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle = 45, power=0.8)",
+      "angle": null,
+      "power": null,
+      "success": false
+     },
+     "raw": "[shoot(angle = 45, power=0.8)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot(angle=-5.5, power=1)",
+      "shoot": [
+       -5.5,
+       1.0
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot(angle=-5.5, power=1)",
+      "angle": -5.5,
+      "power": 1.0,
+      "success": false
+     },
+     "raw": "[shoot(angle=-5.5, power=1)]"
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "jump()",
+      "shoot": null,
+      "terminal": false
+     },
+     "ours": {
+      "action": "jump()",
+      "angle": null,
+      "power": null,
+      "success": false
+     },
+     "raw": "[jump()]"
+    },
+    {
+     "equal": true,
+     "official": null,
+     "ours": null,
+     "raw": ""
+    },
+    {
+     "equal": true,
+     "official": {
+      "action": "shoot( angle=12,power=0.25 )",
+      "shoot": [
+       12.0,
+       0.25
+      ],
+      "terminal": false
+     },
+     "ours": {
+      "action": "shoot( angle=12,power=0.25 )",
+      "angle": 12.0,
+      "power": 0.25,
+      "success": false
+     },
+     "raw": "[ shoot( angle=12,power=0.25 ) ]"
+    }
+   ],
+   "parsing_statements": [
+    "cleaned_response = re.sub(r'```(?:python)?\\n(.*?)\\n```', r'\\1', raw_llm_response, flags=re.DOTALL).strip()",
+    "matches = re.findall(r'\\[(.*?)\\]', cleaned_response)",
+    "final_action_str = matches[-1].strip()"
+   ],
+   "pass": true,
+   "prompts": [
+    {
+     "case": {
+      "bird_type": [
+       "red"
+      ],
+      "history": [],
+      "paths": [
+       "/tmp/frame-0.png"
+      ]
+     },
+     "images_equal": true,
+     "messages_equal": true,
+     "official_call_kwargs": {
+      "do_sample": true,
+      "max_new_tokens": 200,
+      "return_full_text": false,
+      "temperature": 0.1
+     },
+     "system_equal": true,
+     "system_sha256": "sha256:5e8d750c79d4e96be7062ef6475ea2b1dd555294f6216f004e207c5b518ce14d",
+     "user_equal": true,
+     "user_sha256": "sha256:1265797a77a9890a37ae2c7a7a243312c3ab32923957b0eed34451f7580fa886"
+    },
+    {
+     "case": {
+      "bird_type": [
+       "red",
+       "red",
+       "red"
+      ],
+      "history": [],
+      "paths": [
+       "/tmp/frame-0.png"
+      ]
+     },
+     "images_equal": true,
+     "messages_equal": true,
+     "official_call_kwargs": {
+      "do_sample": true,
+      "max_new_tokens": 200,
+      "return_full_text": false,
+      "temperature": 0.1
+     },
+     "system_equal": true,
+     "system_sha256": "sha256:5e8d750c79d4e96be7062ef6475ea2b1dd555294f6216f004e207c5b518ce14d",
+     "user_equal": true,
+     "user_sha256": "sha256:cea221f947071e38a1d4ebd47cb2c225a4e31718ea7b73ebcb68b9f674b0c938"
+    },
+    {
+     "case": {
+      "bird_type": [
+       "red",
+       "yellow",
+       "blue",
+       "black"
+      ],
+      "history": [
+       "shoot(angle=45, power=0.8)"
+      ],
+      "paths": [
+       "/tmp/a.png",
+       "/tmp/b.png"
+      ]
+     },
+     "images_equal": true,
+     "messages_equal": true,
+     "official_call_kwargs": {
+      "do_sample": true,
+      "max_new_tokens": 200,
+      "return_full_text": false,
+      "temperature": 0.1
+     },
+     "system_equal": true,
+     "system_sha256": "sha256:5e8d750c79d4e96be7062ef6475ea2b1dd555294f6216f004e207c5b518ce14d",
+     "user_equal": true,
+     "user_sha256": "sha256:bb856b351a777ed09eaf1b5a23467b5a3fbb16502483cba41d161e70df29d0d0"
+    },
+    {
+     "case": {
+      "bird_type": null,
+      "history": [],
+      "paths": [
+       "/tmp/frame-0.png"
+      ]
+     },
+     "images_equal": true,
+     "messages_equal": true,
+     "official_call_kwargs": {
+      "do_sample": true,
+      "max_new_tokens": 200,
+      "return_full_text": false,
+      "temperature": 0.1
+     },
+     "system_equal": true,
+     "system_sha256": "sha256:5e8d750c79d4e96be7062ef6475ea2b1dd555294f6216f004e207c5b518ce14d",
+     "user_equal": true,
+     "user_sha256": "sha256:1265797a77a9890a37ae2c7a7a243312c3ab32923957b0eed34451f7580fa886"
+    }
+   ]
+  },
+  "qwen3b_fp32": {
+   "answers": [
+    "[shoot(angle=7, power=1.0)]",
+    "[shoot(angle=37, power=1.0)]",
+    "[shoot(angle=54, power=1.0)]",
+    "[shoot(angle=63, power=1.0)]",
+    "[shoot(angle=4, power=1.0)]",
+    "[shoot(angle=21, power=1.0)]",
+    "[shoot(angle=35, power=1.0)]",
+    "[shoot(angle=45, power=1.0)]",
+    "[shoot(angle=2, power=1.0)]",
+    "[shoot(angle=14, power=1.0)]",
+    "[shoot(angle=25, power=1.0)]",
+    "[shoot(angle=34, power=1.0)]",
+    "[shoot(angle=2, power=1.0)]",
+    "[shoot(angle=11, power=1.0)]",
+    "[shoot(angle=19, power=1.0)]",
+    "[shoot(angle=27, power=1.0)]"
+   ],
+   "argmax_agree": 1.0,
+   "cpu_seconds_per_decision_batch1": 537.5261858291924,
+   "device": "cpu",
+   "dtype": "torch.float32",
+   "effective_generation_config": {
+    "do_sample": true,
+    "repetition_penalty": 1.05,
+    "temperature": 1e-06,
+    "top_k": 50,
+    "top_p": 1.0
+   },
+   "finding": "transformers 4.52.4's image-text-to-text pipeline routes get_qwen_model_response's do_sample=True / temperature=0.1 into the preprocess parameters, which the chat branch ignores; generate receives only max_new_tokens and decodes with the checkpoint's generation_config (effective_generation_config)",
+   "generate_kwargs": {
+    "max_new_tokens": 200
+   },
+   "generate_seconds": 41.06634277803823,
+   "generated_tokens": 14,
+   "generation_config_kwarg": null,
+   "grid_scores": {
+    "q3b": [
+     -15.653133810494182,
+     -10.407691617248929,
+     -12.180944340481801,
+     -13.238697250686528,
+     -17.141226034182182,
+     -13.675716862024274,
+     -7.727258995328157,
+     -3.046635225746286,
+     -15.199510503342026,
+     -14.304270633962005,
+     -7.701678028945025,
+     -11.776938852828607,
+     -15.199510503342026,
+     -15.261652152410534,
+     -11.816524899073556,
+     -11.464502763625205
+    ]
+   },
+   "inputs_equal": {
+    "attention_mask": true,
+    "image_grid_thw": true,
+    "input_ids": true,
+    "pixel_values": true
+   },
+   "max_abs_logp_delta": 2.250075340270996e-06,
+   "max_abs_raw_logit_delta": 3.3855438232421875e-05,
+   "model": "Qwen2.5-VL-3B-Instruct (released, float32)",
+   "official_parse": {
+    "action": "shoot(angle=45, power=0.8)",
+    "angle": 45.0,
+    "power": 0.8,
+    "success": false
+   },
+   "official_text": "[shoot(angle=45, power=0.8)]",
+   "pass": true,
+   "processed_finite_entries": 700,
+   "processed_max_abs_delta": 22.0,
+   "processed_rel_delta": 6.856883684749661e-07,
+   "prompt_tokens": 1202
+  },
+  "tiny_fp16_official_init": {
+   "answers": [
+    "[shoot(angle=7, power=1.0)]",
+    "[shoot(angle=37, power=1.0)]",
+    "[shoot(angle=54, power=1.0)]",
+    "[shoot(angle=63, power=1.0)]",
+    "[shoot(angle=4, power=1.0)]",
+    "[shoot(angle=21, power=1.0)]",
+    "[shoot(angle=35, power=1.0)]",
+    "[shoot(angle=45, power=1.0)]",
+    "[shoot(angle=2, power=1.0)]",
+    "[shoot(angle=14, power=1.0)]",
+    "[shoot(angle=25, power=1.0)]",
+    "[shoot(angle=34, power=1.0)]",
+    "[shoot(angle=2, power=1.0)]",
+    "[shoot(angle=11, power=1.0)]",
+    "[shoot(angle=19, power=1.0)]",
+    "[shoot(angle=27, power=1.0)]"
+   ],
+   "argmax_agree": 1.0,
+   "cpu_seconds_per_decision_batch1": 16.314508195966482,
+   "device": "cpu",
+   "dtype": "torch.float16",
+   "effective_generation_config": {
+    "do_sample": true,
+    "repetition_penalty": 1.05,
+    "temperature": 1e-06,
+    "top_k": 50,
+    "top_p": 1.0
+   },
+   "finding": "transformers 4.52.4's image-text-to-text pipeline routes get_qwen_model_response's do_sample=True / temperature=0.1 into the preprocess parameters, which the chat branch ignores; generate receives only max_new_tokens and decodes with the checkpoint's generation_config (effective_generation_config)",
+   "generate_kwargs": {
+    "max_new_tokens": 200
+   },
+   "generate_seconds": 2.1366339870728552,
+   "generated_tokens": 200,
+   "generation_config_kwarg": null,
+   "grid_scores": {
+    "q3b": [
+     -154.54141807556152,
+     -166.619966506958,
+     -165.79068088531494,
+     -166.2777271270752,
+     -154.28959846496582,
+     -166.6281909942627,
+     -166.41694831848145,
+     -166.8770751953125,
+     -154.39831447601318,
+     -166.0150260925293,
+     -166.6226511001587,
+     -165.96959590911865,
+     -154.39831447601318,
+     -166.26157665252686,
+     -166.07937145233154,
+     -166.52987670898438
+    ]
+   },
+   "inputs_equal": {
+    "attention_mask": true,
+    "image_grid_thw": true,
+    "input_ids": true,
+    "pixel_values": true
+   },
+   "max_abs_logp_delta": 0.0004892349243164062,
+   "max_abs_raw_logit_delta": 0.00048828125,
+   "model": "tiny random Qwen2.5-VL (official initialize_qwen_vlm, float16)",
+   "official_parse": null,
+   "official_text": "Ell overseas.reject\u062e\u0648\u0641 minim Without\ubc61\u1161\u09b9\u89c4\u683c KNOW perch\u00e9ESSAGE UEmeter\u0645\u0644\u0643rounded\u516c\u5173cstdio_SCHED divert\ubc34_DETAIL scand/filepath>About.userInfo\u613f\u666f\u1122 Bes\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664",
+   "pass": true,
+   "processed_finite_entries": 10042,
+   "processed_max_abs_delta": 488.3125,
+   "processed_rel_delta": 0.0005917538461538462,
+   "prompt_tokens": 1202
+  },
+  "tiny_fp32": {
+   "answers": [
+    "[shoot(angle=7, power=1.0)]",
+    "[shoot(angle=37, power=1.0)]",
+    "[shoot(angle=54, power=1.0)]",
+    "[shoot(angle=63, power=1.0)]",
+    "[shoot(angle=4, power=1.0)]",
+    "[shoot(angle=21, power=1.0)]",
+    "[shoot(angle=35, power=1.0)]",
+    "[shoot(angle=45, power=1.0)]",
+    "[shoot(angle=2, power=1.0)]",
+    "[shoot(angle=14, power=1.0)]",
+    "[shoot(angle=25, power=1.0)]",
+    "[shoot(angle=34, power=1.0)]",
+    "[shoot(angle=2, power=1.0)]",
+    "[shoot(angle=11, power=1.0)]",
+    "[shoot(angle=19, power=1.0)]",
+    "[shoot(angle=27, power=1.0)]"
+   ],
+   "argmax_agree": 1.0,
+   "batch_invariance": {
+    "max_abs_delta": 3.814697265625e-06,
+    "pass": true,
+    "tolerance": 0.0001
+   },
+   "cpu_seconds_per_decision_batch1": 2.7293064212426543,
+   "device": "cpu",
+   "dtype": "torch.float32",
+   "effective_generation_config": {
+    "do_sample": true,
+    "repetition_penalty": 1.05,
+    "temperature": 1e-06,
+    "top_k": 50,
+    "top_p": 1.0
+   },
+   "exact_ties": {
+    "equal": true,
+    "pairs": [
+     [
+      8,
+      12
+     ]
+    ]
+   },
+   "finding": "transformers 4.52.4's image-text-to-text pipeline routes get_qwen_model_response's do_sample=True / temperature=0.1 into the preprocess parameters, which the chat branch ignores; generate receives only max_new_tokens and decodes with the checkpoint's generation_config (effective_generation_config)",
+   "generate_kwargs": {
+    "max_new_tokens": 200
+   },
+   "generate_seconds": 1.3749238182790577,
+   "generated_tokens": 200,
+   "generation_config_kwarg": null,
+   "grid_scores": {
+    "q7b": [
+     -154.5414400100708,
+     -166.61994647979736,
+     -165.79042720794678,
+     -166.27740287780762,
+     -154.28955745697021,
+     -166.6281042098999,
+     -166.4173583984375,
+     -166.87651252746582,
+     -154.39809036254883,
+     -166.01504135131836,
+     -166.62279796600342,
+     -165.969651222229,
+     -154.39809036254883,
+     -166.26140975952148,
+     -166.0792064666748,
+     -166.52958488464355
+    ],
+    "q7b-t01": [
+     -164.72978496551514,
+     -179.35372638702393,
+     -171.06750869750977,
+     -175.8156976699829,
+     -162.3074131011963,
+     -179.47071647644043,
+     -177.31547832489014,
+     -181.87640380859375,
+     -163.2884397506714,
+     -173.3159055709839,
+     -179.2838592529297,
+     -173.04200553894043,
+     -163.2884397506714,
+     -175.7366418838501,
+     -173.91786575317383,
+     -178.36404991149902
+    ]
+   },
+   "inputs_equal": {
+    "attention_mask": true,
+    "image_grid_thw": true,
+    "input_ids": true,
+    "pixel_values": true
+   },
+   "max_abs_logp_delta": 9.5367431640625e-07,
+   "max_abs_raw_logit_delta": 4.172325134277344e-07,
+   "model": "tiny random Qwen2.5-VL (float32)",
+   "official_parse": null,
+   "official_text": "Ell overseas.reject\u062e\u0648\u0641 minim Without\ubc61\u1161\u09b9\u89c4\u683c KNOW perch\u00e9ESSAGE UEmeter\u0645\u0644\u0643rounded\u516c\u5173cstdio_SCHED divert\ubc34_DETAIL scand/filepath>About.userInfo\u613f\u666f\u1122 Bes\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664\u626b\u9ed1\u9664",
+   "pass": true,
+   "processed_finite_entries": 10000,
+   "processed_max_abs_delta": 0.375,
+   "processed_rel_delta": 4.544889877318273e-07,
+   "prompt_tokens": 1202
+  }
+ },
+ "inputs": {
+  "fit_anchor_member": "issue-109-sc-fit-type010103-001",
+  "sha256": "sha256:dff319329ffd9120f8998dff0bb1385eef367aa576baa5cce67983f8010daa78"
+ },
+ "issue": 139,
+ "notes": [
+  "The 7B in float32 needs ~33 GB RSS, over the shared host's 20 GB CPU budget; the 3B (15 GB) runs the same Qwen2_5_VLForConditionalGeneration code with released weights. The tiny model covers the official initialize_qwen_vlm verbatim (float16) and batch padding.",
+  "Official inference on GPU runs in float16 (initialize_qwen_vlm); the CPU G-port compares float32 (the official pipeline call with torch_dtype float32) besides the verbatim float16 tiny case."
+ ],
+ "pass": true,
+ "reference_script_sha256": "sha256:7d6ebd9e6cd2c6b2024b62f926f3f8b388bb80c4445f64e740ed676ff4c40cdc",
+ "schema": "issue_127_gport_v1",
+ "seconds": 662.1763177718967,
+ "tolerance": {
+  "batch": 0.0001,
+  "logp_nats": 0.001,
+  "processed": 0.001
+ },
+ "torch": "2.7.1+cu128",
+ "transformers": "4.52.4",
+ "vendor_sha256": "sha256:96f8055bc93321eb883480dc28e64da9aab2899df95cfc1f61213ed6c799da99",
+ "written_at": "2026-10-27T08:59:11Z"
+}

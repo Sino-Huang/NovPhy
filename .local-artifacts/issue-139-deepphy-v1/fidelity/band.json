@@ -1,0 +1,33 @@
+{
+ "band_pct": [
+  7.4666081328905,
+  11.773391867109499
+ ],
+ "binomial_se_one_run_pct": 0.932446030609815,
+ "disclosure": "the paper's MOCK (random) agent reaches 7.64 % on the same quantity, inside the band: G-fid tests that the local stack reproduces DeepPHY's published Qwen-7B number, not that the VLM beats random placement",
+ "frozen_at": "2026-10-27T08:37:24Z",
+ "half_width_pct": 2.153391867109499,
+ "paper": {
+  "mock_reference_pct": 7.64,
+  "quantity": "PHYRE success rate (%) within 10 attempts, Qwen2.5-VL-7B-Instruct, prompt format VLA",
+  "runs_averaged": 3,
+  "source": "DeepPHY (arXiv 2508.05405 v1) Appendix B Table 6 row 'Qwen-7B', column 'Att. 10' (the mean over 3 runs, temperature 0.1, Section 5.1); same run's Att. 1 = 0.60 %",
+  "value": 9.62
+ },
+ "protocol": {
+  "conf": "conf/env_config_01_phyre.json (released: grid 8 x 8, radius_levels 8, max_attempts 10, max_image_history 5)",
+  "decoding": "official get_qwen_model_response: do_sample True, temperature 0.1, max_new_tokens 200, generation_config (repetition_penalty 1.05, top_k 50 default); float16; torch / random / numpy seeded 20260908 + tasks done at process start",
+  "fold": 0,
+  "runner": "deepphy.runner.01_phyre_runner (pinned clone @ 056210492bca103ce8aff11aa225c40bf8e7c797), --model Qwen2.5-VL-7B-Instruct --format VLA --eval_type test",
+  "runs": 1,
+  "setups": [
+   "ball_within_template",
+   "ball_cross_template"
+  ]
+ },
+ "rule": "G-fid passes iff our single run's success within 10 attempts over the 1 000 test tasks lies inside band_pct (paper value +- 2 SE of the difference between one 1 000-task run and the paper's 3-run mean, binomial); at most two logged repair attempts, each fixing a diagnosed port / environment defect, never the band; then T7 is dropped with fidelity_not_reproduced",
+ "schema": "issue_139_gfid_band_v1",
+ "se_difference_pct": 1.0766959335547495,
+ "se_paper_mean_of_3_pct": 0.5383479667773747,
+ "tasks": 1000
+}

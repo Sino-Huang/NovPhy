@@ -1,0 +1,105 @@
+{
+  "cpu_reference": {
+    "dtype": "float32",
+    "model": "Qwen2.5-VL-3B-Instruct",
+    "seconds_per_decision_batch1": 537.5261858291924,
+    "source": ".local-artifacts/issue-139-deepphy-v1/gport/gport.json",
+    "threads": 4
+  },
+  "decisions": {
+    "readouts": 480,
+    "score": 992,
+    "score_novelty": 464,
+    "selection_per_model": 94,
+    "validate": 992
+  },
+  "flops": {
+    "Qwen2.5-VL-3B-Instruct": {
+      "decision_flops": 155546900496384,
+      "per_sequence": {
+        "attention": 218036699136,
+        "language": 7504415162368,
+        "total": 9721681281024,
+        "vision": 1999229419520
+      },
+      "sequences": 16
+    },
+    "Qwen2.5-VL-7B-Instruct": {
+      "decision_flops": 311953385848832,
+      "per_sequence": {
+        "attention": 296772173824,
+        "language": 17194935123968,
+        "total": 19497086615552,
+        "vision": 2005379317760
+      },
+      "sequences": 16
+    }
+  },
+  "gpu_model": {
+    "lower": {
+      "tflops": 100.0
+    },
+    "upper": {
+      "tflops": 40.0
+    }
+  },
+  "label": "[INFERENCE] forward FLOPs of one decision (<= 16 distinct answers x one prompt + answer sequence of 1 216 tokens with a 1 564-patch screenshot) from each model's config.json, mapped to an RTX 5090 at 100 (lower) / 40 (upper) sustained fp16 TFLOP/s, plus a model load per worker pass; G-fid and the timing probe added",
+  "load_seconds": {
+    "Qwen2.5-VL-3B-Instruct": 60.0,
+    "Qwen2.5-VL-7B-Instruct": 120.0
+  },
+  "measured_at": "2026-10-27T08:59:29Z",
+  "plan_identity": "issue-139-deepphy-v1",
+  "primary": "projection_upper",
+  "projection_lower": {
+    "child_cap_gpu_h": 18.0,
+    "fits_remainder": true,
+    "gfid_gpu_h": 2.1,
+    "load_seconds": {
+      "Qwen2.5-VL-3B-Instruct": 60.0,
+      "Qwen2.5-VL-7B-Instruct": 120.0
+    },
+    "projected_model": "Qwen2.5-VL-7B-Instruct",
+    "readouts_gpu_h": 0.44927118113177605,
+    "remainder_gpu_h": 73.0,
+    "score_gpu_h": 0.8929382187834481,
+    "score_novelty_gpu_h": 0.43540658620516126,
+    "seconds_per_decision": {
+      "Qwen2.5-VL-3B-Instruct": 1.55546900496384,
+      "Qwen2.5-VL-7B-Instruct": 3.11953385848832
+    },
+    "selection_gpu_h": 0.17206951921236197,
+    "timing_probe_gpu_h": 1.0,
+    "total_gpu_h": 5.942623724116196,
+    "validate_gpu_h": 0.8929382187834481,
+    "wall_cap_h": 48.0,
+    "wall_h_sequential_one_gpu": 5.942623724116196,
+    "within_caps": true
+  },
+  "projection_upper": {
+    "child_cap_gpu_h": 18.0,
+    "fits_remainder": true,
+    "gfid_gpu_h": 4.5,
+    "load_seconds": {
+      "Qwen2.5-VL-3B-Instruct": 60.0,
+      "Qwen2.5-VL-7B-Instruct": 120.0
+    },
+    "projected_model": "Qwen2.5-VL-7B-Instruct",
+    "readouts_gpu_h": 1.07317795282944,
+    "remainder_gpu_h": 73.0,
+    "score_gpu_h": 2.1823455469586204,
+    "score_novelty_gpu_h": 1.038516465512903,
+    "seconds_per_decision": {
+      "Qwen2.5-VL-3B-Instruct": 3.8886725124096,
+      "Qwen2.5-VL-7B-Instruct": 7.7988346462208
+    },
+    "selection_gpu_h": 0.35517379803090493,
+    "timing_probe_gpu_h": 1.0,
+    "total_gpu_h": 12.331559310290487,
+    "validate_gpu_h": 2.1823455469586204,
+    "wall_cap_h": 48.0,
+    "wall_h_sequential_one_gpu": 12.331559310290487,
+    "within_caps": true
+  },
+  "schema": "issue_139_projection_v1"
+}

@@ -1,0 +1,69 @@
+{
+ "arm": "T7 DeepPHY-VLM",
+ "band_pct": [
+  7.4666081328905,
+  11.773391867109499
+ ],
+ "band_sha256": "sha256:ad5bfb652c1ba6151dc52ddff5944e8d5a0fb81067456e958c55784bfaf53c30",
+ "complete": true,
+ "curve_pct": [
+  0.7,
+  1.4,
+  2.1,
+  2.6,
+  3.0,
+  4.2,
+  4.4,
+  5.1,
+  5.8,
+  6.2
+ ],
+ "issue": 139,
+ "kind": "mock",
+ "label": "DESCRIPTIVE environment check (DeepPHY MOCK agent; paper Table 6 MOCK 7.64 %)",
+ "paper": {
+  "mock_reference_pct": 7.64,
+  "quantity": "PHYRE success rate (%) within 10 attempts, Qwen2.5-VL-7B-Instruct, prompt format VLA",
+  "runs_averaged": 3,
+  "source": "DeepPHY (arXiv 2508.05405 v1) Appendix B Table 6 row 'Qwen-7B', column 'Att. 10' (the mean over 3 runs, temperature 0.1, Section 5.1); same run's Att. 1 = 0.60 %",
+  "value": 9.62
+ },
+ "per_setup": {
+  "ball_cross_template": {
+   "curve_pct": [
+    1.2,
+    2.2,
+    2.4,
+    3.0,
+    3.2,
+    4.8,
+    5.0,
+    5.4,
+    6.4,
+    6.6
+   ],
+   "summary_sha256": "sha256:ced214739978f941ba5c34480b2ee0c8fd7a1d56e463ff1fb910e86feb897f2b",
+   "tasks": 500
+  },
+  "ball_within_template": {
+   "curve_pct": [
+    0.2,
+    0.6,
+    1.8,
+    2.2,
+    2.8,
+    3.6,
+    3.8,
+    4.8,
+    5.2,
+    5.8
+   ],
+   "summary_sha256": "sha256:a9ab66fe3d1f5c424793b3a7178c15d3d342b2c7f43ba7c0f67e1ef863a13b22",
+   "tasks": 500
+  }
+ },
+ "schema": "issue_127_gfid_v1",
+ "success_within_10_pct": 6.2,
+ "tasks": 1000,
+ "written_at": "2026-10-27T09:01:05Z"
+}

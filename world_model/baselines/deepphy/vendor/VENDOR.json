@@ -1,0 +1,70 @@
+{
+ "schema": "issue_127_vendor_v1",
+ "upstream": "https://github.com/XinrunXu/DeepPHY",
+ "branch": "main",
+ "commit": "056210492bca103ce8aff11aa225c40bf8e7c797",
+ "commit_date": "2025-11-16T21:53:01+08:00",
+ "license": "MIT (SPDX MIT), Copyright (c) 2025 Xinrun Xu",
+ "license_file": "LICENSE",
+ "license_sha256": "sha256:86e889b427dca956622b9ba8be9f2d0f01c859f4066aa379821639fb835a62a1",
+ "policy": "verbatim copies of the files the T7 port needs (no edits): the Angry Birds prompt strategy is imported by the adapter by file location (it has no imports); the runner, the Qwen provider, the dispatch and img_utils are reference copies whose functions the G-port reference executes from source. The PHYRE G-fid runs the official deepphy.runner.01_phyre_runner from the pinned clone /mnt/array/sukaih/novphy-baselines-src/DeepPHY@0562104/ (not vendored).",
+ "env": "b127-deepphy (see .local-artifacts/issue-139-deepphy-v1/envs/b127-deepphy.txt)",
+ "files": {
+  "LICENSE": {
+   "upstream_path": "LICENSE",
+   "upstream_sha256": "sha256:86e889b427dca956622b9ba8be9f2d0f01c859f4066aa379821639fb835a62a1",
+   "vendored_sha256": "sha256:86e889b427dca956622b9ba8be9f2d0f01c859f4066aa379821639fb835a62a1",
+   "edits": [],
+   "role": "upstream MIT licence (notice kept)"
+  },
+  "README.md": {
+   "upstream_path": "README.md",
+   "upstream_sha256": "sha256:6feab8b8235e3d7c724a884c8c29566a1a5f5a373d2484a5b4fc6a22a13c5bb4",
+   "vendored_sha256": "sha256:6feab8b8235e3d7c724a884c8c29566a1a5f5a373d2484a5b4fc6a22a13c5bb4",
+   "edits": [],
+   "role": "upstream README (environment setups, model list)"
+  },
+  "conf/env_config_05_angrybirds.json": {
+   "upstream_path": "conf/env_config_05_angrybirds.json",
+   "upstream_sha256": "sha256:cfea1628333cc9aa79b3d4d6e1711085f38a0143aac7f1e70a8cfdf1b95f378e",
+   "vendored_sha256": "sha256:cfea1628333cc9aa79b3d4d6e1711085f38a0143aac7f1e70a8cfdf1b95f378e",
+   "edits": [],
+   "role": "reference: Angry Birds level data (bird_type lists, slingshot positions)"
+  },
+  "deepphy/planner/prompt_strategy_05_angrybirds.py": {
+   "upstream_path": "deepphy/planner/prompt_strategy_05_angrybirds.py",
+   "upstream_sha256": "sha256:3f28295d34fc50ced678b069800ac3191959034584e248fb379e5f39840b14c2",
+   "vendored_sha256": "sha256:3f28295d34fc50ced678b069800ac3191959034584e248fb379e5f39840b14c2",
+   "edits": [],
+   "role": "imported by the adapter by file location (system_prompt_angry_birds, get_user_prompt_angrybirds)"
+  },
+  "deepphy/provider/llm/base.py": {
+   "upstream_path": "deepphy/provider/llm/base.py",
+   "upstream_sha256": "sha256:acc765ec820957a84a14016d56ac094a02b6ac51c6117d02c98a95c227e3b1b1",
+   "vendored_sha256": "sha256:acc765ec820957a84a14016d56ac094a02b6ac51c6117d02c98a95c227e3b1b1",
+   "edits": [],
+   "role": "reference: get_model_response dispatch (Qwen* -> get_qwen_model_response)"
+  },
+  "deepphy/provider/llm/qwen.py": {
+   "upstream_path": "deepphy/provider/llm/qwen.py",
+   "upstream_sha256": "sha256:69051c1932ee966628dd383ed9e887bf8923956e948ea07d1638987e0684a4ec",
+   "vendored_sha256": "sha256:69051c1932ee966628dd383ed9e887bf8923956e948ea07d1638987e0684a4ec",
+   "edits": [],
+   "role": "reference: initialize_qwen_vlm / get_qwen_model_response (the local Qwen2.5-VL inference path) executed by the G-port reference"
+  },
+  "deepphy/runner/05_angrybirds_runner.py": {
+   "upstream_path": "deepphy/runner/05_angrybirds_runner.py",
+   "upstream_sha256": "sha256:7f1c25ca9464ec54ec75ae339d6dad7ac60afc71f8d744e2b120a91eaec879f4",
+   "vendored_sha256": "sha256:7f1c25ca9464ec54ec75ae339d6dad7ac60afc71f8d744e2b120a91eaec879f4",
+   "edits": [],
+   "role": "reference: get_llm_action / parse_and_execute_action / the response-parsing lines of play_level_with_llm are executed from this source by the G-port reference (AST-extracted, GUI calls stubbed); not imported at run time"
+  },
+  "deepphy/utils/img_utils.py": {
+   "upstream_path": "deepphy/utils/img_utils.py",
+   "upstream_sha256": "sha256:54c3a6bc9d480c872e792a1b7f0bb99f0620d4134aa4c8a0d688b82c1da489c5",
+   "vendored_sha256": "sha256:54c3a6bc9d480c872e792a1b7f0bb99f0620d4134aa4c8a0d688b82c1da489c5",
+   "edits": [],
+   "role": "reference: crop_image_by_cm (the iPhone-mirroring title-bar crop; not applied to NovPhy frames, Decision P-adapter)"
+  }
+ }
+}

@@ -1,0 +1,25 @@
+{
+  "note": "#139 timing probe only (Decision P-coverage timing probe, DRAFTED for the orchestrator to post on #139 before enqueue: .local-artifacts/issue-139-deepphy-v1/draft-decision-timing.md); enqueue alone; it needs no funded.json. Exclusive GPU (shares_gpu false): the measured rates are the projection's primary input. The GPU index is a placeholder: the orchestrator picks a free GPU and sets gpu / CUDA_VISIBLE_DEVICES together.",
+  "jobs": [
+    {
+      "id": "139-timing",
+      "gpu": 2,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_139_deepphy.py",
+        "--timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B139_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "GPU timing probe (#139; <= 1 GPU-h): per model (Qwen2.5-VL-7B-Instruct for q7b + q7b-t01, Qwen2.5-VL-3B-Instruct for q3b) one scoring-worker pass (env b127-deepphy, fp16, batch 16) over 8 fit-anchor decision frames x the 16 grid launches (fit split only): load time, FLOPs of the first (warm-up) decision, median s/decision of the other 7; writes .local-artifacts/issue-139-deepphy-v1/timing.json and the measured projection (projection.json projection_measured). GPU memory [INFERENCE] <= ~27 GB (7B fp16 weights 16.6 GB + fp16 logits of 16 x 1 216 tokens 5.9 GB + activations). est [INFERENCE] 5-20 min. Cap 1 GPU-h, charged to #139. Nothing is reused later (work/timing-* are timing-only)."
+    }
+  ]
+}
