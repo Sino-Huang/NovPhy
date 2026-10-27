@@ -1,0 +1,82 @@
+{
+  "note": "#138 T6 V-JEPA 2-AC (coverage arm, P-coverage), phase A: the training feature cache, the three selection runs (native / ar4 / lr-half, Decision P-adapter issuecomment-6436355731; seed 20260908, full native budget 94 500 updates x 256 clips), selection readouts, smoke. PREPARED, NOT ENQUEUED: enqueue only after the orchestrator's Decision P-coverage (funding) and its funded.json marker; --features training refuses without funded.json; --selection also refuses unless gport/gport.json, fidelity/gfid.json (138-gfid, scripts/gpu_window_issue_138_gfid.json) and readiness/readiness.json (scripts/gpu_window_issue_138_readiness.json) all passed. est_minutes = the pessimistic CPU-FLOP projection ([INFERENCE] projection.json projection_upper, 40 sustained bf16 TFLOP/s); the optimistic bound (100 TFLOP/s) is 0.4x. The CPU projection puts the whole child at 2 109-5 271 GPU-h against a remainder of ~73 GPU-h: this spec documents the native schedule, it is not expected to be funded. Needs ~500 GB on the local NVMe for the full fit feature cache.",
+  "jobs": [
+    {
+      "id": "138-features-training",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 120,
+      "shares_gpu": false,
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_138_vjepa2_ac.py",
+                  "--features", "training", "--workers", "8"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B138_CPU_THREADS": "8", "OMP_NUM_THREADS": "8"},
+      "note": "the 413 346 fit rows not encoded by 138-features-readiness (stride-5 positions 0..225 clamped to the end); 298 GB fp16; resumable."
+    },
+    {
+      "id": "138-select-native",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 42760,
+      "shares_gpu": false,
+      "depends_on": ["138-features-training"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_138_vjepa2_ac.py",
+                  "--selection", "--gpu", "0"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B138_CPU_THREADS": "8", "OMP_NUM_THREADS": "8"},
+      "note": "native: 94 500 updates x 256 clips (1.09 PFLOP / update) = 285-713 GPU-h [INFERENCE]; resumable every 250 updates (SIGTERM -> resume.pt -> exit 75)."
+    },
+    {
+      "id": "138-select-ar4",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 76058,
+      "shares_gpu": false,
+      "depends_on": ["138-features-training"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_138_vjepa2_ac.py",
+                  "--selection", "--gpu", "1"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "1", "B138_CPU_THREADS": "8", "OMP_NUM_THREADS": "8"},
+      "note": "ar4: auto_steps 4 (1.93 PFLOP / update) = 507-1 268 GPU-h [INFERENCE]; resumable."
+    },
+    {
+      "id": "138-select-lr-half",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 42760,
+      "shares_gpu": false,
+      "depends_on": ["138-features-training"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_138_vjepa2_ac.py",
+                  "--selection", "--gpu", "2"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "2", "B138_CPU_THREADS": "8", "OMP_NUM_THREADS": "8"},
+      "note": "lr-half: LR 2.125e-4 / start 3.75e-5 = 285-713 GPU-h [INFERENCE]; resumable."
+    },
+    {
+      "id": "138-selro",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 90,
+      "shares_gpu": false,
+      "depends_on": ["138-select-native", "138-select-ar4", "138-select-lr-half"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_138_vjepa2_ac.py",
+                  "--selection-readouts"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B138_CPU_THREADS": "4", "OMP_NUM_THREADS": "4"},
+      "note": "policy-split pooled grid AUC per configuration (94 cells x 16 candidates, 45-step rollouts + R1; 7-19 s per decision [INFERENCE])."
+    },
+    {
+      "id": "138-smoke",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": ["138-selro"],
+      "command": ["/srv/home/shua0171/miniconda3/envs/novphy/bin/python", "-u", "scripts/run_issue_138_vjepa2_ac.py",
+                  "--smoke"],
+      "cwd": ".",
+      "env": {"CUDA_VISIBLE_DEVICES": "0", "B138_CPU_THREADS": "4", "OMP_NUM_THREADS": "4"},
+      "note": "accounting, G-port record, CPU tests, throughput, selection, projection against the caps."
+    }
+  ]
+}

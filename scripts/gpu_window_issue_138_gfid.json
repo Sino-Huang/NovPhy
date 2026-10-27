@@ -1,0 +1,25 @@
+{
+  "note": "#138 T6 V-JEPA 2-AC G-fid (Decision P-fid issuecomment-6436495373, posted before any run; band frozen in .local-artifacts/issue-138-vjepa2-ac-v1/fidelity/band.json, sha256:f45da0b1da8caa21018803c16066ddbb21f198780bc83f2194d3b8121d15e0c3). PREPARED, NOT ENQUEUED: enqueue only if T6 is funded (Decision P-coverage). Tier E: the official evals.main of the pinned clone (configs/inference/vitl/diving48.yaml, val_only) with the released vitl.pt + diving48-vitl-256.pt on the Diving-48 V2 test split (1 970 videos; data prepared on CPU: fidelity/data.json pass). Afterwards run on CPU: python scripts/b127_vjepa2_fidelity.py --finish (writes fidelity/gfid.json). The GPU index is a placeholder: the orchestrator sets gpu / CUDA_VISIBLE_DEVICES together (the official launcher re-sets CUDA_VISIBLE_DEVICES to the --devices index, which the script takes from CUDA_VISIBLE_DEVICES).",
+  "jobs": [
+    {
+      "id": "138-gfid",
+      "gpu": 1,
+      "resumable": false,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-vjepa2/bin/python",
+        "-u",
+        "scripts/b127_vjepa2_fidelity.py",
+        "--run"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "OMP_NUM_THREADS": "4",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "ViT-L/16 (300 M) on 1 970 videos x 12 clips of 32 frames (4 096 tokens, ~4.1 TFLOP per clip, ~1.0e17 FLOP in total) under bf16 + the 4-block multilayer attentive probe; decord decoding on 12 loader workers. est [INFERENCE]: 0.3-0.7 GPU-h at 40-100 sustained TFLOP/s; ~105 CPU-h on 4 CPU threads, hence GPU. GPU memory < 16 GB (batch 2 videos x 12 clips). Not resumable (one val pass; rerun from the start after a pause). Cap 1.5 GPU-h, charged to #138."
+    }
+  ]
+}

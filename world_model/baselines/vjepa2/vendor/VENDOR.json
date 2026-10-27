@@ -1,0 +1,165 @@
+{
+  "schema": "issue_127_vendor_v1",
+  "issue": 138,
+  "family": "vjepa2",
+  "upstream": "https://github.com/facebookresearch/vjepa2",
+  "commit": "204698b45b3712590f06245fbfba32d3be539812",
+  "license": "MIT (Copyright (c) Meta Platforms, Inc. and affiliates); the three Apache-2.0 files of the repository (src/datasets/utils/video/randaugment.py, randerase.py, src/datasets/utils/worker_init_fn.py) are not vendored",
+  "license_file": "LICENSE",
+  "decision": "https://github.com/Sino-Huang/NovPhy/issues/138#issuecomment-6436220188",
+  "policy": "verbatim copies; the only edits make the 'from src.<...> import' lines of the files the adapter imports package-relative (CONVENTIONS allowed edit; the repository root has an unrelated 'src' package). app/, configs/, README.md are reference copies (not imported). modules.py keeps 'from timm.models.layers import drop_path'; world_model.baselines.vjepa2.novphy.vendor() serves a raising stub for it during the load only when timm is absent (drop_path runs only for drop_path_rate > 0; no T6 module uses it).",
+  "files": {
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "upstream_sha256": "sha256:cf9b17822d1fcd4ff32ccbe14183386fb3adf6f2ff92dc184130823f7fc28173",
+      "vendored_sha256": "sha256:cf9b17822d1fcd4ff32ccbe14183386fb3adf6f2ff92dc184130823f7fc28173",
+      "edits": []
+    },
+    "README.md": {
+      "upstream_path": "README.md",
+      "upstream_sha256": "sha256:55f8485d734a08d23170322cd13ad5ac2f4d63b3d1fd542b10ec0907042c5bb6",
+      "vendored_sha256": "sha256:55f8485d734a08d23170322cd13ad5ac2f4d63b3d1fd542b10ec0907042c5bb6",
+      "edits": []
+    },
+    "__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "app/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "app/vjepa_droid/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "app/vjepa_droid/train.py": {
+      "upstream_path": "app/vjepa_droid/train.py",
+      "upstream_sha256": "sha256:f480c51b80425c88b6cd617e3c5386d3c09c8179810fd5e0e7cb7e5f5ecab61a",
+      "vendored_sha256": "sha256:f480c51b80425c88b6cd617e3c5386d3c09c8179810fd5e0e7cb7e5f5ecab61a",
+      "edits": []
+    },
+    "app/vjepa_droid/utils.py": {
+      "upstream_path": "app/vjepa_droid/utils.py",
+      "upstream_sha256": "sha256:84009c0f9565f38288d5fcd91e9861bc322f75f5bc33922ae01ec1755b1415c7",
+      "vendored_sha256": "sha256:84009c0f9565f38288d5fcd91e9861bc322f75f5bc33922ae01ec1755b1415c7",
+      "edits": []
+    },
+    "configs/train/vitg16/droid-256px-8f.yaml": {
+      "upstream_path": "configs/train/vitg16/droid-256px-8f.yaml",
+      "upstream_sha256": "sha256:25f8d23f80dd24c2c9c410f3690edd966f4e9725809912d525dc925e030eb101",
+      "vendored_sha256": "sha256:25f8d23f80dd24c2c9c410f3690edd966f4e9725809912d525dc925e030eb101",
+      "edits": []
+    },
+    "src/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "src/masks/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "src/masks/utils.py": {
+      "upstream_path": "src/masks/utils.py",
+      "upstream_sha256": "sha256:833f111a0fa5ffdbd3a6412e2dace2517c3c178f49c14f8bb631d9f6a070dfd0",
+      "vendored_sha256": "sha256:833f111a0fa5ffdbd3a6412e2dace2517c3c178f49c14f8bb631d9f6a070dfd0",
+      "edits": []
+    },
+    "src/models/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "src/models/ac_predictor.py": {
+      "upstream_path": "src/models/ac_predictor.py",
+      "upstream_sha256": "sha256:5a520ad92b3f78b231aa153a5bbd9f800f880024974109a04d19aed6a0900643",
+      "vendored_sha256": "sha256:b6207c6b683c7c8215be26fd552a472f9c1220c7861daa8a83bd227146f417d8",
+      "edits": [
+        "line 'from src.models.utils.modules import' -> 'from .utils.modules import' (package-relative import)",
+        "line 'from src.models.utils.modules import' -> 'from .utils.modules import' (package-relative import)",
+        "line 'from src.utils.tensors import' -> 'from ..utils.tensors import' (package-relative import)"
+      ]
+    },
+    "src/models/utils/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "src/models/utils/modules.py": {
+      "upstream_path": "src/models/utils/modules.py",
+      "upstream_sha256": "sha256:b93f6c7e0747deb216419c000c2878f11a9189024a9adeacfd437e172396dff0",
+      "vendored_sha256": "sha256:b93f6c7e0747deb216419c000c2878f11a9189024a9adeacfd437e172396dff0",
+      "edits": []
+    },
+    "src/models/utils/patch_embed.py": {
+      "upstream_path": "src/models/utils/patch_embed.py",
+      "upstream_sha256": "sha256:1823c40b34410e70eb313360e21678e18a0ee5465b5d47de9f3d967c074f5a9d",
+      "vendored_sha256": "sha256:1823c40b34410e70eb313360e21678e18a0ee5465b5d47de9f3d967c074f5a9d",
+      "edits": []
+    },
+    "src/models/utils/pos_embs.py": {
+      "upstream_path": "src/models/utils/pos_embs.py",
+      "upstream_sha256": "sha256:e6d3b3863ade47b3734a3b443f1bcc93eab02e39bf596ea199517f68ccab443e",
+      "vendored_sha256": "sha256:e6d3b3863ade47b3734a3b443f1bcc93eab02e39bf596ea199517f68ccab443e",
+      "edits": []
+    },
+    "src/models/vision_transformer.py": {
+      "upstream_path": "src/models/vision_transformer.py",
+      "upstream_sha256": "sha256:9d4fd4e3603311803c105cc5114e2bc12ff28bc11870637dd3969511d9dead74",
+      "vendored_sha256": "sha256:bf4f69458af066ed699858291b3f115b2caad6e82e44a5f2acec223802496395",
+      "edits": [
+        "line 'from src.masks.utils import' -> 'from ..masks.utils import' (package-relative import)",
+        "line 'from src.models.utils.modules import' -> 'from .utils.modules import' (package-relative import)",
+        "line 'from src.models.utils.patch_embed import' -> 'from .utils.patch_embed import' (package-relative import)",
+        "line 'from src.models.utils.pos_embs import' -> 'from .utils.pos_embs import' (package-relative import)",
+        "line 'from src.utils.tensors import' -> 'from ..utils.tensors import' (package-relative import)"
+      ]
+    },
+    "src/utils/__init__.py": {
+      "upstream_path": null,
+      "upstream_sha256": null,
+      "vendored_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "edits": [
+        "package marker (new)"
+      ]
+    },
+    "src/utils/schedulers.py": {
+      "upstream_path": "src/utils/schedulers.py",
+      "upstream_sha256": "sha256:e35b2162c9df04f25ef4dbc51a1e9df41e362dee6d9d2b494321d81e44fe4659",
+      "vendored_sha256": "sha256:e35b2162c9df04f25ef4dbc51a1e9df41e362dee6d9d2b494321d81e44fe4659",
+      "edits": []
+    },
+    "src/utils/tensors.py": {
+      "upstream_path": "src/utils/tensors.py",
+      "upstream_sha256": "sha256:782b58bd2af456e184750e5318ab773105108383f61b280fe4c7a90f46add2c8",
+      "vendored_sha256": "sha256:782b58bd2af456e184750e5318ab773105108383f61b280fe4c7a90f46add2c8",
+      "edits": []
+    }
+  }
+}

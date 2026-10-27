@@ -1,0 +1,234 @@
+{
+ "G_port_rule": "#123 tolerances (loss / grad-norm relative 1e-4, per-tensor gradient relative L2 1e-3, parameters |delta| <= 1e-7 on >= 99.9 % after each of two optimizer steps, LR and WD equal) + initial state equal + preprocessing, frozen-encoder features, the released predictor's forward and the 7-step step_predictor rollout max abs <= 1e-5; reference = the official code (hub _make_vjepa2_ac_model with the released vjepa2-ac-vitg.pt, VideoTransform, train.py forward_target / forward_predictions / loss_fn / train_step executed from source, init_opt, world_model_wrapper step_predictor) in env b127-vjepa2; same torch build; CPU float32 (the official mixed_precision False path)",
+ "adapter_sha256": "sha256:bb904ed0f08d853504c5daa15025c53499abc9bc762eb2940e3c2b69f66dfa9e",
+ "arm": "T6 V-JEPA 2-AC",
+ "cases": {
+  "ar3": {
+   "auto_steps": 3,
+   "exact": true,
+   "forward": {
+    "loss": [
+     2.0494275093078613,
+     2.0494275093078613
+    ],
+    "loss_rel": 0.0,
+    "pass": true
+   },
+   "init_state_equal": true,
+   "parameters": [
+    305214848,
+    305214848
+   ],
+   "pass": true,
+   "steps": [
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm": [
+      1.4332506656646729,
+      1.4332506656646729
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 0,
+     "jloss": [
+      1.0243583917617798,
+      1.0243583917617798
+     ],
+     "loss": [
+      2.0494275093078613,
+      2.0494275093078613
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      7.507777777777777e-05,
+      7.507777777777777e-05
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true,
+     "sloss": [
+      1.025068998336792,
+      1.025068998336792
+     ],
+     "wd": [
+      0.04,
+      0.04
+     ],
+     "wd_equal": true
+    },
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm": [
+      1.3738064765930176,
+      1.3738064765930176
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 1,
+     "jloss": [
+      0.900320291519165,
+      0.900320291519165
+     ],
+     "loss": [
+      1.8084720373153687,
+      1.8084720373153687
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      7.515555555555555e-05,
+      7.515555555555555e-05
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true,
+     "sloss": [
+      0.9081517457962036,
+      0.9081517457962036
+     ],
+     "wd": [
+      0.04,
+      0.04
+     ],
+     "wd_equal": true
+    }
+   ]
+  },
+  "native": {
+   "auto_steps": 2,
+   "exact": false,
+   "forward": {
+    "loss": [
+     2.048460006713867,
+     2.048460006713867
+    ],
+    "loss_rel": 0.0,
+    "pass": true
+   },
+   "init_state_equal": true,
+   "parameters": [
+    305214848,
+    305214848
+   ],
+   "pass": true,
+   "rollout": {
+    "max_abs": 2.86102294921875e-06,
+    "pass": true,
+    "steps": 7
+   },
+   "steps": [
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm": [
+      1.4482312202453613,
+      1.4482312202453613
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 0,
+     "jloss": [
+      1.0243583917617798,
+      1.0243583917617798
+     ],
+     "loss": [
+      2.048460006713867,
+      2.048460006713867
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      7.507777777777777e-05,
+      7.507777777777777e-05
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true,
+     "sloss": [
+      1.0241016149520874,
+      1.0241016149520874
+     ],
+     "wd": [
+      0.04,
+      0.04
+     ],
+     "wd_equal": true
+    },
+    {
+     "grad_max_rel_l2": 0.0,
+     "grad_names_equal": true,
+     "grad_norm": [
+      1.3644007444381714,
+      1.3644007444381714
+     ],
+     "grad_norm_rel": 0.0,
+     "index": 1,
+     "jloss": [
+      0.8970892429351807,
+      0.8970892429351807
+     ],
+     "loss": [
+      1.7989232540130615,
+      1.7989232540130615
+     ],
+     "loss_rel": 0.0,
+     "lr": [
+      7.515555555555555e-05,
+      7.515555555555555e-05
+     ],
+     "lr_equal": true,
+     "param_close_share": 1.0,
+     "param_max_abs": 0.0,
+     "pass": true,
+     "sloss": [
+      0.9018340706825256,
+      0.9018340706825256
+     ],
+     "wd": [
+      0.04,
+      0.04
+     ],
+     "wd_equal": true
+    }
+   ]
+  }
+ },
+ "features": {
+  "encoder_load": {
+   "missing_keys": [],
+   "unexpected_keys": []
+  },
+  "equal": true,
+  "max_abs": 0.0,
+  "pass": true
+ },
+ "inputs_sha256": "sha256:96fda8bedb3bd494e8d4147cc8af08c29bc4fdeaaa909e3a46136a91577da9d1",
+ "issue": 138,
+ "pass": true,
+ "preprocess": {
+  "equal": true,
+  "max_abs": 0.0,
+  "pass": true
+ },
+ "reference_script_sha256": "sha256:7be6443867751c2cb132d11ca5d324e676a1c4b015d65937a0048a24d0e844ee",
+ "reference_sha256": "sha256:be37402bb6487aae8bd016ea12c8a7a9e1bb7d9f54a48ebf5a9e150944de461b",
+ "released_predictor": {
+  "load": "strict=True (all 300 tensors)",
+  "max_abs": 0.0,
+  "pass": true
+ },
+ "schema": "issue_127_gport_v1",
+ "tolerance": {
+  "feature_max_abs": 1e-05,
+  "grad_norm_relative": 0.0001,
+  "grad_tensor_relative_l2": 0.001,
+  "loss_relative": 0.0001,
+  "param_close_abs": 1e-07,
+  "param_close_share": 0.999
+ },
+ "torch": [
+  "2.13.0+cu130",
+  "2.13.0+cu130"
+ ],
+ "written_at": "2026-10-27T07:56:35Z"
+}

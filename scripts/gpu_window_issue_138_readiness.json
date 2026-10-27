@@ -1,0 +1,51 @@
+{
+  "note": "#138 T6 V-JEPA 2-AC readiness (C1-dino's R1 procedure on frozen V-JEPA 2 features of true frames; Decision P-adapter issuecomment-6436355731 item 6; the readiness-job decision is DRAFTED for the orchestrator to post on #138 before enqueue: .local-artifacts/issue-138-vjepa2-ac-v1/draft-decision-readiness.md). PREPARED, NOT ENQUEUED. CPU is infeasible (277 292 frames x 1.92 CPU-s per ViT-g frame on 4 threads = 148 CPU-h, measured per frame). Fit / policy splits only; the evaluation split is not read. Needs ~200 GB free on the local NVMe (~/.cache/novphy-issue-138-vjepa2-features; the fit memmap is a sparse 495 GB file of which the readiness rows fill 197 GB). One exclusive GPU (shares_gpu false; ViT-g bf16 + batch 64). The GPU index is a placeholder: the orchestrator sets gpu / CUDA_VISIBLE_DEVICES together.",
+  "jobs": [
+    {
+      "id": "138-features-readiness",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 75,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_138_vjepa2_ac.py",
+        "--features",
+        "readiness",
+        "--workers",
+        "8"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B138_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8"
+      },
+      "note": "frozen ViT-g AC encoder (vjepa2-ac-vitg.pt 'encoder'; official VideoTransform, 2-frame tubelet per frame, bf16 autocast) on the 3 600 policy frames (120 anchors + 3 480 true endpoints at min(225, end)) and the 273 692 fit R1 frames (rc.probe_positions); fp16 raw tokens [256, 1408] into the sparse caches; resumable per 200 batches (SIGTERM -> progress -> exit 75); at the end sha256 of both cache files into features/MANIFEST.json (phase readiness). est [INFERENCE]: 1.44e17 FLOP = 24-60 min at 40-100 sustained TFLOP/s + pixel-store decode on 8 workers (#130: ~1 100 frames/s on 12) + ~200 GB of NVMe writes + hashing."
+    },
+    {
+      "id": "138-readiness",
+      "gpu": 1,
+      "resumable": false,
+      "est_minutes": 180,
+      "shares_gpu": false,
+      "depends_on": [
+        "138-features-readiness"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_138_vjepa2_ac.py",
+        "--readiness"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B138_CPU_THREADS": "8",
+        "OMP_NUM_THREADS": "8"
+      },
+      "note": "R1 = #130 PatchReadout / fit_readout unchanged (25 epochs, batch 128, AdamW 1e-3 / 1e-4, seed 20260908; 53 450 steps) on the normalised features of the 273 692 fit R1 frames (E99 targets), then the policy ceiling (94 grid mixed cells, 1 504 candidates; tie-free EndpointCosts of R1(true endpoint) vs R1(anchor)) under deterministic_scoring(); threshold 0.65, below -> typed stop readiness_ceiling_below_threshold (then publish the not-run summary on CPU: --publish). Writes readiness/r1.pt + readiness.json (one run, never re-run). Not resumable (the #130 fit_readout has no checkpoint hook): launch at the start of a window. est [INFERENCE]: feature reads 25 x 197 GB from NVMe (~30 min at 3 GB/s) + fp16 -> fp32 layer norm on the CPU per batch + the probe's compute; #130's R1 on its 2.4x smaller frames took 49 min."
+    }
+  ]
+}

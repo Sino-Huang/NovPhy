@@ -1,0 +1,25 @@
+{
+  "note": "#138 timing probe only (Decision P-coverage timing probe, DRAFTED for the orchestrator to post on #138 before enqueue: .local-artifacts/issue-138-vjepa2-ac-v1/draft-decision-timing.md); enqueue alone (no funded-only job is queued); it needs neither funded.json nor the feature cache. Exclusive GPU (shares_gpu false): the measured rates are the projection's primary input. The GPU index is a placeholder: the orchestrator picks a free GPU and sets gpu / CUDA_VISIBLE_DEVICES together.",
+  "jobs": [
+    {
+      "id": "138-timing",
+      "gpu": 1,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_138_vjepa2_ac.py",
+        "--timing"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "B138_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "GPU timing probe (#138; <= 1 GPU-h): loads the ViT-g AC encoder (11.8 GB checkpoint, mmap) and eb.FitShots; (1) encodes 512 fit frames (64 shots x the first 8 stride-5 positions; bf16 autocast) -> s/frame; (2) 6 timed official updates (after 1 warm-up) of native (= lr-half per update) and ar4: 256 clips as 32 micro-batches of 8, bf16 autocast + GradScaler, activation checkpointing, on clips of those encoded frames held in GPU memory (the cache read bound of 1.48 GB / update is modelled at 3 GB/s, not measured); (3) the scoring path from 4 fit anchors after a warm-up (anchor encode + 45-step rollouts of 16 grid candidates over the 7-frame window + R1) under deterministic_scoring(); (4) 50 R1 steps (batch 128); writes .local-artifacts/issue-138-vjepa2-ac-v1/timing.json + ledger/timing.json and makes the measured projection primary in projection.json; keeps no model; exit 0. est [INFERENCE, projection.json]: 11-27 s per native update, 19-48 s per ar4 update, 7-19 s per decision, 5-13 ms per frame -> ~10-20 min plus loading."
+    }
+  ]
+}

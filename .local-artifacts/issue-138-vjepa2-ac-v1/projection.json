@@ -1,0 +1,155 @@
+{
+  "cpu": {
+    "ar4": {
+      "clip_flops": 7545385779200,
+      "cpu_seconds_per_clip": 32.11047512292862,
+      "update_flops": 1931618759475200
+    },
+    "lr-half": {
+      "clip_flops": 4242018770944,
+      "cpu_seconds_per_clip": 18.45068158302456,
+      "update_flops": 1085956805361664
+    },
+    "native": {
+      "clip_flops": 4242018770944,
+      "cpu_seconds_per_clip": 18.690018739085644,
+      "update_flops": 1085956805361664
+    }
+  },
+  "decision": {
+    "decision_flops": 740510102283264,
+    "encoder_flops_per_frame": 517845549056,
+    "readout_flops": 38014772224,
+    "rollout_flops": 739954241961984
+  },
+  "feature_rows": {
+    "readiness": 277292,
+    "training_only": 413346
+  },
+  "global_batch": 256,
+  "gpu_model": {
+    "lower": {
+      "read_gb_s": 3.0,
+      "tflops": 100.0
+    },
+    "upper": {
+      "read_gb_s": 3.0,
+      "tflops": 40.0
+    }
+  },
+  "label": "[INFERENCE] CPU micro-benchmark (4 threads, fp32, FlopCounterMode): FLOPs of one official clip update (8 frames, TF + rollout, forward + backward) x 256 clips per update, one decision (anchor encode + 45-step rollouts of 16 candidates + R1), one ViT-g frame, one R1 step; mapped to an RTX 5090 at 100 (lower) / 40 (upper) sustained bf16 TFLOP/s, each update / R1 step bounded below by reading its features from the cache at 3 GB/s",
+  "measured_at": "2026-10-27T08:03:19Z",
+  "native_updates": 94500,
+  "plan_identity": "issue-138-vjepa2-ac-v1",
+  "primary": "projection_upper",
+  "projection_lower": {
+    "child_cap_gpu_h": 90.0,
+    "features_gpu_h": 0.9934550397470492,
+    "fits_remainder": false,
+    "gfid_gpu_h": 0.3,
+    "native_per_seed_gpu_h_max": 507.04992436224006,
+    "readiness_gpu_h": 0.4566742660740741,
+    "readouts_gpu_h": 3.542106655921613,
+    "remainder_gpu_h": 73.0,
+    "score_gpu_h": 10.904011256121063,
+    "seconds_per_decision": 7.40510102283264,
+    "seconds_per_encoded_frame": 0.00517845549056,
+    "seconds_per_r1_step": 0.030758229333333335,
+    "seconds_per_update": {
+      "ar4": 19.316187594752,
+      "lr-half": 10.85956805361664,
+      "native": 10.85956805361664
+    },
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "ar4": 507.04992436224006,
+      "lr-half": 285.06366140743677,
+      "native": 285.06366140743677
+    },
+    "selection_readouts_gpu_h": 0.5800662467885568,
+    "steps": {
+      "ar4": 94500,
+      "lr-half": 94500,
+      "native": 94500
+    },
+    "timing_probe_gpu_h": 1.0,
+    "total_gpu_h": 2109.0534093662463,
+    "training_gpu_h": 1014.0998487244801,
+    "training_queue_loads_h": [
+      507.04992436224006,
+      507.04992436224006,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T6--seed20260909"
+      ],
+      "1": [
+        "T6--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 1028.2147577518515,
+    "within_caps": false
+  },
+  "projection_upper": {
+    "child_cap_gpu_h": 90.0,
+    "features_gpu_h": 2.483637599367623,
+    "fits_remainder": false,
+    "gfid_gpu_h": 0.7,
+    "native_per_seed_gpu_h_max": 1267.6248109056,
+    "readiness_gpu_h": 0.9561833295871999,
+    "readouts_gpu_h": 8.855266639804032,
+    "remainder_gpu_h": 73.0,
+    "score_gpu_h": 27.26002814030266,
+    "seconds_per_decision": 18.5127525570816,
+    "seconds_per_encoded_frame": 0.0129461387264,
+    "seconds_per_r1_step": 0.0644014964736,
+    "seconds_per_update": {
+      "ar4": 48.29046898688,
+      "lr-half": 27.1489201340416,
+      "native": 27.1489201340416
+    },
+    "seed_cap_gpu_h": 24.0,
+    "selection_gpu_h": {
+      "ar4": 1267.6248109056,
+      "lr-half": 712.659153518592,
+      "native": 712.659153518592
+    },
+    "selection_readouts_gpu_h": 1.4501656169713921,
+    "steps": {
+      "ar4": 94500,
+      "lr-half": 94500,
+      "native": 94500
+    },
+    "timing_probe_gpu_h": 1.0,
+    "total_gpu_h": 5270.898021080017,
+    "training_gpu_h": 2535.2496218112,
+    "training_queue_loads_h": [
+      1267.6248109056,
+      1267.6248109056,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T6--seed20260909"
+      ],
+      "1": [
+        "T6--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus_serial_ladder": 2570.351392044031,
+    "within_caps": false
+  },
+  "r1_read_bytes": 92274688,
+  "r1_step_flops": 858686619648,
+  "schema": "issue_138_projection_v1",
+  "update_read_bytes": 1476395008
+}

@@ -1,0 +1,18 @@
+{
+ "band_pct": [
+  87.54010026637238,
+  90.45989973362762
+ ],
+ "binomial_se_pct": 0.7049498668138126,
+ "frozen_at": "2026-10-27T07:45:32Z",
+ "half_width_pct": 1.4598997336276252,
+ "paper": {
+  "quantity": "Diving-48 top-1 accuracy (%), V-JEPA 2 ViT-L/16 256 px, frozen encoder + 4-block attentive probe, 32 x 4 x 3 inputs",
+  "source": "V-JEPA 2 (arXiv 2506.09985) Table 4 row 'V-JEPA 2 ViT-L'; repository README probe table (diving48-vitl-256.pt, 89.0 %)",
+  "value": 89.0
+ },
+ "rule": "G-fid passes iff the official evaluation's top-1 on the Diving-48 V2 test split lies inside band_pct; at most two logged repair attempts, each fixing a diagnosed defect of our setup (data, environment), never the band; then T6 is dropped with fidelity_not_reproduced",
+ "schema": "issue_138_gfid_band_v1",
+ "split": "Diving-48 V2 test (Diving48_V2_test.json, 1 970 videos; the dataset's 2020 cleaned annotations); V1 is not run",
+ "test_videos": 1970
+}
