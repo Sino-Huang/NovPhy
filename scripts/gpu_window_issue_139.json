@@ -71,9 +71,10 @@
     },
     {
       "id": "139-selection",
-      "gpu": 2,
+      "gpu": 1,
       "depends_on": [
-        "139-gfid-gate"
+        "139-gfid-r1-gate",
+        "137-select-ar4"
       ],
       "resumable": true,
       "est_minutes": 20,
@@ -86,7 +87,7 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "2",
+        "CUDA_VISIBLE_DEVICES": "1",
         "B139_CPU_THREADS": "4",
         "OMP_NUM_THREADS": "4",
         "HF_HUB_OFFLINE": "1",

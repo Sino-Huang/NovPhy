@@ -153,8 +153,11 @@ def finish(output, kind="runs"):
               "tasks": len(results), "complete": complete, "success_within_10_pct": value, "curve_pct": curve,
               "per_setup": per_setup, "diagnostics": diagnostics,
               "written_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
-    if kind == "runs":
+    if kind.startswith("runs"):
         record["pass"] = bool(complete and band["band_pct"][0] <= value <= band["band_pct"][1])
+        if kind != "runs":  # a logged repair attempt (P-fid); the earlier attempt's record is kept beside it
+            record["repair_attempt"] = int(kind.removeprefix("runs-r"))
+            record["previous_attempts"] = {p.name: sha(p) for p in sorted((output / "fidelity").glob("gfid-attempt*.json"))}
         target = output / "fidelity/gfid.json"
     else:
         record["label"] = "DESCRIPTIVE environment check (DeepPHY MOCK agent; paper Table 6 MOCK 7.64 %)"
@@ -171,13 +174,16 @@ def main(argv=None):
     modes.add_argument("--mock", action="store_true")
     modes.add_argument("--finish", action="store_true")
     parser.add_argument("--kind", default="runs", choices=("runs", "mock"), help="--finish: which runs to summarise")
+    parser.add_argument("--repair", type=int, choices=(1, 2), default=None,
+                        help="a logged P-fid repair attempt: --run / --finish use fidelity/runs-r<N>/")
     parser.add_argument("--output", default=str(OUTPUT))
     args = parser.parse_args(argv)
+    kind = f"runs-r{args.repair}" if args.repair else "runs"
     if args.run:
-        return run(args.output, MODEL, "runs")
+        return run(args.output, MODEL, kind)
     if args.mock:
         return run(args.output, "mock", "mock")
-    return finish(args.output, args.kind)
+    return finish(args.output, kind if args.kind == "runs" else args.kind)
 
 
 if __name__ == "__main__":

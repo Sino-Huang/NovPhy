@@ -1,0 +1,74 @@
+{
+  "note": "#139 G-fid repair attempt 1 (Decision P-fid, posted before the run; band unchanged): the official DeepPHY PHYRE runner as 139-gfid, in env b127-deepphy-gfid (DeepPHY's pinned matplotlib 3.9.4 / pillow 11.3.0: gridded VLM images pixel-identical to the pinned stack), output fidelity/runs-r1/. Then --finish --repair 1 and a gate. To resume the chain: 139-selection depends_on -> ['139-gfid-r1-gate'] (enqueue --update-deps with the phase-A spec edited). GPU 2 placeholder; measured 1.61 GPU-h for attempt 0.",
+  "jobs": [
+    {
+      "id": "139-gfid-r1",
+      "gpu": 2,
+      "depends_on": [],
+      "resumable": true,
+      "est_minutes": 110,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-deepphy-gfid/bin/python",
+        "-u",
+        "scripts/b127_deepphy_fidelity.py",
+        "--run",
+        "--repair",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4",
+        "PYTHONNOUSERSITE": "1",
+        "HF_HUB_OFFLINE": "1",
+        "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+      },
+      "note": "Qwen2.5-VL-7B fp16, official runner, 1 000 tasks; attempt 0 took 1.61 GPU-h; resumable per task (exit 75); peak ~19 GB [INFERENCE]; ledger/gfid.json accumulates."
+    },
+    {
+      "id": "139-gfid-r1-finish",
+      "gpu": null,
+      "depends_on": [
+        "139-gfid-r1"
+      ],
+      "resumable": false,
+      "est_minutes": 2,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-deepphy-gfid/bin/python",
+        "-u",
+        "scripts/b127_deepphy_fidelity.py",
+        "--finish",
+        "--repair",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "CPU: fidelity/gfid.json (repair_attempt 1, attempt 0's record hash) vs the frozen band; always exits 0."
+    },
+    {
+      "id": "139-gfid-r1-gate",
+      "gpu": null,
+      "depends_on": [
+        "139-gfid-r1-finish"
+      ],
+      "resumable": false,
+      "est_minutes": 1,
+      "shares_gpu": false,
+      "command": [
+        "python",
+        "-c",
+        "import json, pathlib, sys; p = pathlib.Path('.local-artifacts/issue-139-deepphy-v1/fidelity/gfid.json'); r = json.loads(p.read_text()) if p.is_file() else {}; ok = r.get('pass') is True and r.get('repair_attempt') == 1; print('#139 G-fid repair 1:', 'pass' if ok else 'NOT passed', {k: r.get(k) for k in ('success_within_10_pct', 'band_pct', 'tasks', 'repair_attempt', 'diagnostics')}); sys.exit(0 if ok else 1)"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "exits 0 iff the repair-1 gfid.json passes; else T7 is dropped (fidelity_not_reproduced)."
+    }
+  ]
+}
