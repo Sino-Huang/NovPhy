@@ -18,6 +18,13 @@
   5.8,
   6.2
  ],
+ "diagnostics": {
+  "attempts": 9707,
+  "empty_responses": 0,
+  "invalid_format": 949,
+  "invalid_input": 3671,
+  "note": "descriptive; an empty response is what the official get_qwen_model_response returns after 3 failed calls (e.g. CUDA OOM) and would be a diagnosed environment defect under P-fid"
+ },
  "issue": 139,
  "kind": "mock",
  "label": "DESCRIPTIVE environment check (DeepPHY MOCK agent; paper Table 6 MOCK 7.64 %)",
@@ -65,5 +72,5 @@
  "schema": "issue_127_gfid_v1",
  "success_within_10_pct": 6.2,
  "tasks": 1000,
- "written_at": "2026-10-27T09:01:05Z"
+ "written_at": "2026-10-27T13:41:16Z"
 }

@@ -87,6 +87,18 @@ def run_setup(setup, model, run_dir):
     runner.main()
 
 
+def mark(output, name, seconds, gpu):
+    """ledger/<name>.json: wall / GPU seconds accumulated over runs (the rc.mark format)."""
+    path = Path(output) / "ledger" / f"{name}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    block = json.loads(path.read_text()) if path.is_file() else {"wall_seconds": 0.0, "gpu_seconds": 0.0}
+    block.update(wall_seconds=block["wall_seconds"] + seconds, gpu_seconds=block["gpu_seconds"] + (seconds if gpu else 0.0),
+                 last_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(block, indent=1, sort_keys=True) + "\n")
+    os.replace(tmp, path)
+
+
 def run(output, model, kind):
     output = Path(output)
     for signum in (signal.SIGTERM, signal.SIGUSR1):
@@ -94,6 +106,7 @@ def run(output, model, kind):
     if model != "mock":
         os.environ["QWEN_MODEL_7B_PATH"] = str(ROOT / "data/external/deepphy" / MODEL)
     began = time.monotonic()
+    code = 0
     for setup in SETUPS:
         run_dir = (output / "fidelity" / kind / setup).resolve()
         if done_tasks(run_dir) >= 500:
@@ -102,16 +115,11 @@ def run(output, model, kind):
             run_setup(setup, model, run_dir)
         except Paused:
             log(f"paused in {setup} after {done_tasks(run_dir)} tasks")
-            return EXIT_PAUSED
+            code = EXIT_PAUSED
+            break
         log(f"{setup}: {done_tasks(run_dir)} tasks")
-    seconds = time.monotonic() - began
-    ledger = output / "ledger"
-    ledger.mkdir(parents=True, exist_ok=True)
-    name = "gfid" if model != "mock" else "gfid-mock"
-    path = ledger / f"{name}-{time.strftime('%Y%m%dT%H%M%S')}.json"
-    path.write_text(json.dumps({"phase": name, "wall_seconds": seconds,
-                                "gpu_seconds": seconds if model != "mock" else 0.0}, indent=1) + "\n")
-    return 0
+    mark(output, "gfid" if model != "mock" else "gfid-mock", time.monotonic() - began, model != "mock")
+    return code
 
 
 def success_curve(results, attempts=10):
@@ -133,10 +141,18 @@ def finish(output, kind="runs"):
     curve = success_curve(results)
     value = curve[-1]
     complete = len(results) == band["tasks"]
+    attempts = [a for r in results for a in r.get("attempt_history", [])]
+    diagnostics = {"attempts": len(attempts),
+                   "empty_responses": sum(1 for a in attempts if not str(a.get("vlm_response") or "").strip()),
+                   "invalid_format": sum(1 for a in attempts if a.get("simulation_status") == "INVALID_ACTION_FORMAT"),
+                   "invalid_input": sum(1 for a in attempts if a.get("simulation_status") == "INVALID_INPUT"),
+                   "note": "descriptive; an empty response is what the official get_qwen_model_response returns after "
+                           "3 failed calls (e.g. CUDA OOM) and would be a diagnosed environment defect under P-fid"}
     record = {"schema": "issue_127_gfid_v1", "issue": 139, "arm": "T7 DeepPHY-VLM", "kind": kind,
               "paper": band["paper"], "band_pct": band["band_pct"], "band_sha256": sha(output / "fidelity/band.json"),
               "tasks": len(results), "complete": complete, "success_within_10_pct": value, "curve_pct": curve,
-              "per_setup": per_setup, "written_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+              "per_setup": per_setup, "diagnostics": diagnostics,
+              "written_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     if kind == "runs":
         record["pass"] = bool(complete and band["band_pct"][0] <= value <= band["band_pct"][1])
         target = output / "fidelity/gfid.json"

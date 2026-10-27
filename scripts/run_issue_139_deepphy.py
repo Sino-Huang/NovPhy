@@ -31,6 +31,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import time
@@ -148,8 +149,15 @@ def score_items(output, tag, model, names, items, device=None, count_flops=False
             "items": [{"id": i, "frame": torch.as_tensor(np.asarray(f), dtype=torch.uint8), "actions": list(a)}
                       for i, f, a in items]})
     env = dict(os.environ, PYTHONNOUSERSITE="1")
-    code = subprocess.run([str(dn.WORKER_PYTHON), str(ROOT / ADAPTER), "--worker", str(request), str(response)],
-                          cwd=ROOT, env=env).returncode
+    worker = subprocess.Popen([str(dn.WORKER_PYTHON), str(ROOT / ADAPTER), "--worker", str(request), str(response)],
+                              cwd=ROOT, env=env)
+    forward = {s: signal.signal(s, lambda signum, frame: worker.send_signal(signum))
+               for s in (signal.SIGTERM, signal.SIGUSR1)}  # the scheduler signals this process; the worker pauses
+    try:
+        code = worker.wait()
+    finally:
+        for s, handler in forward.items():
+            signal.signal(s, handler)
     if code == eb.EXIT_PAUSED:
         raise eb.TrainingPaused(tag)
     if code != 0:

@@ -1,0 +1,146 @@
+{
+  "note": "#139 T7 DeepPHY-VLM (coverage arm, P-coverage), phase A: G-fid (official DeepPHY PHYRE runner, Qwen2.5-VL-7B, VLA, 1 000 tasks; band [7.47, 11.77] % frozen, Decision P-fid issuecomment-6437344622) -> fidelity/gfid.json -> gate (exit 1 unless G-fid passed; blocks everything below) -> selection (policy split, q7b / q7b-t01 / q3b, two worker passes) -> selection readouts -> smoke. Funded: #127 issuecomment-6443206040 (funded.json). est_minutes from the measured projection (timing.json: 7B 3.78 s / decision + 34 s load, 3B 3.11 s + 17 s) and the G-fid upper [INFERENCE] 4.5 GPU-h. Placement (orchestrator, 2026-10-28 00:50): the GPU jobs on GPU 2 with shares_gpu false, after GPU 2's current tenants 137-select-native (its logged s/step is a cumulative average since the resume; measured 40k steps in 24 min, ends ~02:30) and 134-train-q0; 128-sel-a4 (20 GiB, shares_gpu, GPU 2) is made to wait for 139-selection, so the 7B never shares GPU 2 with it. Peak GPU memory [INFERENCE]: 139-gfid ~19 GB (official pipeline, batch 1, prompts <= ~3k tokens); the 7B scoring passes ~27 GB (fp16 weights 16.6 GB + logits of 16 x 1 216 tokens 5.9 GB + activations).",
+  "jobs": [
+    {
+      "id": "139-gfid",
+      "gpu": 2,
+      "depends_on": [
+        "137-select-native",
+        "134-train-q0"
+      ],
+      "resumable": true,
+      "est_minutes": 300,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-deepphy/bin/python",
+        "-u",
+        "scripts/b127_deepphy_fidelity.py",
+        "--run"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4",
+        "PYTHONNOUSERSITE": "1",
+        "HF_HUB_OFFLINE": "1",
+        "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+      },
+      "note": "Official deepphy.runner.01_phyre_runner (pinned clone @ 0562104) with Qwen2.5-VL-7B-Instruct (fp16, official initialize_qwen_vlm / get_qwen_model_response), VLA, ball_within_template + ball_cross_template fold-0 test (1 000 tasks, <= 10 attempts); ~9 600 VLM calls, 2.1-4.5 GPU-h [INFERENCE]; resumable per task (official --reuse_log_dir summary; SIGTERM -> stop before the next task -> exit 75); ledger/gfid.json accumulates. Peak ~19 GB [INFERENCE]. Cap 6 GPU-h, charged to #139."
+    },
+    {
+      "id": "139-gfid-finish",
+      "gpu": null,
+      "depends_on": [
+        "139-gfid"
+      ],
+      "resumable": false,
+      "est_minutes": 2,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/b127-deepphy/bin/python",
+        "-u",
+        "scripts/b127_deepphy_fidelity.py",
+        "--finish"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "PYTHONNOUSERSITE": "1"
+      },
+      "note": "CPU: fidelity/gfid.json from the 1 000 official per-task results vs the frozen band (always exits 0)."
+    },
+    {
+      "id": "139-gfid-gate",
+      "gpu": null,
+      "depends_on": [
+        "139-gfid-finish"
+      ],
+      "resumable": false,
+      "est_minutes": 1,
+      "shares_gpu": false,
+      "command": [
+        "python",
+        "-c",
+        "import json, pathlib, sys; p = pathlib.Path('.local-artifacts/issue-139-deepphy-v1/fidelity/gfid.json'); r = json.loads(p.read_text()) if p.is_file() else {}; ok = r.get('pass') is True; print('#139 G-fid (PHYRE VLA Qwen-7B):', 'pass' if ok else 'NOT passed', {k: r.get(k) for k in ('success_within_10_pct', 'band_pct', 'tasks', 'diagnostics')}); sys.exit(0 if ok else 1)"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "#139 G-fid gate: exits 0 iff fidelity/gfid.json has pass True (inside [7.47, 11.77] %); exit 1 blocks selection, selection readouts and smoke (P-fid: no repair unless a port / environment defect is diagnosed; otherwise not-run.json fidelity_not_reproduced + --publish)."
+    },
+    {
+      "id": "139-selection",
+      "gpu": 2,
+      "depends_on": [
+        "139-gfid-gate"
+      ],
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_139_deepphy.py",
+        "--selection"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "B139_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4",
+        "HF_HUB_OFFLINE": "1",
+        "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+      },
+      "note": "The 94 policy grid cells under the three pre-declared configurations: one worker pass of the 7B (q7b + q7b-t01, ~6 min) and one of the 3B (q3b, ~5 min), env b127-deepphy, fp16, batch 16, deterministic_scoring flags; refuses unless funded.json, G-port and G-fid passed; resumable per item (the runner forwards SIGTERM to the worker, which saves its partial and exits 75). Peak ~27 GB [INFERENCE]."
+    },
+    {
+      "id": "139-selro",
+      "gpu": null,
+      "depends_on": [
+        "139-selection"
+      ],
+      "resumable": false,
+      "est_minutes": 5,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_139_deepphy.py",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "B139_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4",
+        "HF_HUB_OFFLINE": "1"
+      },
+      "note": "CPU: policy-split pooled grid AUC per configuration -> selection.json (eb.select_configuration)."
+    },
+    {
+      "id": "139-smoke",
+      "gpu": null,
+      "depends_on": [
+        "139-selro"
+      ],
+      "resumable": false,
+      "est_minutes": 15,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_139_deepphy.py",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "B139_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4",
+        "HF_HUB_OFFLINE": "1"
+      },
+      "note": "CPU: accounting, G-port record (adapter current), CPU tests, selection, measured projection of what is left vs the 18 GPU-h child cap -> smoke.json. Then report to the orchestrator for --prepare."
+    }
+  ]
+}
