@@ -113,3 +113,12 @@ The 0.05 threshold was set on #123's latent states. In carrier space it is not a
 - The program-level intersection–union claim ("U ranks launches better than every baseline in this set") is **not licensed**: vetoed by A1, A2 and A4 (disposition 1) and by B1, C1-dino and D1 (guards / drop).
 
 **Budget.** Program device time 204.17 GPU-h used; remaining 195.83 (P-budget, device time). Still committed: #137 DIAMOND scoring (≈ 10), #128's A3 group (≈ 2). U-native (item 2) is funded first; the P-follow-up (item 6) after it.
+
+## Decision P-follow-up (2026-10-29): follow-up ticket #141 opened with its pre-registered design
+
+Per rule P-follow-up (fired: A1, A2, A2-native, A4 at disposition 1; issuecomment-6479617332), the follow-up is #141, **"U + the A-family's discriminative success readout"**, pre-registered in the ticket body before any implementation:
+- **F1 = U+FiLM:** frozen U's predicted frame-225 carrier plus the anchor carrier, read by A2's action-FiLM success classifier trained with A1/A2's class-balanced BCE on fit-split verdicts (A2's recipe unchanged; three learning rates selected on the policy split; three seeds).
+- **F1-D:** the same classifier on [z₀, z₀] (no rollout), the essential control for whether U's predictions add anything beyond a strong direct predictor.
+- Primary contrast F1 − U; secondary F1 − F1-D, F1 − A1, F1 − A2, F1 − U+head; NN references, distance-stratified diagnostics and #110 novelty scoring pre-declared as memorisation safeguards; declared scope: a native-success-readout follow-up on #129's U+head route (G-action inherited and reported, no new program-level claim).
+
+**Funding:** P-budget item 6, after #140 U-native (item 2); reserve ≤ 60 GPU-h, decided by its measured smoke projection against the remainder (195.8 GPU-h at 07:10 today, minus #137's scoring and #128's A3 group).

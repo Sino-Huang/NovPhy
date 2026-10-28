@@ -55,6 +55,7 @@ CHILDREN = {
     138: {"slug": "vjepa2-ac", "kind": "grid", "label": "T6 V-JEPA 2-AC (coverage)"},
     139: {"slug": "deepphy", "kind": "grid", "label": "T7 DeepPHY (coverage)"},
     140: {"slug": "u-native", "kind": "grid", "label": "U-native (budget-safeguard control)"},
+    141: {"slug": "p-follow-up", "kind": "grid", "label": "F1 P-follow-up (U + the A-family's success readout)"},
 }
 JOB_ID = re.compile(r"^1(2[89]|3[0-9]|4[0-9])-")
 WORLD_MODEL_ARMS = ("B1", "C1-dino", "C1-car", "D1")
