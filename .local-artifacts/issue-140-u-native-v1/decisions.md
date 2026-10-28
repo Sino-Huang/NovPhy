@@ -51,3 +51,7 @@
 **Reading** (#140 body). If A4 − U-native is still `supported`, A4's budget qualification is dropped. Otherwise A4's wording stays budget-qualified. The result is reported beside #128's table either way.
 
 Posted: https://github.com/Sino-Huang/NovPhy/issues/140#issuecomment-6479886189
+
+## Decision P-freeze (2026-10-29): #140 frozen
+
+`plan.json` sha256 `2cab0ce78470cbe37d0c6e00e701ba7217ba1ceef229a85de6df562840009bec`, 104 pins, recipe as posted (issuecomment-6479886189): U's #112 v3 retrain unchanged except 16 929 updates per seed (× 1.8815 = A4's 2 435 / U's 1 294.19 GPU-s) and the three step-indexed constants stretched (941 / 1 881 / 1 881); seeds 20260908–10; no selection. Training tonight (GPU 2: seeds 20260908 + 20260910; GPU 3: 20260909), then readouts, freeze, one scoring pass with Gate-B's own scoring function (GPU 1, a process that did not train), publish, validate (`scripts/gpu_window_issue_140.json`). The reading is fixed: A4's budget qualification is dropped only if A4 − U-native is `supported`.
