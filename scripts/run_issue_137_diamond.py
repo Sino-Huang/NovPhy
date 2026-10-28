@@ -72,6 +72,7 @@ DECISIONS = {
     "band": "https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6426803157",
     "readiness": "https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6428213317",
     "phase0_gates": "https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6428213735",
+    "selection": "https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6466769084",
     "program": "https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6426185139",
     "g_action_calibration": "https://github.com/Sino-Huang/NovPhy/issues/127#issuecomment-6396584235",
 }
@@ -353,7 +354,7 @@ def train_run(out_dir, spec, seed, data, device=None, max_steps=None):
         if step % LOG_EVERY == 0 or step == steps:
             trace.append({"step": step, **terms})
             log(f"{spec['name']} seed {seed}: step {step}/{steps} loss {terms['loss']:.4f} "
-                f"({(elapsed + time.monotonic() - began) / max(1, step - start):.3f} s/step)")
+                f"({(time.monotonic() - began) / max(1, step - start):.3f} s/step since this launch)")
         if step % CHECKPOINT_EVERY == 0 and step < steps:
             save_resume(step)
     seconds = elapsed + time.monotonic() - began
