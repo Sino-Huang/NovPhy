@@ -1,0 +1,120 @@
+{
+  "jobs": [
+    {
+      "id": "128-a3-freeze",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 5,
+      "depends_on": [
+        "128-validate",
+        "128-r1-readouts-a3sym"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--freeze-readouts",
+        "--arms",
+        "A3-sym,A3-img"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "#128 readouts-manifest.json group 'a3' (A3-sym after repair 1, A3-img) before any evaluation anchor is read (CPU). ENQUEUE ONLY AFTER .local-artifacts/issue-128-direct-predictors-v1/fidelity/a3/gfid.json is written (P-engine: A3's native-task fidelity outcome precedes A3's scoring pass) and after the A3-sym repair-1 re-run (selection, selection readouts, --select-deferred, seeds 20260909/10, readouts). Starts only after the primary chain's 128-validate, so the two groups never interleave."
+    },
+    {
+      "id": "128-a3-score",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 30,
+      "shares_gpu": false,
+      "depends_on": [
+        "128-a3-freeze"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--score",
+        "--arms",
+        "A3-sym,A3-img"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 single A3 scoring pass (group 'a3'): every A3 arm-seed on every mixed cell of every inventory from its Gate-B anchor; A3-sym reads the evaluation symbolic states once (novphy.symbolic_anchors -> data/anchors-evaluation-symbolic.pt, read_at in G-chronology); resumable per record; deterministic_scoring()"
+    },
+    {
+      "id": "128-a3-score-novelty",
+      "gpu": 0,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "depends_on": [
+        "128-a3-score"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--score-novelty",
+        "--arms",
+        "A3-sym,A3-img"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 P-novelty pass for A3 (DESCRIPTIVE; Decision P-novelty issuecomment-6386830623) after A3's own primary pass"
+    },
+    {
+      "id": "128-a3-publish",
+      "gpu": null,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "depends_on": [
+        "128-a3-score-novelty"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--publish"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "#128 publication incl. the A3 rows (secondary, never in the program set; A3 dispositions licensed only by fidelity/a3/gfid.json, else tokens only, typed engine_budget / fidelity_not_reproduced) (CPU)"
+    },
+    {
+      "id": "128-a3-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 60,
+      "shares_gpu": false,
+      "depends_on": [
+        "128-a3-publish"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0"
+      },
+      "note": "#128 validation after the A3 group: hash-checks every record, re-derives the publication byte for byte, spot-check re-score under deterministic_scoring() on GPU 0"
+    }
+  ]
+}

@@ -39,11 +39,13 @@ def test_symbolic_state_of_one_fit_level_matches_the_engine_objects():
     assert set(state.unique().tolist()) <= {0, 1}
     kinds = [n["object_type"] for n in physics["nodes"]]
     material = {"bird": "redBird", "pig": "pig", "wood": "wood", "ice": "ice", "stone": "stone",
-                "Platform": "platform", "Slingshot": "slingshot"}
-    present = {material[k.split("_")[0]] for k in kinds if k != "Ground"}
+                "Slingshot": "slingshot"}
+    assert "Platform" in kinds
+    present = {material[k.split("_")[0]] for k in kinds if k not in ("Ground", "Platform")}
     for name, channel in CHANNEL.items():
         assert bool(state[channel].any()) == (name in present), name
-    assert not state[[2, 3, 4, 5, 10]].any()  # no yellow/blue/white/black birds, no TNT
+    # dev-mode pipeline: the reader drops "Platform" features, so channel 11 is empty (P-fid 2026-10-28, repair 1)
+    assert not state[[2, 3, 4, 5, 10, 11]].any()  # no yellow/blue/white/black birds, no TNT, no platforms
     # the pig occupies the reader's cells of its contour's bounding box (official linspace binning)
     pig = next(n for n in physics["nodes"] if n["object_type"].startswith("pig"))
     xs = [p["x"] for p in pig["screen_polygon"]]
@@ -57,26 +59,44 @@ def test_symbolic_state_of_one_fit_level_matches_the_engine_objects():
 
 
 @needs_fit
-def test_gt_json_uses_non_dev_labels_engine_colour_maps_and_the_official_classifier():
+def test_gt_json_uses_dev_labels_engine_colour_maps_and_the_official_classifier():
     physics = json.loads((ANCHOR / "decision-physics-v1.json").read_text())
     _, colormaps = nv.engine_colormaps(ANCHOR)
     gt = nv.gt_json(physics, colormaps)
     features = gt[0]["features"]
-    assert {f["properties"]["label"] for f in features} == {"Object", "Slingshot", "Ground"}
-    platform = next(f for f, n in zip(features, physics["nodes"]) if n["object_type"] == "Platform")
+    assert [f["properties"]["label"] for f in features] == [n["object_type"] for n in physics["nodes"]]
+    platform = next(f for f in features if f["properties"]["label"] == "Platform")
     assert [e["color"] for e in platform["properties"]["colormap"]] == [int(e["x"]) for e in colormaps["effects_21"]]
-    # the reader's colour classifier recovers every object's material
+    # the reader's colour classifier recovers the material of every object it keeps (Platform is dropped)
     model, target_class = nv.reader_model()
-    objects = [(f, n) for f, n in zip(features, physics["nodes"]) if f["properties"]["label"] == "Object"]
+    objects = [(f, n) for f, n in zip(features, physics["nodes"])
+               if f["properties"]["label"] not in ("Slingshot", "Ground", "Platform")]
     matrix = np.zeros((256, len(objects)))
     for j, (feature, _) in enumerate(objects):
         for entry in feature["properties"]["colormap"]:
             matrix[entry["color"], j] = entry["percent"]
     predicted = [target_class[i] for i in (model[:, :1] + model[:, 1:] @ matrix).argmax(0)]
-    truth = {"bird": "bird_red", "pig": "pig_basic_small", "Platform": "platform"}
+    truth = {"bird": "bird_red", "pig": "pig_basic_small"}
     for (_, node), label in zip(objects, predicted):
         kind = node["object_type"].split("_")[0]
         assert label == truth.get(kind, kind)
+
+
+@needs_fit
+def test_dev_labels_differ_from_non_dev_only_in_the_platform_channel():
+    from world_model.baselines.phyq.vendor.StateReader.SymbolicStateReader import SymbolicStateReader
+    physics = json.loads((ANCHOR / "decision-physics-v1.json").read_text())
+    gt = nv.gt_json(physics, nv.engine_colormaps(ANCHOR)[1])
+    non_dev = json.loads(json.dumps(gt))
+    for feature in non_dev[0]["features"]:
+        if feature["properties"]["label"] not in ("Slingshot", "Ground"):
+            feature["properties"]["label"] = "Object"
+    model, target_class = nv.reader_model()
+    with nv.numpy_float_alias():
+        full = SymbolicStateReader(non_dev, model, target_class).get_symbolic_image(h=120, w=160)
+    dev = nv.symbolic_image(gt).numpy()
+    assert full[11].any() and not dev[11].any()
+    assert np.array_equal(full[:11], dev[:11])
 
 
 def test_gt_json_rejects_a_non_decision_state():

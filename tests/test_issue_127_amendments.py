@@ -40,10 +40,34 @@ def test_issue_130_fidelity_runner_amendment():
 
 
 def test_issue_128_runner_amendment():
-    """#128 A1 (drop marker): the runner and its tests replace exactly the bytes frozen in the #128 plan, and the
-    #128 load_plan accepts the amended files."""
+    """#128 A1 (drop marker), A2 (A3-sym repair re-selection), A3 (engine seconds): the runner and its tests replace
+    exactly the bytes frozen in the #128 plan and the A1 / A2 bytes, and the #128 load_plan accepts them."""
     frozen = _frozen(".local-artifacts/issue-128-direct-predictors-v1/plan.json")
-    for path in ("scripts/run_issue_128_direct_predictors.py", "tests/test_issue_128_direct_predictors.py"):
+    a1 = {"scripts/run_issue_128_direct_predictors.py":
+          "sha256:5b99b0c78a997bfd1a29587f522d86bda148cc1e99320970bce6a484a6fb9ecc",
+          "tests/test_issue_128_direct_predictors.py":
+          "sha256:396daef3782fa4ace30f0ba73b4762823b85a670da79ed31c7570c5e4ca2bf88"}
+    a2 = {"scripts/run_issue_128_direct_predictors.py":
+          "sha256:3d6cecc760cf49732bf841ae1eac94e88d92d91c1a43dbe80333bd70275692a8",
+          "tests/test_issue_128_direct_predictors.py":
+          "sha256:7efb78198bce1d44a8bb3e2fc53a9ab0dc2a63b7c3c2a20276c227857a0fda64"}
+    for path, a1_sha in a1.items():
+        current = "sha256:" + hashlib.sha256(open(path, "rb").read()).hexdigest()
+        entry = pfa.AMENDMENTS[path]
+        assert entry["issue"] == 128 and entry["replaces"] == (frozen[path], a1_sha, a2[path])
+        assert entry["sha256"] == current and pfa.matches(path, frozen[path], current)
+        assert not pfa.matches(path, frozen[path], a1_sha) and not pfa.matches(path, frozen[path], a2[path])
+    from scripts import run_issue_128_direct_predictors as r128
+    assert r128.load_plan(r128.OUTPUT)["identity"] == r128.IDENTITY
+
+
+def test_issue_128_phyq_repair1_amendment():
+    """#128 A3-sym repair 1 (P-fid): the adapter, both symbolic stores, the A3 G-port record and the A3 tests replace
+    exactly the bytes frozen in the #128 plan, and the #128 load_plan accepts them."""
+    out = ".local-artifacts/issue-128-direct-predictors-v1"
+    frozen = _frozen(f"{out}/plan.json")
+    for path in ("world_model/baselines/phyq/novphy.py", f"{out}/a3/data/symbolic-fit.pt",
+                 f"{out}/a3/data/symbolic-policy.pt", f"{out}/gport/a3/gport.json", "tests/test_issue_128_phyq.py"):
         current = "sha256:" + hashlib.sha256(open(path, "rb").read()).hexdigest()
         entry = pfa.AMENDMENTS[path]
         assert entry["issue"] == 128 and entry["replaces"] == (frozen[path],) and entry["sha256"] == current

@@ -8,9 +8,10 @@ Two variants (#127 arm matrix), never in the program set:
   (incl. its linear colour classifier ``Utils/model``), from the ground-truth JSON our engine's
   ``SymbolicGameState.GetGTJson`` produces at the decision state, rebuilt from the capture's
   ``decision-physics-v1.json`` (``PhysicalSnapshotExporter``: every node is one GT feature, ``screen_polygon`` = its
-  first contour, ``object_type`` = its dev-mode label = sprite name) plus the colour map the engine attaches in the
-  non-dev GT JSON (``ColorDataLookUp(sprite)`` = the engine's ``StreamingAssets/ColorCodes/BaseMap.json`` entry, no
-  noise). Labels are the non-dev ones (``Object``, ``Slingshot``, ``Ground``), as Phy-Q's agents receive them.
+  first contour, ``object_type`` = its dev-mode label = sprite name) plus the colour map the engine attaches
+  (``ColorDataLookUp(sprite)`` = the engine's ``StreamingAssets/ColorCodes/BaseMap.json`` entry, no noise). Labels
+  are the dev-mode ones, as Phy-Q's agents receive them (the jar always runs with ``--dev``): the reader drops
+  ``Platform`` features, so the platform channel is empty, as in Phy-Q (Decision P-fid 2026-10-28, repair 1).
 - **A3-img** ``DQNRelationalImage``: input = the 320 x 240 RGB decision frame as the Phy-Q client would hold the
   640 x 480 screenshot (2x pixel replication, BGR channel order, [3, 480, 640], ``agent_client.read_image_from_stream``)
   through the official ``DQNRelationalImage.transform`` (transpose, ``CenterCrop((360, 480))``, ``Resize((120, 160))``,
@@ -191,12 +192,15 @@ def engine_colormaps(attempt):
 
 
 def gt_json(physics, colormaps):
-    """The engine's non-dev ground-truth JSON (``SymbolicGameState.GetGTJson(useNoise=false)``) at the decision state.
+    """The engine's dev-mode ground-truth JSON (``SymbolicGameState.GetGTJson(useNoise=false)``) at the decision state,
+    as Phy-Q's agents receive it: ``SBEnvironmentWrapper.__start_server`` always starts the jar with ``--dev``.
 
     ``physics`` is a ``decision-physics-v1.json`` (``PhysicalSnapshotExporter.Capture`` of that JSON in dev mode): each
-    node keeps the feature's first contour and its dev label. Non-dev labels are ``Object`` (with the colour map
-    ``ColorDataLookUp`` attaches: the sprite's ``BaseMap.json`` entry; ``Platform`` -> sprite ``effects_21``),
-    ``Slingshot`` and ``Ground`` (both without colour map, as ``GTObject`` / ``GTGround`` write them)."""
+    node keeps the feature's first contour and its dev label (sprite name; ``Platform``, ``TNT``, ``Slingshot``,
+    ``Ground``). Objects carry the colour map ``ColorDataLookUp`` attaches (the sprite's ``BaseMap.json`` entry;
+    ``Platform`` -> sprite ``effects_21``); ``Slingshot`` and ``Ground`` none (``GTObject`` / ``GTGround``). The reader
+    drops ``Platform`` features (``SymbolicStateReader.__init__``), so channel 11 stays empty, as in Phy-Q
+    (Decision P-fid 2026-10-28, repair 1)."""
     if physics["fixed_step"] != DECISION_FIXED_STEP:
         raise ValueError(f"decision physics at fixed step {physics['fixed_step']}, expected {DECISION_FIXED_STEP}")
     if physics["coordinates"]["screen_origin"] != "top_left":
@@ -211,7 +215,7 @@ def gt_json(physics, colormaps):
             sprite = PLATFORM_SPRITE if kind == "Platform" else kind
             if sprite not in colormaps:
                 raise KeyError(f"sprite {sprite!r} has no engine colour map")
-            label = "Object"
+            label = kind  # dev label; the reader classifies non-Platform objects by colour
             # C# ColorEntry: (int) color, float percent
             colormap = [{"color": int(entry["x"]), "percent": float(np.float32(entry["y"]))}
                         for entry in colormaps[sprite]]
@@ -369,7 +373,7 @@ def action_index(drag_x, drag_y):
 
 def action_indices(launches):
     """LongTensor [K] of Phy-Q action indices for an ``eb.launch4`` matrix [K, 4] (drag = 480 * launch[:, :2])."""
-    unique, inverse = torch.unique(torch.as_tensor(launches)[:, :2], dim=0, return_inverse=True)
+    unique, inverse = torch.unique(torch.as_tensor(launches).cpu()[:, :2], dim=0, return_inverse=True)
     mapped = torch.tensor([action_index(480. * x, 480. * y) for x, y in unique.tolist()], dtype=torch.long)
     return mapped[inverse.view(-1)]
 

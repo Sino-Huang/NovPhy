@@ -553,3 +553,77 @@ Addendum to Decision P-other 2026-10-25 (https://github.com/Sino-Huang/NovPhy/is
 **Choice.** Relational-Symbolic's native-task fidelity run (template 3_02_01, band frozen in a3/fidelity-band.json) is funded; an A3 smoke of the first 50 episodes re-checks the projection, and Relational-Image follows only if the remainder after Symbolic's realised cost still covers its projection with the same 25 % margin.
 
 **Reason.** The frozen rule, applied as posted; no NovPhy result enters it.
+
+## Decision P-fid (2026-10-28): A3-sym port defect (dev-mode Platform labels dropped by SymbolicStateReader in the official pipeline; our store filled channel 11) — repair 1
+
+**Trigger.** While preparing the A3 native-task fidelity harness, PhyqA3 read the official launch path and found that our A3-sym input differs from the official one. This is a diagnosed port defect. **No A3 result has been read:** no A3 record exists, and no A3 policy readout or evaluation score has been looked at for this decision.
+
+**Defect.**
+- **The official setting:**
+  - Phy-Q always starts the game jar with `--dev` (`SBEnvironmentWrapper.__start_server`, every branch; reached from `TrainLearningAgent.py` through `env.make`).
+  - In dev mode, the engine's ground-truth JSON labels each object with its dev label (`SymbolicGameState.GetGTJson`): the sprite name for pigs, birds and blocks, `"Platform"` for platforms, `"TNT"` for TNT, plus `"Slingshot"` and `"Ground"`.
+  - `SymbolicStateReader.__init__` (vendored, line 61) drops every feature labelled `"Platform"` before classification. The other objects' types still come from the colour classifier, because sprite labels are not used by it.
+  - **So in the official pipeline, channel 11 of the 12 × 120 × 160 symbolic image (platforms) is always empty.**
+- **What we did:**
+  - The 2026-10-24 state-source decision (https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6382972582) rebuilt the GT JSON with **non-dev** labels (platforms → `"Object"`), on the mistaken premise that these are the labels Phy-Q's agents receive.
+  - As a result, platforms reached the colour classifier and **filled channel 11** (e.g. 584 cells on fit level type010103-001).
+  - Every other channel is identical under both label sets.
+
+**Scope.**
+- **Affected:** A3-sym only, i.e. its symbolic stores (`a3/data/symbolic-{fit,policy}.pt`) and the A3-sym selection runs and models trained on them.
+- **Unaffected:**
+  - **A3-img:** screenshots do not depend on labels.
+  - **G-port** (`gport/a3/gport.json`): both sides received the same JSON. It is re-run on the corrected inputs anyway.
+  - **The A3 native-task fidelity run:** it uses the official Phy-Q game and jar with `--dev` natively. Its first smoke log records one raw dev-mode GT JSON from Phy-Q's own build, to confirm the platform labels.
+
+**Repair 1 (P-fid, the first of at most two):**
+- **Code fix:** `novphy.gt_json` writes dev labels (`object_type` = sprite name / `"Platform"` / `"TNT"`, plus `"Slingshot"` and `"Ground"`) with the same engine colour maps. The vendored reader then drops platforms exactly as in the official pipeline.
+- **Data and check:** both symbolic stores are rebuilt, and the G-port is re-run.
+- **Retraining:** A3-sym's selection (the three frozen configurations `native-code`, `native-paper` and `native-template`; seed 20260908) and its two further main seeds (20260909/10) are re-run on the corrected stores. Configurations, seeds, budgets, the selection rule and every other frozen item are unchanged.
+- **Superseded runs:** the A3-sym selection runs and models trained before this fix are superseded and never scored. They are kept on disk and listed as superseded.
+- **Pin updates:** the changed pinned files (adapter, both stores, G-port record) are registered as post-freeze amendments (`scripts/post_freeze_amendments.py`), each replacing exactly the frozen bytes.
+
+**Reason.** Validity first. The official input is what Phy-Q's own pipeline computes, and the fix does not depend on any outcome: it was found before any A3 score existed and changes only what the reader sees.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464616983
+
+## Decision P-engine (2026-10-28): A3 native-task fidelity — run harness, smoke gate, engine ledger (fixed before the first engine run)
+
+**Trigger.** A3 native-task fidelity is funded (Relational-Symbolic first; issuecomment-6464530188). Before the first engine execution, this fixes how the released Phy-Q run executes on our host. The harness is `scripts/b127_phyq_fidelity.py`.
+
+**What runs** (released code, unchanged):
+- **Script:** phy-q/benchmark @ 514491c, vendored verbatim. `TrainLearningAgent.py --template 3_02_01 --mode within_template --level_path fifth_generation --game_version Linux` is the `TrainLearningAgent.sh within_template` command line. It is executed through `runpy` in env `b127-phyq`.
+- **Game and levels:** the benchmark's own game build (`sciencebirdsgames/Linux.zip`, sha256 `d556c0e8…`, jar `b8ebda18…`) and its `fifth_generation` 3_02_01 levels (100 XMLs). The bundled level library is left out; the official `Utils/Config.py` installs the template.
+- **Parameters:** the settings the README says to edit in `Utils/Parameters.py`, applied in memory with no file edit: `agent = DQNDiscreteAgent`, `network = DQNRelationalSymbolic` / `DQNRelationalImage`, `state_repr_type` symbolic / image. Plus `device = cpu`.
+- **Released defaults kept:** 10 workers, 16 update steps, AdamW 3e-4, batch 32, eps schedule, seed 5123690, and the `--dev` jar flag (plus `--headless` for the symbolic agent), all as `SBEnvironmentWrapper.__start_server` sets them.
+- **Metric:** the script's own `level_winning_rate` over the 20 test tasks, i.e. "percent of testing tasks solved".
+- **Dry check (CPU, no engine), both variants:** the parameters above are applied, 101 config entries and 100 installed levels, and 10 workers × 8 training tasks.
+
+**Harness choices (process plumbing only; no learning, sampling, stepping or evaluation line changes):**
+1. **One game server per worker.** Each of the 10 official workers gets its own jar, in its own hard-linked copy of the game, on private ports. This replaces the official single jar started through `gnome-terminal`.
+   - `SBEnvironmentWrapper.make` starts the worker's jar; `close` no longer runs the official host-wide `ps | kill -9` of every jar and game.
+   - Reason: a shared host, and at most one Unity instance per directory (the launcher renames the binary, as `scripts/9001-player-wrapper.sh` does).
+2. **At most 5 game instances at a time (≤ 8 workers).** The 10 official agents of each collection call run in two balanced waves of 5, keeping the official start-up pacing (10 s, then 1 s).
+   - Every agent in a call acts with the same frozen network and only appends to the replay data, so the waves leave the collected data distribution unchanged. Only the wall time grows.
+3. **Launcher:** Unity runs with `-force-glcore -screen-fullscreen 0 -screen-width 640 -screen-height 480` (Phy-Q's 640 × 480 coordinate frame), Mesa llvmpipe, and a private Xvnc display, as the E1 stock player.
+4. **Daytime engine window only** (07:05–17:30 Australia/Melbourne).
+   - An attempt starts only if the window has room for it (≥ 240 min for the first).
+   - If the window closes mid-run, the attempt is killed (`window_closed`) and restarted from scratch in the next window. The released script cannot resume.
+   - Every attempt's engine time counts.
+5. **Smoke = the first 50 episodes of the run.**
+   - At 50 environment steps, the harness measures the boot cost per game session (jar start → first shot) and the cost per episode.
+   - It projects the released run: 170 sessions + 970 episodes.
+   - The run continues only if 1.25 × projection ≤ the remaining allowance; otherwise it stops, typed `engine_budget`.
+   - The smoke also logs the first raw ground-truth JSON (labels, to confirm the dev-mode `Platform` label on Phy-Q's own build; repair 1) and, for the image agent, the screenshot shape. Written to `fidelity/a3/<variant>/attempt-N/smoke.json`.
+6. **Stops:**
+   - `harness_failure`: an agent thread error, which the official code would swallow silently. Diagnosed and repaired, never ignored.
+   - `engine_stall`: no environment step for 20 min with game servers up.
+   - Hard stop when A3's engine total reaches R = 36.343 worker-h.
+7. **Ledger:** engine worker-seconds = the sum of game-server lifetimes over all attempts, in `ledger/engine-a3-fidelity.json` (`engine_seconds`; `gpu_seconds` 0). Network training between collection steps is CPU time, not engine time.
+8. **Relational-Image:** it starts only after Relational-Symbolic completes. Its funding is decided mechanically: remainder ≥ 1.25 × Relational-Symbolic's realised run cost. The supervisor posts that decision here before Image starts.
+   - The image agent runs the released image pipeline, including the uint8 memmap storage of the normalised image (defect 2 of the 2026-10-24 upstream-defects decision). This is disclosed in `gfid.json`, because NovPhy's A3-img trains on the clean transform.
+9. **Result:** `fidelity/a3/gfid.json` (schema `issue_127_gfid_v1`): pass iff each variant's 20-task pass rate lies in its frozen band (Symbolic [0.174, 0.826], Image [0.280, 0.920]; band sha256 `84b17d09…077f`). No re-run on a miss unless a defect is diagnosed (P-fid).
+
+**Reason.** This is the released run, as close to unmodified as our host allows. Every difference is process plumbing, chosen so that it cannot change the agent's data or decisions, and it is disclosed.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464821176

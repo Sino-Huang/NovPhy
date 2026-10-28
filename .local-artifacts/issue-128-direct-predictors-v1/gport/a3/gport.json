@@ -2,7 +2,7 @@
  "schema": "issue_127_gport_v1",
  "issue": 128,
  "arm_family": "A3 PhyQ-RelDQN",
- "checked_at": "2026-10-24T10:41:52+00:00",
+ "checked_at": "2026-10-28T08:48:11+00:00",
  "tolerance": {
   "loss_relative": 0.0001,
   "grad_norm_relative": 0.0001,
@@ -20,7 +20,7 @@
   "torchvision": "0.28.0+cu130",
   "numpy": "2.4.6",
   "python": "3.11.17",
-  "written_at": "2026-10-24T10:07:24+00:00",
+  "written_at": "2026-10-28T08:47:40+00:00",
   "vendor_json": "sha256:6a3d594bb675fb1b697724a37450c4d361ca085092b7944c6cd994fae9c098cb",
   "vendor_files": {
    "LearningAgents/RLNetwork/DQNBase.py": "sha256:8f3c1b92a29bdb27e341cffb47f3382653bcb90b0912d5862ba0f7b4f679911b",
@@ -32,7 +32,7 @@
    "Utils/target_class": "sha256:d5d7f6a1961dc3a2cb531fc239db430197dfacb0370693c51d2fe3555940a999"
   },
   "references": {
-   "A3-sym": "sha256:485817e26970ba8a7eb9b38ee199620390fa93275b7cae0480453dfc23f86916",
+   "A3-sym": "sha256:dfc6e6353582bd1b22f15027e0ce5bece732d56d2cb6646c490f5894c2d64cb5",
    "A3-img": "sha256:c9f716476414d5969894ae9de6d962f2c075d36fe34241f85d2956e4fb6fe729"
   },
   "upstream": "https://github.com/phy-q/benchmark",
@@ -41,7 +41,7 @@
  },
  "adapter": {
   "module": "world_model/baselines/phyq/novphy.py",
-  "module_sha256": "sha256:6616f300cc69b011c7f6cb08bdbc6ead7e66392c393f1b59c04f2bf2eacd387c",
+  "module_sha256": "sha256:0a8fcee916ed0538e59664c91a7e99d87e7fc7bfe51773f68a76b0b7308f5f6a",
   "imagenet_weights": {
    "path": "data/external/phyq/resnet18-5c106cde.pth",
    "url": "https://download.pytorch.org/models/resnet18-5c106cde.pth",
@@ -106,62 +106,62 @@
    "inputs": {
     "issue-109-sc-fit-type010103-001": {
      "identical": true,
-     "occupied_cells": 719
+     "occupied_cells": 135
     },
     "issue-109-sc-fit-type010103-002": {
      "identical": true,
-     "occupied_cells": 698
+     "occupied_cells": 118
     },
     "issue-109-sc-fit-type010103-003": {
      "identical": true,
-     "occupied_cells": 617
+     "occupied_cells": 100
     },
     "issue-109-sc-fit-type010103-004": {
      "identical": true,
-     "occupied_cells": 623
+     "occupied_cells": 100
     },
     "issue-109-sc-fit-type010105-001": {
      "identical": true,
-     "occupied_cells": 198
+     "occupied_cells": 98
     },
     "issue-109-sc-fit-type010105-002": {
      "identical": true,
-     "occupied_cells": 203
+     "occupied_cells": 107
     },
     "issue-109-sc-fit-type010105-003": {
      "identical": true,
-     "occupied_cells": 193
+     "occupied_cells": 93
     },
     "issue-109-sc-fit-type010105-004": {
      "identical": true,
-     "occupied_cells": 198
+     "occupied_cells": 98
     }
    },
    "inputs_pass": true,
    "eval_q_max_abs_delta": 0.0,
-   "score_actions_max_abs_delta": 3.5762786865234375e-07,
+   "score_actions_max_abs_delta": 3.2782554626464844e-07,
    "steps_lr_3e-4": [
     {
-     "loss": 0.1338491290807724,
-     "official_loss": 0.1338491290807724,
+     "loss": 0.22221657633781433,
+     "official_loss": 0.22221657633781433,
      "loss_relative_delta": 0.0,
      "q_max_abs_delta": 0.0,
      "grads_pre_clamp": {
-      "global_norm": 14.27983570098877,
-      "official_global_norm": 14.27983570098877,
+      "global_norm": 19.96611785888672,
+      "official_global_norm": 19.96611785888672,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.4279835700988769e-05,
+      "floor": 1.9966117858886718e-05,
       "pass": true
      },
      "grads_post_clamp": {
-      "global_norm": 14.279836654663086,
-      "official_global_norm": 14.279836654663086,
+      "global_norm": 19.96611785888672,
+      "official_global_norm": 19.96611785888672,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.4279836654663085e-05,
+      "floor": 1.9966117858886718e-05,
       "pass": true
      },
      "lr": 0.0003,
@@ -181,26 +181,26 @@
      "pass": true
     },
     {
-     "loss": 0.2359601855278015,
-     "official_loss": 0.2359601855278015,
+     "loss": 0.2585418224334717,
+     "official_loss": 0.2585418224334717,
      "loss_relative_delta": 0.0,
      "q_max_abs_delta": 0.0,
      "grads_pre_clamp": {
-      "global_norm": 16.6393985748291,
-      "official_global_norm": 16.6393985748291,
+      "global_norm": 11.322182655334473,
+      "official_global_norm": 11.322182655334473,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.66393985748291e-05,
+      "floor": 1.1322182655334472e-05,
       "pass": true
      },
      "grads_post_clamp": {
-      "global_norm": 16.639400482177734,
-      "official_global_norm": 16.639400482177734,
+      "global_norm": 11.322182655334473,
+      "official_global_norm": 11.322182655334473,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.6639400482177732e-05,
+      "floor": 1.1322182655334472e-05,
       "pass": true
      },
      "lr": 0.0003,
@@ -220,26 +220,26 @@
      "pass": true
     },
     {
-     "loss": 0.26485300064086914,
-     "official_loss": 0.26485300064086914,
+     "loss": 0.14094014465808868,
+     "official_loss": 0.14094014465808868,
      "loss_relative_delta": 0.0,
      "q_max_abs_delta": 0.0,
      "grads_pre_clamp": {
-      "global_norm": 9.790457725524902,
-      "official_global_norm": 9.790457725524902,
+      "global_norm": 6.992473602294922,
+      "official_global_norm": 6.992473602294922,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 9.790457725524902e-06,
+      "floor": 6.992473602294922e-06,
       "pass": true
      },
      "grads_post_clamp": {
-      "global_norm": 9.790457725524902,
-      "official_global_norm": 9.790457725524902,
+      "global_norm": 6.992473602294922,
+      "official_global_norm": 6.992473602294922,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 9.790457725524902e-06,
+      "floor": 6.992473602294922e-06,
       "pass": true
      },
      "lr": 0.0003,
@@ -259,26 +259,26 @@
      "pass": true
     },
     {
-     "loss": 0.06259601563215256,
-     "official_loss": 0.06259601563215256,
+     "loss": 0.09389518201351166,
+     "official_loss": 0.09389518201351166,
      "loss_relative_delta": 0.0,
      "q_max_abs_delta": 0.0,
      "grads_pre_clamp": {
-      "global_norm": 3.8956756591796875,
-      "official_global_norm": 3.8956756591796875,
+      "global_norm": 5.415674686431885,
+      "official_global_norm": 5.415674686431885,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 3.895675659179688e-06,
+      "floor": 5.415674686431885e-06,
       "pass": true
      },
      "grads_post_clamp": {
-      "global_norm": 3.8956758975982666,
-      "official_global_norm": 3.8956758975982666,
+      "global_norm": 5.415674686431885,
+      "official_global_norm": 5.415674686431885,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 3.895675897598266e-06,
+      "floor": 5.415674686431885e-06,
       "pass": true
      },
      "lr": 0.0003,
@@ -300,26 +300,26 @@
    ],
    "steps_lr_0": [
     {
-     "loss": 0.1338491290807724,
-     "official_loss": 0.1338491290807724,
+     "loss": 0.22221657633781433,
+     "official_loss": 0.22221657633781433,
      "loss_relative_delta": 0.0,
      "q_max_abs_delta": 0.0,
      "grads_pre_clamp": {
-      "global_norm": 14.27983570098877,
-      "official_global_norm": 14.27983570098877,
+      "global_norm": 19.96611785888672,
+      "official_global_norm": 19.96611785888672,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.4279835700988769e-05,
+      "floor": 1.9966117858886718e-05,
       "pass": true
      },
      "grads_post_clamp": {
-      "global_norm": 14.279836654663086,
-      "official_global_norm": 14.279836654663086,
+      "global_norm": 19.96611785888672,
+      "official_global_norm": 19.96611785888672,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.4279836654663085e-05,
+      "floor": 1.9966117858886718e-05,
       "pass": true
      },
      "lr": 0.0,
@@ -339,26 +339,26 @@
      "pass": true
     },
     {
-     "loss": 0.16461263597011566,
-     "official_loss": 0.16461263597011566,
+     "loss": 0.1952679604291916,
+     "official_loss": 0.1952679604291916,
      "loss_relative_delta": 0.0,
      "q_max_abs_delta": 0.0,
      "grads_pre_clamp": {
-      "global_norm": 15.092879295349121,
-      "official_global_norm": 15.092879295349121,
+      "global_norm": 14.460468292236328,
+      "official_global_norm": 14.460468292236328,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.509287929534912e-05,
+      "floor": 1.4460468292236327e-05,
       "pass": true
      },
      "grads_post_clamp": {
-      "global_norm": 15.092880249023438,
-      "official_global_norm": 15.092880249023438,
+      "global_norm": 14.460468292236328,
+      "official_global_norm": 14.460468292236328,
       "global_norm_relative_delta": 0.0,
       "tensor_max_relative_l2": 0.0,
       "small_tensor_max_abs_l2": 0.0,
-      "floor": 1.5092880249023437e-05,
+      "floor": 1.4460468292236327e-05,
       "pass": true
      },
      "lr": 0.0,

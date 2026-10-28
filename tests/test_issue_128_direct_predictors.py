@@ -463,6 +463,50 @@ def test_no_marker_path_byte_identical_to_frozen_runner(context, monkeypatch, tm
             assert ra["inventories"] == rb["inventories"] and ra["typed_failure"] == rb["typed_failure"]
         assert (a / "rendered.json").read_text().replace(a.name, "X") == \
             (b / "rendered.json").read_text().replace(b.name, "X")
+        # #128 A3: with an engine ledger file the summary and compute.json carry its engine seconds per arm
+        eb.write_json(b / "ledger" / "engine-a3-fidelity.json", {
+            "wall_seconds": 10.0, "gpu_seconds": 0.0, "engine_seconds": 7200.0,
+            "attempts": {"sym-attempt-1": {"engine_seconds": 5400.0, "wall_seconds": 6.0},
+                         "img-attempt-1": {"engine_seconds": 1800.0, "wall_seconds": 4.0}}})
+        compute = r128.compute_tables(b, plan)
+        assert compute["summary"]["engine_seconds"] == 7200.0
+        assert compute["engine"]["per_arm"] == {"A3-sym": 5400.0, "A3-img": 1800.0}
+        assert compute["engine"]["unattributed_engine_seconds"] == 0.0
+        assert "Engine time" in r128.findings_md(plan, compute)
     finally:
         for output in outputs.values():
             shutil.rmtree(output, ignore_errors=True)
+
+
+def test_repair_reselection_replaces_the_frozen_selection(tmp_path, monkeypatch):
+    """#128 A2 (P-fid repair 1, A3-sym): with the real frozen plan, A3-sym has no configuration until
+    --select-deferred re-selects it mechanically from its re-run selection readouts; its main seeds are skipped in
+    the frozen queues until then; every other arm keeps its frozen selection."""
+    plan = eb.read_json(REAL_PLAN)
+    monkeypatch.setattr(r128, "load_plan", lambda out: plan)
+    assert plan["arms"]["A3-sym"]["selected_configuration"] == "native-template"
+    assert r128.arm_selection(tmp_path, plan, "A3-sym") == (None, None)
+    assert r128.arm_selection(tmp_path, plan, "A2") == ("lr3e-4", plan["arms"]["A2"]["config"])
+    assert "A3-sym" not in r128.ready_plan_arms(tmp_path, plan)
+    trained = []
+    monkeypatch.setattr(r128, "train_run", lambda arm, config, seed, run, context: trained.append((arm, seed)) or {
+        "partial": True})
+    monkeypatch.setattr(r128, "Context", lambda device: None)
+    queue = next(g for g, q in enumerate(plan["training"]["queues"]) if "A3-sym/20260909" in q)
+    assert r128.train(tmp_path, queue) == 0 and ("A3-sym", 20260909) not in trained and trained
+    aucs = {"native-code": 0.61, "native-paper": 0.63, "native-template": 0.62}
+    monkeypatch.setattr(r128, "selection_dir", lambda output, arm, config: tmp_path / arm / config)
+    for config, auc in aucs.items():
+        eb.write_json(tmp_path / "A3-sym" / config / "readouts.json", {"policy_grid_auc": auc, "parameters": 7})
+        (tmp_path / "A3-sym" / config / "model.pt").write_bytes(config.encode())
+    monkeypatch.setattr(r128, "gfid_pass", lambda output, arm: None)
+    assert r128.select_deferred(tmp_path) == 0
+    entry = eb.read_json(r128.deferred_selection_path(tmp_path))["arms"]["A3-sym"]
+    assert entry["selected"] == "native-paper" and entry["frozen_selected_configuration"] == "native-template"
+    assert entry["repair"] == r128.REPAIR_RESELECTION["A3-sym"] and "A4" not in eb.read_json(
+        r128.deferred_selection_path(tmp_path))["arms"]
+    assert r128.arm_selection(tmp_path, plan, "A3-sym") == ("native-paper", plan["arms"]["A3-sym"]["configurations"]
+                                                            ["native-paper"])
+    assert r128.model_dir(tmp_path, plan, "A3-sym", 20260908) == tmp_path / "A3-sym" / "native-paper"
+    trained.clear()
+    assert r128.train(tmp_path, queue) == 0 and ("A3-sym", 20260909) in trained

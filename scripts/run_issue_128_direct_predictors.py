@@ -32,7 +32,7 @@ scheduler, ``scripts/gpu_window_issue_128.json``):
   --select-deferred                               post-freeze mechanical selection of A4 -> selection-deferred.json
   --train --gpu g                                 the frozen queue of GPU g (the selected seed-20260908 run is reused),
                                                   then A4's main seeds on their planned GPUs once A4 is selected
-  --readouts --gpu g --workers k                  readouts.json per arm-seed (G-rank, policy AUC, MACs)
+  --readouts --gpu g --workers k [--arms ...]     readouts.json per arm-seed (G-rank, policy AUC, MACs)
   --freeze-readouts [--arms group]                freeze one whole scoring group (default: the next): model / readouts
                                                   hashes, before any evaluation anchor is read
   --score [--arms group]                          one pass per frozen group on every mixed cell of every inventory
@@ -344,10 +344,24 @@ def deferred_selection_path(output):
     return Path(output) / "selection-deferred.json"
 
 
+# Post-freeze amendment #128 A2 (Decision P-fid repair 1, issuecomment-6464616983): an arm whose port defect was
+# repaired re-runs its frozen selection (same configurations, seed and rule) on the corrected inputs; the frozen
+# selected_configuration (chosen on the defective inputs) is replaced by the mechanical re-selection written by
+# --select-deferred; until then the arm has no configuration (no main seeds, readouts or freeze).
+REPAIR_RESELECTION = {"A3-sym": "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464616983"}
+
+
 def arm_selection(output, plan, arm):
     """(configuration name, config) of an arm under the frozen plan: frozen in plan.json, or (deferred-selection
-    arms) the post-freeze mechanical result in selection-deferred.json; (None, None) before it exists."""
+    arms and repair re-selections) the post-freeze mechanical result in selection-deferred.json; (None, None)
+    before it exists."""
     spec = plan["arms"][arm]
+    if arm in REPAIR_RESELECTION:
+        path = deferred_selection_path(output)
+        entry = eb.read_json(path)["arms"].get(arm) if path.is_file() else None
+        if entry and entry["selected"]:
+            return entry["selected"], spec["configurations"][entry["selected"]]
+        return None, None
     if spec.get("selected_configuration"):
         return spec["selected_configuration"], spec["config"]
     path = deferred_selection_path(output)
@@ -1110,10 +1124,14 @@ def train(output, gpu):
             return eb.EXIT_PAUSED
         arm, seed = name.split("/")
         seed = int(seed)
+        config = arm_selection(output, plan, arm)[1]
+        if config is None:  # #128 A2: a repaired arm before its re-selection
+            log(f"queue {gpu}: {name} skipped (no configuration selected yet)")
+            continue
         run = main_dir(output, arm, seed)
         finished_before = (run / "model.pt").is_file()
         try:
-            report = train_run(arm, arm_selection(output, plan, arm)[1], seed, run, context)
+            report = train_run(arm, config, seed, run, context)
         except eb.TrainingPaused as paused:
             log(f"queue {gpu}: {paused}")
             return eb.EXIT_PAUSED
@@ -1123,13 +1141,16 @@ def train(output, gpu):
 
 
 def select_deferred(output):
-    """Post-freeze, mechanical: eb.select_configuration over a deferred-selection arm's selection readouts (policy
-    split only), written once to selection-deferred.json."""
+    """Post-freeze, mechanical: eb.select_configuration over a deferred-selection (or repair re-selection) arm's
+    selection readouts (policy split only), written once to selection-deferred.json."""
+    import fcntl
     plan = load_plan(output)
     path = deferred_selection_path(output)
+    lock = open(Path(output) / ".selection-deferred.lock", "w")  # #128 A2: the A4 and A3-sym jobs may overlap
+    fcntl.flock(lock, fcntl.LOCK_EX)
     done = eb.read_json(path)["arms"] if path.is_file() else {}
     for arm, spec in plan["arms"].items():
-        if spec["status"] != "selection_after_gfid" or arm in done:
+        if (spec["status"] != "selection_after_gfid" and arm not in REPAIR_RESELECTION) or arm in done:
             continue
         result = selection_result(output, [arm])[arm]
         if not result["complete"]:
@@ -1138,8 +1159,12 @@ def select_deferred(output):
         run = selection_dir(output, arm, result["selected"])
         done[arm] = {**result, "gfid_pass": gfid_pass(output, arm), "selected_at": eb.utc_now(),
                      "reused_model_sha256": eb.sha256_of(run / "model.pt")}
+        if arm in REPAIR_RESELECTION:
+            done[arm].update({"repair": REPAIR_RESELECTION[arm],
+                              "frozen_selected_configuration": spec["selected_configuration"]})
         log(f"{arm}: selected {result['selected']}")
     eb.write_json(path, {"schema": "issue_128_selection_deferred_v1", "plan_identity": IDENTITY, "arms": done})
+    lock.close()
     return 0
 
 
@@ -1149,10 +1174,10 @@ def ready_plan_arms(output, plan):
             and arm_selection(output, plan, a)[0] is not None]
 
 
-def readouts(output, gpu, workers):
+def readouts(output, gpu, workers, arms=None):
     plan = load_plan(output)
     context = Context(device_name())
-    names = [(arm, seed) for arm in ready_plan_arms(output, plan) for seed in SEEDS]
+    names = [(arm, seed) for arm in ready_plan_arms(output, plan) if arms is None or arm in arms for seed in SEEDS]
     for i, (arm, seed) in enumerate(names):
         if i % workers != gpu:
             continue
@@ -1673,14 +1698,17 @@ def compute_tables(output, plan):
                      "pending_arms": {a: plan["arms"][a]["status"] for a in pending}}
     if dropped:
         extra_summary["dropped"] = dropped
+    engine = engine_block(output)
     summary = eb.child_summary(ISSUE, IDENTITY, plan["frozen_at"], blocks, within, guards_global, gfid,
-                               extra_summary)
+                               extra_summary, **({"engine_seconds": engine["engine_seconds"]} if engine else {}))
     compute = {"schema": "issue_128_compute_v1", "identity": IDENTITY, "frozen_at": plan["frozen_at"],
                "summary": summary, "inventories": descriptive,
                "ledger": {"phases": entries, "gpu_seconds": gpu, "wall_seconds": wall,
                           "fidelity_gpu_hours": fidelity_gpu_hours(output),
                           "rule": "each arm-seed's training counted once from its report.json (#123 A3)"},
                "primary_cost_key": SCORE_KEY, "no_model_references": nn_block}
+    if engine is not None:
+        compute["engine"] = engine
     novelty = novelty_section(output, plan, records)
     if novelty is not None:
         compute["novelty"] = novelty
@@ -1702,6 +1730,35 @@ def dropped_guards(output, plan, arm, info, stand_in):
     gfid = {"pass": False, "source": GFID_SOURCE[arm], "inherited_from": None, "dropped": info["typed_reason"],
             "decision": info["decision"]}
     return guards, {"G_port": gport_pass(output, arm) is True, "G_fid": False}, gfid
+
+
+# Post-freeze amendment #128 A3: engine time (game-server worker-seconds; A3's native-task fidelity) from
+# ledger/engine-*.json into summary.json engine_seconds and compute.json; absent files -> outputs as before.
+ENGINE_ATTEMPT_ARMS = {"sym": "A3-sym", "img": "A3-img"}  # b127_phyq_fidelity attempt ids "<variant>-attempt-<n>"
+
+
+def engine_block(output):
+    """{"engine_seconds", "per_arm", "unattributed_engine_seconds", "files"} summed over ledger/engine-*.json
+    (attempts attributed to an arm by their variant prefix), or None when no engine ledger file exists."""
+    paths = sorted((Path(output) / "ledger").glob("engine-*.json"))
+    if not paths:
+        return None
+    total, unattributed, per_arm, files = 0.0, 0.0, {}, []
+    for path in paths:
+        block = eb.read_json(path)
+        seconds = float(block.get("engine_seconds", 0.0))
+        total += seconds
+        attributed = 0.0
+        for attempt, entry in sorted(block.get("attempts", {}).items()):
+            arm = ENGINE_ATTEMPT_ARMS.get(attempt.split("-", 1)[0])
+            if arm is not None:
+                per_arm[arm] = per_arm.get(arm, 0.0) + float(entry["engine_seconds"])
+                attributed += float(entry["engine_seconds"])
+        unattributed += seconds - attributed
+        files.append({"artifact": str(path.relative_to(eb.ROOT)), "engine_seconds": seconds})
+    return {"engine_seconds": total, "engine_hours": total / 3600.0, "per_arm": per_arm,
+            "unattributed_engine_seconds": unattributed, "files": files,
+            "rule": "engine worker-seconds (game-server lifetimes, CPU) of ledger/engine-*.json; not GPU time"}
 
 
 def ledger_report(output, plan, phase):
@@ -1745,6 +1802,10 @@ def findings_md(plan, compute):
     if dropped:
         lines += ["", "Dropped (no records; every token the stop token; disposition 4; vetoes the program claim): "
                   + ", ".join(f"{a} ({d['typed_reason']}; {d['decision']})" for a, d in dropped.items()) + "."]
+    engine = compute.get("engine")
+    if engine is not None:
+        lines += ["", f"Engine time (CPU game-server worker-hours; A3 native-task fidelity): {engine['engine_hours']:.2f} h"
+                  + "".join(f"; {a} {v / 3600.0:.2f} h" for a, v in sorted(engine["per_arm"].items())) + "."]
     nn = compute["no_model_references"]
     if nn["pooled_grid_auc"]:
         lines += ["", "## No-model nearest-fit references (DESCRIPTIVE, never in a disposition, no tokens)", "",
@@ -1884,7 +1945,7 @@ def main():
     if args.train:
         return train(OUTPUT, args.gpu)
     if args.readouts:
-        return readouts(OUTPUT, args.gpu, args.workers)
+        return readouts(OUTPUT, args.gpu, args.workers, parse_arms(args.arms, []) or None)
     if args.freeze_readouts:
         return freeze_readouts(OUTPUT, parse_arms(args.arms, []) or None)
     if args.score:

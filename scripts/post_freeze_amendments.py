@@ -198,8 +198,10 @@ AMENDMENTS = {
                    "replaces = the frozen bytes and the A1 bytes; the frozen band, planner, checkpoint, cases and "
                    "metric unchanged")},
     "scripts/run_issue_128_direct_predictors.py": {
-        "issue": 128, "replaces": ("sha256:a3064dd2dc86de4892ea738dd63d852e561396cb70a214fe8cb6143ff16b1d9d",),
-        "sha256": "sha256:5b99b0c78a997bfd1a29587f522d86bda148cc1e99320970bce6a484a6fb9ecc",
+        "issue": 128, "replaces": ("sha256:a3064dd2dc86de4892ea738dd63d852e561396cb70a214fe8cb6143ff16b1d9d",
+                                   "sha256:5b99b0c78a997bfd1a29587f522d86bda148cc1e99320970bce6a484a6fb9ecc",
+                                   "sha256:3d6cecc760cf49732bf841ae1eac94e88d92d91c1a43dbe80333bd70275692a8"),
+        "sha256": "sha256:3282cef2634a49f192bc2c1a989ce57eed8a018c3b5ba1478ca8d88e7715396f",
         "change": ("A1 (after the #128 freeze, before A4's Tier-T G-fid outcome, any primary-group readout freeze or any "
                    "evaluation read; Decision P-other issuecomment-6426445961): an arm of a scoring group dropped with "
                    "a typed reason under a posted decision (orchestrator-written dropped/<arm>.json, schema "
@@ -211,14 +213,40 @@ AMENDMENTS = {
                    "re-checked against the frozen sha256 at publication / validation. Without a marker the freeze, "
                    "records and publication are byte-identical to the frozen runner (tested against the freeze-commit "
                    "bytes); training, anchors, scoring, guards, tokens, contrasts, the one-pass rule and G-chronology "
-                   "unchanged")},
+                   "unchanged. "
+                   "A2 (Decision P-fid repair 1, https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464616983; before any A3 record, A3 policy readout look or evaluation read): a repaired arm (REPAIR_RESELECTION: A3-sym) re-runs its frozen selection (same three configurations, seed 20260908, rule) on the corrected inputs and --select-deferred records the mechanical re-selection in selection-deferred.json (with the frozen choice and the decision); until then the arm has no configuration, so --train skips its main seeds and --readouts / --freeze-readouts exclude it; every other arm unchanged; --select-deferred holds an exclusive file lock (the A4 and A3-sym jobs may overlap); --readouts takes an optional --arms subset (default: all, as frozen). replaces = the frozen bytes and the A1 bytes "
+                   "A3 (outcome-independent reporting; requested 2026-10-28): --publish / --validate sum engine_seconds of ledger/engine-*.json (A3 native-task fidelity game-server worker-seconds, written by b127_phyq_fidelity.py) into summary.json engine_seconds (eb.child_summary) and a compute.json engine block (per arm A3-sym / A3-img by attempt-id prefix, else unattributed) with one findings.md line; without an engine ledger file the outputs are byte-identical. replaces = the frozen, A1 and A2 bytes")},
     "tests/test_issue_128_direct_predictors.py": {
-        "issue": 128, "replaces": ("sha256:47c81fce10fbc974ce6b736e664189b05a888c76b8dd6074ce4342c1105adec6",),
-        "sha256": "sha256:396daef3782fa4ace30f0ba73b4762823b85a670da79ed31c7570c5e4ca2bf88",
+        "issue": 128, "replaces": ("sha256:47c81fce10fbc974ce6b736e664189b05a888c76b8dd6074ce4342c1105adec6",
+                                   "sha256:396daef3782fa4ace30f0ba73b4762823b85a670da79ed31c7570c5e4ca2bf88",
+                                   "sha256:7efb78198bce1d44a8bb3e2fc53a9ab0dc2a63b7c3c2a20276c227857a0fda64"),
+        "sha256": "sha256:0d07101a3906779ab93ff8ac03af421800e561fce85645445ed29ae52aaba72d",
         "change": ("A1: tests of the drop marker with the real frozen plan (partial primary group refused without a "
                    "valid marker, accepted with one; no A4 record; the dropped block's stop tokens, disposition 4 and "
                    "program-claim veto; marker sha256 binding) and of the no-marker path against the freeze-commit "
-                   "runner bytes; the frozen tests unchanged")},
+                   "runner bytes; the frozen tests unchanged. "
+                   "A2: test of the repair re-selection with the real frozen plan (no A3-sym configuration and skipped seeds before --select-deferred; mechanical re-selection recorded; other arms unchanged). replaces = the frozen bytes and the A1 bytes "
+                   "A3: the no-marker byte-identity test also checks the engine-seconds summary / compute block with a synthetic engine ledger file. replaces = the frozen, A1 and A2 bytes")},
+    "world_model/baselines/phyq/novphy.py": {
+        "issue": 128, "replaces": ("sha256:6616f300cc69b011c7f6cb08bdbc6ead7e66392c393f1b59c04f2bf2eacd387c",),
+        "sha256": "sha256:0a8fcee916ed0538e59664c91a7e99d87e7fc7bfe51773f68a76b0b7308f5f6a",
+        "change": ("A3-sym repair 1 (Decision P-fid repair 1, https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464616983; before any A3 record, A3 policy readout look or evaluation read): gt_json writes the dev-mode labels Phy-Q's --dev jar emits (sprite name / Platform / TNT, Slingshot, Ground) so the vendored SymbolicStateReader drops platforms as in the official pipeline (channel 11 empty); action_indices maps launches on the CPU (device fix); A3-img inputs unchanged")},
+    ".local-artifacts/issue-128-direct-predictors-v1/a3/data/symbolic-fit.pt": {
+        "issue": 128, "replaces": ("sha256:88ee11a879579670f8fbeb481348766a10416f635aa75649bc0bb2347cbd1cf5",),
+        "sha256": "sha256:99fbaaf6d7c2ddef6df9eea844baab722853fd590a623a7638147089a7a3c417",
+        "change": ("A3-sym repair 1: fit symbolic store rebuilt with the dev-label gt_json (frozen bytes kept in superseded-repair1/)")},
+    ".local-artifacts/issue-128-direct-predictors-v1/a3/data/symbolic-policy.pt": {
+        "issue": 128, "replaces": ("sha256:06401547fa0c3e04818ae41b4e74e4f7dd5a21703a711e1d2a7b25ca7abe8b9c",),
+        "sha256": "sha256:9543f11d6b5b358d75eb53afd64c8e98e31921aa1d2eb195aedf05f81118145b",
+        "change": ("A3-sym repair 1: policy symbolic store rebuilt with the dev-label gt_json (frozen bytes kept in superseded-repair1/)")},
+    ".local-artifacts/issue-128-direct-predictors-v1/gport/a3/gport.json": {
+        "issue": 128, "replaces": ("sha256:d1d1ceca343715373007cf589ca7f61fc6345853330cfa681b9bafb0e2a2b569",),
+        "sha256": "sha256:9e37bfb78cb1648ae7430bbd512004b239ba6706fa120e566b03e625d8c13d63",
+        "change": ("A3-sym repair 1: G-port re-run on the corrected inputs and adapter (pass, bitwise)")},
+    "tests/test_issue_128_phyq.py": {
+        "issue": 128, "replaces": ("sha256:91b78c4354f4976a92ec0ab8af4da7d6e06dcd821ac316559f06108623ff0d80",),
+        "sha256": "sha256:090b9213b91409834f34409ec9cf7cc3d0911cde7f6dbd8f3d67656eb0db8fbb",
+        "change": ("A3-sym repair 1: tests of the dev-label gt_json (platforms dropped, channel 11 empty) and the CPU action mapping")},
 }
 
 

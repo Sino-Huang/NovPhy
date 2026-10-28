@@ -1,0 +1,155 @@
+{
+  "jobs": [
+    {
+      "id": "128-r1-sel-a3sym",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 150,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--selection",
+        "--arms",
+        "A3-sym",
+        "--gpu",
+        "0",
+        "--workers",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#128 A3-sym repair 1 (Decision P-fid repair 1 issuecomment-6464616983): the three frozen configurations (native-code 112 840 / native-paper 416 640 / native-template 78 120 updates), seed 20260908, on the corrected dev-label symbolic stores; resumable; ~14 ms/update measured -> ~2.4 h; ~2 GB GPU memory (shares GPU 3 with the A4 seed job)"
+    },
+    {
+      "id": "128-r1-selro-a3sym",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 10,
+      "shares_gpu": true,
+      "depends_on": [
+        "128-r1-sel-a3sym"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--selection-readouts",
+        "--arms",
+        "A3-sym",
+        "--gpu",
+        "0",
+        "--workers",
+        "1"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#128 A3-sym repair 1: policy grid AUC of Q (selection score), G-rank, MACs; deterministic_scoring()"
+    },
+    {
+      "id": "128-r1-select-a3sym",
+      "gpu": null,
+      "resumable": true,
+      "est_minutes": 2,
+      "shares_gpu": false,
+      "depends_on": [
+        "128-r1-selro-a3sym"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--select-deferred"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": ""
+      },
+      "note": "#128 A3-sym repair 1: mechanical re-selection (eb.select_configuration) into selection-deferred.json (file lock; may also record A4 if its readouts are complete, otherwise A4's own 128-select-deferred does)"
+    },
+    {
+      "id": "128-r1-train-a3sym-s20260909",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 100,
+      "shares_gpu": true,
+      "depends_on": [
+        "128-r1-select-a3sym"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--train",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#128 A3-sym repair 1: frozen training queue 2 (A3-sym/20260909; its other arm-seeds are complete and skipped) with the re-selected configuration; resumable"
+    },
+    {
+      "id": "128-r1-train-a3sym-s20260910",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 100,
+      "shares_gpu": true,
+      "depends_on": [
+        "128-r1-train-a3sym-s20260909"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--train",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#128 A3-sym repair 1: frozen training queue 3 (A3-sym/20260910; the rest complete and skipped); resumable"
+    },
+    {
+      "id": "128-r1-readouts-a3sym",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 10,
+      "shares_gpu": true,
+      "depends_on": [
+        "128-r1-train-a3sym-s20260910"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "-m",
+        "scripts.run_issue_128_direct_predictors",
+        "--readouts",
+        "--gpu",
+        "0",
+        "--workers",
+        "1",
+        "--arms",
+        "A3-sym"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3"
+      },
+      "note": "#128 A3-sym repair 1: readouts.json of the two new main seeds (seed 20260908 = the selection run, read out by 128-r1-selro-a3sym)"
+    }
+  ]
+}
