@@ -1,0 +1,52 @@
+{
+  "arms": {
+    "A3-sym": {
+      "complete": true,
+      "frozen_selected_configuration": "native-template",
+      "gfid_pass": null,
+      "repair": "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464616983",
+      "results": {
+        "native-code": {
+          "auc": 0.9941236068895642,
+          "parameters": 11662208
+        },
+        "native-paper": {
+          "auc": 0.9919959473150963,
+          "parameters": 11662208
+        },
+        "native-template": {
+          "auc": 0.9897474865559972,
+          "parameters": 11662208
+        }
+      },
+      "reused_model_sha256": "sha256:3ce9135544dd04e7a164a36cc7972a175b494e3ca448fb9d3f441b986d158e4b",
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "native-code",
+      "selected_at": "2026-10-28T10:15:26Z"
+    },
+    "A4": {
+      "complete": true,
+      "gfid_pass": true,
+      "results": {
+        "hundredth": {
+          "auc": 0.9907801418439716,
+          "parameters": 12751957
+        },
+        "native": {
+          "auc": 0.9875379939209725,
+          "parameters": 12751957
+        },
+        "tenth": {
+          "auc": 0.998530901722391,
+          "parameters": 12751957
+        }
+      },
+      "reused_model_sha256": "sha256:02ba9c27ee15ea2d68503cea11464fe4e91daae3e206411ff7218dd8e911f1d0",
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "tenth",
+      "selected_at": "2026-10-28T14:55:26Z"
+    }
+  },
+  "plan_identity": "issue-128-direct-predictors-v1",
+  "schema": "issue_128_selection_deferred_v1"
+}

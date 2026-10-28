@@ -1,0 +1,1113 @@
+{
+  "arms": {
+    "A1": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 0.31983392518540865,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 413.925125878149
+      },
+      "compute": {
+        "macs_per_candidate": 805390848.0,
+        "trainable_parameters": 11309889,
+        "training_gpu_seconds": {
+          "20260908": 269.13988604489714,
+          "20260909": 486.6413403810002,
+          "20260910": 485.99415120854974
+        },
+        "wall_per_decision": 0.004262386821210384
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.1954028175290233,
+              0.2268230902716433
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.21126972348837297,
+            "units": 933
+          },
+          "first": "A1",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "C*",
+          "token": "supported"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.2311007512494651,
+              0.26660898319258447
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.24866396554499445,
+            "units": 933
+          },
+          "first": "A1",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "J_dec",
+          "token": "supported"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.25051264384061805,
+              0.2980016607187025
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.27434317201198233,
+            "units": 933
+          },
+          "first": "A1",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "P",
+          "token": "supported"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.2327251785370756,
+              0.26748274010733813
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.25023556293652754,
+            "units": 933
+          },
+          "first": "A1",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "U",
+          "token": "supported"
+        }
+      },
+      "disposition": {
+        "disposition": 1,
+        "guards_pass": true,
+        "label": "X ranks launches better than U on the sealed NovPhy grid (scoped)",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            0.2327251785370756,
+            0.26748274010733813
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.25023556293652754,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_fid": true,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": true,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": true,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "neg_score",
+      "program_set": true,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.991655236956684,
+            0.9971359620194026
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.994641335798892,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.992123953217201,
+              0.9973793623311309
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9949907541547415,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.9891544321166508,
+              0.9973805548684971
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9938435626538521,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.9926026907176425,
+              0.9971973899626632
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.995089690588083,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.0,
+        "top1_hits": 895,
+        "top1_rate": 0.9592711682743837,
+        "typed_failures": 0
+      },
+      "role": "primary",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "A1"
+    },
+    "A2": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 0.043590295425575264,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 56.41402334238713
+      },
+      "compute": {
+        "macs_per_candidate": 1426101.5,
+        "trainable_parameters": 1838781,
+        "training_gpu_seconds": {
+          "20260908": 48.27977069700137,
+          "20260909": 57.88166688522324,
+          "20260910": 63.08063244493678
+        },
+        "wall_per_decision": 0.003523037303239107
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.17601576701255156,
+              0.20837784982077584
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.19230415886364438,
+            "units": 933
+          },
+          "first": "A2",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "C*",
+          "token": "supported"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.21134618819908207,
+              0.2483593286848914
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.22969840092026583,
+            "units": 933
+          },
+          "first": "A2",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "J_dec",
+          "token": "supported"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.23177843146492666,
+              0.2786817039248711
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.25537760738725374,
+            "units": 933
+          },
+          "first": "A2",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "P",
+          "token": "supported"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.21305607575704036,
+              0.24929943582676697
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.2312699983117989,
+            "units": 933
+          },
+          "first": "A2",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "U",
+          "token": "supported"
+        }
+      },
+      "disposition": {
+        "disposition": 1,
+        "guards_pass": true,
+        "label": "X ranks launches better than U on the sealed NovPhy grid (scoped)",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            0.21305607575704036,
+            0.24929943582676697
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.2312699983117989,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_fid": true,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": true,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": true,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "neg_score",
+      "program_set": true,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.9691525721509645,
+            0.9815299518273793
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.9756757711741636,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.97010718113612,
+              0.983122637009293
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9769595891782388,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.9691182732058939,
+              0.9833715092517343
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9766627798782139,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.966413333451115,
+              0.9796155760102705
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.973404944466038,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.0,
+        "top1_hits": 745,
+        "top1_rate": 0.7984994640943194,
+        "typed_failures": 0
+      },
+      "role": "primary",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "A2"
+    },
+    "A2-native": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 0.050889610575160955,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 65.86070708728705
+      },
+      "compute": {
+        "macs_per_candidate": 8742399.5,
+        "trainable_parameters": 11333771,
+        "training_gpu_seconds": {
+          "20260908": 53.696158583741635,
+          "20260909": 68.48394046723843,
+          "20260910": 75.40202221088111
+        },
+        "wall_per_decision": 0.007046535145491362
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.1744573856832699,
+              0.2065750326843574
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.19064147713665394,
+            "units": 933
+          },
+          "first": "A2-native",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "C*",
+          "token": "supported"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.20959776156319562,
+              0.2462994436788649
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.22803571919327545,
+            "units": 933
+          },
+          "first": "A2-native",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "J_dec",
+          "token": "supported"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.22974257387842598,
+              0.2772393177115846
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.25371492566026327,
+            "units": 933
+          },
+          "first": "A2-native",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "P",
+          "token": "supported"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.21136324688173566,
+              0.2473638789756153
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.22960731658480857,
+            "units": 933
+          },
+          "first": "A2-native",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "U",
+          "token": "supported"
+        }
+      },
+      "disposition": {
+        "disposition": 1,
+        "guards_pass": true,
+        "label": "X ranks launches better than U on the sealed NovPhy grid (scoped)",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            0.21136324688173566,
+            0.2473638789756153
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.22960731658480857,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_fid": true,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": true,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": true,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "neg_score",
+      "program_set": false,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.9665851128150165,
+            0.9804925326549121
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.9740130894471732,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.9665096198014204,
+              0.9804877625054472
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.97388372613453,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.96646927964854,
+              0.9814894791703475
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9745533137816096,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.9653350735545271,
+              0.980705069314394
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9736022284253797,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.0,
+        "top1_hits": 738,
+        "top1_rate": 0.7909967845659164,
+        "typed_failures": 0
+      },
+      "role": "secondary",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "A2-native"
+    },
+    "A4": {
+      "budget_safeguard": {
+        "fires": true,
+        "ratio": 1.8812784338241935,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": "X at its native budget (1.88 x U's training GPU-h) ranks better than U at B1",
+        "x_training_gpu_s": 2434.727373217543
+      },
+      "compute": {
+        "macs_per_candidate": 805390848.0,
+        "trainable_parameters": 12751957,
+        "training_gpu_seconds": {
+          "20260908": 2424.7788094622083,
+          "20260909": 2429.1665283287875,
+          "20260910": 2450.236781861633
+        },
+        "wall_per_decision": 0.004261576104909182
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.1953704472554955,
+              0.22666676972545138
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.21110855917929872,
+            "units": 933
+          },
+          "first": "A4",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "C*",
+          "token": "supported"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.23092641995375113,
+              0.2665025872662528
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.24850280123592014,
+            "units": 933
+          },
+          "first": "A4",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "J_dec",
+          "token": "supported"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.2504452679332101,
+              0.2977093050304465
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.27418200770290807,
+            "units": 933
+          },
+          "first": "A4",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "P",
+          "token": "supported"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.23273134243391475,
+              0.2674178866863754
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.25007439862745323,
+            "units": 933
+          },
+          "first": "A4",
+          "guards_pass": true,
+          "members": 311,
+          "reverse_token": "not_supported_by_this_experiment",
+          "second": "U",
+          "token": "supported"
+        }
+      },
+      "disposition": {
+        "disposition": 1,
+        "guards_pass": true,
+        "label": "X ranks launches better than U on the sealed NovPhy grid (scoped)",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            0.23273134243391475,
+            0.2674178866863754
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.25007439862745323,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_fid": true,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": true,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": true,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "neg_score",
+      "program_set": true,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.9922496554892053,
+            0.9964961976215994
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.9944801714898177,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.9922291762364109,
+              0.9967080079620273
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9945643852396263,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.9919384474046853,
+              0.9965702036441585
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9943806461491348,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.9921068749043026,
+              0.9966697289848415
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9944954830806921,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.0,
+        "top1_hits": 876,
+        "top1_rate": 0.9389067524115756,
+        "typed_failures": 0
+      },
+      "role": "primary",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "A4"
+    }
+  },
+  "engine_seconds": 0,
+  "extra": {
+    "pending_arms": {
+      "A3-img": "ready",
+      "A3-sym": "ready"
+    },
+    "selection": {
+      "A1": {
+        "complete": true,
+        "results": {
+          "hundredth": {
+            "auc": 0.9907801418439716,
+            "parameters": 11309889
+          },
+          "native": {
+            "auc": 0.9959726443768998,
+            "parameters": 11309889
+          },
+          "tenth": {
+            "auc": 0.9964032421479229,
+            "parameters": 11309889
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "tenth"
+      },
+      "A2": {
+        "complete": true,
+        "results": {
+          "lr1e-3": {
+            "auc": 0.9704407294832829,
+            "parameters": 1838781
+          },
+          "lr1e-4": {
+            "auc": 0.9544072948328268,
+            "parameters": 1838781
+          },
+          "lr3e-4": {
+            "auc": 0.97322695035461,
+            "parameters": 1838781
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "lr3e-4"
+      },
+      "A2-native": {
+        "complete": true,
+        "results": {
+          "hundredth": {
+            "auc": 0.9423252279635259,
+            "parameters": 11333771
+          },
+          "native": {
+            "auc": 0.965678824721378,
+            "parameters": 11333771
+          },
+          "tenth": {
+            "auc": 0.9694782168186427,
+            "parameters": 11333771
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "tenth"
+      },
+      "A4": null
+    },
+    "selection_deferred": {
+      "A3-sym": {
+        "complete": true,
+        "frozen_selected_configuration": "native-template",
+        "gfid_pass": null,
+        "repair": "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464616983",
+        "results": {
+          "native-code": {
+            "auc": 0.9941236068895642,
+            "parameters": 11662208
+          },
+          "native-paper": {
+            "auc": 0.9919959473150963,
+            "parameters": 11662208
+          },
+          "native-template": {
+            "auc": 0.9897474865559972,
+            "parameters": 11662208
+          }
+        },
+        "reused_model_sha256": "sha256:3ce9135544dd04e7a164a36cc7972a175b494e3ca448fb9d3f441b986d158e4b",
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "native-code",
+        "selected_at": "2026-10-28T10:15:26Z"
+      },
+      "A4": {
+        "complete": true,
+        "gfid_pass": true,
+        "results": {
+          "hundredth": {
+            "auc": 0.9907801418439716,
+            "parameters": 12751957
+          },
+          "native": {
+            "auc": 0.9875379939209725,
+            "parameters": 12751957
+          },
+          "tenth": {
+            "auc": 0.998530901722391,
+            "parameters": 12751957
+          }
+        },
+        "reused_model_sha256": "sha256:02ba9c27ee15ea2d68503cea11464fe4e91daae3e206411ff7218dd8e911f1d0",
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "tenth",
+        "selected_at": "2026-10-28T14:55:26Z"
+      }
+    }
+  },
+  "frozen_at": "2026-10-25T09:26:24Z",
+  "gfid": {
+    "A1": {
+      "inherited_from": null,
+      "pass": true,
+      "source": "fidelity/gfid.json"
+    },
+    "A2": {
+      "inherited_from": "A1",
+      "pass": true,
+      "source": "fidelity/gfid.json"
+    },
+    "A2-native": {
+      "inherited_from": "A1",
+      "pass": true,
+      "source": "fidelity/gfid.json"
+    },
+    "A4": {
+      "inherited_from": null,
+      "pass": true,
+      "source": "fidelity/a4/gfid.json"
+    }
+  },
+  "global_guards": {
+    "G_chronology": {
+      "anchors_read_at": "2026-10-28T15:55:39Z",
+      "arms": {
+        "A1": {
+          "first_record_scored_at": "2026-10-28T15:56:29Z",
+          "pass": true,
+          "readouts_frozen_at": "2026-10-28T15:50:27Z"
+        },
+        "A2": {
+          "first_record_scored_at": "2026-10-28T15:56:40Z",
+          "pass": true,
+          "readouts_frozen_at": "2026-10-28T15:50:27Z"
+        },
+        "A2-native": {
+          "first_record_scored_at": "2026-10-28T15:56:52Z",
+          "pass": true,
+          "readouts_frozen_at": "2026-10-28T15:50:27Z"
+        },
+        "A4": {
+          "first_record_scored_at": "2026-10-28T15:57:06Z",
+          "pass": true,
+          "readouts_frozen_at": "2026-10-28T15:50:27Z"
+        }
+      },
+      "first_readouts_frozen_at": "2026-10-28T15:50:27Z",
+      "pass": true,
+      "plan_frozen_at": "2026-10-25T09:26:24Z"
+    },
+    "G_isolation": {
+      "pass": true
+    },
+    "G_records": {
+      "bound_to_current_records": true,
+      "pass": true,
+      "receipt": "validation.json",
+      "records_manifest_sha256": "sha256:9379563061b4670da03c359e853c0a11b555c3869fa999174403c314e7075c09",
+      "spot_check": {
+        "arm": "A2",
+        "cells": 311,
+        "max_abs_delta": 0.0,
+        "max_relative_delta": 0.0,
+        "pass": true,
+        "seed": 20260908,
+        "tolerance_relative": 0.0001
+      }
+    },
+    "G_scoring_policy": {
+      "pass": true
+    }
+  },
+  "global_guards_pass": true,
+  "identity": "issue-128-direct-predictors-v1",
+  "issue": 128,
+  "program_claim_entries": {
+    "A1": {
+      "disposition": 1,
+      "dropped": null,
+      "gfid_pass": true,
+      "guards_pass": true
+    },
+    "A2": {
+      "disposition": 1,
+      "dropped": null,
+      "gfid_pass": true,
+      "guards_pass": true
+    },
+    "A4": {
+      "disposition": 1,
+      "dropped": null,
+      "gfid_pass": true,
+      "guards_pass": true
+    }
+  },
+  "program_issue": 127,
+  "program_set_members": [
+    "A1",
+    "A2",
+    "A4"
+  ],
+  "schema": "issue_127_child_summary_v1",
+  "within_family": {
+    "A2-A1": {
+      "cells": 933,
+      "estimate": {
+        "clusters": 311,
+        "interval": [
+          -0.025121653534032954,
+          -0.01341268369001488
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.018965564624728606,
+        "units": 933
+      },
+      "first": "A2",
+      "guards_pass": true,
+      "label": "A2 - A1",
+      "members": 311,
+      "reverse_token": "readiness_or_precision_insufficient",
+      "second": "A1",
+      "token": "not_supported_by_this_experiment"
+    },
+    "A4-A1": {
+      "cells": 933,
+      "estimate": {
+        "clusters": 311,
+        "interval": [
+          -0.002050231833190032,
+          0.0021011281501635195
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.00016116430907427585,
+        "units": 933
+      },
+      "first": "A4",
+      "guards_pass": true,
+      "label": "A4 - A1",
+      "members": 311,
+      "reverse_token": "not_supported_by_this_experiment",
+      "second": "A1",
+      "token": "not_supported_by_this_experiment"
+    }
+  }
+}
