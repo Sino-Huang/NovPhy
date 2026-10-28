@@ -543,3 +543,13 @@ Addendum to Decision P-other 2026-10-25 (https://github.com/Sino-Huang/NovPhy/is
 **Reason.** This is a mechanical completion of the frozen dropping rule (P-fid already defines the drop and its reporting); it does not depend on any result, and it keeps A1/A2/A2-native — trained and read out on 25 Oct — reportable whatever A4's fidelity outcome.
 
 **Also:** the post-G-fid chain is enqueued as `scripts/gpu_window_issue_128_a4_post.json` (gate on `fidelity/a4/gfid.json` pass → A4 deferred selection → selection readouts → `--select-deferred` → A4 seeds 20260909/10 → A4 readouts → `--freeze-readouts --arms A1,A2,A2-native,A4` → score → score-novelty → publish → validate). It supersedes `scripts/gpu_window_issue_128_scoring.json` (same scoring jobs without dependencies), which is removed.
+
+## Decision P-engine (2026-10-28): A3 native-task fidelity funded after E1 (R = 36.3 worker-h)
+
+**Trigger.** E1's N1 run has finished; the #128 P-engine decision of 2026-10-25 (https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6388391126) fixes the rule: R = 190 - E1's realised worker-hours (smoke and probes included); R >= 1.25 x 4.0 = 5.0 worker-h funds Relational-Symbolic first.
+
+**Numbers.** E1 realised 153.657 CPU worker-hours (#132 compute.json); R = 36.343 worker-h.
+
+**Choice.** Relational-Symbolic's native-task fidelity run (template 3_02_01, band frozen in a3/fidelity-band.json) is funded; an A3 smoke of the first 50 episodes re-checks the projection, and Relational-Image follows only if the remainder after Symbolic's realised cost still covers its projection with the same 25 % margin.
+
+**Reason.** The frozen rule, applied as posted; no NovPhy result enters it.

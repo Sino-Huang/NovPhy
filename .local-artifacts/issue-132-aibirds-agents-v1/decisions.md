@@ -71,3 +71,52 @@
 **Reason.** Validity, under the decision priority:
 - The agents act natively. The decision state and the jar protocol are exactly what Phy-Q ran them on.
 - The verdict channel, the build and the executor are the ones behind the #102 rows the native-action table sits next to.
+
+## Decision P-engine (2026-10-25): E1 smoke result, attempts per agent and the N1 projection against the 190 worker-hour allowance
+
+**Trigger.** Rule P-engine: the 20-level smoke measures determinism and per-execution cost, and its projection is decided before any N1 execution. The smoke design, the engine path and the determinism rule were frozen in the P-engine decision of 2026-10-24 (issuecomment-6382714673). The smoke used fit levels only; no evaluation-split content was read.
+
+**Smoke (`.local-artifacts/issue-132-aibirds-agents-v1/smoke/smoke.json`).**
+- **Coverage:** 20 fit levels × 3 agents × 2 resets = 120 stage-A attempts, all complete with a shot (0 polar, 0 typed failures). 99 distinct (level, shot) stage-B executions on the #104 player, all complete.
+- **Transfer:** every stage-B execution received exactly the agent's wire release point (120/120, the game's own `DragDetails`). The slingshot anchor was noise-free in 120/120 attempts.
+- **Verdict agreement:** stage-A native level status and stage-B `pig_removed` agree in 120/120 attempts. For orientation only (fit levels, not a result): Datalab passed 0.175, Eagle's Wing 0.125, PigShooter 0.15.
+- **Determinism** (an agent is deterministic iff both resets give the identical wire shot on every compared level):
+
+  | Agent | Levels compared | Identical shot after reset | Verdict | Attempts per N1 level |
+  | --- | --- | --- | --- | --- |
+  | Datalab | 20 | 10 | varies | 3 (pass@1 and pass@3) |
+  | Eagle's Wing | 20 | 0 | varies | 3 |
+  | PigShooter | 20 | 11 | varies (unseeded `random` in target and trajectory choice) | 3 |
+
+- **Engine seconds per execution** (8 workers, host load 40–77):
+  - Stage A (agent chooses, stock engine): Datalab 28.8 s, Eagle's Wing 25.7 s, PigShooter 51.3 s.
+  - Stage B (#102 executor, #104 player): 178.4 s per distinct execution.
+  - Sharing: identical shots on a level share one stage-B execution (#102 rule, frozen 2026-10-24). In the smoke this gave 0.825 executions per attempt (99/120).
+
+**Projection for N1** (400 levels × 3 agents × 3 attempts = 3,600 attempts):
+
+| | Datalab | Eagle's Wing | PigShooter | Total |
+| --- | --- | --- | --- | --- |
+| With the smoke's sharing rate (0.825) | 58.6 h | 57.6 h | 66.1 h | **182.4 worker-h** |
+| Upper bound, no sharing | 69.1 h | 68.0 h | 76.6 h | 213.6 worker-h |
+
+#132 has already spent **6.19 worker-h**: the smoke plus the pre-smoke single-level probes, counted against the shared allowance. Projected E1 total: 188.6 of 190 worker-h, leaving about **1.4 worker-h** for A3. With three attempts per level instead of the smoke's two, more shots repeat, so sharing is expected to be a little higher [INFERENCE].
+
+**Options considered.**
+- (a) Run pass@1 only for every agent. Rejected: the frozen rule gives agents whose shots vary three attempts.
+- (b) Take the verdict from stage A to save the stage-B cost. Rejected: the verdict channel was frozen on 2026-10-24, and the native-action rows must use the #102 verdict channel.
+- (c) Run the frozen protocol with an ordering that keeps any shortfall unbiased and a hard stop at the allowance.
+
+**Choice: (c).**
+- **Order:** attempt 1 for every level and agent first, then attempt 2, then attempt 3. Within each attempt, levels follow a fixed pseudo-random order (sha256 of `132:<level>`), in chunks of 20 levels.
+- **Stop rule:** a chunk starts only if the engine worker-hours spent so far, plus that chunk's projected cost, stay within 190. Otherwise the run stops, typed `engine_budget`.
+- **If the stop fires:** pass@1 is complete for every agent, and pass@3 is reported on the completed random subset of levels, with the subset disclosed.
+- **Engine window:** engine processes run only 07:05–17:30 Melbourne (owner rule, 2026-10-25). The runner starts an attempt only if its worst case finishes inside the window, and exits 75 to resume the next day.
+- **Workers:** at most 8.
+- **Frozen inputs:** written to `n1/run-plan.json` before the first N1 execution.
+- **Pass:** stage-B `pig_removed`. Missing or polar shots and typed engine failures count as not passed and are never retried.
+- **Reporting:** the results go in the separately labelled native-action table next to #102's rows. They feed no disposition and no program claim.
+
+**Consequence for A3** (decided on #128): the projected remainder (about 1.4 worker-h) is below A3's native-task fidelity projection (about 4 worker-h per variant). A3's fidelity therefore runs only if E1's realised cost leaves enough; otherwise A3 stays tokens-only, typed `engine_budget`.
+
+**Reason.** This applies the frozen P-engine rule (varying agents get three attempts) without weakening the agents and without changing the verdict channel. The attempt-major, randomised order means a budget stop can only shrink the pass@3 sample, not bias it.

@@ -1,0 +1,339 @@
+{
+  "agents": {
+    "datalab": {
+      "attempts_counted": 973,
+      "attempts_per_level": 3,
+      "label": "Datalab",
+      "levels": {
+        "pass1": 400,
+        "pass3": 400
+      },
+      "native_vs_stage_b_agreement": 1.0,
+      "outcomes": {
+        "failed": 272,
+        "passed": 123,
+        "typed_failure": 5
+      },
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.23,
+          0.3175
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.2725,
+        "units": 400
+      },
+      "pass2": {
+        "clusters": 400,
+        "interval": [
+          0.25,
+          0.34
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.295,
+        "units": 400
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.2625,
+          0.3525
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.3075,
+        "units": 400
+      },
+      "shots_to_pass_mean": 1.1544715447154472,
+      "typed_failures": {
+        "no_shot": 5,
+        "stage_b_failed": 0
+      }
+    },
+    "eaglewing": {
+      "attempts_counted": 1084,
+      "attempts_per_level": 3,
+      "label": "Eagle's Wing",
+      "levels": {
+        "pass1": 400,
+        "pass3": 400
+      },
+      "native_vs_stage_b_agreement": 1.0,
+      "outcomes": {
+        "failed": 299,
+        "passed": 93,
+        "typed_failure": 8
+      },
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.08,
+          0.1425
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.11,
+        "units": 400
+      },
+      "pass2": {
+        "clusters": 400,
+        "interval": [
+          0.1425,
+          0.2175
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.18,
+        "units": 400
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.1925,
+          0.275
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.2325,
+        "units": 400
+      },
+      "shots_to_pass_mean": 1.7526881720430108,
+      "typed_failures": {
+        "no_shot": 8,
+        "stage_b_failed": 0
+      }
+    },
+    "pigshooter": {
+      "attempts_counted": 1080,
+      "attempts_per_level": 3,
+      "label": "PigShooter",
+      "levels": {
+        "pass1": 400,
+        "pass3": 400
+      },
+      "native_vs_stage_b_agreement": 1.0,
+      "outcomes": {
+        "failed": 308,
+        "passed": 87,
+        "typed_failure": 5
+      },
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.09,
+          0.1525
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.12,
+        "units": 400
+      },
+      "pass2": {
+        "clusters": 400,
+        "interval": [
+          0.1425,
+          0.2175
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.18,
+        "units": 400
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.1775,
+          0.2575
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.2175,
+        "units": 400
+      },
+      "shots_to_pass_mean": 1.6206896551724137,
+      "typed_failures": {
+        "no_shot": 5,
+        "stage_b_failed": 0
+      }
+    }
+  },
+  "allowance_stop": null,
+  "allowance_worker_hours": 190.0,
+  "attempts_per_level": {
+    "datalab": 3,
+    "eaglewing": 3,
+    "pigshooter": 3
+  },
+  "attempts_planned": 3600,
+  "attempts_recorded": 3600,
+  "bootstrap": "level-clustered percentile bootstrap, 10000 draws, PCG64 7201 (p94.bootstrap, as #102), DESCRIPTIVE",
+  "decisions": {
+    "a3_p_engine": "https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6388391126",
+    "p_engine_path": "https://github.com/Sino-Huang/NovPhy/issues/132#issuecomment-6382714673",
+    "p_engine_projection": "https://github.com/Sino-Huang/NovPhy/issues/132#issuecomment-6388390880",
+    "p_license": "https://github.com/Sino-Huang/NovPhy/issues/132#issuecomment-6382271495"
+  },
+  "engine_worker_hours": 153.657,
+  "identity": "issue-132-aibirds-agents-v1",
+  "issue": 132,
+  "issue_102_n1": {
+    "C* (C-F-15)": {
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.12583333333333332,
+          0.17166666666666663
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.14833333333333334,
+        "units": 1200
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.42666666666666664,
+          0.505
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.46583333333333327,
+        "units": 1200
+      }
+    },
+    "J (J-1e-04)": {
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.09833333333333333,
+          0.15
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.12333333333333332,
+        "units": 1200
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.3516666666666666,
+          0.4383333333333333
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.39416666666666667,
+        "units": 1200
+      }
+    },
+    "J_dec (J-dec-1e-01)": {
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.11749999999999998,
+          0.16166666666666665
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.13916666666666666,
+        "units": 1200
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.4025,
+          0.4875
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.445,
+        "units": 1200
+      }
+    },
+    "U (F-15-macro)": {
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.13083333333333333,
+          0.17166666666666663
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.15083333333333335,
+        "units": 1200
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.38416666666666666,
+          0.465
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.42416666666666664,
+        "units": 1200
+      }
+    },
+    "oracle": {
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.7325,
+          0.815
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.775,
+        "units": 1200
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.7325,
+          0.815
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.775,
+        "units": 1200
+      }
+    },
+    "prior": {
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.1075,
+          0.175
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.14,
+        "units": 1200
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.2775,
+          0.37
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.3225,
+        "units": 1200
+      }
+    },
+    "random": {
+      "pass1": {
+        "clusters": 400,
+        "interval": [
+          0.05333333333333333,
+          0.08166666666666667
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.0675,
+        "units": 1200
+      },
+      "pass3": {
+        "clusters": 400,
+        "interval": [
+          0.17166666666666663,
+          0.2225
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.1975,
+        "units": 1200
+      }
+    }
+  },
+  "issue_102_summary_sha256": "sha256:f4e7d882b9a844e934eb9c5efdbfc9e47f5b71c737728f2cb74fb580cacc8061",
+  "label": "native-action, DESCRIPTIVE: the agents choose continuous shots on the #102 N1 levels; not the grid protocol; no disposition, no program claim",
+  "level_order_sha256": "add19983f90260a4175802865bd9d22f234301db547f9396248194b97fb79fc1",
+  "levels": 400,
+  "pass_definition": "#102 episode rule (run_closed_loop_evaluation.episodes / episode_view): attempt k is the agent's k-th reset to the level start; the episode ends at the first pass or the first typed failure (no transferable shot, or a stage-B execution that did not complete), so attempts after a typed failure are not counted; pass@k = 1 iff the episode passed within its first k attempts. Unlike #102, an attempt cannot exclude earlier failed launches (the agent chooses afresh after every reset). One cell per level (no model seeds). An agent the smoke found deterministic gets one attempt per level (a reset replays the same shot), so its pass@3 is not run (null) and pass@1 is its only row.",
+  "records_manifest_sha256": "sha256:9eada796325e37b3c17e2597db0980c74e746f8fda45d495c63a625aacfb32db",
+  "run_plan_sha256": "sha256:ad5d89e1912feabebed5a3442fbe10be1c2ec89cc86748e9ca83f58ebba85b03",
+  "schema": "issue_132_e1_summary_v1",
+  "set": "N1",
+  "verdict_channel": "stage B: the agent's recorded wire shot, as a slingshot-relative drag, executed once on the frozen #104 player by the #102 executor (capture_pipeline_v2.run_campaign); pass = capture_pipeline_v2.branch_outcome pig_removed (#85 channel), as every #102 row"
+}
