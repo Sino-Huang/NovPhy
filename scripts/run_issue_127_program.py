@@ -40,7 +40,7 @@ SCHEMA_SUMMARY = "issue_127_program_summary_v1"
 SCHEMA_VALIDATION = "issue_127_program_validation_v1"
 IDENTITY = "issue-127-program-v1"
 # child issue -> artefact slug and kind ("grid": an eb child summary; "native_action": the E1 table). Later #127
-# children (Tier C, coverage, follow-up) are added here; JOB_ID already admits job ids 128-* .. 139-*.
+# children (Tier C, coverage, follow-up) are added here; JOB_ID admits job ids 128-* .. 149-*.
 CHILDREN = {
     128: {"slug": "direct-predictors", "kind": "grid", "label": "A (A1, A2, A3, A4)"},
     129: {"slug": "slotformer", "kind": "grid", "label": "B1 SlotFormer-E99"},
@@ -54,8 +54,9 @@ CHILDREN = {
     137: {"slug": "diamond", "kind": "grid", "label": "T5 DIAMOND (coverage)"},
     138: {"slug": "vjepa2-ac", "kind": "grid", "label": "T6 V-JEPA 2-AC (coverage)"},
     139: {"slug": "deepphy", "kind": "grid", "label": "T7 DeepPHY (coverage)"},
+    140: {"slug": "u-native", "kind": "grid", "label": "U-native (budget-safeguard control)"},
 }
-JOB_ID = re.compile(r"^1(2[89]|3[0-9])-")
+JOB_ID = re.compile(r"^1(2[89]|3[0-9]|4[0-9])-")
 WORLD_MODEL_ARMS = ("B1", "C1-dino", "C1-car", "D1")
 REFERENCE_RANKERS = ("U", "C*", "P", "J", "J_dec")
 ISSUE_102_ROWS = {"random": "random", "prior": "prior", "U (F-15-macro)": "F-15-macro", "C* (C-F-15)": "C-F-15",
