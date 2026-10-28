@@ -67,6 +67,9 @@ DECISIONS = {
     "route": "https://github.com/Sino-Huang/NovPhy/issues/139#issuecomment-6437058547",
     "adapter": "https://github.com/Sino-Huang/NovPhy/issues/139#issuecomment-6437241396",
     "fid": "https://github.com/Sino-Huang/NovPhy/issues/139#issuecomment-6437344622",
+    "adapter_addendum": "https://github.com/Sino-Huang/NovPhy/issues/139#issuecomment-6437519414",
+    "fid_repair_1": "https://github.com/Sino-Huang/NovPhy/issues/139#issuecomment-6450386391",
+    "fid_drop": "https://github.com/Sino-Huang/NovPhy/issues/139#issuecomment-6463275977",
 }
 
 CONFIGS = dn.CONFIGS  # declaration order (Decision P-adapter)
@@ -996,17 +999,28 @@ def publish_not_run(output, reason):
                                       if f"projection_{t}" in full],
                       "remainder_gpu_h": REMAINDER_GPU_HOURS}
     marker = eb.read_json(output / "not-run.json") if (output / "not-run.json").is_file() else None
+    attempts = {}
+    for path in sorted((output / "fidelity").glob("gfid-attempt*.json")) + [gfid_path]:
+        if path.is_file():
+            rec = eb.read_json(path)
+            attempts[str(rec.get("repair_attempt", 0))] = {
+                "record": rel(path), "sha256": eb.sha256_of(path), "pass": rec.get("pass"),
+                "success_within_10_pct": rec.get("success_within_10_pct"), "band_pct": rec.get("band_pct")}
+    _, gpu_s, wall_s = eb.ledger_totals(output, training_report_of(output))
     summary = eb.child_summary(ISSUE, IDENTITY, None, {}, {}, {}, gfid_block, {
         "pending_arms": {ARM: reason}, "coverage_arm": True, "G_port": gport_pass(output), "projection": projection,
+        "gfid_attempts": attempts, "gpu_seconds_used": gpu_s, "wall_seconds_used": wall_s,
         "not_run_marker": marker, "decisions": DECISIONS})
     eb.write_json(output / "summary.json", summary)
     proj = "" if projection is None else (
         f" Projection ({projection['primary']}): {projection['total_gpu_h']:.1f} GPU-h against a remainder of "
         f"{REMAINDER_GPU_HOURS:.0f} GPU-h.")
+    fid = "; ".join(f"attempt {k}: {v['success_within_10_pct']:.1f} % (band [{v['band_pct'][0]:.2f}, {v['band_pct'][1]:.2f}])"
+                    for k, v in attempts.items())
     (output / "findings.md").write_text(
         f"# #{ISSUE} T7 DeepPHY-VLM (coverage arm): not run\n\nTyped reason: `{reason}`.{proj} G-port "
-        f"{gport_pass(output)}; G-fid {gfid_pass(output)}. No records; T7 is listed as not run in the program "
-        f"summary.\n")
+        f"{gport_pass(output)}; G-fid {gfid_pass(output)} ({fid or 'not run'}). GPU used {gpu_s / 3600:.2f} GPU-h. "
+        f"No records; T7 is listed as not run in the program summary.\n")
     log(f"published not-run summary ({reason})")
     return 0
 

@@ -7,26 +7,26 @@
  "band_sha256": "sha256:ad5bfb652c1ba6151dc52ddff5944e8d5a0fb81067456e958c55784bfaf53c30",
  "complete": true,
  "curve_pct": [
-  0.5,
+  0.4,
   1.0,
   2.0,
-  2.2,
-  3.3,
-  3.8,
-  4.6,
+  2.3,
+  3.2,
+  3.6,
+  3.9,
   4.9,
   5.4,
-  6.0
+  6.1
  ],
  "diagnostics": {
-  "attempts": 9723,
+  "attempts": 9733,
   "empty_responses": 0,
   "invalid_format": 0,
-  "invalid_input": 3190,
+  "invalid_input": 3159,
   "note": "descriptive; an empty response is what the official get_qwen_model_response returns after 3 failed calls (e.g. CUDA OOM) and would be a diagnosed environment defect under P-fid"
  },
  "issue": 139,
- "kind": "runs",
+ "kind": "runs-r1",
  "paper": {
   "mock_reference_pct": 7.64,
   "quantity": "PHYRE success rate (%) within 10 attempts, Qwen2.5-VL-7B-Instruct, prompt format VLA",
@@ -38,39 +38,43 @@
  "per_setup": {
   "ball_cross_template": {
    "curve_pct": [
-    0.4,
-    0.8,
-    1.6,
+    0.2,
+    1.0,
     1.8,
-    3.0,
-    3.4,
-    4.0,
-    4.4,
+    2.2,
+    2.8,
+    3.2,
+    3.6,
     5.0,
-    5.2
+    5.4,
+    5.8
    ],
-   "summary_sha256": "sha256:08e459fbd109ea02c16735c4d761b4df04ebcbec4bc1b7df20461d13c1ecc285",
+   "summary_sha256": "sha256:c0accffc039b735972fc2eef738c804f10b537af6b420213ed6231c97f54c376",
    "tasks": 500
   },
   "ball_within_template": {
    "curve_pct": [
     0.6,
-    1.2,
+    1.0,
+    2.2,
     2.4,
-    2.6,
     3.6,
+    4.0,
     4.2,
-    5.2,
+    4.8,
     5.4,
-    5.8,
-    6.8
+    6.4
    ],
-   "summary_sha256": "sha256:e1c839cff421152ef9bf59673cd2d93753992946742aed3224cc4cafb0e4f22f",
+   "summary_sha256": "sha256:f00f3130835292dec57e11e24e4dec099d055187a81e6fcfb0d6f943c42dbe0e",
    "tasks": 500
   }
  },
+ "previous_attempts": {
+  "gfid-attempt0.json": "sha256:acdf3fa278423a43fc1acf35adf18904c6960f79f4885b350bf1d1c6eee2db72"
+ },
+ "repair_attempt": 1,
  "schema": "issue_127_gfid_v1",
- "success_within_10_pct": 6.0,
+ "success_within_10_pct": 6.1,
  "tasks": 1000,
- "written_at": "2026-10-27T18:30:25Z"
+ "written_at": "2026-10-28T07:15:20Z"
 }
