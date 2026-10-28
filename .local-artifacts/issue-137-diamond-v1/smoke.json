@@ -1,0 +1,197 @@
+{
+  "accounting": {
+    "episode_frames": 49,
+    "episode_frames_total": 682031,
+    "fit_anchors": 480,
+    "fit_levels": 480,
+    "fit_positive": 838,
+    "fit_shots": 13919,
+    "fit_shots_expected": 13919,
+    "launch5_abs_max": 1.0,
+    "policy_grid_mixed_cells": 94,
+    "readout_fit_frames": 220887,
+    "shots_ending_before_225": 601
+  },
+  "device": "cuda",
+  "gate": {
+    "fidelity/gfid.json": true,
+    "funded.json": true,
+    "gport/gport.json": true,
+    "pass": true,
+    "readiness/readiness.json": true
+  },
+  "gport": {
+    "adapter_current": true,
+    "pass": true
+  },
+  "pass": true,
+  "plan_identity": "issue-137-diamond-v1",
+  "projection": {
+    "child_cap_gpu_h": 136.0,
+    "native_per_seed_gpu_h": 8.82352400940235,
+    "readouts_gpu_h": 3.0522111042260076,
+    "score_gpu_h": 9.395918155343825,
+    "selection_gpu_h": 37.070863196578316,
+    "total_gpu_h": 67.16604047495285,
+    "training_gpu_h": 17.6470480188047,
+    "training_queue_loads_h": [
+      8.82352400940235,
+      8.82352400940235,
+      0.0,
+      0.0
+    ],
+    "training_queues": {
+      "0": [
+        "T5--seed20260909"
+      ],
+      "1": [
+        "T5--seed20260910"
+      ],
+      "2": [],
+      "3": []
+    },
+    "wall_cap_h": 48.0,
+    "wall_h_on_4_gpus": 19.236845866154844,
+    "within_caps": true
+  },
+  "readiness": {
+    "arm": "T5",
+    "ceiling_auc": 0.6782538383602212,
+    "consequence": "T5 Phase 0 continues",
+    "data": {
+      "ceiling": "policy split: eb.policy_cells('grid') mixed cells; anchor frame 0; true endpoint min(225, end) from the #123 policy pixel store, 64 x 64",
+      "evaluation": "not read",
+      "readout_fit": "fit split only: every fit shot at 0, 15, ..., 225 (clamped), 64 x 64 frames, E99 targets"
+    },
+    "decision": "https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6426541110",
+    "e99_true_carrier_ceiling_auc": 0.7222624892837659,
+    "pass": true,
+    "policy_candidates": 1504,
+    "policy_grid_cells": 94,
+    "readout": {
+      "artifact": ".local-artifacts/issue-137-diamond-v1/readiness/readout.pt",
+      "batch": 128,
+      "device": "cpu",
+      "dim": 256,
+      "epochs": 25,
+      "final_loss": 0.05103594437241554,
+      "fit_frames": 220887,
+      "fit_seconds": 4496.2397077609785,
+      "fit_shots": 13919,
+      "heads": 8,
+      "hidden": 512,
+      "lr": 0.001,
+      "patch": 8,
+      "samples": 220887,
+      "seed": 20260908,
+      "sha256": "sha256:7c6d6bbb82071aa3e0d11f524fc643a12548795207aa4f3c2555c7d7fbeb0b70",
+      "steps": 43125,
+      "weight_decay": 0.0001
+    },
+    "readout_error_vs_e99_on_policy_endpoints": {
+      "carrier_mae": 0.015729708597064018,
+      "pig_center_mae": 0.021051783114671707,
+      "pig_presence_mae": 0.0012273486936464906
+    },
+    "schema": "issue_137_readiness_v1",
+    "scoring_policy": {
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false
+    },
+    "seconds": 4497.61587896524,
+    "threshold": 0.65,
+    "typed_reason": null,
+    "written_at": "2026-10-26T21:51:54Z"
+  },
+  "schema": "issue_137_smoke_v1",
+  "selected": "native",
+  "selection": {
+    "configs": {
+      "ar4": {
+        "ar_steps": 4,
+        "batch": 32,
+        "updates": 409600
+      },
+      "native": {
+        "ar_steps": 1,
+        "batch": 32,
+        "updates": 409600
+      },
+      "native-2x": {
+        "ar_steps": 1,
+        "batch": 32,
+        "updates": 819200
+      }
+    },
+    "details": {
+      "ar4": {
+        "cells": 94,
+        "model_sha256": "sha256:33688d14059ef88e2224161a820adfaeee1949b873b0a8634a5e4924a8849db1",
+        "typed_failure": null
+      },
+      "native": {
+        "cells": 94,
+        "model_sha256": "sha256:1468021a4cc435ee34140da39f9806027b31182ef49cd2388ea28b6ed0a4b5c2",
+        "typed_failure": null
+      },
+      "native-2x": {
+        "cells": 94,
+        "model_sha256": "sha256:4b98ac6806687ae2b80bd6c475cd4cf3adce81be8b41e21319284c9cd1216237",
+        "typed_failure": null
+      }
+    },
+    "plan_identity": "issue-137-diamond-v1",
+    "policy_cells": 94,
+    "results": {
+      "ar4": {
+        "auc": 0.680178863689502,
+        "parameters": 4406019
+      },
+      "native": {
+        "auc": 0.6863124464188295,
+        "parameters": 4406019
+      },
+      "native-2x": {
+        "auc": 0.6523283454134517,
+        "parameters": 4406019
+      }
+    },
+    "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+    "schema": "issue_137_selection_v1",
+    "scoring_policy": {
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false
+    },
+    "selected": "native",
+    "written_at": "2026-10-28T10:25:12Z"
+  },
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES= python -m pytest -q tests/test_issue_137_diamond.py",
+    "exit_code": 0,
+    "tail": [
+      "21 passed, 2 warnings in 343.68s (0:05:43)"
+    ]
+  },
+  "throughput": {
+    "ar4": {
+      "gpu_seconds": 55440.21550092567,
+      "seconds_per_step": 0.13535208862530682,
+      "steps": 409600
+    },
+    "native": {
+      "gpu_seconds": 31764.68643384846,
+      "seconds_per_step": 0.07755050398888784,
+      "steps": 409600
+    },
+    "native-2x": {
+      "gpu_seconds": 46250.20557290781,
+      "seconds_per_step": 0.05645777047474098,
+      "steps": 819200
+    }
+  },
+  "written_at": "2026-10-28T10:31:08Z"
+}

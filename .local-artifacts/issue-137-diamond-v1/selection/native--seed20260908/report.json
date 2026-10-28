@@ -1,0 +1,88 @@
+{
+  "complete": true,
+  "device": "cuda",
+  "final": {
+    "grad_norm": 0.056072670966386795,
+    "loss": 6.183706864248961e-05,
+    "lr": 0.0001,
+    "step": 409600
+  },
+  "finished_at": "2026-10-27T16:11:34Z",
+  "gpu_seconds": 31764.68643384846,
+  "model_sha256": "sha256:1468021a4cc435ee34140da39f9806027b31182ef49cd2388ea28b6ed0a4b5c2",
+  "parameters": 4406019,
+  "peak_gib": 5.074075698852539,
+  "precision": {
+    "cudnn_allow_tf32": true,
+    "device": "cuda",
+    "dtype": "float32",
+    "flags": "TF32 matmul / cuDNN on CUDA as upstream (Trainer sets torch.backends.cuda.matmul.allow_tf32 = True); no autocast",
+    "matmul_allow_tf32": true
+  },
+  "seconds_per_step": 0.07755050398888784,
+  "seed": 20260908,
+  "spec": {
+    "agent": {
+      "inner_model": {
+        "attn_depths": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "channels": [
+          64,
+          64,
+          64,
+          64
+        ],
+        "cond_channels": 256,
+        "depths": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "img_channels": 3,
+        "num_steps_conditioning": 4
+      },
+      "sigma_data": 0.5,
+      "sigma_offset_noise": 0.3
+    },
+    "batch": 32,
+    "name": "native",
+    "optimizer": {
+      "eps": 1e-08,
+      "lr": 0.0001,
+      "weight_decay": 0.01
+    },
+    "sampler": {
+      "num_steps_denoising": 3,
+      "order": 1,
+      "rho": 7,
+      "s_churn": 0.0,
+      "s_noise": 1.0,
+      "s_tmax": Infinity,
+      "s_tmin": 0.0,
+      "sigma_max": 5.0,
+      "sigma_min": 0.002
+    },
+    "sigma_distribution": {
+      "loc": -0.4,
+      "scale": 1.2,
+      "sigma_max": 20.0,
+      "sigma_min": 0.002
+    },
+    "training": {
+      "batch_size": 32,
+      "lr_warmup_steps": 100,
+      "max_grad_norm": 1.0,
+      "num_autoregressive_steps": 1
+    },
+    "updates": 409600
+  },
+  "steps": 409600,
+  "steps_done": 409600,
+  "typed_failure": null,
+  "wall_seconds": 31764.68643384846
+}

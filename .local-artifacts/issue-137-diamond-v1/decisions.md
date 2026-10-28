@@ -153,3 +153,19 @@ All three have 4 406 019 parameters. **Selected: `native`** (the Atari 100k reci
 **Smoke** (`smoke.json`, pass): accounting (13 919 fit shots, 480 fit anchors, 94 policy cells, 220 887 readout frames), G-port record current (adapter sha unchanged), G-fid / readiness / funding gates pass, CPU tests 21 passed. Projection of what is left at the measured rates: two seeds 17.6 GPU-h (8.8 each), readouts 3.1, scoring + novelty 9.4 → **child total 67.2 GPU-h** (37.6 already in the ledger incl. timing and selection readouts) against the funded 80.3 GPU-h and the 136 GPU-h cap; serial wall 19.2 h on 4 GPUs (cap 48 h). Next: the orchestrator's `--prepare` freeze, then phase B (`scripts/gpu_window_issue_137_main.json`).
 
 Posted: https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6466769084
+
+## Decision P-freeze (2026-10-28): #137 frozen — T5 selected `native`
+
+**Selection** (issuecomment-6466769084; frozen rule: largest policy-split pooled grid AUC at 4 d.p.; ties → fewer parameters → declaration order), seed 20260908, 94 policy cells, deterministic scoring:
+
+| configuration | policy grid AUC | parameters |
+| --- | --- | --- |
+| **native (selected)** — the Atari-100k recipe unchanged | **0.6863** | 4 406 019 |
+| ar4 | 0.6802 | 4 406 019 |
+| native-2x | 0.6523 | 4 406 019 |
+
+The selected run is reused as seed 20260908; seeds 20260909 and 20260910 train `native`.
+
+**Smoke** (`smoke.json`, pass): accounting (13 919 fit shots, 480 fit anchors, 94 policy cells, 220 887 readout frames), G-port current, funding / G-port / G-fid / readiness gates pass, 21 CPU tests. Projection of the rest at measured rates: two seeds 17.6 GPU-h, readouts 3.1, scoring + novelty 9.4 → child total 67.2 GPU-h (funded 80.3; cap 136); wall 19.2 h.
+
+**Frozen plan**: `plan.json` sha256 `178b1d4044dfa9f3d027bd01a2c5b9af33ffc8c9aa7899097ed6790e85ac5024`, 147 pins, frozen_at 2026-10-28T10:36:53Z. Training queues: q0 T5 s20260909 (GPU 0), q1 T5 s20260910 (GPU 1); readouts, freeze-readouts, one scoring pass (GPU 0), novelty, publish + validate chained (`scripts/gpu_window_issue_137_main.json`).

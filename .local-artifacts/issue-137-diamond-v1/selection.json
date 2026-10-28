@@ -1,0 +1,62 @@
+{
+  "configs": {
+    "ar4": {
+      "ar_steps": 4,
+      "batch": 32,
+      "updates": 409600
+    },
+    "native": {
+      "ar_steps": 1,
+      "batch": 32,
+      "updates": 409600
+    },
+    "native-2x": {
+      "ar_steps": 1,
+      "batch": 32,
+      "updates": 819200
+    }
+  },
+  "details": {
+    "ar4": {
+      "cells": 94,
+      "model_sha256": "sha256:33688d14059ef88e2224161a820adfaeee1949b873b0a8634a5e4924a8849db1",
+      "typed_failure": null
+    },
+    "native": {
+      "cells": 94,
+      "model_sha256": "sha256:1468021a4cc435ee34140da39f9806027b31182ef49cd2388ea28b6ed0a4b5c2",
+      "typed_failure": null
+    },
+    "native-2x": {
+      "cells": 94,
+      "model_sha256": "sha256:4b98ac6806687ae2b80bd6c475cd4cf3adce81be8b41e21319284c9cd1216237",
+      "typed_failure": null
+    }
+  },
+  "plan_identity": "issue-137-diamond-v1",
+  "policy_cells": 94,
+  "results": {
+    "ar4": {
+      "auc": 0.680178863689502,
+      "parameters": 4406019
+    },
+    "native": {
+      "auc": 0.6863124464188295,
+      "parameters": 4406019
+    },
+    "native-2x": {
+      "auc": 0.6523283454134517,
+      "parameters": 4406019
+    }
+  },
+  "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+  "schema": "issue_137_selection_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "selected": "native",
+  "written_at": "2026-10-28T10:25:12Z"
+}
