@@ -125,6 +125,14 @@ def test_budget_safeguard_u_native(tmp_path):
     assert summary["tier_c"]["U-native"]["fires"] and summary["tier_c"]["U-native"]["arms"] == ["A4"]
 
 
+def test_controls_and_follow_up_never_fire_triggers(tmp_path):
+    """U-native trained longer than U fires its own budget safeguard by construction; neither it nor the follow-up arm
+    is a baseline, so neither fires U-native or P-follow-up."""
+    summary, _ = summary_of(tmp_path, overrides={140: {"U-native": block("U-native", "control", disp=1, fires=True)},
+                                                 141: {"F1": block("F1", "follow-up", disp=1)}})
+    assert not summary["tier_c"]["U-native"]["fires"] and not summary["tier_c"]["P-follow-up"]["fires"]
+
+
 def test_c_star_version_derived_from_x_minus_c_star(tmp_path):
     summary, _ = summary_of(tmp_path, overrides={128: {"A1": block("A1", xc=est(0.04, 0.01, 0.07))}})
     assert summary["program_claim"]["U"]["holds"]

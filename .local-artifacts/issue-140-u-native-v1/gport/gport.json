@@ -1,0 +1,67 @@
+{
+  "G_port": true,
+  "G_port_rule": "bitwise_first_updates_same_code_path",
+  "arms": {
+    "U-native": {
+      "checks": {
+        "adamw_state_equal": true,
+        "logged_updates": true,
+        "parameters_equal": true,
+        "per_update_logs_equal": true,
+        "same_train_group_bytecode": true,
+        "skipped_equal": true
+      },
+      "max_abs_delta": {
+        "adamw_state": 0.0,
+        "logs": 0.0,
+        "parameters": 0.0
+      },
+      "pass": true,
+      "seed": 20260908,
+      "tolerance": "bitwise (torch.equal)",
+      "updates": 18
+    }
+  },
+  "issue": 140,
+  "plan_identity": "issue-140-u-native-v1",
+  "rule": "U's B1 retrain code (rt.implementation().train_group) and the U-native implementation run the first 18 updates of seed 20260908 on the retrain's #109 fit payload (CPU, eager: torch.compile is a kernel transformation, not a code-path change); parameters, AdamW state, per-update local loss / gradient norm and skip counts are bitwise equal, and both train_group functions have identical bytecode",
+  "schedule": {
+    "constants": {
+      "long_every": [
+        500,
+        941
+      ],
+      "rank_ramp": [
+        1000,
+        1881
+      ],
+      "rank_start": [
+        1000,
+        1881
+      ]
+    },
+    "first_update_differing_from_U": 500,
+    "horizon_225_fraction": 0.6114359974009097,
+    "horizon_reaches_225_at": 10351,
+    "rank_weight_full_from": 3761,
+    "rank_weight_positive_from": 1881,
+    "u": {
+      "first_update_differing_from_U": null,
+      "horizon_225_fraction": 0.6111111111111112,
+      "horizon_reaches_225_at": 5500,
+      "rank_weight_full_from": 1999,
+      "rank_weight_positive_from": 1000
+    }
+  },
+  "schema": "issue_127_gport_v1",
+  "seconds": 10.23722499422729,
+  "training_data": {
+    "path": ".local-artifacts/issue-112-v3-retrain-v1/data/training-data.pt",
+    "pool_sizes": {
+      "cell": 680,
+      "long": 69595,
+      "window": 220286
+    }
+  },
+  "written_at": "2026-10-28T20:42:22Z"
+}

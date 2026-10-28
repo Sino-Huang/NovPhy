@@ -59,6 +59,7 @@ CHILDREN = {
 }
 JOB_ID = re.compile(r"^1(2[89]|3[0-9]|4[0-9])-")
 WORLD_MODEL_ARMS = ("B1", "C1-dino", "C1-car", "D1")
+NON_BASELINE_ROLES = ("control", "follow-up")  # roles of #140 / #141 arms (published block "role")
 REFERENCE_RANKERS = ("U", "C*", "P", "J", "J_dec")
 ISSUE_102_ROWS = {"random": "random", "prior": "prior", "U (F-15-macro)": "F-15-macro", "C* (C-F-15)": "C-F-15",
                   "J (J-1e-04)": "J-1e-04", "J_dec (J-dec-1e-01)": "J-dec-1e-01", "oracle": "oracle"}
@@ -413,7 +414,9 @@ def child_extra(children, issue, key):
 def tier_c(children):
     """The frozen #127 Tier-C triggers and P-follow-up, evaluated mechanically on the published blocks."""
     blocks = blocks_by_view(children)
-    fired = sorted(v for v, b in blocks.items() if b["budget_safeguard"]["fires"])
+    # controls (U-native) and the follow-up arms are not baselines: they never fire U-native or P-follow-up
+    baselines = {v: b for v, b in blocks.items() if b.get("role") not in NON_BASELINE_ROLES}
+    fired = sorted(v for v, b in baselines.items() if b["budget_safeguard"]["fires"])
     d1 = blocks.get("D1")
     df = None if d1 is None else bool(d1["contrasts"]["X-U"]["token"] == "supported"
                                       or d1["contrasts"]["X-J_dec"]["token"] == "supported")
@@ -425,7 +428,7 @@ def tier_c(children):
     position = None if b1_225 is None or u_225 is None else bool(b1_225 > u_225)
     ddlp = None if readout is None and position is None else bool(readout or position)
     wm_one = sorted(v for v in WORLD_MODEL_ARMS if v in blocks and blocks[v]["disposition"]["disposition"] == 1)
-    any_one = sorted(v for v, b in blocks.items() if b["disposition"]["disposition"] == 1)
+    any_one = sorted(v for v, b in baselines.items() if b["disposition"]["disposition"] == 1)
     return {"U-native": {"fires": bool(fired), "arms": fired,
                          "rule": "any arm's budget safeguard fires (X - U supported and X's training GPU-s > U's)"},
             "Diffusion Forcing / gamma-models": {"fires": df, "rule": "D1 - U or D1 - J_dec supported (published tokens)",

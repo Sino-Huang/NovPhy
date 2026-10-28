@@ -1,0 +1,158 @@
+{
+  "note": "#140 U-native (budget-safeguard control; Decision P-adapter https://github.com/Sino-Huang/NovPhy/issues/140#issuecomment-6479886189). Enqueue only after the orchestrator's --prepare freeze commit (plan.json). U's #112 v3 retrain recipe at 16 929 updates per seed (9 000 x 2435.0/1294.19, whole 9-request cycles), three seeds over GPUs 2/3 (plan queues: GPU 2 = 20260908, 20260910; GPU 3 = 20260909), then readouts, the readouts freeze, one scoring pass on GPU 0 after #137's publish/validate, publish, validate. est_minutes come from U's measured rate: 1 294.19 GPU-s / 9 000 updates = 0.1438 s per update, x 16 929 = 2 434 s (40.6 min) per seed, plus about 5 min per seed for loading the 8.3 GB payload and compiling. Training is resumable: SIGTERM -> train_group progress state after the current update -> exit 75. Training GPU-s: 3 x 0.68 = 2.03 GPU-h; readouts, score and validate together about 0.2 GPU-h.",
+  "jobs": [
+    {
+      "id": "140-train-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 92,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_140_u_native.py",
+        "--train",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "seeds 20260908 then 20260910, 16 929 updates each (2 x ~46 min)"
+    },
+    {
+      "id": "140-train-q3",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 46,
+      "shares_gpu": false,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_140_u_native.py",
+        "--train",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "seed 20260909, 16 929 updates (~46 min)"
+    },
+    {
+      "id": "140-readouts-q3",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": false,
+      "depends_on": [
+        "140-train-q2",
+        "140-train-q3"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_140_u_native.py",
+        "--readouts",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "3 seeds: end-state rule (usable / typed failure), G-rank and G-action on 480 fit anchors x 16 grid launches, policy grid AUC, MACs; readouts.json per seed written last (resumable per seed)"
+    },
+    {
+      "id": "140-freeze-readouts",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 3,
+      "shares_gpu": true,
+      "depends_on": [
+        "140-readouts-q3"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_140_u_native.py",
+        "--freeze-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "id": "140-score",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 20,
+      "shares_gpu": false,
+      "depends_on": [
+        "140-freeze-readouts"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_140_u_native.py",
+        "--score"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "evaluation anchors read here, once. U's Gate-B scoring path (gb.score_record: every mixed cell of 4 inventories + 480 wrong anchors) + position error + wall per decision; Gate-B scored U in 12 s per seed; resumable per record"
+    },
+    {
+      "id": "140-publish",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 10,
+      "shares_gpu": true,
+      "depends_on": [
+        "140-score"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_140_u_native.py",
+        "--publish"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "id": "140-validate",
+      "gpu": 1,
+      "resumable": false,
+      "est_minutes": 15,
+      "shares_gpu": false,
+      "depends_on": [
+        "140-publish"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_140_u_native.py",
+        "--validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "records hash-check, gb.spot_checks re-score of the first usable seed (harness.endpoint_replication), receipt, publication re-derived twice byte for byte"
+    }
+  ]
+}
