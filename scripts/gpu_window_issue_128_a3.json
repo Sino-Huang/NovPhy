@@ -26,7 +26,7 @@
     },
     {
       "id": "128-a3-score",
-      "gpu": 0,
+      "gpu": 3,
       "resumable": true,
       "est_minutes": 30,
       "shares_gpu": false,
@@ -44,13 +44,13 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "0"
+        "CUDA_VISIBLE_DEVICES": "3"
       },
       "note": "#128 single A3 scoring pass (group 'a3'): every A3 arm-seed on every mixed cell of every inventory from its Gate-B anchor; A3-sym reads the evaluation symbolic states once (novphy.symbolic_anchors -> data/anchors-evaluation-symbolic.pt, read_at in G-chronology); resumable per record; deterministic_scoring()"
     },
     {
       "id": "128-a3-score-novelty",
-      "gpu": 0,
+      "gpu": 3,
       "resumable": true,
       "est_minutes": 20,
       "shares_gpu": false,
@@ -68,7 +68,7 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "0"
+        "CUDA_VISIBLE_DEVICES": "3"
       },
       "note": "#128 P-novelty pass for A3 (DESCRIPTIVE; Decision P-novelty issuecomment-6386830623) after A3's own primary pass"
     },
@@ -96,7 +96,7 @@
     },
     {
       "id": "128-a3-validate",
-      "gpu": 0,
+      "gpu": 3,
       "resumable": false,
       "est_minutes": 60,
       "shares_gpu": false,
@@ -112,7 +112,7 @@
       ],
       "cwd": ".",
       "env": {
-        "CUDA_VISIBLE_DEVICES": "0"
+        "CUDA_VISIBLE_DEVICES": "3"
       },
       "note": "#128 validation after the A3 group: hash-checks every record, re-derives the publication byte for byte, spot-check re-score under deterministic_scoring() on GPU 0"
     }

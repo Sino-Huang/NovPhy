@@ -1,0 +1,121 @@
+{
+ "allowance_seconds": 130834.80000000002,
+ "arm": "A3",
+ "band_file": "a3/fidelity-band.json",
+ "band_sha256": "sha256:84b17d0914791dcde3ae54899b0373064bd564c77c7de73f7c53a90eaa99077f",
+ "disclosures": [
+  "one game server per worker and at most 5 game instances at a time (waves of the 10 official workers); Phy-Q runs one jar with 10 instances",
+  "Relational-Image runs the released image pipeline, which stores the normalised image in a uint8 memmap (Decision P-other 2026-10-24 'upstream training defects', defect 2); the NovPhy A3-img training uses the clean transform",
+  "device cpu; torch 2.13 / torchvision 0.28 (b127-phyq) instead of torch 1.8.1",
+  "single run per variant on 20 test tasks; the band covers test sampling noise only",
+  "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1: torch >= 2.6 defaults torch.load to weights_only=True, which rejects the numpy states MemoryDatasetMemmap.update reloads (torch 1.8 loads them); environment only (sym attempt 1 stopped on it after step-0 collection; its engine time counts)",
+  "the released Linux/config.xml caps attempts at 5 per level per game session (attempt_limit_per_level=\"5\"): in step 0 each worker gets 5 shots per training task and the other 5 of RepeatPlay(10) end as 'not valid state' episodes without a transition, as in the released setup"
+ ],
+ "engine_seconds": 22686.509766340256,
+ "issue": 128,
+ "paper": "arXiv 2108.13696 v3 Supp. D Fig_within_template_submission_2_avg_pass_rates.PNG; a3/within-template-digitised.json",
+ "procedure": "released TrainLearningAgent.py within_template run (scripts/b127_phyq_fidelity.py)",
+ "schema": "issue_127_gfid_v1",
+ "statistic": "pass rate on the template's 20 test tasks after one Phy-Q within-template training run (released code)",
+ "template": "3_02_01",
+ "tier": "native-task (P-engine)",
+ "variants": {
+  "Relational-Image": {
+   "attempts": [
+    {
+     "attempt": "img-attempt-1",
+     "engine_seconds": 11068.193619966507,
+     "episodes": 560,
+     "failure": null,
+     "status": "complete",
+     "wall_seconds": 3443.351353406906
+    }
+   ],
+   "band": [
+    0.2802,
+    0.9198
+   ],
+   "level_winning_rate": {
+    "100": 1,
+    "81": 0,
+    "82": 0,
+    "83": 1,
+    "84": 0,
+    "85": 0,
+    "86": 0,
+    "87": 0,
+    "88": 0,
+    "89": 0,
+    "90": 1,
+    "91": 0,
+    "92": 0,
+    "93": 0,
+    "94": 0,
+    "95": 0,
+    "96": 0,
+    "97": 0,
+    "98": 1,
+    "99": 0
+   },
+   "pass": false,
+   "pass_rate": 0.2,
+   "published": 0.6,
+   "solved": 4,
+   "status": "complete",
+   "test_tasks": 20
+  },
+  "Relational-Symbolic": {
+   "attempts": [
+    {
+     "attempt": "sym-attempt-1",
+     "engine_seconds": 3391.193162202835,
+     "episodes": 390,
+     "failure": "UnpicklingError: Weights only load failed. This file can still be loaded, to do so you have two options, \u001b[1mdo those steps only if you trust the source of the checkpoint\u001b[0m. \n\t(1) In PyTorch 2.6, we changed the default value of the `weights_only` argument in `torch.load` from `False` to `True`. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.\n\t(2) Alternatively, to load with `weights_only=True` please check the recommended steps in the following error message.\n\tWeightsUnpickler error: Unsupported global: GLOBAL numpy._core.multiarray._reconstruct was not an allowed global by default. Please use `torch.serialization.add_safe_globals([numpy._core.multiarray._reconstruct])` or the `torch.serialization.safe_globals([numpy._core.multiarray._reconstruct])` context manager to allowlist this global if you trust this class/function.\n\nCheck the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.",
+     "status": "harness_failure",
+     "wall_seconds": 710.0865771770477
+    },
+    {
+     "attempt": "sym-attempt-2",
+     "engine_seconds": 8227.122984170914,
+     "episodes": 560,
+     "failure": null,
+     "status": "complete",
+     "wall_seconds": 2990.6557574272156
+    }
+   ],
+   "band": [
+    0.1738,
+    0.8262
+   ],
+   "level_winning_rate": {
+    "100": 0,
+    "81": 0,
+    "82": 0,
+    "83": 1,
+    "84": 1,
+    "85": 0,
+    "86": 0,
+    "87": 0,
+    "88": 0,
+    "89": 0,
+    "90": 0,
+    "91": 0,
+    "92": 0,
+    "93": 0,
+    "94": 0,
+    "95": 0,
+    "96": 0,
+    "97": 0,
+    "98": 0,
+    "99": 0
+   },
+   "pass": false,
+   "pass_rate": 0.1,
+   "published": 0.5,
+   "solved": 2,
+   "status": "complete",
+   "test_tasks": 20
+  }
+ },
+ "written_at": "2026-10-28T22:06:31+00:00"
+}

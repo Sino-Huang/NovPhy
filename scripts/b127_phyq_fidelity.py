@@ -584,7 +584,8 @@ def run_attempt(variant, concurrency, torch_threads, remaining_s, initial_projec
            "concurrency": concurrency, "torch_threads": torch_threads, "events": str(attempt_dir / "events.jsonl"),
            "attempt_dir": str(attempt_dir)}
     write_json(attempt_dir / "config.json", cfg)
-    env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONUNBUFFERED="1", OMP_NUM_THREADS=str(torch_threads))
+    env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONUNBUFFERED="1", OMP_NUM_THREADS=str(torch_threads),
+               TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD="1")  # torch 1.8 torch.load semantics (MemoryDatasetMemmap.update)
     began = time.time()
     child_proc = subprocess.Popen([str(PHYQ_PYTHON), str(Path(__file__).resolve()), "--child", variant,
                                    str(attempt_dir / "config.json")], cwd=agents_dir, env=env,
@@ -716,7 +717,13 @@ def write_gfid():
                 "memmap (Decision P-other 2026-10-24 'upstream training defects', defect 2); the NovPhy A3-img "
                 "training uses the clean transform",
                 "device cpu; torch 2.13 / torchvision 0.28 (b127-phyq) instead of torch 1.8.1",
-                "single run per variant on 20 test tasks; the band covers test sampling noise only"]}
+                "single run per variant on 20 test tasks; the band covers test sampling noise only",
+                "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1: torch >= 2.6 defaults torch.load to weights_only=True, which "
+                "rejects the numpy states MemoryDatasetMemmap.update reloads (torch 1.8 loads them); environment only "
+                "(sym attempt 1 stopped on it after step-0 collection; its engine time counts)",
+                "the released Linux/config.xml caps attempts at 5 per level per game session "
+                "(attempt_limit_per_level=\"5\"): in step 0 each worker gets 5 shots per training task and the other 5 "
+                "of RepeatPlay(10) end as 'not valid state' episodes without a transition, as in the released setup"]}
     write_json(OUT / "gfid.json", gfid)
     return gfid
 
@@ -813,7 +820,8 @@ def dry(variant, torch_threads):
            "concurrency": 5, "torch_threads": torch_threads, "events": str(attempt_dir / "events.jsonl"),
            "attempt_dir": str(attempt_dir), "dry": True}
     write_json(attempt_dir / "config.json", cfg)
-    env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONUNBUFFERED="1", OMP_NUM_THREADS=str(torch_threads))
+    env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONUNBUFFERED="1", OMP_NUM_THREADS=str(torch_threads),
+               TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD="1")
     code = subprocess.run([str(PHYQ_PYTHON), str(Path(__file__).resolve()), "--child", variant,
                            str(attempt_dir / "config.json")], cwd=agents_dir, env=env,
                           stdout=open(attempt_dir / "child.log", "wb"), stderr=subprocess.STDOUT).returncode

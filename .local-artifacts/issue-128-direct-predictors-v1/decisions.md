@@ -627,3 +627,82 @@ Posted: https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464616983
 **Reason.** This is the released run, as close to unmodified as our host allows. Every difference is process plumbing, chosen so that it cannot change the agent's data or decisions, and it is disclosed.
 
 Posted: https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6464821176
+
+## Decision P-crash (2026-10-29): A3 fidelity, Relational-Symbolic attempt 1 stopped (torch ≥ 2.6 `torch.load` default), relaunched as attempt 2
+
+**What happened.** Attempt 1 started at 07:05 in the daytime window. The 50-episode smoke passed:
+- projection 3.12 worker-h; × 1.25 ≤ the remaining 36.34;
+- boot 23.2 s per game session, 7.5 s per episode.
+
+Step-0 collection then finished (390 shots). The released `MemoryDatasetMemmap.update` failed with `UnpicklingError` on its `torch.load(state_*.pt)`: torch ≥ 2.6 defaults to `weights_only=True`, which refuses the numpy arrays the released code saves. Torch 1.8.1 loads them.
+
+The harness stopped the attempt as `harness_failure`, as designed. Its engine time counts in `ledger/engine-a3-fidelity.json`: **0.942 worker-h**.
+
+**Fix.** The environment variable `TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1` is set for the child process, restoring torch 1.8's `torch.load` semantics. No code is edited (the same environment-only route as the A1 Tier-E run). Verified on attempt 1's saved states: they fail without the variable and load with it.
+
+**Smoke findings on Phy-Q's own build:**
+- **Dev-mode labels confirmed** (repair 1): the first raw ground truth carries the labels `Platform`, `Slingshot`, `Ground` and sprite names (`bird_red_1`, `pig_basic_small_1`, `stone_rect_big_1`, …). The stored official state has an empty channel 11.
+- **Attempt cap:** the released `Linux/config.xml` caps attempts at 5 per level per game session (`attempt_limit_per_level="5"`). Of each step-0 task's `RepeatPlay(10)` episodes, 5 are shots and 5 end immediately as "not valid state" episodes without a transition. That gives 390 step-0 transitions here instead of 400: each worker's first task got 4 shots instead of 5. This is the released setup's behaviour and is kept; it is disclosed in `gfid.json`.
+
+**Choice.** Relaunch Relational-Symbolic from scratch as attempt 2 (the released script cannot resume). Everything else is unchanged, including the frozen band, the protocol and the smoke gate. Attempt 1's result is not used. It produced no test result: it stopped before training.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6479672825
+
+## Decision P-engine (2026-10-29): A3 Relational-Image native-task fidelity — funded
+
+**Trigger.** Rule of the 2026-10-25 / 2026-10-28 P-engine decisions: Relational-Image follows only if the remainder after Relational-Symbolic's realised cost still covers its projection with the 25 % margin.
+
+**Numbers (fidelity/a3/, ledger/engine-a3-fidelity.json).** Relational-Symbolic realised 2.285 worker-h (560 episodes, 170 game sessions, status complete); A3 engine total so far 3.227 worker-h; remainder 33.116 worker-h. Relational-Image projection = Relational-Symbolic's realised run cost (same protocol: 970 episodes, 170 sessions) = 2.285 worker-h; x 1.25 = 2.857.
+
+**Choice.** Relational-Image's run starts now (daytime engine window), with its own 50-episode smoke gate against the remainder.
+
+**Reason.** The frozen rule applied mechanically; no A3 NovPhy result enters it (Relational-Symbolic's band outcome is not used).
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6480740764
+
+## Decision P-fid (2026-10-29): A3 native-task fidelity outcome — Relational-Symbolic 0.10 and Relational-Image 0.20, both outside their frozen bands → A3 tokens only (`fidelity_not_reproduced`)
+
+**Runs.** These are the released `TrainLearningAgent.py` within-template runs on template 3_02_01, in Phy-Q's own game build, under the harness decision (issuecomment-6464821176).
+- **Relational-Symbolic:** attempt 2. Attempt 1 stopped on the torch-load defect and was repaired environment-only (issuecomment-6479672825).
+- **Relational-Image:** attempt 1, funded under the posted rule (issuecomment-6480740764).
+- **Both complete:**
+  - 16 update steps; 560 environment steps each: 390 in step 0 under the released per-level attempt cap, then 15 × 10 collection steps, then 20 test steps;
+  - every one of the 20 test tasks was played once, greedily;
+  - no agent-thread error.
+
+**Result** (`fidelity/a3/gfid.json`, sha256 `87d10f80…e90c`; band file sha256 `84b17d09…077f`, frozen 2026-10-25):
+
+| variant | test tasks solved | pass rate | published | frozen band | pass |
+| --- | --- | --- | --- | --- | --- |
+| Relational-Symbolic | 2 / 20 (tasks 83, 84) | **0.10** | 0.50 | [0.174, 0.826] | **no** |
+| Relational-Image | 4 / 20 (83, 90, 98, 100) | **0.20** | 0.60 | [0.280, 0.920] | **no** |
+
+**Engine.** 6.302 worker-h in total (`ledger/engine-a3-fidelity.json`):
+
+| attempt | worker-h |
+| --- | --- |
+| Symbolic attempt 1 | 0.942 |
+| Symbolic attempt 2 | 2.285 |
+| Image attempt 1 | 3.074 |
+
+Shared allowance: E1 153.657 + A3 6.302 = 159.96 of 190 worker-h.
+
+**Diagnosis check (no result-driven change).** Checked before deciding; none of these is a diagnosed port defect:
+- Both test passes played all 20 tasks; no "not valid state" occurred at test.
+- The first ground truth of each run uses Phy-Q's 640 × 480 frame. It is identical between the headless (symbolic) and rendered (image) runs, and the image run's screenshots are [3, 480, 640].
+- The dev-mode `Platform` labels are present, and the stored official states have an empty platform channel.
+- The remaining disclosed differences are:
+  - torch 2.13 on CPU instead of torch 1.8.1 on GPU;
+  - one jar per worker, in waves of 5;
+  - a Mesa llvmpipe display;
+  - the released `attempt_limit_per_level="5"`, which halves step-0 transitions exactly as in the released setup.
+
+  None has a known mechanism that changes the learned policy.
+
+**Choice.**
+- **No re-run.** P-fid allows a repair only for a diagnosed port defect, never for a miss.
+- **Disposition:** A3 (A3-sym and A3-img) is reported with **tokens only, typed `fidelity_not_reproduced`**, as frozen. Its scoring pass still runs once (#127: A3 is reported with or without fidelity); its rows carry this type and enter no disposition.
+
+**Reason.** Both bands were frozen before any engine run, and both single runs fall below them (Symbolic by 1.5 tasks of 20, Image by 1.6). The frozen rule decides, and no NovPhy result was read.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/128#issuecomment-6481885735
