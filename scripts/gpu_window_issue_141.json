@@ -1,0 +1,92 @@
+{
+  "note": "#141 P-follow-up (F1 = frozen U + A2's FiLM classifier; F1-D no-rollout control), phase A: the six selection runs (seed 20260908; lr 3e-4, 1e-4, 1e-3 in declaration order; 9 000 updates x 64, A2's recipe), the policy-split selection readouts and the smoke. GPU 2 = F1 (first caches U seed 20260908's fit / policy endpoints, ~10 s), GPU 3 = F1-D. Every job is small (< 1 GB GPU memory; the classifier has 1.86 M parameters) and shares its GPU. est_minutes from a CPU micro-benchmark (17.8 ms/update on 4 CPU threads; #128 measured A2 at 48-63 GPU-s per 9 000 updates, i.e. ~6 ms/update) plus process start-up. Preconditions: strata/cut-points.json written (2026-10-29, Decision issuecomment-6480033291) and the orchestrator's commit of the pre-freeze implementation. Decisions: issuecomment-6480032792, -6480033291, -6480065190 on #141.",
+  "jobs": [
+    {
+      "id": "141-select-f1",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--selection",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "F1 x 3 learning rates at seed 20260908 (resumable: SIGTERM -> resume.pt -> exit 75); writes features/U-seed20260908.pt first"
+    },
+    {
+      "id": "141-select-f1d",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--selection",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "F1-D x 3 learning rates at seed 20260908 (same initialisation and batch stream as F1 per configuration)"
+    },
+    {
+      "id": "141-selection-readouts",
+      "gpu": 2,
+      "resumable": false,
+      "est_minutes": 10,
+      "shares_gpu": true,
+      "depends_on": [
+        "141-select-f1",
+        "141-select-f1d"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--selection-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "pooled grid AUC on the 94 policy grid mixed cells per run; eb.select_configuration per arm; selection.json"
+    },
+    {
+      "id": "141-smoke",
+      "gpu": 2,
+      "resumable": false,
+      "est_minutes": 20,
+      "shares_gpu": true,
+      "depends_on": [
+        "141-selection-readouts"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--smoke"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "accounting; U seeds 20260909/10 feature files; U identity + replication vs #129 (G-action calibration, U+head policy AUC); alignment; classifier-only; pairing; CPU tests; throughput; projection vs the 60 GPU-h reserve; smoke.json"
+    }
+  ]
+}

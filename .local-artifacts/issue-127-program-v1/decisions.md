@@ -122,3 +122,7 @@ Per rule P-follow-up (fired: A1, A2, A2-native, A4 at disposition 1; issuecommen
 - Primary contrast F1 − U; secondary F1 − F1-D, F1 − A1, F1 − A2, F1 − U+head; NN references, distance-stratified diagnostics and #110 novelty scoring pre-declared as memorisation safeguards; declared scope: a native-success-readout follow-up on #129's U+head route (G-action inherited and reported, no new program-level claim).
 
 **Funding:** P-budget item 6, after #140 U-native (item 2); reserve ≤ 60 GPU-h, decided by its measured smoke projection against the remainder (195.8 GPU-h at 07:10 today, minus #137's scoring and #128's A3 group).
+
+## Decision P-budget (2026-10-29): #141 P-follow-up funded (item 6)
+
+#141's implementation is complete on CPU (decisions on #141: issuecomment-6480032792, -6480033291, -6480065190). Its CPU-based projection is **≈ 1.4 GPU-h** (phase A 0.3–0.5; phase B ≤ 3 at full estimates) against the ≤ 60 GPU-h reserve declared in the pre-registration; P-budget item 2 (#140 U-native, ≈ 2.2 GPU-h) is frozen and queued first. Remainder ≈ 190 GPU-h (195.83 at 07:10 minus #137's scoring, #128's A3 group and #140). **Funded.** Its measured smoke projection is checked against the reserve before the freeze; phase A (selection of F1 and F1-D, three learning rates each) runs tonight on GPUs 2–3, scoring later on GPU 1 after #140.

@@ -1,0 +1,207 @@
+{
+  "note": "#141 P-follow-up, phase B: main seeds 20260909/10 of F1 (GPU 2) and F1-D (GPU 3) at the selected learning rate, readouts (G-rank, policy AUC, MACs, inherited G-action), the readout freeze (CPU), the one scoring pass on GPU 0 (exclusive; after 137-publish-validate and 140-score), the #110 novelty pass (descriptive), publish (CPU) and validate. PREPARED, NOT ENQUEUED: enqueue only after a passing smoke.json and the orchestrator's --prepare freeze commit. est_minutes: CPU micro-benchmark scaled to the GPU plus start-up; scoring rolls U (15 transitions, 2.1e7 MACs per candidate) and the classifier over every mixed cell of the four inventories for 3 seeds x 2 arms.",
+  "jobs": [
+    {
+      "id": "141-train-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--train",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "F1 seeds 20260909, 20260910 (plan queue 2)"
+    },
+    {
+      "id": "141-train-q3",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": true,
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--train",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "F1-D seeds 20260909, 20260910 (plan queue 3)"
+    },
+    {
+      "id": "141-readouts-q2",
+      "gpu": 2,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": true,
+      "depends_on": [
+        "141-train-q2",
+        "141-train-q3"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--readouts",
+        "--gpu",
+        "2"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "2",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "F1 x 3 seeds; readouts.json per arm-seed written last (re-runs skip finished ones)"
+    },
+    {
+      "id": "141-readouts-q3",
+      "gpu": 3,
+      "resumable": true,
+      "est_minutes": 15,
+      "shares_gpu": true,
+      "depends_on": [
+        "141-train-q2",
+        "141-train-q3"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--readouts",
+        "--gpu",
+        "3"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "3",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "F1-D x 3 seeds"
+    },
+    {
+      "id": "141-freeze-readouts",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 5,
+      "shares_gpu": true,
+      "depends_on": [
+        "141-readouts-q2",
+        "141-readouts-q3"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--freeze-readouts"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "id": "141-score",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 45,
+      "shares_gpu": false,
+      "depends_on": [
+        "141-freeze-readouts",
+        "140-validate"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--score"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "once; eb.read_evaluation_anchors; strata distances; per seed: U endpoints, replication vs the Gate-B U record, F1 and F1-D records (resumable per record)"
+    },
+    {
+      "id": "141-score-novelty",
+      "gpu": 1,
+      "resumable": true,
+      "est_minutes": 40,
+      "shares_gpu": false,
+      "depends_on": [
+        "141-score"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--score-novelty"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "F1 / F1-D (guard-passing) and #129's frozen U+head on the mixed #110 novelty levels; NN-px / NN-car exact-launch rule; descriptive"
+    },
+    {
+      "id": "141-publish",
+      "gpu": null,
+      "resumable": false,
+      "est_minutes": 30,
+      "shares_gpu": true,
+      "depends_on": [
+        "141-score-novelty"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--publish"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "OMP_NUM_THREADS": "4"
+      }
+    },
+    {
+      "id": "141-validate",
+      "gpu": 1,
+      "resumable": false,
+      "est_minutes": 40,
+      "shares_gpu": false,
+      "depends_on": [
+        "141-publish"
+      ],
+      "command": [
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python",
+        "-u",
+        "scripts/run_issue_141_p_follow_up.py",
+        "--validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "hash-checks records, re-derives every published byte, re-scores F1 seed 20260908 (relative 1e-4), binds the receipt, re-publishes"
+    }
+  ]
+}
