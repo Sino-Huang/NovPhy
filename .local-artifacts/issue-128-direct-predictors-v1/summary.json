@@ -636,6 +636,430 @@
       },
       "view": "A2-native"
     },
+    "A3-img": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 4.09417534426299,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 5298.6312935967
+      },
+      "compute": {
+        "macs_per_candidate": 45219360.0,
+        "trainable_parameters": 11633920,
+        "training_gpu_seconds": {
+          "20260908": 6451.627875644248,
+          "20260909": 4482.02928407304,
+          "20260910": 4962.236721072812
+        },
+        "wall_per_decision": 0.0037381895817816257
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.18703556067904942,
+              0.2203598714611576
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.20360538889477797,
+            "units": 933
+          },
+          "first": "A3-img",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "C*",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.22265293187519877,
+              0.25996912407885076
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.24099963095139945,
+            "units": 933
+          },
+          "first": "A3-img",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "J_dec",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.24280964257250431,
+              0.29050553769203286
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.26667883741838727,
+            "units": 933
+          },
+          "first": "A3-img",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "P",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.22441083746549986,
+              0.26102568273991106
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.24257122834293252,
+            "units": 933
+          },
+          "first": "A3-img",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "U",
+          "token": "readiness_or_precision_insufficient"
+        }
+      },
+      "disposition": {
+        "disposition": 4,
+        "guards_pass": false,
+        "label": "per-contrast tokens only",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            0.22441083746549986,
+            0.26102568273991106
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.24257122834293252,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_fid": false,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": false,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": false,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "neg_score",
+      "program_set": false,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.9813664392502818,
+            0.99178202870727
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.986977001205297,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.9840945107946716,
+              0.994809753483387
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.990058949624866,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.9784655871995102,
+              0.9927620711282287
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9863806343709881,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.9761398080750974,
+              0.9917639983275031
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.984491419620037,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.00015835312747426763,
+        "top1_hits": 871,
+        "top1_rate": 0.9335476956055734,
+        "typed_failures": 0
+      },
+      "role": "secondary",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "A3-img"
+    },
+    "A3-sym": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 0.585086681720136,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 757.2119756847
+      },
+      "compute": {
+        "macs_per_candidate": 53686560.0,
+        "trainable_parameters": 11662208,
+        "training_gpu_seconds": {
+          "20260908": 742.4260259210132,
+          "20260909": 792.0166615629569,
+          "20260910": 737.1932395701297
+        },
+        "wall_per_decision": 0.001738034188747406
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.1678795311512353,
+              0.20518789334102835
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.1865847889159786,
+            "units": 933
+          },
+          "first": "A3-sym",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "C*",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.20363963140289504,
+              0.24446853075470437
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.22397903097260005,
+            "units": 933
+          },
+          "first": "A3-sym",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "J_dec",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.2250230041930203,
+              0.27390329748850645
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.24965823743958795,
+            "units": 933
+          },
+          "first": "A3-sym",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "P",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.20567162428496832,
+              0.24545872691973974
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.22555062836413314,
+            "units": 933
+          },
+          "first": "A3-sym",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "U",
+          "token": "readiness_or_precision_insufficient"
+        }
+      },
+      "disposition": {
+        "disposition": 4,
+        "guards_pass": false,
+        "label": "per-contrast tokens only",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            0.20567162428496832,
+            0.24545872691973974
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.22555062836413314,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_fid": false,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": false,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": false,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "neg_score",
+      "program_set": false,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.9596758335001906,
+            0.97907066740869
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.9699564012264977,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.9547880301638338,
+              0.9801294786403307
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9682428771657068,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.9576239502726641,
+              0.9842865461173338
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9723116379868793,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.9565956149959365,
+              0.9804052271415615
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9693146885269074,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.00015835312747426763,
+        "top1_hits": 854,
+        "top1_rate": 0.9153269024651661,
+        "typed_failures": 0
+      },
+      "role": "secondary",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "A3-sym"
+    },
     "A4": {
       "budget_safeguard": {
         "fires": true,
@@ -849,12 +1273,9 @@
       "view": "A4"
     }
   },
-  "engine_seconds": 0,
+  "engine_seconds": 22686.509766340256,
   "extra": {
-    "pending_arms": {
-      "A3-img": "ready",
-      "A3-sym": "ready"
-    },
+    "pending_arms": {},
     "selection": {
       "A1": {
         "complete": true,
@@ -912,6 +1333,44 @@
         },
         "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
         "selected": "tenth"
+      },
+      "A3-img": {
+        "complete": true,
+        "results": {
+          "native-code": {
+            "auc": 0.9907548125633232,
+            "parameters": 11633920
+          },
+          "native-paper": {
+            "auc": 0.9952127659574469,
+            "parameters": 11633920
+          },
+          "native-template": {
+            "auc": 0.9925278622087134,
+            "parameters": 11633920
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "native-paper"
+      },
+      "A3-sym": {
+        "complete": true,
+        "results": {
+          "native-code": {
+            "auc": 0.9872340425531916,
+            "parameters": 11662208
+          },
+          "native-paper": {
+            "auc": 0.9684397163120567,
+            "parameters": 11662208
+          },
+          "native-template": {
+            "auc": 0.9879510560361624,
+            "parameters": 11662208
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "native-template"
       },
       "A4": null
     },
@@ -981,6 +1440,16 @@
       "pass": true,
       "source": "fidelity/gfid.json"
     },
+    "A3-img": {
+      "inherited_from": null,
+      "pass": false,
+      "source": "fidelity/a3/gfid.json"
+    },
+    "A3-sym": {
+      "inherited_from": null,
+      "pass": false,
+      "source": "fidelity/a3/gfid.json"
+    },
     "A4": {
       "inherited_from": null,
       "pass": true,
@@ -1006,6 +1475,16 @@
           "pass": true,
           "readouts_frozen_at": "2026-10-28T15:50:27Z"
         },
+        "A3-img": {
+          "first_record_scored_at": "2026-10-29T07:40:37Z",
+          "pass": true,
+          "readouts_frozen_at": "2026-10-29T07:00:27Z"
+        },
+        "A3-sym": {
+          "first_record_scored_at": "2026-10-29T07:40:29Z",
+          "pass": true,
+          "readouts_frozen_at": "2026-10-29T07:00:27Z"
+        },
         "A4": {
           "first_record_scored_at": "2026-10-28T15:57:06Z",
           "pass": true,
@@ -1023,7 +1502,7 @@
       "bound_to_current_records": true,
       "pass": true,
       "receipt": "validation.json",
-      "records_manifest_sha256": "sha256:9379563061b4670da03c359e853c0a11b555c3869fa999174403c314e7075c09",
+      "records_manifest_sha256": "sha256:29af62ae8442ece6a1c439764b1036748f1f11094f41e6da6442647e7eec3f25",
       "spot_check": {
         "arm": "A2",
         "cells": 311,

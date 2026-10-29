@@ -1,4 +1,20 @@
 {
+  "engine": {
+    "engine_hours": 6.301808268427849,
+    "engine_seconds": 22686.509766340256,
+    "files": [
+      {
+        "artifact": ".local-artifacts/issue-128-direct-predictors-v1/ledger/engine-a3-fidelity.json",
+        "engine_seconds": 22686.509766340256
+      }
+    ],
+    "per_arm": {
+      "A3-img": 11068.193619966507,
+      "A3-sym": 11618.316146373749
+    },
+    "rule": "engine worker-seconds (game-server lifetimes, CPU) of ledger/engine-*.json; not GPU time",
+    "unattributed_engine_seconds": 0.0
+  },
   "frozen_at": "2026-10-25T09:26:24Z",
   "identity": "issue-128-direct-predictors-v1",
   "inventories": {
@@ -160,6 +176,110 @@
           "tied_pair_share": 0.0,
           "top1_hits": 203,
           "top1_rate": 0.8675213675213675,
+          "typed_failures": 0
+        },
+        "A3-img": {
+          "auc": {
+            "clusters": 78,
+            "interval": [
+              0.9704415954415956,
+              0.993945868945869
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9836182336182335,
+            "units": 234
+          },
+          "cells": 234,
+          "chance_top1": 0.0788954635108481,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 78,
+              "interval": [
+                0.980769230769231,
+                0.9978632478632478
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9903846153846154,
+              "units": 78
+            },
+            "20260909": {
+              "clusters": 78,
+              "interval": [
+                0.9529914529914532,
+                0.9946581196581198
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9786324786324787,
+              "units": 78
+            },
+            "20260910": {
+              "clusters": 78,
+              "interval": [
+                0.9540598290598291,
+                0.997863247863248
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9818376068376068,
+              "units": 78
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.0,
+          "top1_hits": 214,
+          "top1_rate": 0.9145299145299145,
+          "typed_failures": 0
+        },
+        "A3-sym": {
+          "auc": {
+            "clusters": 78,
+            "interval": [
+              0.9433760683760684,
+              0.988960113960114
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9693732193732192,
+            "units": 234
+          },
+          "cells": 234,
+          "chance_top1": 0.0788954635108481,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 78,
+              "interval": [
+                0.9305555555555555,
+                0.9893162393162392
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9636752136752137,
+              "units": 78
+            },
+            "20260909": {
+              "clusters": 78,
+              "interval": [
+                0.9423076923076925,
+                0.997863247863248
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9754273504273505,
+              "units": 78
+            },
+            "20260910": {
+              "clusters": 78,
+              "interval": [
+                0.9433760683760684,
+                0.9893162393162394
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9690170940170939,
+              "units": 78
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.0,
+          "top1_hits": 208,
+          "top1_rate": 0.8888888888888888,
           "typed_failures": 0
         },
         "A4": {
@@ -709,6 +829,110 @@
           "top1_rate": 0.7909967845659164,
           "typed_failures": 0
         },
+        "A3-img": {
+          "auc": {
+            "clusters": 311,
+            "interval": [
+              0.9813664392502818,
+              0.99178202870727
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.986977001205297,
+            "units": 933
+          },
+          "cells": 933,
+          "chance_top1": 0.08902733118971061,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 311,
+              "interval": [
+                0.9840945107946716,
+                0.994809753483387
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.990058949624866,
+              "units": 311
+            },
+            "20260909": {
+              "clusters": 311,
+              "interval": [
+                0.9784655871995102,
+                0.9927620711282287
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9863806343709881,
+              "units": 311
+            },
+            "20260910": {
+              "clusters": 311,
+              "interval": [
+                0.9761398080750974,
+                0.9917639983275031
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.984491419620037,
+              "units": 311
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.00015835312747426763,
+          "top1_hits": 871,
+          "top1_rate": 0.9335476956055734,
+          "typed_failures": 0
+        },
+        "A3-sym": {
+          "auc": {
+            "clusters": 311,
+            "interval": [
+              0.9596758335001906,
+              0.97907066740869
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9699564012264977,
+            "units": 933
+          },
+          "cells": 933,
+          "chance_top1": 0.08902733118971061,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 311,
+              "interval": [
+                0.9547880301638338,
+                0.9801294786403307
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9682428771657068,
+              "units": 311
+            },
+            "20260909": {
+              "clusters": 311,
+              "interval": [
+                0.9576239502726641,
+                0.9842865461173338
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9723116379868793,
+              "units": 311
+            },
+            "20260910": {
+              "clusters": 311,
+              "interval": [
+                0.9565956149959365,
+                0.9804052271415615
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9693146885269074,
+              "units": 311
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.00015835312747426763,
+          "top1_hits": 854,
+          "top1_rate": 0.9153269024651661,
+          "typed_failures": 0
+        },
         "A4": {
           "auc": {
             "clusters": 311,
@@ -1256,6 +1480,110 @@
           "top1_rate": 0.7807017543859649,
           "typed_failures": 0
         },
+        "A3-img": {
+          "auc": {
+            "clusters": 76,
+            "interval": [
+              0.5378167641325536,
+              0.6575536062378168
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.596588693957115,
+            "units": 228
+          },
+          "cells": 228,
+          "chance_top1": 0.09210526315789473,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 76,
+              "interval": [
+                0.5308479532163743,
+                0.6834795321637428
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.6081871345029239,
+              "units": 76
+            },
+            "20260909": {
+              "clusters": 76,
+              "interval": [
+                0.5652046783625732,
+                0.7349415204678362
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.6494152046783626,
+              "units": 76
+            },
+            "20260910": {
+              "clusters": 76,
+              "interval": [
+                0.4394736842105264,
+                0.6250000000000001
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.5321637426900585,
+              "units": 76
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.0,
+          "top1_hits": 76,
+          "top1_rate": 0.3333333333333333,
+          "typed_failures": 0
+        },
+        "A3-sym": {
+          "auc": {
+            "clusters": 76,
+            "interval": [
+              0.5374756335282651,
+              0.6701754385964911
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.6032651072124755,
+            "units": 228
+          },
+          "cells": 228,
+          "chance_top1": 0.09210526315789473,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 76,
+              "interval": [
+                0.5842105263157895,
+                0.7298245614035088
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.6583333333333333,
+              "units": 76
+            },
+            "20260909": {
+              "clusters": 76,
+              "interval": [
+                0.44633771929824556,
+                0.6118421052631579
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.5279239766081872,
+              "units": 76
+            },
+            "20260910": {
+              "clusters": 76,
+              "interval": [
+                0.5445906432748538,
+                0.702485380116959
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.6235380116959064,
+              "units": 76
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.0,
+          "top1_hits": 70,
+          "top1_rate": 0.30701754385964913,
+          "typed_failures": 0
+        },
         "A4": {
           "auc": {
             "clusters": 76,
@@ -1731,6 +2059,110 @@
           "top1_rate": 0.3971631205673759,
           "typed_failures": 0
         },
+        "A3-img": {
+          "auc": {
+            "clusters": 47,
+            "interval": [
+              0.5783871987889345,
+              0.6419580274563476
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.6117228650823276,
+            "units": 141
+          },
+          "cells": 141,
+          "chance_top1": 0.05425531914893616,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 47,
+              "interval": [
+                0.6120707353490108,
+                0.7791791091203184
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.6971195719795944,
+              "units": 47
+            },
+            "20260909": {
+              "clusters": 47,
+              "interval": [
+                0.43803658081373653,
+                0.5866648002986189
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.5112604205549335,
+              "units": 47
+            },
+            "20260910": {
+              "clusters": 47,
+              "interval": [
+                0.5329398407365933,
+                0.7151028057732983
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.6267886027124548,
+              "units": 47
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.01768990634755463,
+          "top1_hits": 10,
+          "top1_rate": 0.07092198581560284,
+          "typed_failures": 0
+        },
+        "A3-sym": {
+          "auc": {
+            "clusters": 47,
+            "interval": [
+              0.3577306519845713,
+              0.40788462734851316
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.3807805565924267,
+            "units": 141
+          },
+          "cells": 141,
+          "chance_top1": 0.05425531914893616,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 47,
+              "interval": [
+                0.2491274729376633,
+                0.38220107005101406
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.3128654970760234,
+              "units": 47
+            },
+            "20260909": {
+              "clusters": 47,
+              "interval": [
+                0.2821932935174816,
+                0.483580627099664
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.3817344780390693,
+              "units": 47
+            },
+            "20260910": {
+              "clusters": 47,
+              "interval": [
+                0.35419932810750276,
+                0.5425570797561278
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.44774169466218755,
+              "units": 47
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.01768990634755463,
+          "top1_hits": 0,
+          "top1_rate": 0.0,
+          "typed_failures": 0
+        },
         "A4": {
           "auc": {
             "clusters": 47,
@@ -2052,8 +2484,30 @@
       "A1_tier_e": 0.23891922619607714,
       "A4_tier_t": null
     },
-    "gpu_seconds": 90401.3558117142,
+    "gpu_seconds": 90418.22020149883,
     "phases": {
+      "engine-a3-fidelity": {
+        "allowance_seconds": 130834.80000000002,
+        "attempts": {
+          "img-attempt-1": {
+            "engine_seconds": 11068.193619966507,
+            "wall_seconds": 3443.351353406906
+          },
+          "sym-attempt-1": {
+            "engine_seconds": 3391.193162202835,
+            "wall_seconds": 710.0865771770477
+          },
+          "sym-attempt-2": {
+            "engine_seconds": 8227.122984170914,
+            "wall_seconds": 2990.6557574272156
+          }
+        },
+        "engine_seconds": 22686.509766340256,
+        "gpu_seconds": 0.0,
+        "last_at": "2026-10-28T22:06:31+00:00",
+        "note": "A3 native-task fidelity engine worker-seconds (game-server lifetimes), CPU only; shared 190 CPU worker-h allowance with E1 (#132 realised 153.657 h)",
+        "wall_seconds": 7144.093688011169
+      },
       "readouts-A1-seed20260909": {
         "gpu_seconds": 4.010177564807236,
         "last_at": "2026-10-25T10:55:40Z",
@@ -2158,6 +2612,36 @@
         "gpu_seconds": 3.43431304814294,
         "last_at": "2026-10-28T15:56:47Z",
         "wall_seconds": 3.4343121172860265
+      },
+      "score-A3-img-seed20260908": {
+        "gpu_seconds": 3.6790686207823455,
+        "last_at": "2026-10-29T07:40:37Z",
+        "wall_seconds": 3.6790670286864042
+      },
+      "score-A3-img-seed20260909": {
+        "gpu_seconds": 4.085195945110172,
+        "last_at": "2026-10-29T07:40:41Z",
+        "wall_seconds": 4.08519496396184
+      },
+      "score-A3-img-seed20260910": {
+        "gpu_seconds": 3.274164219852537,
+        "last_at": "2026-10-29T07:40:44Z",
+        "wall_seconds": 3.2741632480174303
+      },
+      "score-A3-sym-seed20260908": {
+        "gpu_seconds": 2.0688261189498007,
+        "last_at": "2026-10-29T07:40:29Z",
+        "wall_seconds": 2.0688249366357923
+      },
+      "score-A3-sym-seed20260909": {
+        "gpu_seconds": 1.8455106690526009,
+        "last_at": "2026-10-29T07:40:31Z",
+        "wall_seconds": 1.845509447157383
+      },
+      "score-A3-sym-seed20260910": {
+        "gpu_seconds": 1.9116242108866572,
+        "last_at": "2026-10-29T07:40:33Z",
+        "wall_seconds": 1.911623328924179
       },
       "score-A4-seed20260908": {
         "gpu_seconds": 3.7175243040546775,
@@ -2531,7 +3015,7 @@
       }
     },
     "rule": "each arm-seed's training counted once from its report.json (#123 A3)",
-    "wall_seconds": 90401.35576033173
+    "wall_seconds": 97562.31383129628
   },
   "no_model_references": {
     "estimates": {
@@ -2628,6 +3112,70 @@
           "units": 933
         },
         "first": "A2-native",
+        "members": 311,
+        "second": "NN-px"
+      },
+      "A3-img - NN-car": {
+        "cells": 933,
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.18262330738214982,
+            0.2371534010380473
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.20969174626730896,
+          "units": 933
+        },
+        "first": "A3-img",
+        "members": 311,
+        "second": "NN-car"
+      },
+      "A3-img - NN-px": {
+        "cells": 933,
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.06435137254671017,
+            0.10281418697415481
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.08304192235060402,
+          "units": 933
+        },
+        "first": "A3-img",
+        "members": 311,
+        "second": "NN-px"
+      },
+      "A3-sym - NN-car": {
+        "cells": 933,
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.16613893943676902,
+            0.2199224139115618
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.19267114628850965,
+          "units": 933
+        },
+        "first": "A3-sym",
+        "members": 311,
+        "second": "NN-car"
+      },
+      "A3-sym - NN-px": {
+        "cells": 933,
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.04658053406043759,
+            0.08641307825793357
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.06602132237180468,
+          "units": 933
+        },
+        "first": "A3-sym",
         "members": 311,
         "second": "NN-px"
       },
@@ -2751,7 +3299,20 @@
     },
     "label": "DESCRIPTIVE (P-novelty; no tokens, never in a disposition)",
     "scoring_policy_pass": true,
-    "skipped": {},
+    "skipped": {
+      "A3-img": {
+        "failed_guards": [
+          "G_fid"
+        ],
+        "reason": "guard_failed"
+      },
+      "A3-sym": {
+        "failed_guards": [
+          "G_fid"
+        ],
+        "reason": "guard_failed"
+      }
+    },
     "table": {
       "label": "DESCRIPTIVE (P-novelty; no tokens, never in a disposition)",
       "novelty_levels": [
@@ -5461,6 +6022,430 @@
         },
         "view": "A2-native"
       },
+      "A3-img": {
+        "budget_safeguard": {
+          "fires": false,
+          "ratio": 4.09417534426299,
+          "u_training_gpu_s": 1294.1876808040154,
+          "wording": null,
+          "x_training_gpu_s": 5298.6312935967
+        },
+        "compute": {
+          "macs_per_candidate": 45219360.0,
+          "trainable_parameters": 11633920,
+          "training_gpu_seconds": {
+            "20260908": 6451.627875644248,
+            "20260909": 4482.02928407304,
+            "20260910": 4962.236721072812
+          },
+          "wall_per_decision": 0.0037381895817816257
+        },
+        "contrasts": {
+          "X-C*": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.18703556067904942,
+                0.2203598714611576
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.20360538889477797,
+              "units": 933
+            },
+            "first": "A3-img",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "C*",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "X-J_dec": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.22265293187519877,
+                0.25996912407885076
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.24099963095139945,
+              "units": 933
+            },
+            "first": "A3-img",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "J_dec",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "X-P": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.24280964257250431,
+                0.29050553769203286
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.26667883741838727,
+              "units": 933
+            },
+            "first": "A3-img",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "P",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "X-U": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.22441083746549986,
+                0.26102568273991106
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.24257122834293252,
+              "units": 933
+            },
+            "first": "A3-img",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "disposition": {
+          "disposition": 4,
+          "guards_pass": false,
+          "label": "per-contrast tokens only",
+          "x_minus_u": {
+            "clusters": 311,
+            "interval": [
+              0.22441083746549986,
+              0.26102568273991106
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.24257122834293252,
+            "units": 933
+          }
+        },
+        "dropped": null,
+        "global_guards_pass": true,
+        "guards": {
+          "G_fid": false,
+          "G_nonfinite": true,
+          "G_port": true,
+          "G_rank": true,
+          "G_trained": true,
+          "checks": [
+            "G_rank",
+            "G_nonfinite",
+            "G_trained"
+          ],
+          "nonfinite_share": 0.0,
+          "pass": false,
+          "policy_ceiling_auc": null,
+          "seeds": {
+            "20260908": {
+              "G_action": false,
+              "G_collapse": false,
+              "G_rank": true,
+              "typed_failure": null
+            },
+            "20260909": {
+              "G_action": false,
+              "G_collapse": false,
+              "G_rank": true,
+              "typed_failure": null
+            },
+            "20260910": {
+              "G_action": false,
+              "G_collapse": false,
+              "G_rank": true,
+              "typed_failure": null
+            }
+          }
+        },
+        "guards_pass": false,
+        "nonfinite_share": 0.0,
+        "primary_cost_key": "neg_score",
+        "program_set": false,
+        "ranker": {
+          "auc": {
+            "clusters": 311,
+            "interval": [
+              0.9813664392502818,
+              0.99178202870727
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.986977001205297,
+            "units": 933
+          },
+          "cells": 933,
+          "chance_top1": 0.08902733118971061,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 311,
+              "interval": [
+                0.9840945107946716,
+                0.994809753483387
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.990058949624866,
+              "units": 311
+            },
+            "20260909": {
+              "clusters": 311,
+              "interval": [
+                0.9784655871995102,
+                0.9927620711282287
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9863806343709881,
+              "units": 311
+            },
+            "20260910": {
+              "clusters": 311,
+              "interval": [
+                0.9761398080750974,
+                0.9917639983275031
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.984491419620037,
+              "units": 311
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.00015835312747426763,
+          "top1_hits": 871,
+          "top1_rate": 0.9335476956055734,
+          "typed_failures": 0
+        },
+        "role": "secondary",
+        "typed_failures": {
+          "20260908": null,
+          "20260909": null,
+          "20260910": null
+        },
+        "view": "A3-img"
+      },
+      "A3-sym": {
+        "budget_safeguard": {
+          "fires": false,
+          "ratio": 0.585086681720136,
+          "u_training_gpu_s": 1294.1876808040154,
+          "wording": null,
+          "x_training_gpu_s": 757.2119756847
+        },
+        "compute": {
+          "macs_per_candidate": 53686560.0,
+          "trainable_parameters": 11662208,
+          "training_gpu_seconds": {
+            "20260908": 742.4260259210132,
+            "20260909": 792.0166615629569,
+            "20260910": 737.1932395701297
+          },
+          "wall_per_decision": 0.001738034188747406
+        },
+        "contrasts": {
+          "X-C*": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.1678795311512353,
+                0.20518789334102835
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.1865847889159786,
+              "units": 933
+            },
+            "first": "A3-sym",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "C*",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "X-J_dec": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.20363963140289504,
+                0.24446853075470437
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.22397903097260005,
+              "units": 933
+            },
+            "first": "A3-sym",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "J_dec",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "X-P": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.2250230041930203,
+                0.27390329748850645
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.24965823743958795,
+              "units": 933
+            },
+            "first": "A3-sym",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "P",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "X-U": {
+            "cells": 933,
+            "estimate": {
+              "clusters": 311,
+              "interval": [
+                0.20567162428496832,
+                0.24545872691973974
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.22555062836413314,
+              "units": 933
+            },
+            "first": "A3-sym",
+            "guards_pass": false,
+            "members": 311,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "disposition": {
+          "disposition": 4,
+          "guards_pass": false,
+          "label": "per-contrast tokens only",
+          "x_minus_u": {
+            "clusters": 311,
+            "interval": [
+              0.20567162428496832,
+              0.24545872691973974
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.22555062836413314,
+            "units": 933
+          }
+        },
+        "dropped": null,
+        "global_guards_pass": true,
+        "guards": {
+          "G_fid": false,
+          "G_nonfinite": true,
+          "G_port": true,
+          "G_rank": true,
+          "G_trained": true,
+          "checks": [
+            "G_rank",
+            "G_nonfinite",
+            "G_trained"
+          ],
+          "nonfinite_share": 0.0,
+          "pass": false,
+          "policy_ceiling_auc": null,
+          "seeds": {
+            "20260908": {
+              "G_action": false,
+              "G_collapse": false,
+              "G_rank": true,
+              "typed_failure": null
+            },
+            "20260909": {
+              "G_action": false,
+              "G_collapse": false,
+              "G_rank": true,
+              "typed_failure": null
+            },
+            "20260910": {
+              "G_action": false,
+              "G_collapse": false,
+              "G_rank": true,
+              "typed_failure": null
+            }
+          }
+        },
+        "guards_pass": false,
+        "nonfinite_share": 0.0,
+        "primary_cost_key": "neg_score",
+        "program_set": false,
+        "ranker": {
+          "auc": {
+            "clusters": 311,
+            "interval": [
+              0.9596758335001906,
+              0.97907066740869
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.9699564012264977,
+            "units": 933
+          },
+          "cells": 933,
+          "chance_top1": 0.08902733118971061,
+          "nonfinite_share": 0.0,
+          "per_seed": {
+            "20260908": {
+              "clusters": 311,
+              "interval": [
+                0.9547880301638338,
+                0.9801294786403307
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9682428771657068,
+              "units": 311
+            },
+            "20260909": {
+              "clusters": 311,
+              "interval": [
+                0.9576239502726641,
+                0.9842865461173338
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9723116379868793,
+              "units": 311
+            },
+            "20260910": {
+              "clusters": 311,
+              "interval": [
+                0.9565956149959365,
+                0.9804052271415615
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.9693146885269074,
+              "units": 311
+            }
+          },
+          "tied_cells": 0,
+          "tied_pair_share": 0.00015835312747426763,
+          "top1_hits": 854,
+          "top1_rate": 0.9153269024651661,
+          "typed_failures": 0
+        },
+        "role": "secondary",
+        "typed_failures": {
+          "20260908": null,
+          "20260909": null,
+          "20260910": null
+        },
+        "view": "A3-sym"
+      },
       "A4": {
         "budget_safeguard": {
           "fires": true,
@@ -5674,12 +6659,9 @@
         "view": "A4"
       }
     },
-    "engine_seconds": 0,
+    "engine_seconds": 22686.509766340256,
     "extra": {
-      "pending_arms": {
-        "A3-img": "ready",
-        "A3-sym": "ready"
-      },
+      "pending_arms": {},
       "selection": {
         "A1": {
           "complete": true,
@@ -5737,6 +6719,44 @@
           },
           "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
           "selected": "tenth"
+        },
+        "A3-img": {
+          "complete": true,
+          "results": {
+            "native-code": {
+              "auc": 0.9907548125633232,
+              "parameters": 11633920
+            },
+            "native-paper": {
+              "auc": 0.9952127659574469,
+              "parameters": 11633920
+            },
+            "native-template": {
+              "auc": 0.9925278622087134,
+              "parameters": 11633920
+            }
+          },
+          "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+          "selected": "native-paper"
+        },
+        "A3-sym": {
+          "complete": true,
+          "results": {
+            "native-code": {
+              "auc": 0.9872340425531916,
+              "parameters": 11662208
+            },
+            "native-paper": {
+              "auc": 0.9684397163120567,
+              "parameters": 11662208
+            },
+            "native-template": {
+              "auc": 0.9879510560361624,
+              "parameters": 11662208
+            }
+          },
+          "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+          "selected": "native-template"
         },
         "A4": null
       },
@@ -5806,6 +6826,16 @@
         "pass": true,
         "source": "fidelity/gfid.json"
       },
+      "A3-img": {
+        "inherited_from": null,
+        "pass": false,
+        "source": "fidelity/a3/gfid.json"
+      },
+      "A3-sym": {
+        "inherited_from": null,
+        "pass": false,
+        "source": "fidelity/a3/gfid.json"
+      },
       "A4": {
         "inherited_from": null,
         "pass": true,
@@ -5831,6 +6861,16 @@
             "pass": true,
             "readouts_frozen_at": "2026-10-28T15:50:27Z"
           },
+          "A3-img": {
+            "first_record_scored_at": "2026-10-29T07:40:37Z",
+            "pass": true,
+            "readouts_frozen_at": "2026-10-29T07:00:27Z"
+          },
+          "A3-sym": {
+            "first_record_scored_at": "2026-10-29T07:40:29Z",
+            "pass": true,
+            "readouts_frozen_at": "2026-10-29T07:00:27Z"
+          },
           "A4": {
             "first_record_scored_at": "2026-10-28T15:57:06Z",
             "pass": true,
@@ -5848,7 +6888,7 @@
         "bound_to_current_records": true,
         "pass": true,
         "receipt": "validation.json",
-        "records_manifest_sha256": "sha256:9379563061b4670da03c359e853c0a11b555c3869fa999174403c314e7075c09",
+        "records_manifest_sha256": "sha256:29af62ae8442ece6a1c439764b1036748f1f11094f41e6da6442647e7eec3f25",
         "spot_check": {
           "arm": "A2",
           "cells": 311,

@@ -18,6 +18,8 @@ Plan frozen 2026-10-25T09:26:24Z. Score = success logit (Q for A3); cost = -scor
 | A1 | primary (program set) | 11,309,889 | pass | 0.9946 [0.9917, 0.9971] | +0.2502 [+0.2327, +0.2675] | supported | not_supported_by_this_experiment | 1 |
 | A2 | primary (program set) | 1,838,781 | pass | 0.9757 [0.9692, 0.9815] | +0.2313 [+0.2131, +0.2493] | supported | not_supported_by_this_experiment | 1 |
 | A2-native | secondary | 11,333,771 | pass | 0.9740 [0.9666, 0.9805] | +0.2296 [+0.2114, +0.2474] | supported | not_supported_by_this_experiment | 1 |
+| A3-img | secondary | 11,633,920 | fail (G_fid) | 0.9870 [0.9814, 0.9918] | +0.2426 [+0.2244, +0.2610] | readiness_or_precision_insufficient | readiness_or_precision_insufficient | 4 |
+| A3-sym | secondary | 11,662,208 | fail (G_fid) | 0.9700 [0.9597, 0.9791] | +0.2256 [+0.2057, +0.2455] | readiness_or_precision_insufficient | readiness_or_precision_insufficient | 4 |
 | A4 | primary (program set) | 12,751,957 | pass | 0.9945 [0.9922, 0.9965] | +0.2501 [+0.2327, +0.2674] | supported | not_supported_by_this_experiment | 1 |
 
 ## Within-family contrasts
@@ -43,6 +45,14 @@ Plan frozen 2026-10-25T09:26:24Z. Score = success logit (Q for A3); cost = -scor
 | A2-native | X-C* | +0.1906 [+0.1745, +0.2066] | supported | not_supported_by_this_experiment |
 | A2-native | X-P | +0.2537 [+0.2297, +0.2772] | supported | not_supported_by_this_experiment |
 | A2-native | X-J_dec | +0.2280 [+0.2096, +0.2463] | supported | not_supported_by_this_experiment |
+| A3-img | X-U | +0.2426 [+0.2244, +0.2610] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
+| A3-img | X-C* | +0.2036 [+0.1870, +0.2204] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
+| A3-img | X-P | +0.2667 [+0.2428, +0.2905] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
+| A3-img | X-J_dec | +0.2410 [+0.2227, +0.2600] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
+| A3-sym | X-U | +0.2256 [+0.2057, +0.2455] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
+| A3-sym | X-C* | +0.1866 [+0.1679, +0.2052] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
+| A3-sym | X-P | +0.2497 [+0.2250, +0.2739] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
+| A3-sym | X-J_dec | +0.2240 [+0.2036, +0.2445] | readiness_or_precision_insufficient | readiness_or_precision_insufficient |
 | A4 | X-U | +0.2501 [+0.2327, +0.2674] | supported | not_supported_by_this_experiment |
 | A4 | X-C* | +0.2111 [+0.1954, +0.2267] | supported | not_supported_by_this_experiment |
 | A4 | X-P | +0.2742 [+0.2504, +0.2977] | supported | not_supported_by_this_experiment |
@@ -55,9 +65,11 @@ Plan frozen 2026-10-25T09:26:24Z. Score = success logit (Q for A3); cost = -scor
 | A1 | 11,309,889 | 20260908: 269, 20260909: 487, 20260910: 486 | 805390848 | 0.0043 |
 | A2 | 1,838,781 | 20260908: 48, 20260909: 58, 20260910: 63 | 1426102 | 0.0035 |
 | A2-native | 11,333,771 | 20260908: 54, 20260909: 68, 20260910: 75 | 8742400 | 0.0070 |
+| A3-img | 11,633,920 | 20260908: 6452, 20260909: 4482, 20260910: 4962 | 45219360 | 0.0037 |
+| A3-sym | 11,662,208 | 20260908: 742, 20260909: 792, 20260910: 737 | 53686560 | 0.0017 |
 | A4 | 12,751,957 | 20260908: 2425, 20260909: 2429, 20260910: 2450 | 805390848 | 0.0043 |
 
-Not yet scored: A3-img (ready), A3-sym (ready) (A3 is added by a later scoring pass; nothing above is re-scored).
+Engine time (CPU game-server worker-hours; A3 native-task fidelity): 6.30 h; A3-img 3.07 h; A3-sym 3.23 h.
 
 ## No-model nearest-fit references (DESCRIPTIVE, never in a disposition, no tokens)
 
@@ -73,11 +85,15 @@ Rule: score of a candidate = the engine verdict (1 / 0) of the identical launch 
 | A1 - NN-px | +0.0907 [+0.0719, +0.1105] |
 | A2 - NN-px | +0.0717 [+0.0530, +0.0916] |
 | A2-native - NN-px | +0.0701 [+0.0512, +0.0898] |
+| A3-img - NN-px | +0.0830 [+0.0644, +0.1028] |
+| A3-sym - NN-px | +0.0660 [+0.0466, +0.0864] |
 | A4 - NN-px | +0.0905 [+0.0718, +0.1103] |
 | U - NN-px | -0.1595 [-0.1852, -0.1332] |
 | A1 - NN-car | +0.2174 [+0.1910, +0.2442] |
 | A2 - NN-car | +0.1984 [+0.1735, +0.2237] |
 | A2-native - NN-car | +0.1967 [+0.1719, +0.2219] |
+| A3-img - NN-car | +0.2097 [+0.1826, +0.2372] |
+| A3-sym - NN-car | +0.1927 [+0.1661, +0.2199] |
 | A4 - NN-car | +0.2172 [+0.1908, +0.2441] |
 | U - NN-car | -0.0329 [-0.0638, -0.0012] |
 
@@ -150,3 +166,5 @@ Rule: score of a candidate = the engine verdict (1 / 0) of the identical launch 
 | P | 7 | 0.6052 [0.4324, 0.7748] | 0.6971 [0.6082, 0.7852] | -0.0044 [-0.2681, +0.2255] | 14 |
 | P | 1–7 pooled | 0.6022 [0.5459, 0.6559] | 0.7501 [0.7005, 0.7948] | -0.1012 [-0.1781, -0.0274] | 72 |
 | P | 0 (all normal sides) | n/a | 0.7645 [0.7269, 0.8001] | n/a | n/a |
+
+Not novelty-scored (failed guards): A3-img (G_fid), A3-sym (G_fid)
