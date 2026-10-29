@@ -244,8 +244,10 @@ def run_budget(output=OUTPUT):
 # --decisions: the automatic decision log
 # ---------------------------------------------------------------------------
 
-HEADING = re.compile(r"^##\s+Decision\s+(?P<rule>P-[A-Za-z]+)\s*\((?P<date>\d{4}-\d{2}-\d{2})\)\s*:\s*(?P<title>.+?)\s*$")
-ADDENDUM = re.compile(r"^(?:##\s+)?Addendum to Decision\s+(?P<rule>P-[A-Za-z]+)\s*\(?(?P<date>\d{4}-\d{2}-\d{2})\)?"
+# rule: "P-budget", "P-follow-up" or "P-budget / P-follow-up"; date: "(2026-10-27)" or "(2026-10-27, evening)"
+RULE = r"(?P<rule>P-[A-Za-z][A-Za-z-]*(?:\s*/\s*P-[A-Za-z][A-Za-z-]*)*)"
+HEADING = re.compile(r"^##\s+Decision\s+" + RULE + r"\s*\((?P<date>\d{4}-\d{2}-\d{2})(?:,[^)]*)?\)\s*:\s*(?P<title>.+?)\s*$")
+ADDENDUM = re.compile(r"^(?:##\s+)?Addendum to Decision\s+" + RULE + r"\s*\(?(?P<date>\d{4}-\d{2}-\d{2})\)?"
                       r"\s*(?:\((?P<ref>[^)]*)\))?\s*:\s*(?P<title>.+?)\s*$")
 
 

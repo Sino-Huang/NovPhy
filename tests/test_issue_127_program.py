@@ -248,6 +248,11 @@ def test_projection_mapping(tmp_path):
      {"rule": "P-other", "date": "2026-10-25", "title": "addendum: NN-px rows", "addendum": True,
       "refers_to": "https://github.com/x/issues/128#issuecomment-1"}),
     ("## Decision P-fid (2026-10-24): band [82.8, 87.2]", {"rule": "P-fid", "title": "band [82.8, 87.2]"}),
+    ("## Decision P-follow-up (2026-10-29): follow-up ticket #141 opened",
+     {"rule": "P-follow-up", "date": "2026-10-29", "title": "follow-up ticket #141 opened"}),
+    ("## Decision P-budget / P-follow-up (2026-10-29): #128 published", {"rule": "P-budget / P-follow-up"}),
+    ("## Decision P-coverage (2026-10-27, evening): DIAMOND funded",
+     {"rule": "P-coverage", "date": "2026-10-27", "title": "DIAMOND funded"}),
     ("Decision taken offline", None), ("## Decision Pending (2026-10-25): x", None), ("", None),
 ])
 def test_parse_heading(body, expected):
