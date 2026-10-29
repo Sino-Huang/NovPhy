@@ -1,0 +1,2189 @@
+{
+  "arms": {
+    "U-native": {
+      "budget_safeguard": {
+        "fires": false,
+        "ratio": 1.6537973623138165,
+        "u_training_gpu_s": 1294.1876808040154,
+        "wording": null,
+        "x_training_gpu_s": 2140.324172852716
+      },
+      "compute": {
+        "macs_per_candidate": 20991360.0,
+        "trainable_parameters": 1837690,
+        "training_gpu_seconds": {
+          "20260908": 2189.4174563991837,
+          "20260909": 2203.1215095347725,
+          "20260910": 2028.433552624192
+        },
+        "wall_per_decision": 0.012030893005430698
+      },
+      "contrasts": {
+        "X-C*": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.019688860621336506,
+              0.03950529329548621
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.0298238381839668,
+            "units": 933
+          },
+          "first": "U-native",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "C*",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-J_dec": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.05534998763294583,
+              0.07900406934972852
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.06721808024058827,
+            "units": 933
+          },
+          "first": "U-native",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "J_dec",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-P": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.07110292775284738,
+              0.11447937646490702
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.09289728670757609,
+            "units": 933
+          },
+          "first": "U-native",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "P",
+          "token": "readiness_or_precision_insufficient"
+        },
+        "X-U": {
+          "cells": 933,
+          "estimate": {
+            "clusters": 311,
+            "interval": [
+              0.05791568515443114,
+              0.07952236179326211
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.06878967763212136,
+            "units": 933
+          },
+          "first": "U-native",
+          "guards_pass": false,
+          "members": 311,
+          "reverse_token": "readiness_or_precision_insufficient",
+          "second": "U",
+          "token": "readiness_or_precision_insufficient"
+        }
+      },
+      "disposition": {
+        "disposition": 4,
+        "guards_pass": false,
+        "label": "per-contrast tokens only",
+        "x_minus_u": {
+          "clusters": 311,
+          "interval": [
+            0.05791568515443114,
+            0.07952236179326211
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.06878967763212136,
+          "units": 933
+        }
+      },
+      "dropped": null,
+      "global_guards_pass": true,
+      "guards": {
+        "G_action": false,
+        "G_nonfinite": true,
+        "G_port": true,
+        "G_rank": true,
+        "G_trained": true,
+        "checks": [
+          "G_rank",
+          "G_action",
+          "G_nonfinite",
+          "G_trained"
+        ],
+        "nonfinite_share": 0.0,
+        "pass": false,
+        "policy_ceiling_auc": null,
+        "seeds": {
+          "20260908": {
+            "G_action": false,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260909": {
+            "G_action": true,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          },
+          "20260910": {
+            "G_action": true,
+            "G_collapse": false,
+            "G_rank": true,
+            "typed_failure": null
+          }
+        }
+      },
+      "guards_pass": false,
+      "nonfinite_share": 0.0,
+      "primary_cost_key": "tie_free",
+      "program_set": false,
+      "ranker": {
+        "auc": {
+          "clusters": 311,
+          "interval": [
+            0.7976957626153767,
+            0.8287352773164669
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.8131954504944858,
+          "units": 933
+        },
+        "cells": 933,
+        "chance_top1": 0.08902733118971061,
+        "nonfinite_share": 0.0,
+        "per_seed": {
+          "20260908": {
+            "clusters": 311,
+            "interval": [
+              0.7704391482044215,
+              0.81509463740975
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7927805849027715,
+            "units": 311
+          },
+          "20260909": {
+            "clusters": 311,
+            "interval": [
+              0.7851210499040081,
+              0.8195367507626349
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.8023591628093236,
+            "units": 311
+          },
+          "20260910": {
+            "clusters": 311,
+            "interval": [
+              0.8265967928106192,
+              0.8614423076923076
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.8444466037713627,
+            "units": 311
+          }
+        },
+        "tied_cells": 0,
+        "tied_pair_share": 0.0,
+        "top1_hits": 294,
+        "top1_rate": 0.31511254019292606,
+        "typed_failures": 0
+      },
+      "role": "control",
+      "typed_failures": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "view": "U-native"
+    }
+  },
+  "engine_seconds": 0,
+  "extra": {
+    "decision": "https://github.com/Sino-Huang/NovPhy/issues/140#issuecomment-6479886189",
+    "inventories": {
+      "angle": {
+        "contrasts": {
+          "A4 - U-native": {
+            "cells": 234,
+            "estimate": {
+              "clusters": 78,
+              "interval": [
+                0.1581196581196581,
+                0.18875534188034182
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.1734330484330484,
+              "units": 234
+            },
+            "first": "A4",
+            "guards_pass": false,
+            "members": 78,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U-native",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "U-native - U": {
+            "cells": 234,
+            "estimate": {
+              "clusters": 78,
+              "interval": [
+                0.1225071225071225,
+                0.16773504273504272
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.14458689458689458,
+              "units": 234
+            },
+            "first": "U-native",
+            "guards_pass": false,
+            "members": 78,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "rankers": {
+          "cells": 234,
+          "members": 78,
+          "rankers": {
+            "A4": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.9935897435897436,
+                  0.9996438746438747
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.9971509971509972,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.9925213675213675,
+                    1.0
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.996794871794872,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.9946581196581196,
+                    1.0
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.997863247863248,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.9925213675213675,
+                    1.0
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.996794871794872,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 226,
+              "top1_rate": 0.9658119658119658,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.7422291828541829,
+                  0.7752201502201502
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.759000259000259,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7461052836052835,
+                    0.8188616938616939
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.783022533022533,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.6933760683760684,
+                    0.7601981351981352
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7265928515928516,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7354312354312355,
+                    0.7978826728826728
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7673853923853924,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 24,
+              "top1_rate": 0.10256410256410256,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.7401903651903651,
+                  0.8115473646723647
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7764504014504015,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.5948912198912197,
+                    0.7125097125097125
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6537490287490288,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7542735042735043,
+                    0.8386752136752137
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7970085470085472,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.8493589743589743,
+                    0.9056915306915306
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8785936285936286,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 60,
+              "top1_rate": 0.2564102564102564,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.6826923076923078,
+                  0.7147112147112147
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6988150738150737,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7281468531468531,
+                    0.7933177933177934
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7607808857808858,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7889471639471639,
+                    0.8512067793317792
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.820804195804196,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.4805749805749805,
+                    0.546911421911422
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5148601398601399,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 28,
+              "top1_rate": 0.11965811965811966,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.7777777777777778,
+                  0.8449883449883447
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8118686868686869,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 54,
+              "top1_rate": 0.23076923076923078,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.6663105413105413,
+                  0.6912393162393161
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6791310541310539,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7112470862470862,
+                    0.7763209013209014
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7436868686868686,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.735042735042735,
+                    0.8108974358974358
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7735042735042734,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.49135586635586637,
+                    0.5474941724941724
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.5202020202020202,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 16,
+              "top1_rate": 0.06837606837606838,
+              "typed_failures": 0
+            },
+            "U-native": {
+              "auc": {
+                "clusters": 78,
+                "interval": [
+                  0.8080484330484331,
+                  0.839031339031339
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8237179487179487,
+                "units": 234
+              },
+              "cells": 234,
+              "chance_top1": 0.0788954635108481,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 78,
+                  "interval": [
+                    0.8792735042735043,
+                    0.9252136752136751
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.9027777777777777,
+                  "units": 78
+                },
+                "20260909": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7254249222999222,
+                    0.7840909090909091
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7545648795648795,
+                  "units": 78
+                },
+                "20260910": {
+                  "clusters": 78,
+                  "interval": [
+                    0.7871017871017871,
+                    0.8401345182595185
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8138111888111887,
+                  "units": 78
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 44,
+              "top1_rate": 0.18803418803418803,
+              "typed_failures": 0
+            }
+          }
+        }
+      },
+      "grid": {
+        "rankers": {
+          "cells": 933,
+          "members": 311,
+          "rankers": {
+            "A4": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.9922496554892053,
+                  0.9964961976215994
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.9944801714898177,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.9922291762364109,
+                    0.9967080079620273
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.9945643852396263,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.9919384474046853,
+                    0.9965702036441585
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.9943806461491348,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.9921068749043026,
+                    0.9966697289848415
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.9944954830806921,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 876,
+              "top1_rate": 0.9389067524115756,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7676081871861615,
+                  0.7991644582641367
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7833716123105191,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.8090866930497156,
+                    0.8431429543125686
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8261728089702365,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7127077959553845,
+                    0.7535528190994429
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.733401057677585,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7687825518532915,
+                    0.8120352196035476
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7905409702837356,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 179,
+              "top1_rate": 0.19185423365487675,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.6845815715188706,
+                  0.7267283448955475
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7057212348209133,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6449441715840429,
+                    0.6931389055745969
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6690005064603135,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6787369704250733,
+                    0.72335790549215
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.701211382401093,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7261330430020141,
+                    0.7678043473139936
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7469518156013334,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 149,
+              "top1_rate": 0.15969989281886388,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7277492108641626,
+                  0.7637271160422284
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7459773702538975,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6988952834411034,
+                    0.7416553596457133
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7204598188521019,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7739148057194681,
+                    0.8124289188839029
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7933082458805931,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7035261710422482,
+                    0.7450974641649883
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7241640460289978,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 168,
+              "top1_rate": 0.18006430868167203,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.6964709285890959,
+                  0.7442291129288716
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7202981637869096,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 0,
+              "tied_pair_share": 0.0022169437846397467,
+              "top1_hits": 168,
+              "top1_rate": 0.18006430868167203,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7269181497316545,
+                  0.7620354551664841
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7444057728623645,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.6917169151855648,
+                    0.7361769460443094
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7140619294960131,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7825813133811527,
+                    0.819872295443035
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8010977232842185,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.69611085591793,
+                    0.7404332149629578
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7180576658068619,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 182,
+              "top1_rate": 0.19506966773847803,
+              "typed_failures": 0
+            },
+            "U-native": {
+              "auc": {
+                "clusters": 311,
+                "interval": [
+                  0.7976957626153767,
+                  0.8287352773164669
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8131954504944858,
+                "units": 933
+              },
+              "cells": 933,
+              "chance_top1": 0.08902733118971061,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7704391482044215,
+                    0.81509463740975
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7927805849027715,
+                  "units": 311
+                },
+                "20260909": {
+                  "clusters": 311,
+                  "interval": [
+                    0.7851210499040081,
+                    0.8195367507626349
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8023591628093236,
+                  "units": 311
+                },
+                "20260910": {
+                  "clusters": 311,
+                  "interval": [
+                    0.8265967928106192,
+                    0.8614423076923076
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8444466037713627,
+                  "units": 311
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 294,
+              "top1_rate": 0.31511254019292606,
+              "typed_failures": 0
+            }
+          }
+        }
+      },
+      "offset": {
+        "contrasts": {
+          "A4 - U-native": {
+            "cells": 228,
+            "estimate": {
+              "clusters": 76,
+              "interval": [
+                0.12076023391812862,
+                0.17266081871345026
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.14839181286549705,
+              "units": 228
+            },
+            "first": "A4",
+            "guards_pass": false,
+            "members": 76,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U-native",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "U-native - U": {
+            "cells": 228,
+            "estimate": {
+              "clusters": 76,
+              "interval": [
+                0.1412280701754386,
+                0.1912280701754386
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.1657894736842105,
+              "units": 228
+            },
+            "first": "U-native",
+            "guards_pass": false,
+            "members": 76,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "rankers": {
+          "cells": 228,
+          "members": 76,
+          "rankers": {
+            "A4": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.9596491228070176,
+                  0.994736842105263
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.981140350877193,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.9605263157894737,
+                    0.9947368421052633
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.9815789473684212,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.9513157894736842,
+                    0.994736842105263
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.9776315789473685,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.9657894736842106,
+                    0.9960526315789474
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.9842105263157896,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 204,
+              "top1_rate": 0.8947368421052632,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.7523879142300194,
+                  0.7962475633528264
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7747563352826511,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7532163742690058,
+                    0.8353837719298246
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7953216374269005,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7388888888888888,
+                    0.802046783625731
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7704678362573099,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7184173976608185,
+                    0.7966374269005847
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7584795321637428,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 38,
+              "top1_rate": 0.16666666666666666,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.7039473684210527,
+                  0.7978070175438597
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7521929824561403,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.5657894736842105,
+                    0.7197368421052632
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6434210526315788,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7026315789473683,
+                    0.8039473684210526
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7539473684210527,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.8263157894736841,
+                    0.8907894736842106
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8592105263157896,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 73,
+              "top1_rate": 0.3201754385964912,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.6736842105263159,
+                  0.7062378167641326
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6904483430799221,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7793859649122806,
+                    0.8412280701754385
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8109649122807018,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.797953216374269,
+                    0.8671052631578948
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8334795321637426,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.39532163742690063,
+                    0.456578947368421
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.4269005847953216,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 33,
+              "top1_rate": 0.14473684210526316,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.5,
+                  0.5
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 228,
+              "tied_pair_share": 1.0,
+              "top1_hits": 9,
+              "top1_rate": 0.039473684210526314,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.6502923976608187,
+                  0.6827485380116959
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.6669590643274854,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7548172514619883,
+                    0.8160818713450292
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7858187134502923,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7355226608187133,
+                    0.8216374269005847
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.77953216374269,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.4026315789473684,
+                    0.46842105263157896
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.4355263157894737,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 29,
+              "top1_rate": 0.12719298245614036,
+              "typed_failures": 0
+            },
+            "U-native": {
+              "auc": {
+                "clusters": 76,
+                "interval": [
+                  0.8156432748538012,
+                  0.8491228070175438
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8327485380116958,
+                "units": 228
+              },
+              "cells": 228,
+              "chance_top1": 0.09210526315789473,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 76,
+                  "interval": [
+                    0.8592105263157894,
+                    0.9131578947368424
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8868421052631582,
+                  "units": 76
+                },
+                "20260909": {
+                  "clusters": 76,
+                  "interval": [
+                    0.7368421052631579,
+                    0.8081944444444443
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7725146198830409,
+                  "units": 76
+                },
+                "20260910": {
+                  "clusters": 76,
+                  "interval": [
+                    0.8133040935672515,
+                    0.8638888888888888
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8388888888888889,
+                  "units": 76
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 54,
+              "top1_rate": 0.23684210526315788,
+              "typed_failures": 0
+            }
+          }
+        }
+      },
+      "power": {
+        "contrasts": {
+          "A4 - U-native": {
+            "cells": 141,
+            "estimate": {
+              "clusters": 47,
+              "interval": [
+                0.03811486458462941,
+                0.11084230226867403
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": 0.07284019742026462,
+              "units": 141
+            },
+            "first": "A4",
+            "guards_pass": false,
+            "members": 47,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U-native",
+            "token": "readiness_or_precision_insufficient"
+          },
+          "U-native - U": {
+            "cells": 141,
+            "estimate": {
+              "clusters": 47,
+              "interval": [
+                -0.05993115175645971,
+                -0.006013852598399069
+              ],
+              "label": "DESCRIPTIVE",
+              "mean": -0.03176973165774957,
+              "units": 141
+            },
+            "first": "U-native",
+            "guards_pass": false,
+            "members": 47,
+            "reverse_token": "readiness_or_precision_insufficient",
+            "second": "U",
+            "token": "readiness_or_precision_insufficient"
+          }
+        },
+        "rankers": {
+          "cells": 141,
+          "members": 47,
+          "rankers": {
+            "A4": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.8135283169507693,
+                  0.8802102774667167
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8468230268342251,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7879805897723032,
+                    0.863103459002115
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.825090207788976,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.8444685516983952,
+                    0.9048463356973996
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8751399776035836,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.8048712206047033,
+                    0.8761688129899217
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8402388951101157,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 52,
+              "top1_rate": 0.36879432624113473,
+              "typed_failures": 0
+            },
+            "C*": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7711412840612168,
+                  0.8439718904234583
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8068309070548714,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7794567313674257,
+                    0.8555438907552569
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8172514619883042,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7257994276471319,
+                    0.812835168595247
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7685392559412716,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.8022886338185888,
+                    0.8681722035585417
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.834702003235038,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 26,
+              "top1_rate": 0.18439716312056736,
+              "typed_failures": 0
+            },
+            "J": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7695139148106674,
+                  0.8462740035668369
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8075878229853595,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7714616772427523,
+                    0.8475527248973499
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8100348388702254,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7642155032972505,
+                    0.8453091949732489
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.804560159263407,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7694716623118079,
+                    0.8486064451909916
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8081684708224461,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 36,
+              "top1_rate": 0.2553191489361702,
+              "typed_failures": 0
+            },
+            "J_dec": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7554847891004104,
+                  0.833147214964124
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7942951350006222,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7462050516361827,
+                    0.8315937227821326
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7888204553938037,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7355325370162996,
+                    0.8482666106756253
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7942018165982332,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7744494214259051,
+                    0.8259300734104763
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.7998631330098293,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 21,
+              "top1_rate": 0.14893617021276595,
+              "typed_failures": 0
+            },
+            "P": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.5,
+                  0.5
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.5,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": null,
+              "tied_cells": 141,
+              "tied_pair_share": 1.0,
+              "top1_hits": 0,
+              "top1_rate": 0.0,
+              "typed_failures": 0
+            },
+            "U": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7729044834307994,
+                  0.8396478785616523
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.8057525610717099,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7532039318153539,
+                    0.8338629152668906
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.793424163244992,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.786984415826801,
+                    0.8600231740699267
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8228505661316411,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7726452656463854,
+                    0.8293214196839613
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8009829538384967,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 18,
+              "top1_rate": 0.1276595744680851,
+              "typed_failures": 0
+            },
+            "U-native": {
+              "auc": {
+                "clusters": 47,
+                "interval": [
+                  0.7271058852805773,
+                  0.8198332711210651
+                ],
+                "label": "DESCRIPTIVE",
+                "mean": 0.7739828294139605,
+                "units": 141
+              },
+              "cells": 141,
+              "chance_top1": 0.05425531914893616,
+              "nonfinite_share": 0.0,
+              "per_seed": {
+                "20260908": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7856165235784496,
+                    0.8727774667164364
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8295694911036456,
+                  "units": 47
+                },
+                "20260909": {
+                  "clusters": 47,
+                  "interval": [
+                    0.6184474928455892,
+                    0.7517730496453902
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.6865123802413836,
+                  "units": 47
+                },
+                "20260910": {
+                  "clusters": 47,
+                  "interval": [
+                    0.7517714943386834,
+                    0.8574094811496826
+                  ],
+                  "label": "DESCRIPTIVE",
+                  "mean": 0.8058666168968521,
+                  "units": 47
+                }
+              },
+              "tied_cells": 0,
+              "tied_pair_share": 0.0,
+              "top1_hits": 36,
+              "top1_rate": 0.2553191489361702,
+              "typed_failures": 0
+            }
+          }
+        }
+      }
+    },
+    "positions": {
+      "U": {
+        "floor_15": null,
+        "floor_150": null,
+        "floor_225": null,
+        "floor_30": null,
+        "floor_60": null,
+        "pred_15": {
+          "clusters": 311,
+          "interval": [
+            0.046036515201577075,
+            0.05501498770672043
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05048554208353491,
+          "units": 14928
+        },
+        "pred_150": {
+          "clusters": 311,
+          "interval": [
+            0.04228964305618357,
+            0.049552133758549326
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04588432980410039,
+          "units": 14928
+        },
+        "pred_225": {
+          "clusters": 311,
+          "interval": [
+            0.044049823166512216,
+            0.05075928763254902
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04737385629588254,
+          "units": 14928
+        },
+        "pred_30": {
+          "clusters": 311,
+          "interval": [
+            0.045695512546062154,
+            0.05453429018718417
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.050071708841168495,
+          "units": 14928
+        },
+        "pred_60": {
+          "clusters": 311,
+          "interval": [
+            0.04425861864689782,
+            0.05261358345309211
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04838147661891379,
+          "units": 14928
+        }
+      },
+      "U-native": {
+        "floor_15": null,
+        "floor_150": null,
+        "floor_225": null,
+        "floor_30": null,
+        "floor_60": null,
+        "pred_15": {
+          "clusters": 311,
+          "interval": [
+            0.046690180458667546,
+            0.05533032698108231
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05098169393743122,
+          "units": 14928
+        },
+        "pred_150": {
+          "clusters": 311,
+          "interval": [
+            0.04712071296129139,
+            0.05584294676544424
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05143617137870776,
+          "units": 14928
+        },
+        "pred_225": {
+          "clusters": 311,
+          "interval": [
+            0.04874810374219298,
+            0.05693988194147512
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.052800125387372596,
+          "units": 14928
+        },
+        "pred_30": {
+          "clusters": 311,
+          "interval": [
+            0.04745720762327085,
+            0.05641980459913689
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05191472871232171,
+          "units": 14928
+        },
+        "pred_60": {
+          "clusters": 311,
+          "interval": [
+            0.04773994101620411,
+            0.056980568784638294
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.052341907420971744,
+          "units": 14928
+        }
+      }
+    },
+    "readouts": {
+      "U-native--seed20260908": {
+        "G_action": 0.03890167487431262,
+        "end_state": {
+          "G2_stability": true,
+          "complete": true,
+          "excursion": {
+            "excursion": false,
+            "first_spike_norm": null,
+            "first_spike_request": null,
+            "first_spike_update": null,
+            "ratios": {
+              "F-1-continuous": 1.0428781242268657,
+              "F-1-macro": 1.1189135059226343,
+              "F-1-micro": 0.7093869377492793,
+              "F-15-continuous": 0.8216274733673903,
+              "F-15-macro": 0.9365928874567809,
+              "F-15-micro": 0.8639199987980789,
+              "F-5-continuous": 0.9016871899102068,
+              "F-5-macro": 0.8743632671678474,
+              "F-5-micro": 0.941357581509943
+            },
+            "requests_elevated": [],
+            "spike_requests": []
+          },
+          "logged_updates": 16929,
+          "retired_at": null,
+          "skipped": 0,
+          "typed_failure": null,
+          "usable": true
+        },
+        "fit_anchor_nonfinite_share": 0.0,
+        "policy_auc": 0.7803600654664482,
+        "typed_failure": null
+      },
+      "U-native--seed20260909": {
+        "G_action": 0.05669464820314059,
+        "end_state": {
+          "G2_stability": true,
+          "complete": true,
+          "excursion": {
+            "excursion": false,
+            "first_spike_norm": 31731.763671875,
+            "first_spike_request": "F-1-micro",
+            "first_spike_update": 16435,
+            "ratios": {
+              "F-1-continuous": 0.582107507516832,
+              "F-1-macro": 1.0643997687636986,
+              "F-1-micro": 0.5930613559921547,
+              "F-15-continuous": 0.811117450600579,
+              "F-15-macro": 1.1984179774012726,
+              "F-15-micro": 1.1225939862012053,
+              "F-5-continuous": 0.7214495108539644,
+              "F-5-macro": 1.004278130832019,
+              "F-5-micro": 0.9147046818130072
+            },
+            "requests_elevated": [],
+            "spike_requests": [
+              "F-1-continuous",
+              "F-1-macro",
+              "F-1-micro",
+              "F-5-continuous",
+              "F-5-macro",
+              "F-5-micro"
+            ]
+          },
+          "logged_updates": 16929,
+          "retired_at": null,
+          "skipped": 0,
+          "typed_failure": null,
+          "usable": true
+        },
+        "fit_anchor_nonfinite_share": 0.0,
+        "policy_auc": 0.7594634089314939,
+        "typed_failure": null
+      },
+      "U-native--seed20260910": {
+        "G_action": 0.0657984050196083,
+        "end_state": {
+          "G2_stability": true,
+          "complete": true,
+          "excursion": {
+            "excursion": false,
+            "first_spike_norm": null,
+            "first_spike_request": null,
+            "first_spike_update": null,
+            "ratios": {
+              "F-1-continuous": 1.470036289327217,
+              "F-1-macro": 0.8438441678093932,
+              "F-1-micro": 1.148173641583646,
+              "F-15-continuous": 0.9895866576995686,
+              "F-15-macro": 1.0713858454628415,
+              "F-15-micro": 1.2284384365381429,
+              "F-5-continuous": 1.488373105885928,
+              "F-5-macro": 1.1113046932250126,
+              "F-5-micro": 1.187710052979573
+            },
+            "requests_elevated": [],
+            "spike_requests": []
+          },
+          "logged_updates": 16929,
+          "retired_at": null,
+          "skipped": 0,
+          "typed_failure": null,
+          "usable": true
+        },
+        "fit_anchor_nonfinite_share": 0.0,
+        "policy_auc": 0.8381653807185722,
+        "typed_failure": null
+      }
+    },
+    "recipe": {
+      "code": "a fresh copy of scripts.run_decision_dynamics_retrain.implementation() (the frozen v3 train_group of run_decision_relevant_dynamics, SkippingEnsemble patience 10, truncation 45, logging ensemble); output / identity / schemas / steps / three schedule constants differ",
+      "end_state": {
+        "last": 3,
+        "ratio": 5.0,
+        "rule": "rt.excursion (#117) over the full update log; usable iff complete and no excursion",
+        "spike_norm": 1000.0,
+        "spike_window": 500
+      },
+      "factor": {
+        "a4_gpu_s": 2435.0,
+        "rule": "S' = 9 x round(1000 x f) (whole request cycles); constant c -> round(c x f)",
+        "u_gpu_s": 1294.19,
+        "value": 1.8814857169349168
+      },
+      "kept": {
+        "long": {
+          "batch_size": 64,
+          "every": 500,
+          "first": 60,
+          "increment": 15,
+          "last": 225,
+          "seed_offset": 112001,
+          "starts": [
+            0,
+            15,
+            30,
+            45,
+            60
+          ],
+          "targets": "the E99 parsed carrier at every visited position start + j * delta, terminal absorption past the shot's last frame",
+          "truncation": "every 45 recursive transitions (stable_decision_dynamics)",
+          "weight": 1.0
+        },
+        "progress_every": 1000,
+        "rank": {
+          "candidate_pad": 20,
+          "cells_per_step": 2,
+          "cost": "tie_free (scoring_harness.tie_free on tensors): pig presence - 0.1 x pig-slot center displacement between the anchor carrier and the rollout endpoint at 225",
+          "inventories": [
+            "grid",
+            "offset",
+            "angle",
+            "power"
+          ],
+          "ramp": 1000,
+          "seed_offset": 112002,
+          "start": 1000,
+          "temperature": 0.1,
+          "weight": 0.1
+        },
+        "request_cycle": 9,
+        "trace_every": 900
+      },
+      "optimiser": {
+        "batch_size": 64,
+        "grad_clip": 1.0,
+        "learning_rate": 0.0001,
+        "weight_decay": 0.0001
+      },
+      "schedule": {
+        "long_every": {
+          "u": 500,
+          "u_native": 941
+        },
+        "rank_ramp": {
+          "u": 1000,
+          "u_native": 1881
+        },
+        "rank_start": {
+          "u": 1000,
+          "u_native": 1881
+        }
+      },
+      "skip_cap_scaled": 85,
+      "steps": 16929,
+      "u_steps": 9000,
+      "update_ratio": 1.881
+    },
+    "u_native": {
+      "A4 - U-native": {
+        "cells": 933,
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.16583974260823134,
+            0.19665520260375563
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.1812847209953319,
+          "units": 933
+        },
+        "first": "A4",
+        "guards": {
+          "a4": true,
+          "a4_detail": {
+            "arm_guards_pass": true,
+            "global_guards_pass": true,
+            "guards_pass": true,
+            "records_guard": true,
+            "records_in_manifest": {
+              "20260908": true,
+              "20260909": true,
+              "20260910": true
+            }
+          },
+          "u_native": false
+        },
+        "guards_pass": false,
+        "label": "A4 - U-native",
+        "members": 311,
+        "reverse_token": "readiness_or_precision_insufficient",
+        "second": "U-native",
+        "token": "readiness_or_precision_insufficient"
+      },
+      "U-native - U": {
+        "cells": 933,
+        "descriptive": true,
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.05791568515443114,
+            0.07952236179326211
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.06878967763212136,
+          "units": 933
+        },
+        "first": "U-native",
+        "label": "U-native - U",
+        "note": "what the extra budget buys (U-native at A4's training GPU-h vs U at B1); no token",
+        "second": "U"
+      },
+      "a4_source": {
+        "key": "neg_score",
+        "records_manifest_sha256": "sha256:29af62ae8442ece6a1c439764b1036748f1f11094f41e6da6442647e7eec3f25",
+        "summary_sha256": "sha256:c9464ba0436785df7d4d47a010f6a7581259b05291746854dae3173454f4b293"
+      },
+      "budget": {
+        "a4_mean": 2434.727373217543,
+        "factor": 1.8814857169349168,
+        "ratio_to_a4": {
+          "20260908": 0.8992454270170803,
+          "20260909": 0.9048740051019764,
+          "20260910": 0.8331255379708385
+        },
+        "ratio_to_a4_mean": 0.8790816566966316,
+        "ratio_to_u": {
+          "20260908": 1.6917310285622607,
+          "20260909": 1.702319951126471,
+          "20260910": 1.5673411072527177
+        },
+        "ratio_to_u_mean": 1.6537973623138165,
+        "steps": 16929,
+        "u_mean": 1294.1876808040154,
+        "u_native_mean": 2140.324172852716,
+        "u_native_training_gpu_s": {
+          "20260908": 2189.4174563991837,
+          "20260909": 2203.1215095347725,
+          "20260910": 2028.433552624192
+        },
+        "u_steps": 9000,
+        "update_ratio": 1.881
+      },
+      "reading": "A4 - U-native not supported: A4's wording stays budget-qualified"
+    },
+    "wrong_anchor": {
+      "U-native": {
+        "guards_pass": false,
+        "right": {
+          "clusters": 311,
+          "interval": [
+            0.7976957626153767,
+            0.8287352773164669
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.8131954504944858,
+          "units": 933
+        },
+        "right_minus_wrong": {
+          "clusters": 311,
+          "interval": [
+            0.18857914220451902,
+            0.21516986702022367
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.20195881132979202,
+          "units": 933
+        },
+        "stability": {
+          "clusters": 311,
+          "interval": [
+            0.5399142222537461,
+            0.563636670725364
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5515580275518567,
+          "units": 933
+        },
+        "token": "readiness_or_precision_insufficient",
+        "wrong": {
+          "clusters": 311,
+          "interval": [
+            0.5957394740276322,
+            0.6268712397346089
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.6112366391646938,
+          "units": 933
+        },
+        "wrong_anchors": 480
+      }
+    }
+  },
+  "frozen_at": "2026-10-28T20:47:23Z",
+  "gfid": {},
+  "global_guards": {
+    "G_chronology": {
+      "anchors_read_at": "2026-10-29T08:25:33Z",
+      "first_scored_at": "2026-10-29T08:25:33Z",
+      "pass": true,
+      "plan_frozen_at": "2026-10-28T20:47:23Z",
+      "readouts_frozen_at": "2026-10-29T08:20:25Z"
+    },
+    "G_isolation": {
+      "pass": true,
+      "rule": "the fit split trains (the retrain payload); the policy split gives readouts only; evaluation anchors are read only by --score after --freeze-readouts (G_chronology)"
+    },
+    "G_records": {
+      "bound_to_current_records": true,
+      "pass": true,
+      "receipt": "validation.json",
+      "records_manifest_sha256": "sha256:4dbc9884ab9d23aee4ae3be6bdd8cbd5efff0707db0b819b2d05702f85a72fce",
+      "spot_check": {
+        "max_abs_delta": {
+          "pig_displacement": 0.0,
+          "pig_presence": 0.0,
+          "tie_free": 0.0
+        },
+        "pass": true,
+        "record": "U-native--seed20260908",
+        "rule": "gb.spot_checks: every grid cell re-scored, harness.endpoint_replication"
+      }
+    },
+    "G_scoring_policy": {
+      "pass": true
+    }
+  },
+  "global_guards_pass": true,
+  "identity": "issue-140-u-native-v1",
+  "issue": 140,
+  "program_claim_entries": {},
+  "program_issue": 127,
+  "program_set_members": [],
+  "schema": "issue_127_child_summary_v1",
+  "within_family": {}
+}
