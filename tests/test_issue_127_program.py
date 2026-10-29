@@ -121,8 +121,20 @@ def test_disposition_one_triggers(tmp_path):
 
 
 def test_budget_safeguard_u_native(tmp_path):
-    summary, _ = summary_of(tmp_path, overrides={128: {"A4": block("A4", disp=1, fires=True)}})
+    summary, findings = summary_of(tmp_path, overrides={128: {"A4": block("A4", disp=1, fires=True)}})
     assert summary["tier_c"]["U-native"]["fires"] and summary["tier_c"]["U-native"]["arms"] == ["A4"]
+    assert summary["tier_c"]["U-native"]["result"] is None  # #140 has published no u_native block
+    # #140's control result (stop token: U-native failed a guard) is reported with its pre-registered reading
+    stop = {**contrast("A4", "U-native", est(0.18, 0.17, 0.20), False), "label": "A4 - U-native"}
+    extras = {140: {"u_native": {"A4 - U-native": stop, "reading": "A4 - U-native not supported: stays qualified",
+                                 "U-native - U": {"estimate": est(0.07, 0.06, 0.08), "descriptive": True},
+                                 "budget": {"ratio_to_a4_mean": 0.88}}}}
+    summary, findings = summary_of(tmp_path / "r", overrides={128: {"A4": block("A4", disp=1, fires=True)}},
+                                   extras=extras)
+    result = summary["tier_c"]["U-native"]["result"]
+    assert result["contrasts"]["A4 - U-native"]["token"] == eb.STOP_TOKEN and result["budget_ratio_to_x"] == 0.88
+    assert "#140 reading: A4 - U-native not supported: stays qualified" in findings
+    assert "#140 U-native - U:" in findings and "descriptive, no token" in findings
 
 
 def test_controls_and_follow_up_never_fire_triggers(tmp_path):

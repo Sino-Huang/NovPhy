@@ -430,7 +430,8 @@ def tier_c(children):
     wm_one = sorted(v for v in WORLD_MODEL_ARMS if v in blocks and blocks[v]["disposition"]["disposition"] == 1)
     any_one = sorted(v for v, b in baselines.items() if b["disposition"]["disposition"] == 1)
     return {"U-native": {"fires": bool(fired), "arms": fired,
-                         "rule": "any arm's budget safeguard fires (X - U supported and X's training GPU-s > U's)"},
+                         "rule": "any arm's budget safeguard fires (X - U supported and X's training GPU-s > U's)",
+                         "result": u_native_result(children)},
             "Diffusion Forcing / gamma-models": {"fires": df, "rule": "D1 - U or D1 - J_dec supported (published tokens)",
                                                  "evaluable": d1 is not None},
             "DDLP": {"fires": ddlp, "B1_fails_G_readout": readout, "B1_position_225": b1_225, "U_position_225": u_225,
@@ -440,6 +441,17 @@ def tier_c(children):
             "DreamerV3 / DIAMOND / V-JEPA 2-AC": {"fires": bool(wm_one), "arms": wm_one,
                                                   "rule": f"any world-model arm ({', '.join(WORLD_MODEL_ARMS)}) reaches disposition 1"},
             "P-follow-up": {"fires": bool(any_one), "arms": any_one, "rule": "any arm reaches disposition 1"}}
+
+
+def u_native_result(children):
+    """#140's published control (extra.u_native): its contrasts (estimate, tokens) and the pre-registered reading."""
+    un = child_extra(children, 140, "u_native")
+    if un is None:
+        return None
+    contrasts = {k: {"estimate": v["estimate"], "token": v.get("token"), "reverse_token": v.get("reverse_token")}
+                 for k, v in un.items() if isinstance(v, dict) and "estimate" in v}
+    return {"contrasts": contrasts, "reading": un.get("reading"),
+            "budget_ratio_to_x": (un.get("budget") or {}).get("ratio_to_a4_mean")}
 
 
 def within_family(children):
@@ -616,6 +628,12 @@ def findings_md(summary, children):
         state = "not evaluable (inputs not published)" if t["fires"] is None else ("fires" if t["fires"] else "does not fire")
         arms = f" ({', '.join(t['arms'])})" if t.get("arms") else ""
         lines.append(f"- {name}: {state}{arms}. Rule: {t['rule']}.")
+        result = t.get("result")
+        if result:
+            for label, c in result["contrasts"].items():
+                tokens = "descriptive, no token" if c["token"] is None else f"{c['token']} / {c['reverse_token']}"
+                lines.append(f"  - #140 {label}: {fmt_block(c['estimate'])} ({tokens})")
+            lines.append(f"  - #140 reading: {result['reading']}")
     na = summary["native_action"]
     lines += ["", "## E1 native-action table (DESCRIPTIVE, separate from the grid protocol)", "", na["label"] + ".", "",
               "| row | pass@1 | pass@3 |", "| --- | --- | --- |"]
