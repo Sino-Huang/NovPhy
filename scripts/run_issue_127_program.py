@@ -598,10 +598,19 @@ def findings_md(summary, children):
     lines += ["", f"Secondary, C* in place of U: {'licensed' if cstar['holds'] else 'not licensed'} "
               f"({len(cstar['vetoes'])} vetoes).", ""]
     lines += ["## Dispositions per arm", ""]
+    u_native = summary["tier_c"]["U-native"].get("result")
     for row in summary["program_table"]:
         n = row["disposition"]
         text = eb.DISPOSITION_LABELS[n].replace("X", row["view"], 1) if n in (1, 3) else (
             f"U ranks launches better than {row['view']} (scoped)" if n == 2 else "per-contrast tokens only")
+        safeguard = row["budget_safeguard"] or {}
+        if n == 1 and safeguard.get("fires"):
+            # the #123 U-B3 rule: X - U supported above U's training budget -> budget-qualified wording
+            ratio = safeguard.get("ratio")
+            budget = f"{ratio:.2f} x U's training GPU-h" if ratio else "above U's training GPU-h"
+            text = f"{row['view']} at its native budget ({budget}) ranks better than U at B1 (budget-qualified)"
+            if row["view"] == "A4" and u_native is not None:
+                text += f"; #140: {u_native['reading']}"
         lines.append(f"- #{row['child']} {row['view']} ({row['role']}{', program set' if row['program_set'] else ''}): "
                      f"disposition {n}: {text}" + (f"; dropped ({row['dropped']})" if row["dropped"] else ""))
     blocks = {f"#{i} {v}": {**b, "view": f"#{i} {v}"} for i, e in children.items() if e["summary"] is not None

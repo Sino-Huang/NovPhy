@@ -134,6 +134,8 @@ def test_budget_safeguard_u_native(tmp_path):
     result = summary["tier_c"]["U-native"]["result"]
     assert result["contrasts"]["A4 - U-native"]["token"] == eb.STOP_TOKEN and result["budget_ratio_to_x"] == 0.88
     assert "#140 reading: A4 - U-native not supported: stays qualified" in findings
+    assert ("A4 at its native budget (above U's training GPU-h) ranks better than U at B1 (budget-qualified); "
+            "#140: A4 - U-native not supported: stays qualified") in findings
     assert "#140 U-native - U:" in findings and "descriptive, no token" in findings
 
 
