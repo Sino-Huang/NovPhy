@@ -1,0 +1,98 @@
+{
+  "arms": {
+    "F1": {
+      "details": {
+        "lr1e-3": {
+          "model_sha256": "sha256:38a066e45d59ea3c2fa26caa7a1320f94066c01210087b280f2a2695775cd954",
+          "typed_failure": null
+        },
+        "lr1e-4": {
+          "model_sha256": "sha256:24096985310f46e6c4b7ab3e76db2c7a8bf716b859b65be9c93149d594d44248",
+          "typed_failure": null
+        },
+        "lr3e-4": {
+          "model_sha256": "sha256:a14f85f023ab159944281af2564e63559ca3ddcb78de9c0c7f69e4a06bc3ad3c",
+          "typed_failure": null
+        }
+      },
+      "results": {
+        "lr1e-3": {
+          "auc": 0.9609675785207699,
+          "parameters": 1855301
+        },
+        "lr1e-4": {
+          "auc": 0.9589918946301925,
+          "parameters": 1855301
+        },
+        "lr3e-4": {
+          "auc": 0.9632472137791286,
+          "parameters": 1855301
+        }
+      },
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "lr3e-4"
+    },
+    "F1-D": {
+      "details": {
+        "lr1e-3": {
+          "model_sha256": "sha256:54cb03043e082e92b7c459d5cb18b71ec93916bea6c6dce58b07982fb7ccef8b",
+          "typed_failure": null
+        },
+        "lr1e-4": {
+          "model_sha256": "sha256:d02c950ad15928411215fc44524ce9d51edfc5bbe773e66b470be3a8a81f4d66",
+          "typed_failure": null
+        },
+        "lr3e-4": {
+          "model_sha256": "sha256:9fbd6dc802308b7ab6ee396605885b0af2bc9fa00ff3eac1d53a73057348e04b",
+          "typed_failure": null
+        }
+      },
+      "results": {
+        "lr1e-3": {
+          "auc": 0.9646149949341438,
+          "parameters": 1855301
+        },
+        "lr1e-4": {
+          "auc": 0.9601317122593719,
+          "parameters": 1855301
+        },
+        "lr3e-4": {
+          "auc": 0.9572948328267477,
+          "parameters": 1855301
+        }
+      },
+      "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+      "selected": "lr1e-3"
+    }
+  },
+  "configs": {
+    "lr1e-3": {
+      "learning_rate": 0.001,
+      "updates": 9000
+    },
+    "lr1e-4": {
+      "learning_rate": 0.0001,
+      "updates": 9000
+    },
+    "lr3e-4": {
+      "learning_rate": 0.0003,
+      "updates": 9000
+    }
+  },
+  "plan_identity": "issue-141-p-follow-up-v1",
+  "policy_cells": 94,
+  "schema": "issue_141_selection_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "seconds": 1.9094363492913544,
+  "seed": 20260908,
+  "selected": {
+    "F1": "lr3e-4",
+    "F1-D": "lr1e-3"
+  },
+  "written_at": "2026-10-29T07:05:24Z"
+}

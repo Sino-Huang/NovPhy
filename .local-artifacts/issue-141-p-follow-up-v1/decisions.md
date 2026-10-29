@@ -46,3 +46,16 @@ Posted: https://github.com/Sino-Huang/NovPhy/issues/141#issuecomment-6480065190
 
 - `strata/cut-points.json` written by `--cut-points` (CPU, policy / fit data only) at 2026-10-28T20:43:35Z, before any F1 / F1-D training; cut points (0.3246440972222222, 0.4763107638888889) equal the posted values; sha256 bfac06287e8a44956d1022091efdab64af20064a208b8c27e659bc5459b02a5b.
 - CPU pre-checks of the replication rule before posting (U endpoints on CPU): G-action of U seeds 20260908/09/10 on the 480 x 16 fit endpoints equals #129's calibration exactly (|delta| = 0); #129's frozen U+head heads reproduce #129's policy_head_auc exactly (0.8017048554, 0.8161191645, 0.8208888629).
+
+## Decision P-freeze (2026-10-29): #141 frozen — F1 lr 3e-4, F1-D lr 1e-3
+
+**Selection** (pre-registered rule: largest policy-split pooled grid AUC at 4 d.p. over the 94 mixed policy cells, seed 20260908; F1 and F1-D selected independently):
+
+| arm | lr 3e-4 | lr 1e-4 | lr 1e-3 | selected |
+| --- | --- | --- | --- | --- |
+| F1 (U+FiLM) | **0.9632** | 0.9590 | 0.9610 | 3e-4 |
+| F1-D (no rollout) | 0.9573 | 0.9601 | **0.9646** | 1e-3 |
+
+**Smoke** (pass): accounting (13 919 shots, 838 positives, 480 anchors, 94 policy cells; classifier 1 855 301 parameters); U identity for all three seeds; pre-freeze replication on the GPU (U's G-action vs #129's calibration |Δ| ≤ 1.8e-9; #129's U+head policy AUC reproduced exactly 0.80170 / 0.81612 / 0.82089); candidate/action alignment; classifier-only updates (0 U parameters with a gradient); paired initialisation and batch streams identical; 16 CPU tests. Throughput 3.4–3.7 ms/update (≈ 32 GPU-s per 9 000-update run); projection 1.41 GPU-h remaining, within the 60 GPU-h reserve.
+
+**Frozen plan:** `plan.json` sha256 `cd06c20c89fdb5cbbf10ad4acee41613cf64f77d882c2ae48847b99333d97028`, 169 pins, frozen_at 2026-10-29T07:17:34Z. Main run (`scripts/gpu_window_issue_141_main.json`): seeds 20260909/10 for both arms (GPUs 2–3), readouts, freeze, one scoring pass and the novelty pass on GPU 1 after #140's validation, publication after #128's A3-group validation (so #128's re-publication is validated before #141 imports its records), validation.

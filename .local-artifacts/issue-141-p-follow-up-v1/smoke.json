@@ -1,0 +1,394 @@
+{
+  "accounting": {
+    "classifier_parameters": 1855301,
+    "fit_anchors": 480,
+    "fit_levels": 480,
+    "fit_positive": 838,
+    "fit_shots": 13919,
+    "pass": true,
+    "policy_grid_mixed_cells": 94
+  },
+  "alignment": {
+    "fit_launch4_from_actions": true,
+    "fit_launch5_from_actions": true,
+    "pass": true,
+    "seeds": {
+      "20260908": {
+        "fit_grid_members": true,
+        "fit_grid_ordinals": true,
+        "fit_keys": true,
+        "fit_launch5": true,
+        "fit_rows": true,
+        "nonfinite_rows": 0,
+        "policy_cells": true,
+        "policy_ordinals": true
+      },
+      "20260909": {
+        "fit_grid_members": true,
+        "fit_grid_ordinals": true,
+        "fit_keys": true,
+        "fit_launch5": true,
+        "fit_rows": true,
+        "nonfinite_rows": 0,
+        "policy_cells": true,
+        "policy_ordinals": true
+      },
+      "20260910": {
+        "fit_grid_members": true,
+        "fit_grid_ordinals": true,
+        "fit_keys": true,
+        "fit_launch5": true,
+        "fit_rows": true,
+        "nonfinite_rows": 0,
+        "policy_cells": true,
+        "policy_ordinals": true
+      }
+    }
+  },
+  "cell_seconds": {
+    "F1": 0.011442137183621526,
+    "F1-D": 0.0011610439978539944
+  },
+  "classifier_only": {
+    "classifier_parameter_tensors": 66,
+    "features_unchanged": true,
+    "optimizer_parameter_tensors": 66,
+    "pass": true,
+    "u_parameters_with_grad": 0,
+    "u_state_sha256_after": "sha256:20d86e872812adcfa661e5f37c41cb14b08d07655f2922444639e9f4eef315c6",
+    "u_state_sha256_before": "sha256:20d86e872812adcfa661e5f37c41cb14b08d07655f2922444639e9f4eef315c6",
+    "updates": 20
+  },
+  "device": "cuda",
+  "pairing": {
+    "configs": {
+      "lr1e-3": {
+        "batch_stream": true,
+        "init": true
+      },
+      "lr1e-4": {
+        "batch_stream": true,
+        "init": true
+      },
+      "lr3e-4": {
+        "batch_stream": true,
+        "init": true
+      }
+    },
+    "pass": true
+  },
+  "pass": true,
+  "plan_identity": "issue-141-p-follow-up-v1",
+  "projection": {
+    "remaining_gpu_hours": 1.4099013774016769,
+    "reserve_gpu_hours": 60.0,
+    "rule": "measured selection seconds/update and readout seconds; scoring from the measured per-cell rate x upper bounds (2000 cells, 600 novelty levels)",
+    "terms_seconds": {
+      "novelty_estimate": 43.28157305717468,
+      "process_overhead_estimate": 4800.0,
+      "score_estimate": 75.61908708885312,
+      "training_and_readouts": {
+        "readouts-F1-D-seed20260908": 0.7583323353901505,
+        "readouts-F1-D-seed20260909": 0.7583323353901505,
+        "readouts-F1-D-seed20260910": 0.7583323353901505,
+        "readouts-F1-seed20260908": 0.8720335308462381,
+        "readouts-F1-seed20260909": 0.8720335308462381,
+        "readouts-F1-seed20260910": 0.8720335308462381,
+        "train-F1-D-seed20260909": 31.916569552849978,
+        "train-F1-D-seed20260910": 31.916569552849978,
+        "train-F1-seed20260909": 32.56789371417835,
+        "train-F1-seed20260910": 32.56789371417835
+      },
+      "validate_estimate": 22.88427436724305
+    },
+    "wall_cap_hours": 48.0,
+    "wall_hours_on_4_gpus": 1.4099013774016769,
+    "within_reserve": true
+  },
+  "readout_seconds": {
+    "F1": 0.8720335308462381,
+    "F1-D": 0.7583323353901505
+  },
+  "schema": "issue_141_smoke_v1",
+  "selected": {
+    "F1": "lr3e-4",
+    "F1-D": "lr1e-3"
+  },
+  "selection": {
+    "arms": {
+      "F1": {
+        "details": {
+          "lr1e-3": {
+            "model_sha256": "sha256:38a066e45d59ea3c2fa26caa7a1320f94066c01210087b280f2a2695775cd954",
+            "typed_failure": null
+          },
+          "lr1e-4": {
+            "model_sha256": "sha256:24096985310f46e6c4b7ab3e76db2c7a8bf716b859b65be9c93149d594d44248",
+            "typed_failure": null
+          },
+          "lr3e-4": {
+            "model_sha256": "sha256:a14f85f023ab159944281af2564e63559ca3ddcb78de9c0c7f69e4a06bc3ad3c",
+            "typed_failure": null
+          }
+        },
+        "results": {
+          "lr1e-3": {
+            "auc": 0.9609675785207699,
+            "parameters": 1855301
+          },
+          "lr1e-4": {
+            "auc": 0.9589918946301925,
+            "parameters": 1855301
+          },
+          "lr3e-4": {
+            "auc": 0.9632472137791286,
+            "parameters": 1855301
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "lr3e-4"
+      },
+      "F1-D": {
+        "details": {
+          "lr1e-3": {
+            "model_sha256": "sha256:54cb03043e082e92b7c459d5cb18b71ec93916bea6c6dce58b07982fb7ccef8b",
+            "typed_failure": null
+          },
+          "lr1e-4": {
+            "model_sha256": "sha256:d02c950ad15928411215fc44524ce9d51edfc5bbe773e66b470be3a8a81f4d66",
+            "typed_failure": null
+          },
+          "lr3e-4": {
+            "model_sha256": "sha256:9fbd6dc802308b7ab6ee396605885b0af2bc9fa00ff3eac1d53a73057348e04b",
+            "typed_failure": null
+          }
+        },
+        "results": {
+          "lr1e-3": {
+            "auc": 0.9646149949341438,
+            "parameters": 1855301
+          },
+          "lr1e-4": {
+            "auc": 0.9601317122593719,
+            "parameters": 1855301
+          },
+          "lr3e-4": {
+            "auc": 0.9572948328267477,
+            "parameters": 1855301
+          }
+        },
+        "rule": "largest policy-split pooled grid AUC at 4 d.p.; ties -> fewer trainable parameters -> declaration order; a configuration without an AUC is never selected",
+        "selected": "lr1e-3"
+      }
+    },
+    "configs": {
+      "lr1e-3": {
+        "learning_rate": 0.001,
+        "updates": 9000
+      },
+      "lr1e-4": {
+        "learning_rate": 0.0001,
+        "updates": 9000
+      },
+      "lr3e-4": {
+        "learning_rate": 0.0003,
+        "updates": 9000
+      }
+    },
+    "plan_identity": "issue-141-p-follow-up-v1",
+    "policy_cells": 94,
+    "schema": "issue_141_selection_v1",
+    "scoring_policy": {
+      "cudnn_allow_tf32": false,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false
+    },
+    "seconds": 1.9094363492913544,
+    "seed": 20260908,
+    "selected": {
+      "F1": "lr3e-4",
+      "F1-D": "lr1e-3"
+    },
+    "written_at": "2026-10-29T07:05:24Z"
+  },
+  "selection_reports_pass": true,
+  "spent": {
+    "feature_pass_gpu_seconds": {
+      "20260908": 2.166318085975945,
+      "20260909": 1.4162532757036388,
+      "20260910": 1.3108580340631306
+    },
+    "selection_training_gpu_seconds": 190.38505677087232
+  },
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES= python -m pytest -q tests/test_issue_141_p_follow_up.py",
+    "exit_code": 0,
+    "tail": [
+      "16 passed, 5 warnings in 5.22s"
+    ]
+  },
+  "throughput": {
+    "F1": {
+      "lr1e-3": {
+        "complete": true,
+        "device": "NVIDIA GeForce RTX 5090",
+        "gpu_seconds": 31.844511748291552,
+        "seconds_per_update": 0.0035382790831435056,
+        "updates": 9000,
+        "wall_seconds": 31.844511748291552
+      },
+      "lr1e-4": {
+        "complete": true,
+        "device": "NVIDIA GeForce RTX 5090",
+        "gpu_seconds": 30.53774041077122,
+        "seconds_per_update": 0.0033930822678634688,
+        "updates": 9000,
+        "wall_seconds": 30.53774041077122
+      },
+      "lr3e-4": {
+        "complete": true,
+        "device": "NVIDIA GeForce RTX 5090",
+        "gpu_seconds": 32.56789371417835,
+        "seconds_per_update": 0.003618654857130928,
+        "updates": 9000,
+        "wall_seconds": 32.56789371417835
+      }
+    },
+    "F1-D": {
+      "lr1e-3": {
+        "complete": true,
+        "device": "NVIDIA GeForce RTX 5090",
+        "gpu_seconds": 31.916569552849978,
+        "seconds_per_update": 0.0035462855058722197,
+        "updates": 9000,
+        "wall_seconds": 31.916569552849978
+      },
+      "lr1e-4": {
+        "complete": true,
+        "device": "NVIDIA GeForce RTX 5090",
+        "gpu_seconds": 30.427870676852763,
+        "seconds_per_update": 0.003380874519650307,
+        "updates": 9000,
+        "wall_seconds": 30.427870676852763
+      },
+      "lr3e-4": {
+        "complete": true,
+        "device": "NVIDIA GeForce RTX 5090",
+        "gpu_seconds": 33.09047066792846,
+        "seconds_per_update": 0.0036767189631031617,
+        "updates": 9000,
+        "wall_seconds": 33.09047066792846
+      }
+    }
+  },
+  "u": {
+    "20260908": {
+      "features_identity_matches": true,
+      "features_sha256": "sha256:ae371f48181329d2ffff038e3b60616d951e64db80e9508dbe3534bbd325ca15",
+      "identity": {
+        "checkpoint": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+        "handoff_sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb",
+        "pass": true,
+        "request": "F-15-macro",
+        "seed": 20260908,
+        "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb",
+        "usable": true
+      },
+      "replication": {
+        "g_action": {
+          "abs_delta": 1.7508358408913072e-09,
+          "calibration": 0.023955988972146094,
+          "pass": true,
+          "tolerance": 1e-06,
+          "value": 0.023955990722981935
+        },
+        "pass": true,
+        "u_head_policy_auc": {
+          "head_sha256_matches_129_manifest": true,
+          "issue_129": 0.8017048554282596,
+          "pass": true,
+          "policy_head_auc": 0.8017048554282596
+        }
+      },
+      "rollout": {
+        "delta": 15,
+        "endpoint": 225,
+        "request": "F-15-macro",
+        "transitions": 15
+      }
+    },
+    "20260909": {
+      "features_identity_matches": true,
+      "features_sha256": "sha256:c49d932e1f83a0a589d3ed0e451ba02694fd591dac4c799258f8f875c77a2470",
+      "identity": {
+        "checkpoint": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+        "handoff_sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5",
+        "pass": true,
+        "request": "F-15-macro",
+        "seed": 20260909,
+        "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5",
+        "usable": true
+      },
+      "replication": {
+        "g_action": {
+          "abs_delta": 4.573234846372287e-11,
+          "calibration": 0.0228577986141733,
+          "pass": true,
+          "tolerance": 1e-06,
+          "value": 0.02285779865990565
+        },
+        "pass": true,
+        "u_head_policy_auc": {
+          "head_sha256_matches_129_manifest": true,
+          "issue_129": 0.8161191645234198,
+          "pass": true,
+          "policy_head_auc": 0.8161191645234198
+        }
+      },
+      "rollout": {
+        "delta": 15,
+        "endpoint": 225,
+        "request": "F-15-macro",
+        "transitions": 15
+      }
+    },
+    "20260910": {
+      "features_identity_matches": true,
+      "features_sha256": "sha256:3cf8226fc4e7a0d011f46f2a37436a46555724764eb323f2a61169d4735cbab3",
+      "identity": {
+        "checkpoint": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+        "handoff_sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f",
+        "pass": true,
+        "request": "F-15-macro",
+        "seed": 20260910,
+        "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f",
+        "usable": true
+      },
+      "replication": {
+        "g_action": {
+          "abs_delta": 1.664566994658001e-09,
+          "calibration": 0.02203344437940333,
+          "pass": true,
+          "tolerance": 1e-06,
+          "value": 0.022033442714836336
+        },
+        "pass": true,
+        "u_head_policy_auc": {
+          "head_sha256_matches_129_manifest": true,
+          "issue_129": 0.8208888629101396,
+          "pass": true,
+          "policy_head_auc": 0.8208888629101396
+        }
+      },
+      "rollout": {
+        "delta": 15,
+        "endpoint": 225,
+        "request": "F-15-macro",
+        "transitions": 15
+      }
+    }
+  },
+  "u_pass": true,
+  "written_at": "2026-10-29T07:10:36Z"
+}
