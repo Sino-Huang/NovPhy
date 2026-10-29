@@ -74,3 +74,18 @@ def test_issue_128_phyq_repair1_amendment():
         assert pfa.matches(path, frozen[path], current)
     from scripts import run_issue_128_direct_predictors as r128
     assert r128.load_plan(r128.OUTPUT)["identity"] == r128.IDENTITY
+
+
+def test_issue_137_runner_amendment():
+    """#137 A1 (reporting): the runner and its tests replace exactly the bytes frozen in the #137 plan, the #137 load_plan accepts
+    it, and the published parameter count is the trained model's."""
+    frozen = _frozen(".local-artifacts/issue-137-diamond-v1/plan.json")
+    for path in ("scripts/run_issue_137_diamond.py", "tests/test_issue_137_diamond.py"):
+        current = "sha256:" + hashlib.sha256(open(path, "rb").read()).hexdigest()
+        entry = pfa.AMENDMENTS[path]
+        assert entry["issue"] == 137 and entry["replaces"] == (frozen[path],) and entry["sha256"] == current
+        assert pfa.matches(path, frozen[path], current)
+    from scripts import run_issue_137_diamond as r137
+    plan = r137.load_plan(r137.OUTPUT)
+    assert plan["plan_identity"] == r137.IDENTITY
+    assert r137.arm_compute(r137.OUTPUT, plan, "T5")["trainable_parameters"] == 4_406_019

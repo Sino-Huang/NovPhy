@@ -247,6 +247,18 @@ AMENDMENTS = {
         "issue": 128, "replaces": ("sha256:91b78c4354f4976a92ec0ab8af4da7d6e06dcd821ac316559f06108623ff0d80",),
         "sha256": "sha256:090b9213b91409834f34409ec9cf7cc3d0911cde7f6dbd8f3d67656eb0db8fbb",
         "change": ("A3-sym repair 1: tests of the dev-label gt_json (platforms dropped, channel 11 empty) and the CPU action mapping")},
+    "scripts/run_issue_137_diamond.py": {
+        "issue": 137, "replaces": ("sha256:5547ce58ad6b766b1a822b2540deb80cd5abf4d4b36d80baffaa1e063001f816",),
+        "sha256": "sha256:5aae6fb65b1669fa94f45e01e10352350ce4294d3cfeb77cd154b87496757b37",
+        "change": ("A1 (reporting only, after scoring): arm_compute takes the published trainable-parameter count from "
+                   "each arm-seed's training report.json (4 406 019) instead of readouts.json, whose count was taken "
+                   "on the frozen requires_grad(False) model (0); no record, guard, token or disposition affected")},
+    "tests/test_issue_137_diamond.py": {
+        "issue": 137, "replaces": ("sha256:09d781fa7c619f018d6d80a97463237bd21834720136f0280ad12e264065c655",),
+        "sha256": "sha256:d14ef2830ed747400e9ef75ecd96d0fb4cb1936ef961180b1d30f38ef3bf3f6d",
+        "change": ("A1 (test setup only): the CPU ladder test links the fit / policy data products one by one instead "
+                   "of the whole data/ directory, which since --score also holds the read evaluation anchors (the "
+                   "test's freeze_readouts correctly refused them); no runner behaviour changed")},
 }
 
 

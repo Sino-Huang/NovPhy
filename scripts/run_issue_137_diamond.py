@@ -1533,7 +1533,7 @@ def arm_compute(output, plan, arm):
         rd = eb.read_json(readouts_dir(output, arm, seed) / "readouts.json")
         if rd.get("macs_per_candidate") is not None:
             macs.append(rd["macs_per_candidate"])
-            params = rd["trainable_parameters"]
+            params = eb.read_json(report)["parameters"]  # #137 A1: the trained model's count (readouts.json has 0)
         rec = eb.read_json(record_path(output, arm, seed))
         if rec.get("wall_per_decision") is not None:
             walls.append(rec["wall_per_decision"])

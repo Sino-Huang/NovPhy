@@ -169,3 +169,19 @@ The selected run is reused as seed 20260908; seeds 20260909 and 20260910 train `
 **Smoke** (`smoke.json`, pass): accounting (13 919 fit shots, 480 fit anchors, 94 policy cells, 220 887 readout frames), G-port current, funding / G-port / G-fid / readiness gates pass, 21 CPU tests. Projection of the rest at measured rates: two seeds 17.6 GPU-h, readouts 3.1, scoring + novelty 9.4 → child total 67.2 GPU-h (funded 80.3; cap 136); wall 19.2 h.
 
 **Frozen plan**: `plan.json` sha256 `178b1d4044dfa9f3d027bd01a2c5b9af33ffc8c9aa7899097ed6790e85ac5024`, 147 pins, frozen_at 2026-10-28T10:36:53Z. Training queues: q0 T5 s20260909 (GPU 0), q1 T5 s20260910 (GPU 1); readouts, freeze-readouts, one scoring pass (GPU 0), novelty, publish + validate chained (`scripts/gpu_window_issue_137_main.json`).
+
+## Decision P-other (2026-10-30): reporting amendment A1 — the published trainable-parameter count
+
+**Trigger.** The first `--publish` (job `137-publish-validate`, after the three primary records and the novelty pass) reports T5's `trainable_parameters` as **0** in `summary.json` / `compute.json` / `findings.md`. Cause: `readouts_arm` counted `requires_grad` parameters on the frozen model (`load_trained` sets `requires_grad_(False)`), and `arm_compute` copies that count. The trained model has **4 406 019** parameters (`model.pt` payload, each `report.json`, `selection.json`; the selection rule used the payload value). The program table and the manuscript copy this field, so a published 0 would propagate.
+
+**Options.** (a) Keep the frozen output and disclose the right count; (b) a reporting-only post-freeze amendment.
+
+**Choice (b), orchestrator decision.** Amendment **#137 A1**, registered in `scripts/post_freeze_amendments.py` (replaces the frozen runner bytes `sha256:5547ce58…f816` with `sha256:5aae6fb6…7b37`): one line of `scripts/run_issue_137_diamond.py`, where `arm_compute` takes the parameter count from each arm-seed's training `report.json`. Nothing else changes. The records, readouts, guards (T5 fails G-action on every seed), tokens and the disposition are untouched, as are the budget safeguard and MACs per candidate. `tests/test_issue_127_amendments.py` checks that the registry replaces exactly the frozen bytes, that `load_plan` accepts the amended runner and that the published count is 4 406 019. Then one job `137-republish-validate` (GPU 0, exclusive; spec `scripts/gpu_window_issue_137_republish.json`), after the running `137-publish-validate`, re-derives the publication and re-validates it (records hash-checked, seed 20260908 re-scored with exact row equality, publication re-derived twice byte-identically).
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6500578672
+
+## Addendum to Decision P-other (2026-10-30) (issuecomment-6500578672): A1 also covers one test-setup line
+
+Running the #137 CPU tests for A1 turned up a second issue: 20 passed, 1 failed. The CPU ladder test linked the whole real `data/` directory into its temporary output. Since `--score`, that directory also holds the read evaluation anchors (`anchors-evaluation.pt`), so the test's `freeze_readouts` refused with "evaluation anchors already read: G-chronology would fail". The guard behaved correctly: the defect is in the test setup, not the runner. A1 therefore also replaces the frozen `tests/test_issue_137_diamond.py` (`sha256:09d781fa…c655` → `sha256:d14ef283…f6d`): the test now links the three fit / policy data products one by one. Registered in `scripts/post_freeze_amendments.py`, and checked by `tests/test_issue_127_amendments.py`. With the amendment: #137 tests 21 passed; amendment-registry tests (incl. the #101 registry checks) 6 passed. No runner behaviour, record, guard, token or disposition changes.
+
+Posted: https://github.com/Sino-Huang/NovPhy/issues/137#issuecomment-6500794143

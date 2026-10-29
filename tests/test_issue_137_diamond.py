@@ -157,7 +157,9 @@ def test_cpu_ladder_readiness_selection_readouts_and_scoring_path(tmp_path, tiny
     """Readiness -> selection -> selection readouts -> readouts -> freeze -> the scoring path, on the real fit / policy
     frame products with a tiny U-Net and subsets (no evaluation data: the scored cells are fabricated policy cells)."""
     from world_model.planning import scoring_harness as harness
-    (tmp_path / "data").symlink_to(runner.OUTPUT / "data")
+    (tmp_path / "data").mkdir()  # #137 A1: link the fit / policy products only (the real data/ now also holds the
+    for name in ("frames-manifest.json", "policy-frames.pt", "fit-anchor-frames.pt"):  # read evaluation anchors)
+        (tmp_path / "data" / name).symlink_to(runner.OUTPUT / "data" / name)
     eb.write_json(tmp_path / "funded.json", {"funded": True})
     eb.write_json(tmp_path / "gport/gport.json", {"pass": True})
     eb.write_json(tmp_path / "fidelity/gfid.json", {"pass": True})

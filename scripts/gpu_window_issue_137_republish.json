@@ -1,0 +1,27 @@
+{
+  "note": "#137 republish after reporting amendment A1 (orchestrator enqueues after committing the amendment); runs after 137-publish-validate on GPU 0, exclusive.",
+  "jobs": [
+    {
+      "id": "137-republish-validate",
+      "gpu": 0,
+      "resumable": false,
+      "est_minutes": 160,
+      "shares_gpu": false,
+      "depends_on": [
+        "137-publish-validate"
+      ],
+      "command": [
+        "bash",
+        "-c",
+        "/srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_137_diamond.py --publish && /srv/home/shua0171/miniconda3/envs/novphy/bin/python -u scripts/run_issue_137_diamond.py --validate"
+      ],
+      "cwd": ".",
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0",
+        "B137_CPU_THREADS": "4",
+        "OMP_NUM_THREADS": "4"
+      },
+      "note": "#137 reporting amendment A1 (post_freeze_amendments.py; Decision P-other on #137): re-derive the publication with the corrected trainable-parameter count (--publish) and re-validate it (--validate: records hash-checked, seed 20260908 re-scored with exact row equality, publication re-derived twice byte-identically). No record, guard, token or disposition changes."
+    }
+  ]
+}
