@@ -1,0 +1,38 @@
+%!TEX root = iclr2026_conference.tex
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{.90}
+% ==== BRIEF Table (tab:rel:gap) ===========================================
+% [中] 定位：按预测契约比较最接近的世界模型与 PHYRE 前向预测。
+%      主张：已有路线只变一个轴、把两轴固定耦合，或逐状态选择其他变量；本文逐决策请求共享潜变量上的时距和描述层次。
+%      证据：novelty_verification.md §3.1 的编号条目、§3.2 的三个近邻、Girdhar 的 PHYRE 原文与本文实现/决策态评测。
+%      手法与边界：逐篇按原文截至 2026 年 9 月定位；Yes 是设计属性而不是性能优势。控制器从未闭环运行，未显示选择粒度的收益；附录 F 给扩展矩阵。
+% [EN] Role: contrasts the nearest world-model lines and PHYRE forward prediction by their prediction contracts.
+%      Claim: earlier lines vary one axis, couple both by design, or select a different variable per state; ours requests horizon and description per decision on a shared latent.
+%      Evidence: numbered entries in novelty_verification.md §3.1, closest threats in §3.2, Girdhar's PHYRE paper, and our implementation and decision-only evaluation.
+%      Craft and Boundaries: entries reflect each paper's own text as of September 2026; Yes is a design property, not a demonstrated advantage. The controller never ran closed loop and no selection benefit is shown; Appendix F has the extended matrix.
+% ==== /BRIEF ==============================================================
+\caption{Prior lines vary one axis, couple both, or select a different variable per state. Entries follow the cited papers' own text as of September 2026, to our knowledge (Section~\ref{sec:rel}; extended matrix in Appendix~\ref{sec:app:related}). ``Coupled'' ties both axes to architecture level; ``joint, fixed'' learns them as a fixed repertoire. ``One shared latent'' serves alternative horizon--description readouts from one carrier. $^{\dagger}$Our controller was implemented and evaluated decision-only, never closed loop; no selection benefit is shown.}
+\label{tab:rel:gap}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.32\linewidth}>{\raggedright\arraybackslash}p{.12\linewidth}>{\raggedright\arraybackslash}p{.12\linewidth}>{\raggedright\arraybackslash}p{.13\linewidth}>{\raggedright\arraybackslash}p{.12\linewidth}>{\raggedright\arraybackslash}p{.12\linewidth}@{}}
+\toprule
+\rowcolor{tableheader}\textbf{Line} & \textbf{Horizon varies} & \textbf{Description varies} & \textbf{Chosen per decision} & \textbf{One shared latent} & \textbf{Action-sparse physics eval.} \\
+\midrule
+Dreamer, TD-MPC, V-JEPA 2-AC, DINO-WM & No & No & No & No & No \\
+Forward prediction on PHYRE & No & No & No & No & Yes \\
+VLWM, TAWM & Yes & No & No & No & No \\
+SUNTA & Emergent & No & No & No & No \\
+THICK & Emergent & Fixed levels & No & No & No \\
+Adaptive Skip Intervals & Yes & No & Weak (skip) & No & No \\
+Dynamic resolution (Wang et al.) & No & Yes & Yes & No & No \\
+VisualPredicator & No & Yes & Partial & No & No \\
+H-JEPA, CW-VAE, Shaj & Coupled & Coupled & No & No & No \\
+MSPred & All scales & All scales & No & No & No \\
+SALT & Joint, fixed & Joint, fixed & No & No & No \\
+MuSix & Via mixture & Via mixture & Yes (model) & No & No \\
+\textbf{Ours}$^{\dagger}$ & Yes & Yes & Yes & Yes & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,85 @@
+%!TEX root = iclr2026_conference.tex
+% Introduction, rewritten 2026-09-26 under the granularity storyline (owner-approved in chat, four paragraphs).
+% Structure follows the owner's reference paper (arXiv 2409.15915, Sec. 1): context -> gap -> bridge with key
+% innovations -> findings. No separate contributions list: innovations sit in the third paragraph, evidence in the fourth.
+\section{Introduction}
+\label{sec:introduction}
+
+% ==== BRIEF §1 ¶1 (context and physical-simulation motivation) ======================
+% [中] 定位：从具身智能体用世界模型"想象再行动"出发，引出动作稀疏、效应持续的物理交互；想象其结果等于模拟物理运动，
+%      而物理模拟里时间分辨率与模型分辨率历来是按情境调整的两个核心选择；世界模型面对同样的两个选择。
+%      主张：粒度 = 一步走多远 + 以何种描述层级推进状态；两者在物理模拟中按情境调整，而非固定。
+%      证据：hairer1993solving（步长控制）；mirtich2000timewarp（接近碰撞时步长变小）；carlson1997simulation（次要部分用低
+%            细节模拟）；pfaff2021learning（学习型模拟器运行中调整网格）。
+%      手法与边界：不写"决定成败"；不在此处出现 MDP 批评（留给 ¶2）；每个断言都有引用。
+% [EN] Role: context (planning by imagination) -> action-sparse persistent-effect interaction -> imagining its outcome is
+%      simulating motion -> simulation has long adapted time and model resolution -> world models face the same choices.
+%      Claim: granularity = how far a step reaches and at what level of description it advances the state; both are
+%      fitted to the situation in physical simulation.
+%      Evidence: hairer1993solving; mirtich2000timewarp; carlson1997simulation; pfaff2021learning.
+%      Craft: every claim cited; the MDP critique is held for the next paragraph.
+% ==== /BRIEF ==========================================================================
+Embodied agents increasingly plan with learned world models, imagining the outcomes of candidate actions and executing the one predicted to best reach the goal \citep{hafner2025dreamerv3,hansen2022tdmpc,assran2025vjepa2,zhou2025dinowm}. Many physical interactions, however, are action-sparse with persistent effects: after a single throw, push or release, objects keep moving under physical law, strike other objects and set off chain reactions that reshape the scene long after the action ends. Imagining the outcome of such an action amounts to simulating physical motion. In physical simulation, two choices have long been central and are fitted to the situation rather than fixed. One is time resolution: integrators control their step size \citep{hairer1993solving}, and rigid-body simulators take smaller steps as they approach a collision \citep{mirtich2000timewarp}. The other is model resolution: less important parts of a scene are simulated at a lower level of detail \citep{carlson1997simulation}, and learned simulators refine or coarsen their mesh as they run \citep{pfaff2021learning}. Together these set a simulator's granularity, how far each step reaches and at what level of description it advances the state. A world model that imagines a physical cascade faces the same two choices.
+
+% ==== BRIEF §1 ¶2 (gap) ================================================================
+% [中] 定位："Yet" 把模拟实践转成遗憾：具身/VLA 世界模型把两个选择都当设计常数（MDP 一步一表示）；
+%      NovPhy、PHYRE 这类物理环境与该形式化不契合；"Even" 递进：即使改变粒度的工作也没把两轴做成一个逐预测选择。
+%      主张：据我们所知，没有世界模型在一个共享潜在状态上逐预测联合选择时间跨度与描述层级。
+%      证据：潜在状态 hafner2025dreamerv3、hansen2022tdmpc；视觉特征 assran2025vjepa2、zhou2025dinowm；视频帧 yang2024learning、
+%            bruce2024genie、cen2025worldvla；sutton1999options、metelli2020control、katsikopoulos2003mdp；bakhtin2019phyre；
+%            lecun2022path；nhu2025tawm、gumbsch2024thick；wang2023dynamic、liang2025visualpredicator；huang2026salt、jang2026musix。
+%      手法与边界：高层归类，不逐篇罗列；新颖性用 "to our knowledge" 且三要素（jointly, per prediction, one shared latent）同句。
+% [EN] Role: the regret. Embodied world models treat both choices as design constants; the step-wise MDP fits one-shot
+%      physical environments poorly; even granularity work never makes the two axes one per-prediction choice.
+%      Claim: to our knowledge, no world model chooses horizon and description jointly, per prediction, over one shared
+%      latent state.
+%      Evidence: citations as listed above; details deferred to Section 2.
+%      Craft: grouped by which axis stays fixed; "Yet" then "Even" escalate; never "first".
+% ==== /BRIEF ==========================================================================
+Yet the world models used by embodied agents treat both choices as design constants. Formalized as a Markov decision process (MDP), they learn $s_{t+1}\sim P(\cdot\mid s_t,a_t)$: every query advances one fixed step in one fixed representation, whether latent states \citep{hafner2025dreamerv3,hansen2022tdmpc}, visual features \citep{assran2025vjepa2,zhou2025dinowm} or video frames \citep{yang2024learning,bruce2024genie,cen2025worldvla}. For action-sparse physical environments such as NovPhy \citep{pinto2024novphy} and PHYRE \citep{bakhtin2019phyre}, this formalism fits poorly. The cascade becomes a long run of no-op actions predicted one step at a time; options, action persistence and delayed MDPs change when the agent acts rather than what the model predicts \citep{sutton1999options,metelli2020control,katsikopoulos2003mdp}; and PHYRE's own contextual-bandit framing abstracts the cascade into a single outcome \citep{bakhtin2019phyre}. Even work that does vary granularity has not made the two axes one choice. Hierarchical JEPA calls for prediction ``at different time scales and different levels of abstraction'' but ties each time scale to one abstraction level \citep{lecun2022path}; other models vary the horizon \citep{nhu2025tawm,gumbsch2024thick} or the description \citep{wang2023dynamic,liang2025visualpredicator} one axis at a time, or select among fixed repertoires or separately trained models \citep{huang2026salt,jang2026musix}. To our knowledge, no world model chooses horizon and description jointly, per prediction, over one shared latent state (Section~\ref{sec:rel}).
+
+% ==== BRIEF §1 ¶3 (bridge and key innovations) ========================================
+% [中] 定位：承上启下："To close this gap" 直接从 gap 引出方法；三条关键创新，每条一个创新点加一个理由，不写实现细节。
+%      主张：(1) MDP 内的逐预测请求 r=(Δ,α)，因级联开始后智能体不再行动，Δ 步跳跃无需中间动作；(2) 一个 JEPA 式潜在预测器
+%            以请求为输入、在同一共享潜在状态上推进，故想象 rollout 可随时切换粒度而无需模型间转换；(3) 请求策略由动态规划
+%            标签蒸馏，标签代价权衡预测误差与计算量，不用强化学习、不用任务结局标签。
+%      证据（代码，已核对）：/p/Project/NovPhy world_model/training/cnn_hybrid.py:142-155（CarrierPairController，Δ>剩余帧
+%            掩码）、:179-212（trajectory_labels：Δ·MSE + 1e-4·MAC/MAC(15,cont) 加后继 value 的逆向 DP）；
+%            world_model/training/matched_dynamics.py:158-180（controller_labels，"no symbolic or task outcome labels"）；
+%            scripts/run_issue_77_n1_train.py:480-563（两轮标签，第二轮用策略自身 rollout 的上下文，交叉熵蒸馏）。
+%            与 §4 "Request policy" 段（eq:dpcost、eq:dp）一致。
+%      手法与边界：不写 FiLM、谓词回馈、3×3 取值、carrier 等细节（在 §3–§4）；"JEPA-style" 措辞，无 EMA 目标编码器。
+% [EN] Role: bridge from the gap to the method, then three key innovations, one reason each.
+%      Claim: a per-prediction request within the MDP; one request-conditioned latent predictor over one shared latent
+%      state; a request policy distilled from DP labels trading prediction error against compute, without RL or
+%      task-outcome labels.
+%      Evidence (code-verified): cnn_hybrid.py:142-155, :179-212; matched_dynamics.py:158-180;
+%      run_issue_77_n1_train.py:480-563; consistent with the Section 4 request-policy paragraph.
+%      Craft: no mechanism detail here; "JEPA-style" wording.
+% ==== /BRIEF ==========================================================================
+To close this gap, we propose to make granularity a variable that the world model chooses for every prediction. Specifically, our approach introduces three key innovations:
+\begin{itemize}
+  \item \textbf{A per-prediction request within the MDP.} Because the agent issues no further action once a cascade starts, a jump of $\Delta$ steps needs no intermediate actions. The environment can therefore remain an ordinary MDP while every model query carries a \emph{prediction request} $r=(\Delta,\alpha)$: how far to advance and at what level of description.
+  \item \textbf{One world model for all requests.} A single JEPA-style latent predictor takes the request as input and advances one shared latent state under every request, so an imagined rollout can switch granularity at any step without translating between models.
+  \item \textbf{A learned request policy.} The request for each prediction is chosen by a policy distilled from dynamic-programming labels that trade prediction error against compute, requiring neither reinforcement learning nor task-outcome labels.
+\end{itemize}
+
+% ==== BRIEF §1 ¶4 (findings and closing) ==============================================
+% [中] 定位：测试床贡献（NovPhy，to our knowledge）+ 与摘要同序的三条发现，各带一个图指针；最后一句面向"只行动一次、然后等待
+%      物理演化"的智能体拔高。按 owner 指示，此处不加区间、hindsight、development-states 等限定词（在 §5 给出）。
+%      主张：粒度有后果（长跳跃使递归误差下降数个数量级）；无固定请求适合所有情况（在两组发射集上最好的请求在第三组最差）；
+%            这种差异可被利用（逐预测选择优于在其他发射集上调好的固定请求；两轴选择以约三分之一计算量匹配只调时间跨度的基线）。
+%      证据（原始 artifacts，/p/Project/NovPhy/.local-artifacts）：issue-77-n1-diagnostic-v1/summary.json per_seed.*.continuous_h{1,15}
+%            .curves["225"].position_mse（2193.6/1728.6/2748.7 对 0.0459/0.0284/0.0366）；issue-79-clevrer-boundary-v1 与
+%            issue-84-third-family-v1 findings.md 递归位置 MSE 表；issue-96-tau-ad-within-checkpoint-v1/comparisons.csv（F-5-macro
+%            排名 1/1/9/4）与 findings.md J-F*（+0.0700/+0.0037/+0.0595/+0.0273）；issue-74-matched-dynamics-v1/readiness.json
+%            （hybrid_adaptive 118.7M 对 continuous_adaptive 356.0M MAC/candidate-state，遗憾 0.350 对 0.367）。
+%      手法与边界：与摘要一致；§5 必须如实给出：J-F* 四组中三组区间含 0、J 未达事后最佳固定请求、计算对比来自开发状态、
+%            策略只在 decision-only 想象 rollout 中评估、从未闭环。
+% [EN] Role: testbed contribution plus the abstract's three findings in order, one figure pointer each; closing line
+%      lifts to agents that act once and then wait on physics. Qualifiers are deferred to Section 5 by owner directive.
+%      Evidence: raw artifacts as listed above.
+%      Boundaries owed by Section 5: three of four J-F* intervals include 0; J trails the hindsight-best fixed request;
+%      the compute contrast is on development states; the policy was evaluated only in decision-only imagined rollouts.
+% ==== /BRIEF ==========================================================================
+Our experiments on NovPhy \citep{pinto2024novphy}, an Angry-Birds-style physics benchmark that, to our knowledge, has not been used as a world-model testbed, together with CLEVRER \citep{yi2020clevrer} and Physion-Dominoes \citep{bear2021physion}, show that granularity is consequential: long jumps curb the compounding error of step-wise rollouts \citep{talvitie2014model,venkatraman2015improving,janner2019when} by orders of magnitude (Figure~\ref{fig:teaser}, b1). No fixed request suits every situation, as the request that best ranks candidate launches on two launch sets ranks worst on a third (Figure~\ref{fig:teaser}, b2). This variance is exploitable: choosing the request per prediction outperforms a fixed request tuned on other launch sets, and choosing both axes matches a horizon-only adaptive baseline at a third of its compute. These results suggest that, for agents that act once and then wait on physics, granularity is better treated as a decision variable than as a design constant.

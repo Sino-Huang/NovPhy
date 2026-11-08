@@ -1,0 +1,83 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2026_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{float}
+\usepackage[table]{xcolor}
+% Revision markup (manuscript/paper-contract.md §4): \rev{...} inline and revblock for whole passages print added or changed text in blue; \showrevisionsfalse prints everything black.
+\newif\ifshowrevisions \showrevisionstrue
+\newcommand{\rev}[1]{\ifshowrevisions{\color{blue}#1}\else{#1}\fi}
+\newenvironment{revblock}{\ifshowrevisions\color{blue}\fi}{}
+\definecolor{tableheader}{gray}{0.92}
+\usepackage{hyperref}
+\usepackage{xurl} % xurl over url: lets \nolinkurl paths break anywhere (appendix audit/repro tables)
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*, topsep=0pt, itemsep=0pt, parsep=0pt}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable} % multi-page audit table tab:app:audit (Appendix H)
+\graphicspath{{figures/}}
+
+% =============================================================================
+% FILE MAP. The authoritative brief for this revision is manuscript/paper-contract.md (section, appendix and
+% figure plans, write sets, revision markup). No body prose lives in this file.
+%   iclr2026_conference_abstract.tex          -> Abstract
+%   this file                                 -> preamble, revision macros
+%   iclr2026_conference_introduction.tex      -> §1 Introduction
+%   iclr2026_conference_related_work.tex      -> §2 Related Work
+%   iclr2026_conference_method.tex            -> §3 Problem Formulation, §4 Method (inputs
+%                                                iclr2026_conference_fig_model.tex), §5 Experimental Setup
+%   iclr2026_conference_results.tex           -> §6 Results
+%   iclr2026_conference_discussion.tex        -> §7 Discussion, §8 Conclusion
+%   iclr2026_conference_appendix.tex          -> \appendix switch; inputs A--H in order, then the
+%                                                Reproducibility, Ethics and LLM-use statements
+%     iclr2026_conference_appendix_notation.tex     A  sec:app:notation
+%     iclr2026_conference_appendix_protocol.tex     B  sec:app:protocol
+%     iclr2026_conference_appendix_method.tex       C  sec:app:method
+%     iclr2026_conference_appendix_results.tex      D  sec:app:results
+%     iclr2026_conference_appendix_external.tex     E  sec:app:external
+%     iclr2026_conference_appendix_development.tex  F  sec:app:development
+%     iclr2026_conference_appendix_related.tex      G  sec:app:related
+%     iclr2026_conference_appendix_repro.tex        H  sec:app:repro
+% Labels use file-scoped prefixes (sec:/tab:/fig: with mth, res, disc, rel, app); duplicate labels only warn.
+% Build: latexmk -pdf (pdflatex/bibtex/pdflatex x2); a single pdflatex pass leaves ?? and is not a valid check.
+% =============================================================================
+
+\title{Granularity Is a Decision: Joint Horizon-Description Selection in World Models}
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+
+\author{Anonymous submission}
+% used to separate the names and addresses of multiple authors: \And and \AND.
+
+
+%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+
+\maketitle
+
+\input{iclr2026_conference_abstract}
+
+\input{iclr2026_conference_introduction}
+
+\input{iclr2026_conference_related_work}
+
+\input{iclr2026_conference_method}
+
+\input{iclr2026_conference_results}
+
+\input{iclr2026_conference_discussion}
+
+\bibliography{iclr2026_conference}
+\bibliographystyle{iclr2026_conference}
+
+\input{iclr2026_conference_appendix}
+
+
+\end{document}

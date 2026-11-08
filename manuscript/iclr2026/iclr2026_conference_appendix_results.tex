@@ -1,0 +1,433 @@
+%!TEX root = iclr2026_conference.tex
+% Appendix D (sec:app:results): full sealed-grid, fixed-request, control, sharing, novelty, frontier, live and
+% pixel-benchmark tables. Content plan and owner unit: manuscript/paper-contract.md §8.
+\section{\texorpdfstring{\rev{Additional Results}}{Additional Results}}
+\label{sec:app:results}
+
+\begin{revblock}
+\nopagebreak
+This appendix holds the full tables behind Section~\ref{sec:res}. Unless a table says otherwise, NovPhy numbers use the primary stack on the sealed NovPhy split, intervals are 95\% level-clustered percentile bootstraps with 10{,}000 draws (all three seeds of a level resampled together) and are descriptive, and the practical margin is $\delta=0.02$ AUC. Where a frozen decision token is reported, S means the contrast met the $\delta$ rule (point estimate at least $\delta$ and lower bound above zero), N means its upper bound lies below $\delta$, and I means the evidence is insufficient or a guard failed. Ticket numbers (\#) name the record in Appendix~\ref{sec:app:repro}.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Offset, angle and power inventories}}{Offset, angle and power inventories}}
+\label{sec:app:res:inventories}
+
+\begin{revblock}
+\nopagebreak
+The three non-grid inventories exist on 120 of the 400 evaluation levels and are descriptive. They are never pooled with the grid or with each other. The no-model action prior is uninformative on offset and power: the predictor-fit split never executed those launches, so every candidate receives the same prior cost and the prior's AUC is 0.500 by construction. On angle, the prior (0.812) ranks above every arm in Table~\ref{tab:app:res:inventories} except $F(5,\textsf{cont})$ and $F(5,\textsf{micro})$, which are the highest-AUC fixed requests of the hybrid on offset and angle; $F(5,\textsf{micro})$ is both $F_{\mathrm{hind}}$ and $F^{*}$ on every non-grid inventory (\#101, \#103).
+\end{revblock}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\caption{\textbf{Ordering AUC on the offset, angle and power inventories} (\#103). Cells: offset 228 (76 mixed-outcome levels $\times$ 3 seeds), angle 234 (78 $\times$ 3), power 141 (47 $\times$ 3). Arms as in Table~\ref{tab:res:ranking}. The prior's 0.500 on offset and power is a constant cost, not a measurement of ranking.}
+\label{tab:app:res:inventories}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Ranker & Offset & Angle & Power \\
+\midrule
+$F(5,\textsf{cont})$ & 0.819 [0.795, 0.841] & 0.835 [0.814, 0.855] & 0.810 [0.770, 0.851] \\
+$F(5,\textsf{micro})$ & 0.842 [0.819, 0.864] & 0.856 [0.837, 0.874] & 0.814 [0.776, 0.853] \\
+$F(15,\textsf{cont})$ & 0.818 [0.797, 0.837] & 0.798 [0.780, 0.815] & 0.804 [0.765, 0.844] \\
+$U\equiv F(15,\textsf{macro})$ & 0.667 [0.650, 0.683] & 0.679 [0.666, 0.691] & 0.806 [0.773, 0.840] \\
+$F(1,\textsf{micro})$ & 0.708 [0.683, 0.732] & 0.724 [0.705, 0.743] & 0.791 [0.752, 0.830] \\
+$C^{*}\equiv C\text{-}F(15)$ & 0.775 [0.752, 0.796] & 0.759 [0.742, 0.775] & 0.807 [0.771, 0.844] \\
+$J$ & 0.752 [0.704, 0.798] & 0.776 [0.740, 0.812] & 0.808 [0.770, 0.846] \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ & 0.762 [0.729, 0.794] & 0.768 [0.740, 0.795] & 0.780 [0.739, 0.823] \\
+$J_{\mathrm{dec}}$ & 0.690 [0.674, 0.706] & 0.699 [0.683, 0.715] & 0.794 [0.755, 0.833] \\
+$C\text{-}J$ & 0.775 [0.762, 0.788] & 0.769 [0.756, 0.782] & 0.797 [0.756, 0.838] \\
+$T_{\textsf{cont}}$ & 0.755 [0.729, 0.779] & 0.776 [0.756, 0.795] & 0.795 [0.757, 0.835] \\
+$T_{\textsf{macro}}$ & 0.537 [0.492, 0.580] & 0.624 [0.586, 0.662] & 0.785 [0.752, 0.819] \\
+$D_{1}$ & 0.710 [0.650, 0.768] & 0.745 [0.700, 0.789] & 0.765 [0.714, 0.817] \\
+$D_{5}$ & 0.778 [0.749, 0.806] & 0.786 [0.765, 0.806] & 0.802 [0.765, 0.841] \\
+$D_{15}$ & 0.801 [0.778, 0.824] & 0.785 [0.766, 0.803] & 0.796 [0.755, 0.838] \\
+No-model action prior & 0.500 (constant) & 0.812 [0.778, 0.845] & 0.500 (constant) \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\begin{revblock}
+On offset, $J-F_{\mathrm{hind}}=-0.090$ [$-0.126$, $-0.055$], with $F_{\mathrm{hind}}=F(5,\textsf{micro})$ (\#101). The same request is $F^{*}$ on offset, so this number is also $J-F^{*}$.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{All fixed requests on the sealed grid}}{All fixed requests on the sealed grid}}
+\label{sec:app:res:fixed}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\caption{\textbf{Every fixed request on the sealed grid} (933 cells). AUC and top-3 hit from \#103; rollout error is the engine-referenced position MSE at $t=225$ from \#121 (Table~\ref{tab:res:rollout}a). MACs: linear multiply--accumulates per candidate rollout to $t=225$, in millions. Top-3 chance: 0.254. ---: not recorded for this predictor in the cited record.}
+\label{tab:app:res:fixed}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Request & AUC [95\% CI] & Top-3 & MACs & MSE at $t=225$ \\
+\midrule
+$F(1,\textsf{cont})$ & 0.677 [0.655, 0.699] & 0.433 & 322.3 & 0.0309 \\
+$F(1,\textsf{micro})$ & 0.650 [0.628, 0.672] & 0.422 & 404.0 & 0.0303 \\
+$F(1,\textsf{macro})$ & 0.666 [0.643, 0.689] & 0.444 & 329.6 & 0.0281 \\
+$F(5,\textsf{cont})$ & 0.749 [0.729, 0.768] & 0.586 & 64.5 & 0.0383 \\
+$F(5,\textsf{micro})$ & 0.745 [0.725, 0.764] & 0.566 & 80.8 & 0.0375 \\
+$F(5,\textsf{macro})$ & 0.743 [0.724, 0.762] & 0.535 & 65.9 & 0.0446 \\
+$F(15,\textsf{cont})$ & 0.762 [0.743, 0.781] & 0.618 & 21.5 & 0.0415 \\
+$F(15,\textsf{micro})$ & 0.760 [0.741, 0.779] & 0.593 & 26.9 & 0.0419 \\
+$F(15,\textsf{macro})$ & 0.744 [0.727, 0.762] & 0.549 & 22.0 & 0.0474 \\
+\midrule
+$C\text{-}F(1)$ & 0.632 [0.614, 0.649] & 0.353 & 416.7 & --- \\
+$C\text{-}F(5)$ & 0.691 [0.676, 0.706] & 0.448 & 83.3 & --- \\
+$C\text{-}F(15)$ & 0.783 [0.768, 0.799] & 0.602 & 27.8 & --- \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\begin{revblock}
+On this predictor the $\Delta=1$ requests have both the lowest rollout error and the lowest grid AUC of the nine fixed requests.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Short-window and long-horizon training}}{Short-window and long-horizon training}}
+\label{sec:app:res:rollout}
+
+\begin{revblock}
+\nopagebreak
+The submitted model was trained with local losses on short windows only (recipe B in \#112). Adding the long-horizon recursive loss (recipe L) removes its $\Delta=1$ divergence. On the 12 development lineages scored leave-one-lineage-out (exploratory, not the sealed NovPhy split), the engine-referenced position MSE at $t=225$ of $F(1,\textsf{cont})$ falls from 3622 under B to 0.088 under L, with $L-B=-3622$ [$-4089$, $-3150$]. At $\Delta=5$ it falls from 0.303 to 0.041, and at $\Delta=15$ from 0.037 to 0.030. The primary recipe (LC) adds a decision-contrastive ranking loss to L (Section~\ref{sec:mth:model}). These numbers come from the \#112 report and were not rescored for this revision.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Sharing: per-request tables}}{Sharing: per-request tables}}
+\label{sec:app:res:sharing}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\caption{\textbf{Shared predictor versus single-request specialists and per-horizon predictors, per request} (\#117; grid, 311 mixed-outcome levels, descriptive AUC). Matched: specialists get 1,000 updates and per-horizon predictors 3,000 updates, the updates each request receives inside the shared predictor's 9,000. Full: every model gets 9,000 updates, nine times the matched specialist budget and three times the matched per-horizon budget. Typed training failures removed one seed from the matched $\Delta=1$ per-horizon predictor and one from the full-budget $F(1,\textsf{macro})$ specialist; a paired contrast uses a cell only when every model in it has that seed. The full-budget shared--specialist request-mean contrast therefore uses 311 levels $\times$ two jointly usable seeds; the primary shared--specialist contrast and the full-budget shared--per-horizon contrast use three seeds.}
+\label{tab:app:res:sharing}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+& Shared & \multicolumn{2}{c}{Matched updates per request} & \multicolumn{2}{c}{Full budget (9,000 updates)} \\
+\cmidrule(lr){3-4}\cmidrule(l){5-6}
+Request & predictor & Specialist & Per-horizon & Specialist & Per-horizon \\
+\midrule
+$(1,\textsf{cont})$ & 0.677 & 0.592 & 0.503 & 0.569 & 0.606 \\
+$(1,\textsf{micro})$ & 0.650 & 0.525 & 0.577 & 0.508 & 0.561 \\
+$(1,\textsf{macro})$ & 0.666 & 0.565 & 0.583 & 0.501 & 0.614 \\
+$(5,\textsf{cont})$ & 0.749 & 0.681 & 0.738 & 0.803 & 0.874 \\
+$(5,\textsf{micro})$ & 0.745 & 0.648 & 0.738 & 0.657 & 0.859 \\
+$(5,\textsf{macro})$ & 0.743 & 0.676 & 0.752 & 0.864 & 0.869 \\
+$(15,\textsf{cont})$ & 0.762 & 0.680 & 0.754 & 0.868 & 0.861 \\
+$(15,\textsf{micro})$ & 0.760 & 0.678 & 0.751 & 0.829 & 0.873 \\
+$(15,\textsf{macro})$ & 0.744 & 0.688 & 0.758 & 0.885 & 0.843 \\
+\midrule
+Request mean & 0.722 & 0.637 & 0.684 & 0.721 & 0.773 \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\begin{revblock}
+Request-mean contrasts (shared minus comparator) are $+0.0848$ [$0.0742$, $0.0952$] against matched specialists (three seeds) and $+0.0324$ [$0.0219$, $0.0431$] against matched per-horizon predictors (two seeds, because one matched $\Delta=1$ per-horizon predictor failed); for $U$'s request, $(15,\textsf{macro})$, the matched specialist contrast is $+0.0561$ [$0.0435$, $0.0682$]. Under the full budget they are $+0.015$ [$-0.001$, $+0.030$] against specialists and $-0.051$ [$-0.060$, $-0.043$] against per-horizon predictors. Full-budget specialists reach 0.80--0.89 AUC on the $\Delta=5/15$ requests except $(5,\textsf{micro})$; the $(15,\textsf{macro})$ specialist scores 0.885 [0.872, 0.898], against $U$'s 0.744. The shared predictor's 9,000-update budget may therefore undertrain its coarse requests. \#140 retrains $U$ for 16,929 updates (1.88$\times$ the updates; measured training time 1.654$\times$ $U$'s) to 0.813 [0.798, 0.829], a descriptive control that failed G-action; it does not rerun the selector comparisons.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Same-checkpoint controls, tied axes and the remaining-frames input}}{Same-checkpoint controls, tied axes and the remaining-frames input}}
+\label{sec:app:res:controls}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{\textbf{Paired contrasts on the sealed grid} (933 cells, paired by level and seed). Token: frozen decision token of the record (S, N, I as defined at the start of this appendix); --- where the record states the estimate without a token. $J_{\mathrm{dec}}$ and $J$ differ in label type and also in $\lambda$ ($10^{-1}$ vs $10^{-4}$) and label window (225 vs 60 frames). $J_{\mathrm{diag}}$ restricts $J$ to $\{(1,\textsf{cont}),(5,\textsf{micro}),(15,\textsf{macro})\}$; $J_{\mathrm{monotone}}$ allows only schedules in which horizon and description change in the same direction; $H^{*}$ is the cross-fit-selected level $(5,\textsf{micro})$ of a separately trained three-level hierarchical predictor (1,840,322 parameters).}
+\label{tab:app:res:controls}
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Contrast & Question & Estimate [95\% CI] & Token \\
+\midrule
+$C^{*}-J$ & fixed coarse vs joint selector & $+0.078$ [$0.066$, $0.090$] & S \\
+$C^{*}-(C\text{-}J)$ & fixed vs horizon-only selector & $+0.083$ [$0.073$, $0.094$] & S \\
+$J_{\mathrm{dec}}-J$ & label type (see caption) & $+0.040$ [$+0.029$, $+0.052$] & S \\
+$J_{\mathrm{dec}}-F_{\mathrm{hind}}$ & $J_{\mathrm{dec}}$ vs hindsight-best fixed & $-0.0163$ [$-0.0203$, $-0.0122$] & N \\
+$U-C^{*}$ & hybrid vs continuous predictor & $-0.0390$ [$-0.0442$, $-0.0338$] & N \\
+$J-J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ & same checkpoint, description axis & $+0.0201$ [$0.0154$, $0.0248$] & S \\
+$J-T_{\textsf{cont}}$ & $J$'s logits restricted to $\textsf{cont}$ & $+0.0032$ [$-0.0075$, $+0.0137$] & N \\
+$J-J_{\text{as-cont}}$ & $J$'s horizons replayed with $\textsf{cont}$ & $+0.0037$ [$-0.0021$, $+0.0095$] & N \\
+$J-D_{15}$ & $J$ vs its own $\Delta=15$ restriction & $-0.0562$ [$-0.0685$, $-0.0441$] & N \\
+$J-(C\text{-}J)$ & cross-system selectors & $+0.006$ [$0.000$, $+0.012$] & N \\
+$J-J_{\mathrm{diag}}$ & tied axes (diagonal) & $-0.0068$ [$-0.0164$, $+0.0026$] & N \\
+$J-J_{\mathrm{monotone}}$ & tied axes (monotone) & $+0.0028$ [$+0.0014$, $+0.0043$] & N \\
+$J-H^{*}$ & constructed hierarchy & $-0.0006$ [$-0.0188$, $+0.0170$] & N \\
+$U-\text{prior}$ & model vs no-model prior & $+0.0241$ [$-0.0008$, $+0.0487$] & I \\
+$J-\text{prior}$ & selector vs no-model prior & $-0.0146$ [$-0.0388$, $+0.0088$] & N \\
+$U$ right$-$wrong anchor & dependence on the level's state & $+0.1322$ [$0.1216$, $0.1430$] & S \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\begin{revblock}
+\textbf{Same-checkpoint qualifications (\#114).} $J_{\mathrm{cont}}^{\mathrm{NovPhy}}$'s largest observed spend is 122.7M MACs per candidate, below both declared budgets (184.0M and 234.7M), so it is clamped at both, and $J-J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ is an at-most-budget comparison rather than an equal-spend one. Both budget readings reuse the same endpoint pair and are therefore not independent replications. During execution a duplicate-launch incident violated literal scored-once execution for some fixed-request prefixes; the retained deterministic records were reproducibility-checked and no rule changed afterwards. $D_{15}$, which restricts $J$'s own logits to $\Delta=15$, ranks above $J$ by $0.0562$ (Table~\ref{tab:app:res:controls}).
+
+\textbf{Remaining-frames input (\#119).} The policy receives the remaining carrier frames $\kappa$ as $\min(\kappa,60)/60$, which saturates for most of a 225-frame rollout. A variant that receives the unsaturated $\kappa/225$, selected on the policy-fit split, changes $J$'s grid AUC by $+0.0042$ [$-0.0005$, $+0.0088$] (933 cells; N). The saturation does not explain $J$'s gap to the fixed coarse requests.
+
+\textbf{Per-seed readings (\#108).} Table~\ref{tab:app:res:perseed} gives $U$ and $C^{*}$ separately for each training seed. The ordering of the two rankers flips on seed 20260909, so the pooled $U-C^{*}$ contrast describes these three trained models, not training runs in general.
+\end{revblock}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\caption{\textbf{Per-seed grid AUC of $U$ and $C^{*}$} (\#108; 311 mixed-outcome grid levels per seed, 95\% level-clustered intervals). Descriptive: three training seeds are not a sample from which training-run uncertainty can be estimated, and the pooled intervals of Table~\ref{tab:res:ranking} condition on these trained models.}
+\label{tab:app:res:perseed}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Ranker & Seed 20260908 & Seed 20260909 & Seed 20260910 \\
+\midrule
+$U\equiv F(15,\textsf{macro})$ & 0.714 [0.692, 0.736] & 0.801 [0.783, 0.820] & 0.718 [0.696, 0.740] \\
+$C^{*}\equiv C\text{-}F(15)$ & 0.826 [0.809, 0.843] & 0.733 [0.713, 0.754] & 0.791 [0.769, 0.812] \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\subsection{\texorpdfstring{\rev{Request-code parameterization}}{Request-code parameterization}}
+\label{sec:app:res:code}
+
+\begin{revblock}
+\nopagebreak
+The predictor's request code is a fused MLP of the horizon and description embeddings (Section~\ref{sec:mth:model}). \#121 retrained the primary recipe with two alternatives: an additive code, which sums separate horizon and description terms, and a factored FiLM code. On the grid, the trained fused parameterization outperforms the trained additive parameterization on nine-fixed-request mean AUC: fused 0.722 [0.703, 0.741], additive 0.672 [0.653, 0.691], factored 0.684 [0.666, 0.701], with fused $-$ additive $=+0.050$ [$+0.041$, $+0.059$] and fused $-$ factored $=+0.052$ [$+0.049$, $+0.056$]. The fused-versus-additive comparison changes the trained parameterization and its optimization as well as the interaction capacity, so interaction-specific decision value remains unidentified. In parameter space the fused FiLM is close to additive: the interaction term is 0.26--0.43\% of per-block $\gamma$ variance. For $J$ the gap is $+0.013$ [$+0.004$, $+0.022$] (I). The additive code costs 1.14--2.02$\times$ the fused code's rollout error at $t=225$ across the nine requests. No code beats the no-model prior: fused request mean $-$ prior $=+0.001$ [$-0.025$, $+0.026$]. One factored seed (20260908) ended in a typed training failure, so the factored contrasts use two seeds.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Predicate feedback and the macro audit}}{Predicate feedback and the macro audit}}
+\label{sec:app:res:macro}
+
+\begin{revblock}
+\nopagebreak
+\textbf{Macro observability (\#113).} The primary model's own macro head reads macro F1 0.000 on the evaluation stream. A redesigned temporal macro audit head (four-carrier history, one head per $\Delta$, trained with half of its landing carriers taken from the primary model's one-step predictions) reaches macro F1 0.157 [0.151, 0.164] on parsed carriers, 0.113 [0.107, 0.119] on one-step predictions and 0.015 [0.014, 0.015] on open-loop rollouts (11,680 evaluation shots, 400 levels). These are audit-head measurements, not the primary model's macro head. Description labels identify supervised predicate-feedback modes, not semantic understanding.
+
+\textbf{Macro against continuous under four success verdicts (\#120).} Averaged over $\Delta\in\{1,5,15\}$ and paired per level and seed, macro-minus-continuous grid AUC is $-0.012$ [$-0.019$, $-0.004$] when success is pig removal, $-0.024$ [$-0.029$, $-0.018$] when it is a destroyed block, $-0.036$ [$-0.048$, $-0.025$] when it is total displacement of at least 0.5 world units, and $-0.078$ [$-0.091$, $-0.065$] when it is a bird--block or bird--pig contact by frame 150. All four are N.
+
+\textbf{Predicate feedback interventions (\#115).} Replacing the predicted predicates fed back into the trunk with engine labels (oracle feedback) changes $J$'s grid AUC by $-0.081$ [$-0.091$, $-0.071$] for micro and $-0.014$ [$-0.020$, $-0.008$] for macro. Removing the feedback changes it by $+0.002$ [$0.000$, $+0.005$] (micro) and $-0.004$ [$-0.008$, $+0.000$] (macro). A label-free micro variant, trained without the micro predicate loss, is non-inferior on the grid only ($J-T$ gap difference $-0.003$ [$-0.015$, $+0.008$]); on offset and angle its fixed-request mean ranks far worse. Removing the fed-back predicates leaves $J$ nearly unchanged, while correct engine labels lower it. This pattern is consistent with a model tuned to its own predicted predicates that draws little decision-relevant information from them.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Request-set scaling and DP labelling cost}}{Request-set scaling and DP labelling cost}}
+\label{sec:app:res:scaling}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\caption{\textbf{Larger request sets} (\#116; grid, 933 cells). $R_9$ is the primary nine-request set; $R_{18}$, $R_{30}$ and $R_{\mathrm{cont}}$ contain 18, 30 and 225 requests with additional horizons. ``Total'' keeps 9,000 predictor updates; ``request'' gives each request the updates it receives in $R_9$, so $R_{30}$ and $R_{\mathrm{cont}}$ train for 30,000 and 225,000 updates. $J$-flat: \#116's own joint policy with one logit per request, distilled from 225-frame DP windows (374.9M MACs per candidate on $R_9$); on $R_9$ it is therefore not the $J$ of Table~\ref{tab:res:ranking}, which uses 60-frame windows.}
+\label{tab:app:res:scaling}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Set / budget & Updates & $J$-flat AUC & $-\,R_9$ & Token \\
+\midrule
+$R_9$ & 9,000 & 0.678 [0.656, 0.700] & --- & --- \\
+$R_{18}$ / total & 9,000 & 0.615 [0.603, 0.627] & $-0.063$ [$-0.077$, $-0.049$] & N \\
+$R_{18}$ / request & 18,000 & 0.638 [0.618, 0.659] & $-0.042$ [$-0.056$, $-0.030$] & N \\
+$R_{30}$ / total & 9,000 & 0.543 [0.527, 0.559] & $-0.135$ [$-0.154$, $-0.116$] & N \\
+$R_{30}$ / request & 30,000 & 0.749 [0.737, 0.761] & $+0.071$ [$+0.049$, $+0.092$] & S \\
+$R_{\mathrm{cont}}$ / total & 9,000 & 0.699 [0.687, 0.711] & $+0.021$ [$-0.002$, $+0.042$] & I \\
+$R_{\mathrm{cont}}$ / request & 225,000 & 0.947 [0.935, 0.958] & $+0.269$ [$+0.245$, $+0.293$] & S \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\begin{revblock}
+No larger set improves ranking under both budgets, so the frozen disposition is insufficient. The two supported cells train the predictor for 3.3$\times$ and 25$\times$ more updates, and the fixed $R_9$ requests of the same predictors move by $+0.100$ and $+0.237$, so most of these gains are already present in the same predictors' fixed $R_9$ requests and cannot be attributed to the larger request set. A $\Delta$ below one carrier frame is unsupported: one carrier frame is 50 native engine steps, and no capture records a finer target. The exact dynamic-programming labeller stays tractable at $|\mathcal{R}|=225$. One round over the 3,480 policy-fit windows of length $L=225$ takes 17.8--18.3 GPU seconds per predictor.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Novelty transfer}}{Novelty transfer}}
+\label{sec:app:res:novelty}
+
+\begin{revblock}
+\nopagebreak
+\textbf{Retuning under novel physics (\#107).} The novelty protocol pools seven NovPhy novelty types (appearance change, fan, stronger air turbulence, magnet, mirrored slingshot, inverse gravity, inverse air turbulence) into 122 mixed-outcome evaluation levels $\times$ 3 seeds. Intervals cluster by evaluation level. Policy-only retuning on novel fit levels changes $J_{\mathrm{dec}}$'s AUC by $-0.007$ [$-0.021$, $+0.006$] relative to zero-shot (N), whereas world-model-stack retuning improves it by $+0.151$ [$+0.097$, $+0.206$] (S). For $J$, policy-only retuning gives $-0.057$ [$-0.079$, $-0.034$] (N). Under these novelties, retuning the request policy does not improve AUC; retuning the predictor does.
+
+\textbf{Paired novel levels (\#128).} On 72 paired novel/normal level pairs (novelty types 1--7 pooled), the direct success predictors score 0.5776 [0.5269, 0.6272] (A1), 0.5172 [0.4661, 0.5681] (A2), 0.5174 (A2-native) and 0.5690 (A4); $U$ scores 0.4743 [0.4354, 0.5119], $C^{*}$ 0.4551 and the no-model prior 0.6022 [0.5459, 0.6559]. Every ranker loses AUC from the paired normal side to the novel side. These numbers are descriptive and enter no disposition.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Full observed AUC--MAC frontier table}}{Full observed AUC--MAC frontier table}}
+\label{sec:app:res:frontier}
+
+\begin{revblock}
+\nopagebreak
+Table~\ref{tab:app:res:frontier} lists every grid arm of the \#103 frontier record. Beyond the arms of Section~\ref{sec:res}, it includes the policy-gradient selector $J_{\mathrm{pg}}$ (REINFORCE on per-cell AUC minus $\lambda$ times work); $M$, a factorized selector that picks $\Delta$ and $\alpha$ separately from the same logits; $OL$, open-loop draws from the corresponding selector's pooled request frequencies; tied-axis restrictions of $J$ and $J_{\mathrm{dec}}$; the three levels $H(\cdot)$ of the constructed hierarchical predictor (\#105); and ports of a time-aware world model (TAWM; \citealp{nhu2025tawm}) and a variable-length latent world model (VLWM; \citealp{du2026vlwm}) trained on the submitted model's earlier carrier (\#78). An arm is dominated when another arm has at least its AUC with no more MACs; the status column names one dominating arm, the paired AUC difference and its token. Wall: CUDA-synchronized seconds per evaluation state on the frozen single-seed timing pass. Compute accounting: linear MACs per candidate rollout to $t=225$, predictor plus policy; nonlinear and memory work excluded.
+\end{revblock}
+
+{\footnotesize
+\begin{revblock}
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}lcrrl@{}}
+\caption{\textbf{Observed AUC--MAC frontier, every grid arm} (\#103; 933 cells; descriptive AUC with 95\% level-clustered intervals). ``Frontier'' marks the four observed frontier members; it is not a statistically certified Pareto frontier. Only $\lambda=10^{-4}$ ($J$, $J_{\mathrm{cont}}^{\mathrm{NovPhy}}$, $C\text{-}J$, the submitted value) and the policy-split selections of $J_{\mathrm{dec}}$ and $J_{\mathrm{pg}}$ ($10^{-1}$) are deployment settings; other $\lambda$ rows, including $J$ at $10^{-1}$, are evaluation-informed sweep points.}\label{tab:app:res:frontier}\\
+\toprule
+Arm & AUC [95\% CI] & MACs (M) & Wall (s) & Status \\
+\midrule
+\endfirsthead
+\toprule
+Arm & AUC [95\% CI] & MACs (M) & Wall (s) & Status \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+$F(1,\textsf{cont})$ & 0.677 [0.655, 0.699] & 322.3 & 0.147 & dom.\ $C\text{-}F(15)$, $+0.106$ S \\
+$F(1,\textsf{micro})$ & 0.650 [0.628, 0.672] & 404.0 & 0.187 & dom.\ $C\text{-}F(15)$, $+0.133$ S \\
+$F(1,\textsf{macro})$ & 0.666 [0.643, 0.689] & 329.6 & 0.165 & dom.\ $C\text{-}F(15)$, $+0.117$ S \\
+$F(5,\textsf{cont})$ & 0.749 [0.729, 0.768] & 64.5 & 0.030 & dom.\ $C\text{-}F(15)$, $+0.035$ S \\
+$F(5,\textsf{micro})$ & 0.745 [0.725, 0.764] & 80.8 & 0.037 & dom.\ $C\text{-}F(15)$, $+0.039$ S \\
+$F(5,\textsf{macro})$ & 0.743 [0.724, 0.762] & 65.9 & 0.033 & dom.\ $C\text{-}F(15)$, $+0.041$ S \\
+$F(15,\textsf{cont})$ & 0.762 [0.743, 0.781] & 21.5 & 0.010 & frontier \\
+$F(15,\textsf{micro})$ & 0.760 [0.741, 0.779] & 26.9 & 0.013 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.010$ N \\
+$F(15,\textsf{macro})=U$ & 0.744 [0.727, 0.762] & 22.0 & 0.011 & dom.\ $F(15,\textsf{cont})$, $+0.018$ I \\
+$C\text{-}F(1)$ & 0.632 [0.614, 0.649] & 416.7 & 0.113 & dom.\ $C\text{-}F(15)$, $+0.152$ S \\
+$C\text{-}F(5)$ & 0.691 [0.676, 0.706] & 83.3 & 0.023 & dom.\ $C\text{-}F(15)$, $+0.092$ S \\
+$C\text{-}F(15)=C^{*}$ & 0.783 [0.768, 0.799] & 27.8 & 0.008 & frontier \\
+$C\text{-}J$ $\lambda{=}10^{-5}$ & 0.726 [0.710, 0.742] & 48.0 & 0.015 & dom.\ $C\text{-}F(15)$, $+0.058$ S \\
+$C\text{-}J$ $\lambda{=}10^{-4}$ & 0.700 [0.683, 0.717] & 234.7 & 0.014 & dom.\ $C\text{-}F(15)$, $+0.083$ S \\
+$C\text{-}J$ $\lambda{=}3{\times}10^{-4}$ & 0.711 [0.694, 0.729] & 245.7 & 0.014 & dom.\ $C\text{-}F(15)$, $+0.072$ S \\
+$C\text{-}J$ $\lambda{=}10^{-3}$ & 0.693 [0.677, 0.710] & 172.9 & 0.014 & dom.\ $C\text{-}F(15)$, $+0.090$ S \\
+$C\text{-}J$ $\lambda{=}3{\times}10^{-3}$ & 0.682 [0.667, 0.696] & 82.2 & 0.014 & dom.\ $C\text{-}F(15)$, $+0.102$ S \\
+$C\text{-}J$ $\lambda{=}10^{-2}$ & 0.712 [0.698, 0.726] & 49.6 & 0.011 & dom.\ $C\text{-}F(15)$, $+0.071$ S \\
+$C\text{-}J$ $\lambda{=}3{\times}10^{-2}$ & 0.690 [0.677, 0.703] & 45.2 & 0.011 & dom.\ $C\text{-}F(15)$, $+0.094$ S \\
+$C\text{-}J$ $\lambda{=}10^{-1}$ & 0.697 [0.683, 0.711] & 44.2 & 0.011 & dom.\ $C\text{-}F(15)$, $+0.086$ S \\
+$J$ $\lambda{=}10^{-5}$ & 0.704 [0.684, 0.724] & 181.2 & 0.183 & dom.\ $C\text{-}F(15)$, $+0.079$ S \\
+$J$ $\lambda{=}10^{-4}$ & 0.706 [0.685, 0.727] & 184.0 & 0.242 & dom.\ $C\text{-}F(15)$, $+0.078$ S \\
+$J$ $\lambda{=}3{\times}10^{-4}$ & 0.713 [0.692, 0.734] & 85.5 & 0.028 & dom.\ $C\text{-}F(15)$, $+0.070$ S \\
+$J$ $\lambda{=}10^{-3}$ & 0.734 [0.714, 0.755] & 34.4 & 0.021 & dom.\ $C\text{-}F(15)$, $+0.049$ S \\
+$J$ $\lambda{=}3{\times}10^{-3}$ & 0.725 [0.705, 0.745] & 33.6 & 0.021 & dom.\ $C\text{-}F(15)$, $+0.058$ S \\
+$J$ $\lambda{=}10^{-2}$ & 0.713 [0.693, 0.733] & 49.5 & 0.035 & dom.\ $C\text{-}F(15)$, $+0.070$ S \\
+$J$ $\lambda{=}3{\times}10^{-2}$ & 0.746 [0.727, 0.764] & 25.2 & 0.017 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.024$ S \\
+$J$ $\lambda{=}10^{-1}$ (unselected) & 0.770 [0.751, 0.788] & 22.1 & 0.013 & frontier \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}10^{-5}$ & 0.688 [0.666, 0.709] & 118.1 & 0.033 & dom.\ $C\text{-}F(15)$, $+0.096$ S \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}10^{-4}$ & 0.686 [0.665, 0.706] & 122.7 & 0.048 & dom.\ $C\text{-}F(15)$, $+0.098$ S \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}3{\times}10^{-4}$ & 0.686 [0.665, 0.707] & 80.3 & 0.053 & dom.\ $C\text{-}F(15)$, $+0.098$ S \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}10^{-3}$ & 0.687 [0.666, 0.709] & 91.9 & 0.038 & dom.\ $C\text{-}F(15)$, $+0.096$ S \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}3{\times}10^{-3}$ & 0.691 [0.670, 0.711] & 71.5 & 0.021 & dom.\ $C\text{-}F(15)$, $+0.093$ S \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}10^{-2}$ & 0.698 [0.676, 0.719] & 33.1 & 0.029 & dom.\ $C\text{-}F(15)$, $+0.086$ S \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}3{\times}10^{-2}$ & 0.757 [0.738, 0.776] & 35.3 & 0.037 & dom.\ $C\text{-}F(15)$, $+0.026$ S \\
+$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ $\lambda{=}10^{-1}$ & 0.757 [0.738, 0.776] & 22.1 & 0.013 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.013$ N \\
+$T_{\textsf{cont}}$ & 0.702 [0.681, 0.724] & 196.1 & 0.139 & dom.\ $C\text{-}F(15)$, $+0.081$ S \\
+$T_{\textsf{micro}}$ & 0.704 [0.683, 0.726] & 167.1 & 0.251 & dom.\ $C\text{-}F(15)$, $+0.079$ S \\
+$T_{\textsf{macro}}$ & 0.678 [0.655, 0.700] & 280.0 & 0.150 & dom.\ $C\text{-}F(15)$, $+0.106$ S \\
+$D_{1}$ & 0.685 [0.663, 0.707] & 343.0 & 0.303 & dom.\ $C\text{-}F(15)$, $+0.098$ S \\
+$D_{5}$ & 0.738 [0.719, 0.757] & 73.6 & 0.056 & dom.\ $C\text{-}F(15)$, $+0.046$ S \\
+$D_{15}$ & 0.762 [0.743, 0.780] & 25.5 & 0.017 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.008$ N \\
+$J_{\mathrm{dec}}$ $\lambda{=}10^{-4}$ & 0.681 [0.662, 0.700] & 46.3 & 0.041 & dom.\ $C\text{-}F(15)$, $+0.103$ S \\
+$J_{\mathrm{dec}}$ $\lambda{=}10^{-3}$ & 0.690 [0.671, 0.709] & 39.3 & 0.041 & dom.\ $C\text{-}F(15)$, $+0.094$ S \\
+$J_{\mathrm{dec}}$ $\lambda{=}10^{-2}$ & 0.706 [0.686, 0.726] & 47.4 & 0.072 & dom.\ $C\text{-}F(15)$, $+0.077$ S \\
+$J_{\mathrm{dec}}$ $\lambda{=}10^{-1}$ & 0.746 [0.728, 0.764] & 22.7 & 0.013 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.024$ S \\
+$J_{\mathrm{pg}}$ $\lambda{=}10^{-4}$ & 0.764 [0.745, 0.783] & 45.2 & 0.037 & dom.\ $C\text{-}F(15)$, $+0.019$ I \\
+$J_{\mathrm{pg}}$ $\lambda{=}10^{-3}$ & 0.753 [0.734, 0.772] & 25.7 & 0.015 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.017$ I \\
+$J_{\mathrm{pg}}$ $\lambda{=}10^{-2}$ & 0.761 [0.742, 0.780] & 22.1 & 0.013 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.009$ N \\
+$J_{\mathrm{pg}}$ $\lambda{=}10^{-1}$ & 0.761 [0.742, 0.780] & 22.1 & 0.014 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.009$ N \\
+$M$ (of $J$) & 0.706 [0.685, 0.728] & 175.4 & 0.254 & dom.\ $C\text{-}F(15)$, $+0.077$ S \\
+$M$ (of $J_{\mathrm{dec}}$) & 0.745 [0.727, 0.763] & 22.7 & 0.015 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.025$ S \\
+$OL$ (of $J$) & 0.693 [0.672, 0.715] & 185.1 & 0.147 & dom.\ $C\text{-}F(15)$, $+0.090$ S \\
+$OL$ (of $J_{\mathrm{dec}}$) & 0.749 [0.731, 0.767] & 22.2 & 0.011 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.021$ S \\
+$J_{\mathrm{diag}}$ & 0.713 [0.692, 0.733] & 110.5 & 0.123 & dom.\ $C\text{-}F(15)$, $+0.071$ S \\
+$J_{\mathrm{monotone}}$ & 0.703 [0.682, 0.724] & 186.7 & 0.269 & dom.\ $C\text{-}F(15)$, $+0.080$ S \\
+$J_{\mathrm{anti}}$ & 0.700 [0.679, 0.721] & 221.3 & 0.206 & dom.\ $C\text{-}F(15)$, $+0.083$ S \\
+$J_{\mathrm{dec}}$ diagonal & 0.695 [0.679, 0.711] & 26.6 & 0.033 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.075$ S \\
+$J_{\mathrm{dec}}$ monotone & 0.746 [0.728, 0.764] & 22.7 & 0.015 & dom.\ $J$ $\lambda{=}10^{-1}$, $+0.024$ S \\
+$J_{\mathrm{dec}}$ anti-diagonal & 0.762 [0.743, 0.781] & 22.1 & 0.014 & dom.\ $F(15,\textsf{cont})$, $+0.000$ N \\
+$H(1,\textsf{cont})$ & 0.508 [0.495, 0.520] & 410.8 & 0.224 & dom.\ $C\text{-}F(15)$, $+0.275$ S \\
+$H(5,\textsf{micro})=H^{*}$ & 0.706 [0.688, 0.725] & 58.5 & 0.036 & dom.\ $C\text{-}F(15)$, $+0.077$ S \\
+$H(15,\textsf{macro})$ & 0.416 [0.402, 0.430] & 7.9 & 0.006 & dom.\ prior, $+0.304$ S \\
+TAWM, $\Delta=1$ & 0.459 [0.441, 0.476] & 416.7 & 0.111 & dom.\ $C\text{-}F(15)$, $+0.325$ S \\
+TAWM, $\Delta=5$ & 0.601 [0.576, 0.626] & 83.3 & 0.022 & dom.\ $C\text{-}F(15)$, $+0.183$ S \\
+TAWM, $\Delta=15$ & 0.610 [0.585, 0.636] & 27.8 & 0.008 & dom.\ $C\text{-}F(15)$, $+0.173$ S \\
+TAWM, adaptive & 0.450 [0.430, 0.469] & 236.0 & 0.078 & dom.\ $C\text{-}F(15)$, $+0.334$ S \\
+VLWM, $\Delta=1$ & 0.448 [0.426, 0.469] & 416.7 & 0.113 & dom.\ $C\text{-}F(15)$, $+0.335$ S \\
+VLWM, $\Delta=5$ & 0.552 [0.542, 0.562] & 83.3 & 0.023 & dom.\ $C\text{-}F(15)$, $+0.231$ S \\
+VLWM, $\Delta=15$ & 0.642 [0.619, 0.666] & 27.8 & 0.008 & dom.\ $C\text{-}F(15)$, $+0.141$ S \\
+No-model action prior & 0.720 [0.696, 0.744] & 0 & not timed & frontier \\
+\end{longtable}
+\end{revblock}
+}
+
+\begin{revblock}
+$J_{\mathrm{dec}}$ anti-diagonal ranks identically to $F(15,\textsf{cont})$ at slightly more MACs. The best sweep point and the policy-selected $J_{\mathrm{pg}}$ reach the hindsight-best fixed request by collapsing to a fixed coarse horizon. $J$ at $\lambda=10^{-1}$, a sweep point not selected on the policy split, makes 15.0 transitions and 15.0 policy calls per candidate, i.e.\ it requests $\Delta=15$ at every step, and scores 0.770; $C^{*}-J(\lambda{=}10^{-1})=+0.0134$ [$+0.0065$, $+0.0202$] (I). The policy-gradient selector $J_{\mathrm{pg}}$, whose $\lambda=10^{-1}$ was selected on the policy split, collapses to one request per seed for $\lambda\geq10^{-2}$ (0 of 933 cells differ; $(15,\textsf{macro})$ for seed 20260908 and $(15,\textsf{cont})$ for the other two; \#101) and scores 0.761, with $J_{\mathrm{pg}}-F_{\mathrm{hind}}=-0.0011$ [$-0.0031$, $+0.0009$] (N). Not every setting near $F_{\mathrm{hind}}$ collapses: $J_{\mathrm{pg}}$ at $\lambda=10^{-4}$ scores 0.764 [0.745, 0.783], with $J_{\mathrm{pg}}-F_{\mathrm{hind}}=+0.0021$ [$-0.0030$, $+0.0070$], while making 29.7 transitions per candidate, with 74\% of steps at $(5,\textsf{cont})$ and the rest at $\Delta=15$; its schedule varies between candidates in 34 of 933 cells (\#101, \#103). The prior's frontier membership reflects zero predictor and policy MACs, not zero execution cost. No wall-time speedup for $J$ was observed: on the frozen single-seed (20260908) timing pass $J$ takes 0.242 and $C\text{-}J$ 0.014 seconds per state (ratio 16.74), and a post-hoc three-seed retiming, the only one recorded, gives 0.138 and 0.085 seconds (ratio 1.63).
+
+\textbf{MAC decomposition (\#114).} Per candidate at $\lambda=10^{-4}$, the $J-(C\text{-}J)$ difference of $-50.713$M splits into calls and horizons $-6.353$M, description-dependent work $+6.583$M, predictor trunk $-50.836$M and policy $-0.106$M. Per call, the hybrid costs 1,432,448 linear MACs for a $\textsf{cont}$ request, 1,795,456 for $\textsf{micro}$ and 1,464,704 for $\textsf{macro}$; the continuous predictor costs 1,852,200 and a policy call 32,128. On the same checkpoint, $J-J_{\mathrm{cont}}^{\mathrm{NovPhy}}=+61.241$M splits into calls $+53.460$M, description $+6.583$M and policy $+1.199$M.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Full live retry-from-start table}}{Full live retry-from-start table}}
+\label{sec:app:res:live}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\caption{\textbf{Live retry-from-start evaluation, all 16 arms} (\#102; 400 evaluation levels, 16-launch grid, at most three shots, pass = engine pig removal). Model rows: 1,200 level$\times$seed episodes; prior and oracle: 400 distinct executions scored over 1,200 cells; random: 1,200 episodes. Typed engine failures (17 executions; 7--12 of 1,200 episodes per arm) count as not passed. 95\% level-clustered intervals. The decision-frame guard failed, so every row and contrast is descriptive. The oracle replays recorded passing candidates; it is an upper reference and is nondeployable.}
+\label{tab:app:res:live}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Arm & pass@1 & pass@2 & pass@3 \\
+\midrule
+$F(1,\textsf{cont})$ & 0.070 [0.045, 0.095] & 0.203 & 0.334 [0.295, 0.375] \\
+$F(1,\textsf{micro})$ & 0.070 [0.045, 0.095] & 0.197 & 0.326 [0.287, 0.366] \\
+$F(1,\textsf{macro})$ & 0.112 [0.089, 0.135] & 0.226 & 0.343 [0.297, 0.390] \\
+$F(5,\textsf{cont})$ & 0.180 [0.151, 0.210] & 0.333 & 0.453 [0.408, 0.499] \\
+$F(5,\textsf{micro})$ & 0.167 [0.138, 0.197] & 0.343 & 0.438 [0.394, 0.481] \\
+$F(5,\textsf{macro})$ & 0.107 [0.083, 0.132] & 0.295 & 0.413 [0.371, 0.457] \\
+$F(15,\textsf{cont})$ & 0.189 [0.161, 0.218] & 0.333 & 0.478 [0.434, 0.523] \\
+$F(15,\textsf{micro})$ & 0.221 [0.192, 0.251] & 0.350 & 0.458 [0.416, 0.502] \\
+$F(15,\textsf{macro})=U$ & 0.151 [0.131, 0.172] & 0.301 & 0.424 [0.384, 0.465] \\
+$C\text{-}F(15)=C^{*}$ & 0.148 [0.126, 0.172] & 0.371 & 0.466 [0.427, 0.505] \\
+$C\text{-}J$ & 0.161 [0.136, 0.187] & 0.296 & 0.346 [0.315, 0.378] \\
+$J$ & 0.123 [0.098, 0.150] & 0.242 & 0.394 [0.352, 0.438] \\
+$J_{\mathrm{dec}}$ & 0.139 [0.117, 0.162] & 0.298 & 0.445 [0.403, 0.487] \\
+No-model action prior & 0.140 [0.107, 0.175] & 0.268 & 0.323 [0.278, 0.370] \\
+Uniform random & 0.068 [0.053, 0.082] & 0.140 & 0.198 [0.172, 0.223] \\
+Inventory oracle (nondeployable) & 0.775 [0.733, 0.815] & 0.775 & 0.775 [0.733, 0.815] \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\begin{revblock}
+The four declared pass@3 contrasts are $J-(C\text{-}J)=+0.048$ [$0.028$, $0.069$], $J_{\mathrm{dec}}-J=+0.051$ [$0.028$, $0.075$], $U-C^{*}=-0.042$ [$-0.060$, $-0.025$] and prior $-$ random $=+0.125$ [$0.078$, $0.172$]. All four carry the insufficient token because the decision-frame guard failed. The guard covered all 5,106 complete live executions of the campaign, which also played a separate 40-level appearance-novelty set; 25 decision frames, on 5 levels (3 evaluation levels and 2 novelty levels), parsed beyond the $10^{-3}$ anchor tolerance (maximum 0.0032). $J$ passes 473 of 1,200 episodes. $F(15,\textsf{micro})$ has the highest observed pass@1 (0.221), and $F(15,\textsf{cont})$ the highest observed pass@3. Every live verdict matched the recorded verdict of the same level and candidate (5,106 of 5,106).
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Pixel-carrier studies: full tables and downstream readouts}}{Pixel-carrier studies: full tables and downstream readouts}}
+\label{sec:app:res:pixel}
+
+\begin{revblock}
+\nopagebreak
+The pixel studies (\#106) train their own predictors and policies on CLEVRER \citep{yi2020clevrer} and Physion-Dominoes \citep{bear2021physion}; they do not use the NovPhy checkpoint. A slot parser with the architecture of Section~\ref{sec:mth:model}, trained separately for each benchmark (12 epochs), reads carriers from video pixels: one carrier per CLEVRER video frame (0.0390625\,s) and one per three Physion frames (0.1\,s). Parser fidelity on held-out data is a presence F1 of 0.9932 with centre error 16.83 native pixels on CLEVRER validation, and a presence F1 of 0.9204 with centre error 45.88 native pixels on Physion testing. Each benchmark has five seeds of the hybrid predictor (1,838,722 parameters, 9,000 updates over the nine requests). The policies $J$ and $J_{\mathrm{cont}}^{\mathrm{pixel}}$ use the prediction-error DP labels with $\lambda=10^{-4}$. CLEVRER uses 6,285 fitting videos and 3,132 evaluation videos with zero identity overlap; the unique colour--material slot rule excludes 37.22\% of videos. Physion uses the official Dominoes releases (2,000 dynamics, 996 readout and 150 test trials); the overlap audit is in Appendix~\ref{sec:app:proto:pixel}.
+\end{revblock}
+
+\begin{table}[h]
+\begin{revblock}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{\textbf{Pixel-carrier rollout error at every endpoint} (\#106; parser-relative position MSE, five-seed mean; three significant digits). Intervals for the last endpoint of seven rows are in Table~\ref{tab:res:rollout}b; all intervals are in the record. Values are comparable only within a benchmark.}
+\label{tab:app:res:pixel}
+\begin{tabular}{@{}lcccc@{\hspace{10pt}}cccc@{}}
+\toprule
+& \multicolumn{4}{c}{CLEVRER, $t=$} & \multicolumn{4}{c}{Physion-Dominoes, $t=$} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+Request & 15 & 30 & 60 & 120 & 15 & 30 & 45 & 90 \\
+\midrule
+$F(1,\textsf{cont})$ & 0.0880 & 0.103 & 0.119 & 0.163 & 0.0179 & 0.0270 & 0.0325 & 0.0430 \\
+$F(1,\textsf{micro})$ & 0.0879 & 0.103 & 0.120 & 0.163 & 0.0183 & 0.0273 & 0.0329 & 0.0460 \\
+$F(1,\textsf{macro})$ & 0.0883 & 0.106 & 0.128 & 0.180 & 0.0199 & 0.0330 & 0.0427 & 0.0660 \\
+$F(5,\textsf{cont})$ & 0.0737 & 0.0822 & 0.0814 & 0.109 & 0.00793 & 0.0117 & 0.0152 & 0.0227 \\
+$F(5,\textsf{micro})$ & 0.0738 & 0.0823 & 0.0814 & 0.109 & 0.00801 & 0.0119 & 0.0155 & 0.0231 \\
+$F(5,\textsf{macro})$ & 0.0731 & 0.0807 & 0.0798 & 0.108 & 0.00799 & 0.0120 & 0.0161 & 0.0256 \\
+$F(15,\textsf{cont})$ & 0.0750 & 0.0831 & 0.0795 & 0.0996 & 0.00693 & 0.00886 & 0.0108 & 0.0143 \\
+$F(15,\textsf{micro})$ & 0.0750 & 0.0831 & 0.0795 & 0.0993 & 0.00708 & 0.00897 & 0.0109 & 0.0145 \\
+$F(15,\textsf{macro})$ & 0.0752 & 0.0811 & 0.0778 & 0.0974 & 0.00799 & 0.00889 & 0.0108 & 0.0146 \\
+$J$ & 0.0875 & 0.102 & 0.116 & 0.157 & 0.0166 & 0.0187 & 0.0202 & 0.0235 \\
+$J_{\mathrm{cont}}^{\mathrm{pixel}}$ & 0.0880 & 0.103 & 0.119 & 0.162 & 0.0164 & 0.0183 & 0.0199 & 0.0252 \\
+\bottomrule
+\end{tabular}
+\end{revblock}
+\end{table}
+
+\begin{revblock}
+\textbf{Downstream readouts.} The frozen downstream readouts carry no ranking information. On CLEVRER the question-answering readout sat at its floor: the largest gated micro contact value on any validation video was 0.051, below the 0.5 threshold, so every arm gave the same answers and $J-J_{\mathrm{cont}}^{\mathrm{pixel}}=-0.0001$ [$-0.0002$, $0.0001$] (N). On Physion the object-contact-prediction readout is near chance for every rollout arm (0.51--0.57 accuracy), and $J-J_{\mathrm{cont}}^{\mathrm{pixel}}=-0.021$ [$-0.068$, $0.025$] (I). Neither benchmark supports a downstream claim about request selection.
+\end{revblock}

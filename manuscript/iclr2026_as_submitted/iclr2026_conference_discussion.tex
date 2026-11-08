@@ -1,0 +1,59 @@
+%!TEX root = iclr2026_conference.tex
+% ==== BRIEF §7 HEAD (Discussion) ======================================================
+% [中] 定位：把 §6 的三条结果放回 §1 的问题：粒度作为决策变量意味着什么；与层级 JEPA 及模拟实践的关系；诚实的限制与下一步。
+% 卖点：两轴沿发射集分别变化，支持把时距与描述层做成同一请求的两个独立坐标，而不是层级中绑定的一层。
+%      证据：§6 的数字；Figure 1a 的真实轨迹；lecun2022path、saxena2021clockwork、hairer1993solving、mirtich2000timewarp。
+%      手法与边界：不引入新数字；不写"证明"；限制集中在一段；不写读出质量（owner：未来工作）；不补充计算对比的事实（owner）。
+% [EN] Role: returns the three results of Section 6 to the question of Section 1: what treating granularity as a
+%      decision means; relation to hierarchical JEPA and simulation practice; honest limits and next steps.
+%      Craft/Boundaries: no new numbers; limits in one paragraph; no readout-quality statement and no further facts on
+%      the compute comparison (owner directives).
+% ==== /BRIEF ==========================================================================
+\section{Discussion}
+\label{sec:disc}
+
+% ==== BRIEF §7 ¶1 (what the results show) =============================================
+% [中] 定位：贡献落地：三条结果合起来说明粒度值得逐预测选择，且一个模型能在每次查询时提供它。
+%      证据：§6.1–§6.3。手法与边界：与摘要结尾 "decision variable" 呼应；不夸大为闭环收益。
+% [EN] Role: the contribution in one paragraph: together the results make granularity worth choosing per prediction,
+%      and show that one model can offer it at every query.
+% ==== /BRIEF ==========================================================================
+\textbf{Granularity as a decision.} The three results fit together. The horizon of each prediction sets rollout error by orders of magnitude, and the request that ranks candidate launches best depends on the situation along both axes; granularity is therefore worth choosing, and no single choice is safe. A policy that chooses the request per prediction, over one shared latent state, improves on a fixed request carried over from other launch sets and matches a horizon-only adaptive baseline at a third of its compute. These results make the case for treating how far and at what level to predict as part of each query to a world model, rather than as a constant fixed at design time.
+
+% ==== BRIEF §7 ¶2 (relation to hierarchies and simulation) ============================
+% [中] 定位：与层级 JEPA、多时间尺度模型与物理模拟实践的关系。
+%      主张：最佳请求在所有集上都是 macro，而最佳时距在 1 与 5 之间变动，说明两轴不必绑定在同一层级；Figure 1a 的学习日程与自适应
+%            步长相似（发射后短步、后段长的粗粒度步）。
+%      证据：§6.2（best request macro on every set; horizon 5 on two sets, 1 on two）；issue-92 轨迹；lecun2022path、
+%            saxena2021clockwork、hairer1993solving、mirtich2000timewarp。
+%      手法与边界："suggests"、"resembles"；不写"证明层级错误"。
+% [EN] Role: relation to hierarchical JEPA, multi-timescale models and simulation practice.
+%      Craft/Boundaries: "suggests", "resembles"; never "hierarchies are wrong".
+% ==== /BRIEF ==========================================================================
+\textbf{Relation to hierarchies and simulation.} Hierarchical JEPA and multi-timescale world models tie each time scale to one level of abstraction \citep{lecun2022path,saxena2021clockwork}. In our results the two axes vary separately: the best request uses $\textsf{macro}$ on every launch set, while its horizon moves between 1 and 5. This suggests exposing horizon and description as independent coordinates of one request, which a hierarchy could still serve, rather than as levels of a stack. The learned schedule of Figure~\ref{fig:teaser}(a) also resembles adaptive stepping in simulation \citep{hairer1993solving,mirtich2000timewarp}, with short steps while the launch unfolds and long, coarse steps late in the rollout, a pattern that comes from trading prediction error against compute rather than from a hand-set schedule.
+
+% ==== BRIEF §7 ¶3 (limitations and next steps) ========================================
+% [中] 定位：限制与下一步集中一段。
+%      主张：策略只在 decision-only 想象 rollout 中评估，不作闭环主张；每集 7–14 个关卡，区间宽，J−r† 仅在一个集上不含 0，
+%            且在三个集上低于事后最佳；macro 只在 NovPhy，CLEVRER/Physion 的 carrier 来自标注；模型为冻结的有监督 slot 编码器上的
+%            JEPA 式预测器，无 EMA 目标编码器；描述层由人工定义；策略的训练目标是预测误差与计算量，而非排序。下一步：闭环、学习描述层、
+%            决策感知的请求代价。
+%      证据：§5、§6.3；§4（目标、编码器）；Appendix sec:app:impl。
+%      手法与边界：每条限制对应它约束的主张；"may"。
+% [EN] Role: limits and next steps in one paragraph, each limit naming the claim it constrains.
+% ==== /BRIEF ==========================================================================
+\textbf{Scope and next steps.} Macro predicates exist only on NovPhy; the other two benchmarks exercise the continuous and micro levels. The natural next steps are to let the chosen requests drive actions in closed loop, to learn the description levels together with the encoder, and to train the request policy on a decision-aware cost.
+
+% ==== BRIEF §8 (Conclusion) ===========================================================
+% [中] 定位：收束：问题建模、模型、策略、测试床与三条发现各一句，结尾回到"每次查询都问"。
+%      证据：§3–§6。手法与边界：与摘要一致；不引入新数字；不写 "first"。
+% [EN] Role: closes with one sentence each on the formulation, the model and policy, the testbed and the findings, and
+%      returns to granularity as a question asked at every query.
+%      Craft/Boundaries: consistent with the abstract; no new numbers; never "first".
+% ==== /BRIEF ==========================================================================
+\section{Conclusion}
+\label{sec:disc:conclusion}
+
+We made prediction granularity a per-prediction decision of one world model. An action-sparse MDP stays an ordinary MDP while every model query carries a request $r=(\Delta,\alpha)$; one JEPA-style predictor serves all nine requests over one shared latent state; and a policy distilled from dynamic-programming labels chooses the request at each step. On NovPhy, which we introduce as a world-model testbed, and on CLEVRER and Physion-Dominoes, granularity changes rollout error by orders of magnitude, no fixed request ranks candidate launches best everywhere, and choosing the request per prediction improves on a transferred fixed request while matching a horizon-only adaptive baseline at a third of its compute. We hope these results encourage world models that ask how far and at what level to predict at every query, rather than answering once at design time.
+
+% \section*{Acknowledgments and Funding} heading with content for the camera-ready version only.

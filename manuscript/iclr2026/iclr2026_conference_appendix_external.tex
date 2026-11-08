@@ -1,0 +1,112 @@
+%!TEX root = iclr2026_conference.tex
+% Appendix E (sec:app:external): direct predictors and readout controls, external world-model baselines, heuristic
+% agents, guard calibration. Content plan and owner unit: manuscript/paper-contract.md §8.
+\section{\texorpdfstring{\rev{Direct Predictors and External Baselines}}{Direct Predictors and External Baselines}}
+\label{sec:app:external}
+
+\begin{revblock}
+\nopagebreak
+This appendix reports every primary and secondary external arm scored against the pre-declared request $U\equiv F(15,\textsf{macro})$ on the sealed NovPhy grid (311 mixed-outcome levels $\times$ 3 seeds $=$ 933 cells; 95\% level-clustered bootstrap intervals; descriptive). The comparisons follow separate frozen protocols (\#123, \#125 and the \#127 program with children \#128--\#141). Each protocol has its own guards, and a failed guard turns every contrast of that arm into an insufficient result. We therefore report each arm's AUC and its difference from $U$, the guard status, and a plain-language reading of what the record licenses. The table is not a leaderboard: arms differ in input, parameter count and training budget, and only the readings in the last column are claims.
+
+The readings use five outcomes from the frozen rules. ``Ranks better than $U$'' means the difference $X-U$ met the $\delta=0.02$ rule with every declared guard passing. ``Budget-qualified'' means the arm met that rule only at a training budget larger than $U$'s. ``No claim (guard failed)'' means at least one guard failed, so neither direction is licensed. ``Not run'' means the arm stopped at a pre-scoring gate and has no NovPhy score. ``Reference only'' marks a parameter-free nearest-fit lookup, reported without a token or disposition.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Scored arms}}{Scored arms}}
+\label{sec:app:ext:scored}
+
+{\footnotesize
+\begin{revblock}
+\nopagebreak
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}r>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}@{}}
+\caption{\textbf{External comparisons on the sealed NovPhy grid}, in separate protocol blocks. Params: trainable parameters ($U$'s predictor: 1,837,690). AUC and $X-U$: 95\% level-clustered intervals over 933 cells. ---: not applicable or not recorded. The guard G-action requires an endpoint action sensitivity of at least 0.05; Section~\ref{sec:app:ext:guard} explains why carrier-space world models, $U$ included, fall below it. Budgets differ: $U$'s predictor trains 9,000 updates at batch 64 (mean 1,294 GPU-seconds per seed); ``matched'' arms use the same recipe and about $U$'s parameter count, while native arms train longer, for example SlotFormer 54,250 steps, DINO-WM on the carrier 123,858 steps, THICK 200,000 updates and DIAMOND 409,600 updates (18.87 times $U$'s training compute).}\label{tab:app:ext}\\
+\toprule
+Arm & Params & AUC [95\% CI] & $X-U$ [95\% CI] & Reading \\
+\midrule
+\endfirsthead
+\toprule
+Arm & Params & AUC [95\% CI] & $X-U$ [95\% CI] & Reading \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\multicolumn{5}{@{}l}{\emph{(a) Direct success predictors and readout controls}} \\
+A1: PHYRE-style DQN on pixels \citep{bakhtin2019phyre} & 11,309,889 & 0.995\newline[0.992, 0.997] & $+0.2502$\newline[$+0.2327$, $+0.2675$] & ranks better than $U$ \\
+A2: same classifier on the carrier & 1,838,781 & 0.976\newline[0.969, 0.982] & $+0.2313$\newline[$+0.2131$, $+0.2493$] & ranks better than $U$ \\
+A2-native: A2 at native size & 11,333,771 & 0.974\newline[0.967, 0.980] & $+0.2296$\newline[$+0.2114$, $+0.2474$] & ranks better than $U$ \\
+A4: A1 with a trajectory-distance auxiliary loss & 12,751,957 & 0.994\newline[0.992, 0.996] & $+0.2501$\newline[$+0.2327$, $+0.2674$] & budget-qualified (1.88$\times$ $U$'s training GPU-h) \\
+A3-img: Phy-Q relational DQN, image input \citep{xue2023phyq} & 11,633,920 & 0.987\newline[0.981, 0.992] & $+0.2426$\newline[$+0.2244$, $+0.2610$] & no claim (fidelity guard failed) \\
+A3-sym: Phy-Q relational DQN, symbolic input & 11,662,208 & 0.970\newline[0.960, 0.979] & $+0.2256$\newline[$+0.2057$, $+0.2455$] & no claim (fidelity guard failed) \\
+Readout trained with $U$'s predicted endpoint (A2's architecture and recipe on $[z_0,\hat z_{225}]$) & 1,855,301 & 0.976\newline[0.969, 0.983] & $+0.2321$\newline[$+0.2135$, $+0.2501$] & budget-qualified (1.03$\times$) \\
+Same architecture trained without rollout (on $[z_0,z_0]$) & 1,855,301 & 0.981\newline[0.975, 0.986] & $+0.2365$\newline[$+0.2192$, $+0.2539$] & ranks better than $U$ \\
+$U$+head: SlotFormer's PHYRE readout on $U$'s endpoint & --- & 0.812\newline[0.795, 0.830] & $+0.0679$\newline[$+0.0583$, $+0.0773$] & ranks better than $U$ (exploratory; global guards only) \\
+$U$-native: $U$ retrained for 16,929 updates (target A4's compute; achieved 0.879$\times$) & 1,837,690 & 0.813\newline[0.798, 0.829] & $+0.0688$\newline[$+0.0579$, $+0.0795$] & no claim (G-action failed) \\
+NN-px: copy the outcome of the nearest predictor-fit level (pixel L1) & 0 & 0.9039\newline[0.8838, 0.9231] & --- & reference only \\
+NN-car: same, nearest carrier (L2) & 0 & 0.777\newline[0.750, 0.804] & --- & reference only \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{(b) External world-model baselines}} \\
+SlotFormer \citep{wu2023slotformer} & 6,325,005 & 0.548\newline[0.526, 0.569] & $-0.1968$\newline[$-0.2228$, $-0.1705$] & no claim (G-action failed) \\
+SlotFormer, matched size and budget & 1,793,445 & 0.535\newline[0.518, 0.552] & $-0.2096$\newline[$-0.2303$, $-0.1899$] & no claim (G-action failed) \\
+DINO-WM on the carrier \citep{zhou2025dinowm} & 1,243,648 & 0.525\newline[0.509, 0.541] & $-0.2193$\newline[$-0.2412$, $-0.1985$] & no claim (G-action failed) \\
+DINO-WM on DINOv2 features & --- & --- & --- & not run: readout ceiling 0.5948 below 0.65 \\
+THICK \citep{gumbsch2024thick} & 21,852,337 & 0.499\newline[0.481, 0.516] & $-0.2456$\newline[$-0.2689$, $-0.2226$] & no claim (G-action failed) \\
+THICK, matched size and budget & 1,835,187 & 0.482\newline[0.466, 0.497] & $-0.2624$\newline[$-0.2903$, $-0.2351$] & no claim (G-action, G-collapse failed) \\
+$\gamma$-models \citep{janner2020gamma} & 10,230,696 & 0.510\newline[0.492, 0.528] & $-0.2342$\newline[$-0.2610$, $-0.2074$] & no claim (G-action failed) \\
+DIAMOND \citep{alonso2024diamond} & 4,406,019 & 0.718\newline[0.690, 0.745] & $-0.0268$\newline[$-0.0589$, $+0.0046$] & no claim (G-action failed) \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{(c) H-JEPA family (\#123, \#125)}} \\
+H-JEPA on pixels \citep{zhang2026hjepa} & 35,219,796 & 0.500\newline[0.483, 0.517] & $-0.2447$\newline[$-0.2688$, $-0.2204$] & no claim (collapse, G-action failed) \\
+H-JEPA on the carrier, matched & 1,855,172 & 0.490\newline[0.469, 0.510] & $-0.2548$\newline[$-0.2829$, $-0.2273$] & no claim (collapse, G-action, readout failed) \\
+H-JEPA on pixels, $U$'s budget & 35,219,796 & 0.475\newline[0.458, 0.494] & $-0.2691$\newline[$-0.2944$, $-0.2441$] & no claim (collapse, G-action failed) \\
+H-JEPA on the carrier, native size & 30,538,900 & 0.541\newline[0.518, 0.563] & $-0.2037$\newline[$-0.2324$, $-0.1765$] & no claim (collapse failed) \\
+HWM on pixels \citep{zhang2026hierarchical}, re-implemented in the H-JEPA codebase & 34,922,964 & 0.500\newline[0.484, 0.517] & --- & no claim (collapse, G-action failed) \\
+HWM on the carrier (same re-implementation) & 1,840,100 & 0.503\newline[0.485, 0.522] & --- & no claim (collapse, G-action, readout failed) \\
+LeWM on pixels \citep{maes2026leworldmodel}, re-implemented in the H-JEPA codebase & 11,350,204 & 0.509\newline[0.492, 0.526] & --- & no claim (G-action, readout failed) \\
+LeWM on the carrier (same re-implementation) & 1,834,220 & 0.495\newline[0.478, 0.511] & --- & no claim (collapse, G-action, readout failed) \\
+H-JEPA on pixels + inverse-dynamics loss & 35,860,884 & 0.495\newline[0.478, 0.512] & $-0.2496$\newline[$-0.2739$, $-0.2246$] & no claim (collapse, G-action failed) \\
+H-JEPA on the carrier + inverse-dynamics loss & 1,836,500 & 0.490\newline[0.469, 0.511] & $-0.2544$\newline[$-0.2863$, $-0.2243$] & no claim (collapse, G-action, readout failed) \\
+LeWM on pixels + inverse-dynamics loss & 11,563,900 & 0.497\newline[0.480, 0.514] & --- & no claim (readout failed) \\
+LeWM on the carrier + inverse-dynamics loss & 1,835,196 & 0.479\newline[0.463, 0.495] & --- & no claim (collapse, G-action, readout failed) \\
+\end{longtable}
+\end{revblock}
+}
+
+\begin{revblock}
+\textbf{Direct prediction.} Licensed comparisons with $U$ exist only in block (a): for the direct success predictors, the two \#141 readouts and the exploratory $U$+head control. A1, A2 and A2-native rank launches better than $U$ within the scope of this grid, and A4 does so only at 1.88 times $U$'s training compute. A2 is matched to the shared predictor in total updates (9,000), not in updates per request. The control that retrained $U$ for 16,929 updates ($U$-native; A4's compute was the target, and 0.879$\times$ A4 was achieved) failed G-action, so A4's reading stays budget-qualified. The readout experiment (\#141) trains two classifiers with A2's architecture and recipe (1,855,301 parameters each, on a 472-dimensional input of two carriers): one on $[z_0,\hat z_{225}]$, the decision-frame carrier with $U$'s predicted $t=225$ endpoint, and one, trained separately, on $[z_0,z_0]$. They score 0.976 and 0.981; the classifier trained with the rollout endpoint scores slightly lower, $-0.0044$ [$-0.0081$, $-0.0014$], a difference not supported in either direction under the $\delta$ rule, and it differs from A2 by $+0.0008$ [$-0.0019$, $+0.0034$]. The declared guards of these two arms passed; their G-action value is inherited from $U$ (0.0240, 0.0229 and 0.0220 per seed, below 0.05) and is reported, not relaxed. This experiment therefore provides no evidence of incremental ranking value from rollout. Under \#141's own accounting, the readout with $U$'s endpoint costs 22.8M linear MACs per candidate ($U$'s rollout 21.0M plus the classifier 1.84M) and the no-rollout readout 1.84M; \#141 counts $U$'s rollout at 21.0M where the \#103 accounting of Table~\ref{tab:res:ranking} gives 22.0M. The nearest-fit references show how much the split's within-family similarity helps: copying the outcome of the nearest predictor-fit level in pixel space already reaches 0.9039 [0.8838, 0.9231].
+
+\textbf{External world models.} No scored world-model baseline supports a ranking claim in either direction. Every scored arm in block (b) failed G-action, and DINO-WM on DINOv2 features stopped before training because its readout ceiling fell below the frozen 0.65 gate. DIAMOND scores closest to $U$, at 0.718, and its difference from $U$ includes zero.
+
+\textbf{H-JEPA family.} H-JEPA \citep{zhang2026hjepa} was reproduced at its published fidelity from its public code (the fidelity and porting guards passed), but on NovPhy its top-level latent collapses. Its endpoint action sensitivity is 0.000 for the pixel port and the matched carrier port on every seed, and 0.145--0.161 for the native-size carrier port, which passes G-action but fails the collapse guard. The HWM and LeWM arms are re-implementations in the same codebase. Every \#123 arm in block (c) fails the collapse guard, the action-sensitivity guard, or both, and seven of the eleven \#123 arms (including three ablations not in the table) also fail the readout-ceiling guard. Their grid AUCs sit near 0.5, as do those of the three ablations (two levels with frameskip 5, 0.493; launch at every step, 0.539; H-JEPA's uniform sampler, 0.493); alternative readouts of the same models score 0.485--0.642. An inverse-dynamics auxiliary loss, pre-declared as a remedy for the collapse (\#125), changes AUC by $-0.0049$ [$-0.0291$, $+0.0197$] (pixels) and $+0.0003$ [$-0.0282$, $+0.0284$] (carrier), and both H-JEPA arms still fail the collapse and action-sensitivity guards on every seed. Under the same remedy, LeWM on pixels passes both guards but fails the readout ceiling (0.5698). The frozen rules therefore make no ranking claim about this family.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Arms that were not run}}{Arms that were not run}}
+\label{sec:app:ext:notrun}
+
+\begin{revblock}
+\nopagebreak
+Six planned arms have no NovPhy score: DINO-WM on DINOv2 features, which stopped at its readiness gate (Table~\ref{tab:app:ext}), and the five below. DreamerV3 \citep{hafner2025dreamerv3}, DDLP \citep{daniel2024ddlp}, Diffusion Forcing \citep{chen2024diffusionforcing} and DeepPHY \citep{xu2025deepphy} stopped at the fidelity gate: our reproduction did not recover the published number on the method's own benchmark, so no NovPhy run followed. For DreamerV3 the PushT reproduction reached 0.02 (1 of 50 episodes) against a frozen acceptance band of [0.18, 0.42]. V-JEPA 2-AC \citep{assran2025vjepa2} was capped: the projected training cost exceeded the program's per-seed compute cap, so it was not trained.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Heuristic agents under a native-action protocol}}{Heuristic agents under a native-action protocol}}
+\label{sec:app:ext:agents}
+
+\begin{revblock}
+\nopagebreak
+Three AIBIRDS competition agents \citep{renz2015aibirds} played the same 400 NovPhy evaluation levels as the live evaluation of Section~\ref{sec:res:live}, with their own shot selection (\#132): Datalab \citep{spetlik2014datalab}, Eagle's Wing \citep{wang2017eaglewing} and PigShooter \citep{pinto2024novphy,xue2023phyq}. Each agent had three attempts per level. Datalab passed 0.2725 [0.2300, 0.3175] of levels at the first attempt and 0.3075 [0.2625, 0.3525] within three; Eagle's Wing 0.1100 [0.0800, 0.1425] and 0.2325 [0.1925, 0.2750]; PigShooter 0.1200 [0.0900, 0.1525] and 0.2175 [0.1775, 0.2575] (400 levels per agent; 95\% bootstrap intervals as recorded). These agents choose continuous-valued shots and may repeat failed actions, whereas our grid protocol ranks a frozen candidate inventory and excludes previously failed candidates. Their pass rates are descriptive results under a different action-selection protocol and are not head-to-head estimates against the grid retry-from-start table.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Calibration of the action-sensitivity guard}}{Calibration of the action-sensitivity guard}}
+\label{sec:app:ext:guard}
+
+\begin{revblock}
+\nopagebreak
+G-action asks whether a world model's predicted endpoint changes with the launch; it was frozen on \#123's latent states with a threshold of 0.05. The frozen action-sensitivity threshold was not calibrated to the carrier-space scale: the recorded engine-truth sensitivity is 0.0395, below the threshold of 0.05. We preserve the recorded guard failures, but do not interpret those failures alone as evidence that these baselines lack action dependence. On the same fit-split calibration, the comparator $U$ itself reaches 0.0229 (0.0240, 0.0229 and 0.0220 per seed) and $C^{*}$ 0.0334, so both would also fall below the threshold. DIAMOND's per-seed sensitivity, 0.0277--0.0287, exceeds $U$'s, yet DIAMOND is vetoed; DINO-WM on the carrier reaches 0.0004--0.0016.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Program verdict}}{Program verdict}}
+\label{sec:app:ext:verdict}
+
+\begin{revblock}
+\nopagebreak
+The \#127 program pre-declared one intersection claim: $U$ ranks launches better than every baseline in the program set (A1, A2, A4, SlotFormer, DINO-WM on DINOv2 features and THICK) on the sealed NovPhy grid. This claim is not licensed. The three direct predictors rank better than $U$, and the three world-model baselines either failed a guard or did not run. The same claim with $C^{*}$ in place of $U$ is not licensed either. The program used 217.6 of its 400 budgeted GPU-hours.
+\end{revblock}

@@ -1,0 +1,121 @@
+%!TEX root = iclr2026_conference.tex
+% Appendix C (sec:app:method): encoder, predictor architectures, training recipe, request policies, DP surrogate,
+% compute-accounting scope, pixel-study models. Content plan and owner unit: manuscript/paper-contract.md §8.
+\section{\texorpdfstring{\rev{Primary Model and Policy Details}}{Primary Model and Policy Details}}
+\label{sec:app:method}
+
+\begin{revblock}\nopagebreak
+This appendix gives every architectural and training setting of the primary model (Section~\ref{sec:mth:model}) and of the separate pixel-study models. Values are the effective settings of the frozen run plans, not code defaults. The submitted model's implementation is described in Appendix~\ref{sec:app:development}.
+\end{revblock}
+
+\subsection{\texorpdfstring{\rev{Formulation and model equations}}{Formulation and model equations}}
+
+\rev{\textbf{Multi-step kernel.}} Because the agent issues no further action between decision steps, the state $n$ steps ahead depends only on the current state and the action taken there, provided no decision step lies in $(t,t+n)$:
+\begin{equation}
+P^{n}(s_{t+n}\mid s_t,a_t)=\int P(s_{t+1}\mid s_t,a_t)\prod_{\tau=t+1}^{t+n-1}P(s_{\tau+1}\mid s_\tau,\varnothing)\,\mathrm{d}s_{t+1:t+n-1}.
+\label{eq:kernel}
+\end{equation}
+Treating the launch as the only decision would instead fold the cascade into the outcome of $(s,a)$, the contextual-bandit framing of PHYRE \citep{bakhtin2019phyre}; we keep the cascade and let the model decide how to predict it. \rev{In the rollout of Equation~\ref{eq:rollout},} its steps last $\Delta(r_k)$ frames, so the rollout is a semi-MDP over carrier frames with state $(\hat z_k,\kappa_k)$ and the requests as actions, while the environment stays the MDP of Equation~\ref{eq:mdp}.
+
+\rev{\textbf{Carrier.}} The carrier stacks two global entries $g$, whether a prior frame exists and the elapsed time, with 13 features per slot,
+\begin{equation}
+z=\big[g;\,f_1;\dots;f_{18}\big]\in\mathbb{R}^{2+18\cdot13}=\mathbb{R}^{236}.
+\label{eq:carrier}
+\end{equation}
+
+\rev{\textbf{Request-conditioned predictor.}} $F_\theta$ is a residual MLP trunk of width 384 whose three blocks are all modulated by one code for the whole request. The code fuses sinusoidal features $\phi(\Delta)$ of the horizon with a learned embedding $e_\alpha$ of the description level in one MLP, so each of the nine requests receives its own modulation rather than a sum of a horizon term and a description term. Modulation is FiLM-style \citep{perez2018film}, with scale and shift initialized at zero as in AdaLN-Zero \citep{peebles2023scalable}, so training starts from an unmodulated trunk:
+\begin{align}
+c(r)&=\mathrm{MLP}_c\big([\phi(\Delta);\,e_\alpha]\big),
+\label{eq:code}\\
+x^{(0)}&=W_{\mathrm{in}}\,[\hat z_k;\,a]+\mathbf{1}[\alpha\neq\textsf{cont}]\;\rev{A_\alpha}\,h_\alpha(\hat z_k),
+\label{eq:input}\\
+x^{(\ell)}&=x^{(\ell-1)}+\mathrm{MLP}_\ell\Big(\mathrm{LN}\big(x^{(\ell-1)}\big)\odot\big(1+\gamma_\ell(c)\big)+\beta_\ell(c)\Big),\qquad \ell=1,2,3,
+\label{eq:film}\\
+\hat z_{k+\Delta}&=\hat z_k+W_{\mathrm{out}}\,\mathrm{LN}\big(x^{(3)}\big),
+\label{eq:residual}
+\end{align}
+where $a\in\mathbb{R}^5$ encodes the launch. The head $h_{\textsf{micro}}$ outputs contact and support probabilities over $18\times18$ slot pairs, and $h_{\textsf{macro}}$ outputs the two scene predicates\rev{, steady-state and structure-unstable}, each with an availability output; the bias-free adapter \rev{$A_\alpha$} adds them to the trunk input, and a $\textsf{cont}$ request runs no head. \rev{The continuous predictor uses the same trunk with $c(\Delta)=\mathrm{MLP}_c(\phi(\Delta))$ and no heads, adapters or description embedding.}
+
+\rev{\textbf{Window loss.}} For a training window of observed carriers $z_{0:L}$ ($L\le60$) with launch $a$, the loss unrolls $M\le4$ steps of horizon $\Delta$ ending at $k_j=j\Delta\le L$:
+\begin{equation}
+\mathcal{L}(\theta;r)=\frac1M\sum_{j=1}^{M}\Big[\mathrm{mse}\big(F_\theta(z_{k_{j-1}},a,r),z_{k_j}\big)+\mathrm{mse}\big(\hat z_j,z_{k_j}\big)+\lambda_{\mathrm{sym}}\,\ell_\alpha^{(j)}+\lambda_{\mathrm{bd}}\,b(\hat z_j)\Big],
+\label{eq:loss}
+\end{equation}
+where $\hat z_0=z_0$ and $\hat z_j=F_\theta(\hat z_{j-1},a,r)$ rolls without teacher forcing, $\mathrm{mse}(x,x')=\tfrac1d\lVert x-x'\rVert_2^2$, $b$ penalizes carrier entries beyond $\pm2$, $\lambda_{\mathrm{sym}}=0.1$ and $\lambda_{\mathrm{bd}}=0.01$. The symbolic term $\ell_\alpha^{(j)}$ is a masked binary cross-entropy of head $\alpha$ on the predicted carrier and on the observed context, and $\ell_{\textsf{cont}}\equiv0$. Its labels come from the engine: contact and support relations projected from the captured object records for $\textsf{micro}$, and stability events and support-set changes for $\textsf{macro}$.
+
+\rev{\textbf{Distillation.} With the minimizers $r^\star_k$ of Equation~\ref{eq:dp}, the policy minimizes}
+\begin{equation}
+\mathcal{L}_\pi(\psi)=-\sum_{k<L}\log\pi_\psi\big(r^{\star}_k\mid\tilde z_k,a,L-k\big).
+\label{eq:distill}
+\end{equation}
+In round 1 the contexts $\tilde z_k$ are the observed carriers.
+
+\begin{revblock}
+\subsection{Encoder}
+
+$E$ is a spatial slot parser. Four convolutional blocks (channels $3\to32\to64\to96\to128$, group normalization, leaky ReLU) reduce the $320\times240$ RGB frame by a factor of 8 to a $40\times30$ feature map with added position features. Eighteen learned slot queries, one per named slot of a fixed vocabulary, read this map through two cross-attention layers (width 128, 4 heads, feed-forward $128\to256\to128$). Heads output presence, centre offset, kind, pairwise relations and scene predicates. The parser has 506,414 parameters. It was trained once for 12 epochs (batch 64, AdamW, learning rate $10^{-3}$, weight decay $10^{-4}$, seed 9900001, last epoch kept) on 42,344 frames of the 12 N1 lineages that the submitted model used for fitting, including their inventory executions. These are earlier 50-step captures, not predictor-fit levels of the sealed NovPhy split. Its targets are engine-projected presences and centres, contact and support relations, and native scene predicates; launch outcomes are never read. Pig and block presence losses are class-balanced. The parser is frozen and hash-pinned in every later plan. On 240 held-out launches (60 on each of four held-out N1 levels, whose start state is identical within a level), it detects the pig at the start in all 240 (accuracy 1.000) and at frame 225 with accuracy 0.979; the submitted parser detects it at the start in 0 of the same 240.
+
+The carrier adapter turns the parse into Equation~\ref{eq:carrier}. Each slot holds 13 features: presence probability, presence availability, normalized kind index, kind confidence, kind availability, normalized centre $x$ and $y$, centre availability, motion $x$ and $y$ (centre displacement from the prior frame divided by elapsed seconds), motion availability, expected-kind probability and a slot-declared flag. Motion is available only when the slot is present in both frames. The header holds the has-prior flag and the elapsed seconds.
+
+\subsection{Predictors}
+
+\textbf{Hybrid predictor $F_\theta$.} The input projection maps $[z;a]\in\mathbb{R}^{241}$ to width 384. Three FiLM blocks each apply LayerNorm, a zero-initialized modulation $\mathrm{Linear}(128\to768)$ that produces $(\gamma,\beta)$, and an inner and outer $\mathrm{Linear}(384\to384)$ with SiLU. A final LayerNorm and $\mathrm{Linear}(384\to236)$ give the residual update. The request code uses 16 sinusoidal features of $\Delta$ and a learned 128-dimensional embedding of $\alpha$, fused by $\mathrm{Linear}(144\to256)$, SiLU and $\mathrm{Linear}(256\to128)$. The $\textsf{micro}$ head ($236\to128\to650$) gives symmetrized contact and directed support logits over $18\times18$ slot pairs plus two availability outputs; the $\textsf{macro}$ head ($236\to128\to4$) gives steady-state and structure-unstable logits plus two availability outputs. Head outputs are gated by availability (and, for $\textsf{micro}$, by both slots' presence) and added to the projected input through a bias-free adapter ($650\to384$ or $4\to384$). The predictor has 1,837,690 parameters, of which the request path holds 367,616.
+
+\textbf{Continuous predictor.} The same trunk at width 456 with a horizon-only code (sinusoidal features of $\Delta$ fused by an MLP) and no heads, adapters or description embedding: 1,862,396 parameters. Width 456 is the width in $\{384,392,\dots,512\}$ whose parameter count is nearest the hybrid's. The two predictors have similar size; they are not parameter-matched.
+
+\textbf{Per-call linear MACs.} One hybrid transition costs 1,432,448 ($\textsf{cont}$), 1,795,456 ($\textsf{micro}$) or 1,464,704 ($\textsf{macro}$) MACs; one continuous-predictor transition costs 1,852,200; one policy call costs 32,128 ($J$, $J_{\mathrm{cont}}^{\mathrm{NovPhy}}$) or 32,095 ($C\!-\!J$).
+\end{revblock}
+Per call, a $\textsf{micro}$ request costs 25\% more \rev{linear} multiply-accumulates than a $\textsf{cont}$ request and a $\textsf{macro}$ request 2\% more, so the compute of a schedule is set mainly by how many calls it makes, that is, by its horizons.
+\begin{revblock}
+
+\subsection{Primary training recipe}
+
+\textbf{Data.} The 480 predictor-fit levels yield 13,920 captured launches, 13,919 complete. The encoder parses every observed frame up to frame 285. Local windows start at frames 0, 15, \dots, 225 below a launch's last frame and span 60 transitions, with terminal padding masked (220,286 windows). Long-horizon windows start at frames 0, 15, 30, 45 and 60 (69,595 windows); their targets are the parsed carriers at every visited frame, with the last frame repeated past a launch's end. Ranking cells are every predictor-fit level and inventory (grid or angle) whose complete candidates contain both outcomes: 680 cells (366 grid, 314 angle) over 425 levels, with candidates in inventory order padded to 20. Outcomes are the engine pig-removal verdicts of these predictor-fit launches only. The policy-fit and evaluation captures are never read.
+
+\textbf{Objective.} Each update $u$ draws the request $\mathcal{R}[u\bmod 9]$ (the continuous predictor uses the same horizon) and sums three terms (Equation~\ref{eq:lc}).
+\begin{itemize}
+\item Local loss (Equation~\ref{eq:loss}) on 64 windows drawn uniformly with replacement: the first $M\le4$ $\Delta$-steps of a window, one teacher-forced and one recursive carrier MSE per step, $0.1\times$ the predicate binary cross-entropy (positive weight 5, plus an availability term) on predicted and observed carriers for $\textsf{micro}$ and $\textsf{macro}$ requests, and $0.01\times$ the carrier-bound penalty (squared excess of entries beyond $\pm2$) on recursive predictions.
+\item Long-horizon loss, weight 1.0, on 64 long windows: the request is unrolled $H_u/\Delta$ transitions with $H_u=\min(225,\,60+15\lfloor u/500\rfloor)$; the loss averages the row-mean carrier MSE plus $0.01\times$ the bound penalty over every visited frame.
+\item Decision-contrastive ranking loss on 2 ranking cells drawn uniformly with replacement: every candidate is rolled out from the level's decision-frame carrier to $k=225$, its tie-free cost is computed, and the loss averages $\mathrm{softplus}((\widehat{\mathrm{cost}}(a^{+})-\widehat{\mathrm{cost}}(a^{-}))/0.1)$ over success--failure pairs and cells. Its weight is $0.1\,\rho_u$, with $\rho_u=0$ before update 1,000 and rising linearly to 1 at update 2,000.
+\end{itemize}
+
+\textbf{Optimization.} AdamW (learning rate $10^{-4}$, weight decay $10^{-4}$), per-model gradient clipping at 1.0, 9,000 updates, initialization by \texttt{torch.manual\_seed(seed)} from scratch, seeds 20260908, 20260909 and 20260910 for each predictor. The 9,000-update budget is inherited from the submitted recipe although the new split holds about 19 times as many windows; the primary predictors were not trained longer.
+
+\textbf{Stability measures.} An earlier version of this recipe retired 28 of 312 trained models, all on $\Delta=1$ updates at curriculum horizons of at least 165, where gradients through up to 225 recursive transitions reached norms of $2.2\times10^{3}$ (long-horizon) and $1.1\times10^{4}$ (ranking). The primary recipe therefore detaches both recursions every 45 transitions ($\Delta=5$ and 15 are unaffected; $\Delta=1$ back-propagates in 45-frame segments). An update with a nonfinite loss or gradient is skipped for that model, leaving its parameters and optimizer moments untouched, and a model is retired after 10 consecutive skips (at most 45 skips in total). All six primary models (two predictors $\times$ three seeds) completed with zero skipped updates and zero retirements. The hybrid seeds recorded 104, 108 and 108 of 9,000 updates with pre-clip gradient norm above $10^{3}$, almost all on $\Delta=1$ in the first 500 updates; after update 500 they recorded 1, 0 and 0. The continuous-predictor seeds recorded 190, 92 and 88 such updates, of which 109 (updates 2748--8552), 0 and 6 (updates 1936--4973) came after update 500. Seed 20260908 went through a finite excursion (39 updates in 7998--8078 and 8 in 8542--8552) and recovered under the pre-declared usability rule.
+
+\subsection{Request policies}
+
+\textbf{Pool.} Every policy trains on the 120 policy-fit levels (3,480 complete launches) with the frozen hybrid or continuous predictor of the same seed. Policy seed $s$ uses predictor seed $s$, and each policy is initialized by \texttt{torch.manual\_seed}$(s+7700)$.
+
+\textbf{$J$.} Architecture $\mathrm{Linear}(242\to128)$, SiLU, $\mathrm{Linear}(128\to9)$ on $[z;a;\min(\kappa,60)/60]$, with logits of requests $\Delta>\kappa$ set to $-\infty$. Labels come from the dynamic program below on the first 60-frame window of every policy-fit launch, with $\lambda=10^{-4}$ (the submitted value; not selected). Distillation runs two rounds of 1,800 AdamW updates (learning rate $10^{-3}$, batch 128, cross-entropy); update $u$ of a round draws its batch from policy level $u$ modulo the number of levels, with a fresh optimizer and sampler seed $s+7700$ plus the round index. Round 2 trains on the labels of rounds 1 and 2. For the observed AUC--MAC frontier the same recipe was also run at $\lambda\in\{10^{-5},3\times10^{-4},10^{-3},3\times10^{-3},10^{-2},3\times10^{-2},10^{-1}\}$.
+
+\textbf{Exact dynamic program.} For a window $z_{0:L}$ with contexts $\tilde z_{0:L-1}$, the step cost of request $r$ at carrier frame $k$ is
+\begin{equation*}
+g_k(r)=\Delta(r)\cdot\mathrm{mean}\big[(F_\theta(\tilde z_k,a,r)-z_{k+\Delta(r)})^2\big]+\lambda\,\omega(r),
+\end{equation*}
+where the mean runs over the 236 carrier entries and $\omega(r)=W_\pi(r)/W(r_{\mathrm{ref}})$ with $r_{\mathrm{ref}}=(15,\textsf{cont})$. Here $W_\pi(r)$ counts the linear MACs of one transition plus one policy call, and $W(r_{\mathrm{ref}})$ counts one predictor-only transition. The value is $V(k)=\min_r[g_k(r)+V(k+\Delta(r))]$ with $V(k)=0$ at and beyond the window end; requests that overrun the window are masked, and ties go to the lowest index in the frozen request order (horizon-major; $\textsf{cont}<\textsf{micro}<\textsf{macro}$). This is Equation~\ref{eq:dp} for the surrogate of Equation~\ref{eq:surrogate}. It is exact for that surrogate. It is not the recursive rollout cost, and distillation guarantees nothing about the deployed policy.
+
+\textbf{Aggregation rule.} In round 1, $\tilde z_k=z_k$. In round 2, the round-1 policy rolls out greedily from $z_0$ on the predictor. At every frame it visits, the context is overwritten by the predicted carrier; every frame it skips keeps its observed carrier. Every feasible request is then evaluated from this fixed mixed context against the unchanged, aligned observed targets, and the labels of both rounds are concatenated.
+
+\textbf{Labeller scale.} In a request-set scaling study, one exact labelling pass over $N=3{,}480$ windows of length $L=225$ with a request set of $|\mathcal{R}|=225$ requests took 17.8--18.3 GPU seconds.
+
+\textbf{$J_{\mathrm{cont}}^{\mathrm{NovPhy}}$.} $J$'s architecture, initialization and two-round recipe on the same hybrid checkpoint, with the six non-continuous logits masked to $-\infty$ and the dynamic program and aggregation contexts restricted to the three continuous requests. Its compute term counts the full nine-way policy.
+
+\textbf{$C\!-\!J$.} A three-way policy ($\mathrm{Linear}(242\to131)$, SiLU, $\mathrm{Linear}(131\to3)$) on the continuous predictor, labelled by the same dynamic program with that predictor's per-call MACs, and trained with the same pool, seeds and updates. Its width 131 is chosen by the width rule above against $J$'s policy.
+
+\textbf{$J_{\mathrm{dec}}$.} Decision-valued labels on the mixed policy-fit cells (94 grid and 73 angle cells over 108 levels). Every candidate is rolled out from the level's decision-frame carrier under a continuation: the fixed request $(15,\textsf{macro})$ in round 1 and the round-1 policy in round 2. At every visited frame $k$ and every feasible request $i$, the rollout deviates to $i$ and then follows the continuation to $k=225$. The label is $\arg\min_i Q(k,i)$ with
+\begin{equation*}
+Q(k,i)=\ell_{\mathrm{rank}}\big(\widehat{\mathrm{cost}}'_i\big)+\lambda\,\frac{W(k,i)}{W(r_{\mathrm{ref}})},
+\end{equation*}
+where $\ell_{\mathrm{rank}}$ is the mean over the candidate's opposite-outcome partners of $\mathrm{softplus}(\pm(\widehat{\mathrm{cost}}'_i-\widehat{\mathrm{cost}}_{\mathrm{partner}})/0.1)$ (sign chosen so that a success should cost less), the partners' costs are their continuation costs, and $W(k,i)$ is the work of every transition from $k$. Distillation follows $J$'s recipe. The $\lambda$ grid was $\{10^{-4},10^{-3},10^{-2},10^{-1}\}$; $\lambda=10^{-1}$, the largest value of the grid, had the largest seed-mean policy-fit AUC of greedy rollouts over the mixed grid and angle cells (0.734 against 0.683 at $10^{-2}$; ties to the larger $\lambda$), and it was selected after training and before any evaluation score. This is a post-submission surrogate, distinct from the dynamic program above.
+
+\textbf{Inference-time arms.} $T_\alpha$ and $D_\Delta$ take the argmax of $J$'s ($\lambda=10^{-4}$) logits over the allowed subset of three requests, after the feasibility mask, with ties to the lower request index; nothing is retrained. $J_{\text{as-cont}}$ replays each candidate's recorded $J$ schedule on the hybrid with every $(\Delta,\alpha)$ replaced by $(\Delta,\textsf{cont})$ and no policy calls; a candidate whose $J$ endpoint is a typed failure keeps the failure.
+
+\subsection{Compute accounting}
+
+Compute is the number of linear multiply-accumulates per candidate rollout from the decision frame to $t=225$: the per-call MACs above summed over the predictor transitions and policy calls of that rollout. Nonlinear operations, indexing, masking and memory traffic are excluded, so the count is not a full FLOP count. The encoder's parse of the decision frame is not counted. The no-model prior incurs zero predictor and policy MACs, not zero execution cost. Wall time is measured as CUDA-synchronized host seconds of one level's batched rollout in a uniform timing pass (one process per GPU, warm-up discarded); the frozen timing axis uses seed 20260908, and a three-seed re-timing is post hoc and descriptive. Neither shows a wall-time speedup for $J$ (Section~\ref{sec:res:compute}).
+
+\subsection{Pixel-study models}
+
+The pixel study trains its own models; none is a NovPhy checkpoint. Per benchmark, two predictor families are trained with five seeds (20260908--20260912): a hybrid with a $\Delta$-indexed $\textsf{macro}$ head (1,838,722 parameters) and a label-free variant whose $\textsf{micro}$ codes are binary straight-through features without predicate supervision. Together with the two benchmarks this gives 20 predictors and 40 policies. Each predictor trains for 9,000 updates over the nine requests in round-robin order with the long-horizon recipe adapted to the benchmark: a curriculum from 30 to 120 frames (CLEVRER) or 30 to 90 carrier frames (Physion), growing by 15 every 900 updates, with truncation every 45 transitions. $\textsf{Micro}$ labels are annotated pair collisions (CLEVRER) or pairwise contact (Physion). $\textsf{Macro}$ labels are observable, horizon-indexed scene changes: objects entering or leaving view and all objects at rest (CLEVRER), and target--zone contact onset and settling (Physion). The policies $J$ and $J_{\mathrm{cont}}^{\mathrm{pixel}}$ use the prediction-error dynamic program ($\lambda=10^{-4}$), two aggregation rounds of 1,800 updates over 1,024 windows. All training used 12,010 GPU seconds.
+\end{revblock}

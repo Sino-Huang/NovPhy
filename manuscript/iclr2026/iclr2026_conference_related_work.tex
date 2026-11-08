@@ -1,0 +1,14 @@
+%!TEX root = iclr2026_conference.tex
+\section{Related Work}
+\label{sec:rel}
+
+\begin{revblock}\nopagebreak
+\paragraph{Temporal adaptation of prediction.}
+Choosing how far each prediction reaches is established. Adaptive skip intervals train a recurrent dynamics model to choose its own temporal jumps \citep{neitz2018adaptive}. \citet{chatterjee2025improving} let a planner optimize the duration of temporally extended actions, over which a learned model then predicts. TAWM trains one model across time-step sizes to serve several observation rates \citep{nhu2025tawm}, and other models jump to key frames \citep{jayaraman2019tap,pertsch2020keyin,kim2019vta} or split rollouts at surprise \citep{iiyama2026sunta}. In most of these models the predictive representation stays fixed. Options and action repetition change when the agent acts, not what the model predicts \citep{sutton1999options,biedenkapp2021temporl}.
+
+\paragraph{Hierarchies and predicates.}
+Hierarchical JEPA assigns short-term, low-level prediction to one level and longer-term, higher-level prediction to the next \citep[\S4.4, \S4.6]{lecun2022path}. Recent hierarchical world models learn such levels end to end \citep{zhang2026hjepa}, learn models at several temporal scales in one latent space \citep{zhang2026hierarchical}, or learn when sparse latent contexts switch \citep{gumbsch2024thick}. Clockwork VAE, MSPred and Director fix the time scales in the architecture \citep{saxena2021clockwork,villarcorrales2022mspred,hafner2022director}, and SALT learns temporal and state abstractions from offline data \citep{huang2026salt}. \citet{wang2023dynamic} choose a scene resolution per MPC step, MuSix routes each state to one of several world models \citep{jang2026musix}, and VisualPredicator invents predicates for planning \citep{liang2025visualpredicator}. Our request varies horizon and description level independently on one predictor (tied-axis and hierarchical comparisons in Appendix~\ref{sec:app:related}).
+
+\paragraph{Physical reasoning and direct success prediction.}
+Physical-reasoning benchmarks pose one-shot interventions or passive dynamics \citep{bakhtin2019phyre,bear2021physion,yi2020clevrer,pinto2024novphy}, and on PHYRE a DQN that scores each action for success is a strong baseline \citep{bakhtin2019phyre}. \citet{girdhar2020forward} found that forward prediction helps PHYRE agents mainly when test tasks are small variations of training tasks, and that better pixel accuracy does not necessarily give better reasoning. On NovPhy, within distribution, rollout adds no measured value to a direct success classifier (Section~\ref{sec:res:live}), and the external world models we reproduced support no ranking claim in either direction (Appendix~\ref{sec:app:external}).
+\end{revblock}

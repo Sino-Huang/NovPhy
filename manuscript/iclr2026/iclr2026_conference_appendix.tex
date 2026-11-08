@@ -1,0 +1,29 @@
+%!TEX root = iclr2026_conference.tex
+\appendix
+
+\begin{revblock}
+\paragraph{Summary of revisions.} NovPhy results now come from a sealed NovPhy split and a new primary model (Sections~\ref{sec:mth:model} and~\ref{sec:mth:protocol}; Appendices~\ref{sec:app:notation}--\ref{sec:app:method}). A held-out pixel study replaces the in-sample CLEVRER and Physion-Dominoes rollouts (Section~\ref{sec:res:rollout}). Same-checkpoint controls, a corrected compute attribution, live retry-from-start evaluation, and direct-prediction and external baselines are new (Section~\ref{sec:res}; Appendices~\ref{sec:app:results} and~\ref{sec:app:external}). We withdraw three submitted claims: that the learned selector beats fixed requests, that joint selection needs one third of the compute of a horizon-only baseline, and that the rollouts generalize to new scenes. The submitted evidence is relabelled in Appendix~\ref{sec:app:development}. Figures~\ref{fig:interface} and~\ref{fig:mth:arch}, first-use definitions and the arm key (Table~\ref{tab:setup:arms}) are new.
+\end{revblock}
+
+\input{iclr2026_conference_appendix_notation}
+\input{iclr2026_conference_appendix_protocol}
+\input{iclr2026_conference_appendix_method}
+\input{iclr2026_conference_appendix_results}
+\input{iclr2026_conference_appendix_external}
+\input{iclr2026_conference_appendix_development}
+\input{iclr2026_conference_appendix_related}
+\input{iclr2026_conference_appendix_repro}
+
+\section{Reproducibility Statement}
+
+\begin{revblock}
+Section~\ref{sec:mth:protocol} defines the splits, metrics, statistics and live protocol. Appendix~\ref{sec:app:protocol} records the split construction, inventories, scoring path and guards, and Appendix~\ref{sec:app:method} gives every architectural and training setting of the primary model and the pixel-study models. Appendix~\ref{sec:app:repro} lists the checkpoints, the validation command of each artifact family and the artifact behind every printed number. In the recorded reproduction check dated 2026-10-23, 23 of 32 commands exited successfully; nine stopped at frozen-input integrity checks before recomputation. The reproduction appendix reports each artifact's last observed validation status and date. No experiment validator was rerun for this manuscript revision. Validations of later experiment programs are listed there separately with their own status and date. The supplement contains the submitted-era development ranking cells and candidate verdicts, their recorded aggregate-reproduction checks, and exact split membership for the CLEVRER and Physion pixel studies. Per-level ranking cells, per-episode live outcomes, and level-by-candidate verdicts for the sealed NovPhy evaluation, including the submitted-checkpoint rerun, are not included. The supplement also lists the 1,000 sealed NovPhy levels with their predictor-fit, policy-fit or evaluation role as recorded in the retained run records, together with per-arm live outcome counts, the typed live failures and the full AUC--MAC table. The frozen roster file itself is not included, nor are the per-inventory capture lists of the 120 evaluation levels with non-grid inventories.
+\end{revblock}
+
+\section{Ethics Statement}
+\rev{This work uses simulated physics only: NovPhy levels \citep{pinto2024novphy}, CLEVRER videos and annotations \citep{yi2020clevrer}, released under a CC0 license, and Physion-Dominoes stimuli \citep{bear2021physion}, released under the MIT license.} It involves no human subjects, personal data, or deployed systems.
+
+\section{Use of LLM Statement}
+\label{app:llm-usage}
+
+\rev{Generative AI tools were used in preparing both the submitted version and this revision of the manuscript: to draft and edit text, create and modify figures, check text against experiment records, and identify and format references; during this revision they also assisted with scientific framing and presentation decisions. The authors are responsible for the manuscript's claims, citations, figures, and disclosures.}

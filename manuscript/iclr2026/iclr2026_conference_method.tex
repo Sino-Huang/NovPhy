@@ -1,0 +1,108 @@
+%!TEX root = iclr2026_conference.tex
+% \varnothing needs amssymb, which the preamble does not load (math_commands.tex loads amsmath/amsfonts only);
+% fall back to \emptyset so this file compiles either way. No-op once amssymb is loaded.
+\providecommand{\varnothing}{\emptyset}
+\section{Problem Formulation}
+\label{sec:mth:setting}
+
+An action-sparse persistent-effect environment is a Markov decision process $\mathcal{M}=(\mathcal{S},\mathcal{A}\cup\{\varnothing\},P,R)$ over engine steps $t$, where $\varnothing$ is the null action, $R$ is the task reward, and actions are sparse:
+\begin{equation}
+s_{t+1}\sim P(\cdot\mid s_t,a_t),\qquad a_t\neq\varnothing\ \text{only if}\ t\in\mathcal{T}_{\mathrm{dec}},
+\label{eq:mdp}
+\end{equation}
+with $\mathcal{T}_{\mathrm{dec}}$ the small set of decision steps. In NovPhy an action is one slingshot launch, and the agent observes an RGB frame $o_t$. \rev{Between decision steps only null actions occur (Appendix~\ref{sec:app:method}).} A prediction may therefore jump any number of steps without intermediate actions, and $\mathcal{M}$ remains an ordinary MDP. \rev{Many implementations predict at a fixed temporal stride and with a fixed predictive representation. We expose horizon and description mode as query inputs while retaining the underlying action-sparse MDP.}
+
+A frozen object-slot encoder $E$ maps an observation to the \emph{carrier} $z=E(o)\in\mathbb{R}^{236}$, \rev{a continuous object-state vector} (Section~\ref{sec:mth:model}). We index carrier frames by $k$, with $z_k$ the carrier of the $k$-th captured frame after the decision step. Every world-model query carries a \emph{prediction request}
+\begin{equation}
+r=(\Delta,\alpha)\in\mathcal{R}=\{1,5,15\}\times\{\textsf{cont},\textsf{micro},\textsf{macro}\},\qquad|\mathcal{R}|=9 .
+\label{eq:requests}
+\end{equation}
+The horizon $\Delta$ is the number of carrier frames the prediction advances. The description level $\alpha$ sets what the prediction reasons over. \rev{Under $\textsf{cont}$ (continuous) it is the carrier alone: each object's presence, kind, position and velocity. $\textsf{micro}$ adds which objects touch or support others, and $\textsf{macro}$ adds two scene predicates, \emph{steady-state} (at rest) and \emph{structure-unstable} (Figure~\ref{fig:interface}(b); Appendix~\ref{sec:app:notation}).} Under $\textsf{micro}$ and $\textsf{macro}$ the model reads these predicates from its state and feeds them back into the transition, so $\alpha$ changes what is rolled forward. \rev{One predictor serves every request and always returns the same carrier, $\hat z_{k+\Delta}=F_\theta(\hat z_k,a,r)\approx z_{k+\Delta}$, so a rollout can change its request at any step. We therefore also call $\alpha$ the \emph{description-feedback mode}. It is not a learned hierarchy, a compressed state or a cheaper call.}
+
+Given a launch $a$ and a rollout endpoint of $K$ carrier frames \rev{($K=225$ on NovPhy)}, the model rolls forward from $\hat z_0=z_0$. At frame $k$, with $\kappa_k=K-k$ frames remaining, a request policy $\pi_\psi$ issues one feasible request and the model advances by its horizon:
+\begin{align}
+r_k&=\argmax_{r\in\mathcal{R}:\ \Delta(r)\le\kappa_k}\ \pi_\psi(r\mid\hat z_k,a,\kappa_k),
+\label{eq:policy}\\
+\hat z_{k+\Delta(r_k)}&=F_\theta(\hat z_k,a,r_k),\qquad \kappa_{k+\Delta(r_k)}=\kappa_k-\Delta(r_k).
+\label{eq:rollout}
+\end{align}
+The rollout stops at $\kappa=0$. \rev{A fixed request $F(\Delta,\alpha)$ sets $r_k\equiv(\Delta,\alpha)$. The policy imitates schedules that minimize a surrogate: on a training trajectory $z_{0:L}$, a step from frame $k$ with a fixed context $\tilde z_k$ costs $g_k(r)$, and an $n$-step schedule sums these costs,}
+\begin{align}
+\rev{g_k(r)}&\rev{{}=\Delta(r)\,\tfrac1d\big\lVert F_\theta(\tilde z_k,a,r)-z_{k+\Delta(r)}\big\rVert_2^2+\lambda\,\omega(r),}
+\label{eq:surrogate}\\
+\rev{G(r_{1:n})}&\rev{{}=\textstyle\sum_{j=1}^{n}g_{k_j}(r_j),\qquad k_1=0,\ k_{j+1}=k_j+\Delta(r_j),\ k_{n+1}=L.}
+\label{eq:objective}
+\end{align}
+\rev{with $d=236$ and $\omega(r)$ the linear multiply-accumulate (MAC) count of one transition plus one policy call relative to a predictor-only $(15,\textsf{cont})$ transition. Because $\tilde z_k$ is fixed (Section~\ref{sec:mth:model}), a dynamic program minimizes $G$ exactly. $G$ is not the recursive rollout cost of Equation~\ref{eq:rollout}, and minimizing it guarantees nothing about that rollout's error.}
+
+At a decision state $s$, the agent imagines every launch in a candidate set $\mathcal{C}(s)$ by Equation~\ref{eq:rollout} and reads a task cost on the predicted endpoint carrier $\hat z_K$:
+\begin{equation}
+\rev{\widehat{\mathrm{cost}}(a)=\mathrm{pres}_{\mathrm{pig}}(\hat z_K)-0.1\,\big\lVert \mathbf{p}_{\mathrm{pig}}(\hat z_K)-\mathbf{p}_{\mathrm{pig}}(z_0)\big\rVert_2,\qquad
+\hat a=\argmin_{a\in\mathcal{C}(s)}\widehat{\mathrm{cost}}(a),}
+\label{eq:taskcost}
+\end{equation}
+\rev{where $\mathrm{pres}_{\mathrm{pig}}$ is the pig slot's presence and $\mathbf{p}_{\mathrm{pig}}$ its centre. This \emph{tie-free cost} is low when the predicted endpoint has lost or moved the pig. Only the original submitted records used another, tie-prone count cost (Appendix~\ref{sec:app:protocol}).} The engine outcome $y(s,a)\in\{0,1\}$ is $1$ when the engine, executing $a$ from $s$, removes the target at the first shot. \rev{Evaluation outcomes are excluded from fitting the predictors, training the policies, and choosing their deployment hyperparameters. Explicitly labelled hindsight comparisons, cross-inventory reference choices, and observed-frontier summaries use evaluation outcomes and are not independently selected deployment policies.} Because the agent acts on the order of \rev{$\widehat{\mathrm{cost}}$}, we score that order by the \emph{ordering AUC}, the probability that a successful launch is predicted to cost less than a failed one:
+\begin{equation}
+\mathrm{AUC}(s)=\Pr\big[\rev{\widehat{\mathrm{cost}}}(a^{+})<\rev{\widehat{\mathrm{cost}}}(a^{-})\big]+\tfrac12\Pr\big[\rev{\widehat{\mathrm{cost}}}(a^{+})=\rev{\widehat{\mathrm{cost}}}(a^{-})\big],
+\label{eq:auc}
+\end{equation}
+with a success $a^{+}$ ($y(s,a^{+})=1$) and a failure $a^{-}$ ($y(s,a^{-})=0$) drawn uniformly from $\mathcal{C}(s)$, \rev{the level's \emph{inventory}; it is defined on \emph{mixed-outcome levels}, whose inventory holds both outcomes.}
+
+\input{iclr2026_conference_fig_model}
+
+\section{Method}
+\label{sec:mth:model}
+
+The model has four parts (Figure~\ref{fig:mth:arch}): the frozen encoder $E$, the request-conditioned predictor $F_\theta$, two predicate heads, and the request policy $\pi_\psi$. The predictor is JEPA-style in that it predicts future carriers \rev{in carrier space} without a pixel decoder; its targets are the frozen encoder's carriers of observed future frames, with no EMA target encoder or stop-gradient branch. \rev{Appendix~\ref{sec:app:method} gives every equation and setting.}
+
+\textbf{\rev{Encoder and predictor.}} \rev{$E$ parses a $320\times240$ frame into 18 named object slots. It was trained once on 42,344 frames of 12 earlier NovPhy levels with engine-projected slot, relation and scene labels, and then frozen. At runtime it encodes only the decision frame, and every later carrier is predicted.} $F_\theta$ is a residual MLP trunk of width 384 whose three blocks are all modulated by one code for the whole request. \rev{The code fuses sinusoidal features of $\Delta$ with a learned embedding of $\alpha$ and sets zero-initialized FiLM scales and shifts \citep{perez2018film,peebles2023scalable}. For $\alpha\neq\textsf{cont}$, a predicate head reads $\hat z_k$, and an adapter adds its output to the trunk input.}
+
+\textbf{Training.} \rev{$F_\theta$ is trained from scratch on the 480 predictor-fit levels,} cycling $r=\mathcal{R}[u \bmod 9]$ at update $u$, so all nine requests share every weight of the trunk. \rev{The primary objective is}
+\begin{equation}
+\rev{\mathcal{L}_{\mathrm{primary}}=\mathcal{L}(\theta;r)+\mathcal{L}_{\mathrm{long}}(\theta;r,H_u)+0.1\,\rho_u\,\mathcal{L}_{\mathrm{rank}}(\theta;r).}
+\label{eq:lc}
+\end{equation}
+\rev{$\mathcal{L}(\theta;r)$ is the submitted window loss, which includes a predicate cross-entropy on engine labels (Equation~\ref{eq:loss}). $\mathcal{L}_{\mathrm{long}}$ unrolls $r$ from observed carriers for $H_u=\min(225,60+15\lfloor u/500\rfloor)$ frames. $\mathcal{L}_{\mathrm{rank}}$ uses predictor-fit outcomes: it rolls every candidate of a mixed-outcome inventory to $k=225$ and averages $\mathrm{softplus}((\widehat{\mathrm{cost}}(a^{+})-\widehat{\mathrm{cost}}(a^{-}))/0.1)$ over success--failure pairs. Training uses 9,000 updates and three seeds.}
+
+\textbf{Request policy.} \rev{$\pi_\psi$ is an MLP on $[\hat z_k;\,a;\,\min(\kappa_k,60)/60]$ that masks requests with $\Delta>\kappa_k$. With $F_\theta$ frozen, a backward dynamic program minimizes Equation~\ref{eq:objective} on the first 60 frames of each of the 3,480 policy-fit launches,}
+\begin{equation}
+V(k)=\min_{r\in\mathcal{R}:\ k+\Delta(r)\le L}\Big[g_k(r)+V\big(k+\Delta(r)\big)\Big],\qquad V(L)=0,
+\label{eq:dp}
+\end{equation}
+\rev{with $\lambda=10^{-4}$ and ties broken by a fixed request order. $\pi_\psi$ is distilled by cross-entropy on the minimizers. In a second round, frames the round-1 policy visits take its predicted carriers as contexts, other frames keep observed carriers, and targets stay observed. We call this policy $J$: the submitted recipe, retrained on the primary predictor. $J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ repeats it with only continuous requests on the same checkpoint. $J_{\mathrm{dec}}$ (post-submission) instead labels the request that minimizes a ranking loss on policy-fit outcomes over the full 225-frame rollout plus $\lambda$ times the remaining work, with $\lambda=10^{-1}$ selected on the policy-fit split. A continuous predictor with a wider trunk (width 456), similar size and no predicate heads gives $C^*$ and the horizon-only policy $C\!-\!J$. Development outcomes on earlier 50-step captures chose the training recipe, $U$ and $C^*$ before the sealed NovPhy split was scored.}
+
+\textbf{\rev{What changed since the submission.}} \rev{The problem, interface and predictor architecture are unchanged. Perception: the submitted $96\times64$ parser missed the pig in all 859 recorded decision frames; on 240 launches of four held-out earlier levels it detects the pig at the start in 0, the repaired encoder in 240. Training adds the long-horizon and ranking terms of Equation~\ref{eq:lc}. Data, scoring and evaluation: one 50-step stride for fitting and evaluation (Table~\ref{tab:setup:timebase}), the tie-free instead of the count cost (also in the rerun of the submitted checkpoints), and the sealed NovPhy split instead of exposed development levels (Appendix~\ref{sec:app:development}).}
+
+\begin{table}[t]
+\ifshowrevisions\color{blue}\fi
+\centering
+\footnotesize
+\caption{\textbf{Arm key} (full key with record names: Appendix~\ref{sec:app:notation}). $F_\theta$ is the hybrid predictor.}
+\label{tab:setup:arms}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.21\linewidth}>{\raggedright\arraybackslash}p{0.26\linewidth}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}p{0.27\linewidth}@{}}
+\toprule
+Arm & Definition & Arm & Definition \\
+\midrule
+$F(\Delta,\alpha)$; $U$ & fixed; $U{=}F(15,\textsf{macro})$ & $J_{\mathrm{cont}}^{\mathrm{pixel}}$ & pixel-study horizon policy \\
+$C\text{-}F(\Delta)$; $C^*{=}C\text{-}F(15)$ & fixed $(\Delta,\textsf{cont})$, cont.\ model & $F^*$; $F_{\mathrm{hind}}$ & chosen on outcomes \\
+$J$; $J_{\mathrm{cont}}^{\mathrm{NovPhy}}$ & $\lambda{=}10^{-4}$; cont.\ only & Prior; wrong anchor & no model; $U$, other levels \\
+$J_{\mathrm{dec}}$ & decision labels, $\lambda{=}10^{-1}$ & Oracle; random & live; oracle nondeployable \\
+$T_\alpha$; $D_\Delta$; $J_{\text{as-cont}}$ & $J$ restricted to one $\alpha$/$\Delta$; replay & A2; readouts & success classifiers \\
+$C\!-\!J$ & horizon policy, cont.\ model & Shared; specialists & sharing-study predictors \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Experimental Setup}
+\label{sec:mth:protocol}
+
+\begin{revblock}\nopagebreak
+\textbf{NovPhy split and inventories.} We generated 1,000 NovPhy \citep{pinto2024novphy} levels from two generator families with normal physics and split them, before any capture, into 480 predictor-fit, 120 policy-fit and 400 evaluation levels. Predictor-fit outcomes train the ranking loss and the no-model prior. Policy-fit outcomes train $J_{\mathrm{dec}}$ and $J_{\mathrm{pg}}$ and select their $\lambda$ and the $\kappa$ variant. Evaluation levels are scored after every model and rule was frozen. Each evaluation level has a 16-launch grid inventory, and 120 also have offset, angle and power inventories (Appendix~\ref{sec:app:protocol}). The grid is the pre-declared primary inventory, with 311 mixed-outcome levels or 933 level--seed cells. Here, `pre-declared' means specified in an internal plan frozen before that experiment's scoring; it does not denote a public preregistration. The other three inventories are descriptive and never pooled (Appendix~\ref{sec:app:results}). The sealed NovPhy split is identity-disjoint but within-distribution across two familiar generator families. A nearest-fit pixel lookup achieves 0.9039 [0.8838, 0.9231] grid AUC, demonstrating substantial exploitable within-family similarity; identity separation therefore does not establish generalization to unfamiliar physical configurations.
+
+\textbf{Time base, pixel study and arms.} In the sealed NovPhy split, one $\Delta$ unit is one carrier frame of 50 engine steps (0.02\,s). The separate pixel studies on CLEVRER \citep{yi2020clevrer} and Physion-Dominoes \citep{bear2021physion} train their own parser, predictors and policies (five seeds; caveats in Section~\ref{sec:res:rollout}) and use one video frame (0.0390625\,s) and three native frames (0.1\,s). The submitted model mixed the NovPhy unit with single engine steps (Table~\ref{tab:setup:timebase}). The request code encodes integer $\Delta$ without a physical unit; the carrier separately contains elapsed seconds, while the policy receives remaining carrier frames $\kappa$. No elapsed-channel ablation establishes rate invariance or cross-time-base transfer. Table~\ref{tab:setup:arms} defines the arms.
+
+\textbf{Metrics and statistics.} From here on, $t$ counts carrier frames from the decision frame. The offline top-3 hit is the share of cells with a success among the three lowest-cost candidates. Rollout error is engine-referenced on NovPhy and parser-relative on the pixel benchmarks, and the two are never compared. Intervals are descriptive 95\% level-clustered bootstraps (10,000 draws) without multiplicity adjustment, and the three seeds are not independent samples of levels. These intervals condition on the trained models; they do not quantify training-seed uncertainty. The frozen AUC rule labels a contrast supported when all required guards pass, its point estimate is at least $\delta=0.02$, and its 95\% lower bound exceeds zero. This is not a requirement that the entire interval exceed $\delta$. A contrast is not supported when its upper bound is below $\delta$, and insufficient otherwise or whenever a guard fails. Compute is counted as linear MACs per candidate rollout to $t=225$ (predictor plus policy, excluding nonlinear and memory work).
+
+\textbf{Live retry-from-start evaluation.} On each evaluation level, an arm gets up to three shots. Before each shot the level restarts, the arm ranks the 16 grid launches from the decision frame and skips failed ones, and the engine executes its top choice. pass@$k$ is the share of episodes that remove the pig within $k$ shots. Every formal live contrast is guard-vetoed (Section~\ref{sec:res}).
+\end{revblock}

@@ -1,0 +1,22 @@
+%!TEX root = iclr2026_conference.tex
+\section{\texorpdfstring{\rev{Discussion and Limitations}}{Discussion and Limitations}}
+\label{sec:disc}
+
+\begin{revblock}\nopagebreak
+\textbf{What the controlled comparisons establish.} Sharing one checkpoint across nine requests improves request-mean AUC at matched per-request updates and enables controlled granularity comparisons. On the sealed grid, the lowest-error and highest-ranking requests differ. Joint selection beats continuous-only selection on this checkpoint, but $F(15,\textsf{cont})$ gives higher AUC at lower MAC cost than $J$ and $J_{\mathrm{dec}}$.
+
+\textbf{Limitations.} \emph{Budget.} $U$ receives 1,000 of the shared predictor's 9,000 updates. A 9,000-update specialist on the same request scores 0.885 [0.872, 0.898], against $U$'s 0.744. Retraining $U$ for 16,929 updates (1.88$\times$) yields 0.813 [0.798, 0.829], but this descriptive control failed G-action (Appendix~\ref{sec:app:ext:guard}). Neither the selection nor the direct-prediction conclusion is established beyond the tested budgets or for converged predictors. \emph{Time base.} No elapsed-channel ablation establishes rate invariance or cross-time-base transfer.
+
+\emph{Macro observability.} A separate audit head reaches macro F1 0.157 on parsed carriers, 0.113 on one-step predictions and 0.015 on open-loop rollouts. These audit-head measurements show weak predicate readability but do not measure the primary model's macro head.
+
+\emph{Split scope.} The sealed NovPhy split is identity-disjoint but within-distribution across two familiar generator families. A nearest-fit pixel lookup achieves 0.9039 [0.8838, 0.9231] grid AUC, so identity separation does not imply unfamiliar-physics generalization. \emph{Novelty.} Policy-only and world-model-stack retuning change AUC by $-0.007$ [$-0.021$, $+0.006$] and $+0.151$ [$+0.097$, $+0.206$], respectively. On paired novel levels, direct predictors and $U$ score approximately 0.52--0.58 and 0.47, descriptively below the prior's 0.60 (Appendix~\ref{sec:app:res:novelty}).
+\end{revblock}
+
+\section{Conclusion}
+\label{sec:disc:conclusion}
+
+\begin{revblock}\nopagebreak
+Request conditioning improves request-mean ranking at matched per-request training. The tested selectors trail the best fixed coarse request and direct success prediction. Evaluations should report fixed-request, no-model and direct-prediction baselines and compute.
+\end{revblock}
+
+% \section*{Acknowledgments and Funding} heading with content for the camera-ready version only.
